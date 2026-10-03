@@ -23,6 +23,7 @@ import { RAIDERS_CATALOG } from './teams/raiders/catalog';
 import { RAMS_CATALOG } from './teams/rams/catalog';
 import { RAVENS_CATALOG } from './teams/ravens/catalog';
 import { SAINTS_CATALOG } from './teams/saints/catalog';
+import { STEELERS_CATALOG } from './teams/steelers/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -83,21 +84,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FF3C00',
     },
   },
-  {
-    teamId: 'steelers',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 1997,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFB612',
-      secondary: '#101820',
-      accent: '#101820',
-    },
-  },
+  catalogRow(STEELERS_CATALOG, 'home'),
   {
     teamId: 'bills',
     slug: 'home',
@@ -273,21 +260,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FF3C00',
     },
   },
-  {
-    teamId: 'steelers',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 1997,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#FFB612',
-      accent: '#101820',
-    },
-  },
+  catalogRow(STEELERS_CATALOG, 'away'),
   {
     teamId: 'texans',
     slug: 'away',
@@ -448,22 +421,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(DOLPHINS_CATALOG, '1972-throwback'),
   catalogRow(PATRIOTS_CATALOG, 'pat-patriot'),
   catalogRow(JETS_CATALOG, 'black-alt'),
-  // Steelers 1934 'Bumblebee' block-stripe throwback (actively worn). Black base, gold stripes.
-  {
-    teamId: 'steelers',
-    slug: 'bumblebee',
-    constructionKey: 'bumblebee',
-    kind: 'throwback',
-    name: 'Bumblebee',
-    yearStart: 1933,
-    yearEnd: 1934,
-    isCurrent: false,
-    colors: {
-      primary: '#101820',
-      secondary: '#FFB612',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(STEELERS_CATALOG, 'bumblebee'),
   // Browns 1946 throwback (verified from reveal: WHITE jersey, orange/brown stripes, black numbers). Worn 2024+.
   {
     teamId: 'browns',
