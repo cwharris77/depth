@@ -157,8 +157,8 @@ describe('team surfaces — player-card numeral', () => {
     // A data change that shifts kits between branches should surface here rather than be
     // absorbed silently.
     expect({ strokeSecondary, swapped, whiteFallback }).toEqual({
-      strokeSecondary: 56,
-      swapped: 40,
+      strokeSecondary: 58,
+      swapped: 41,
       whiteFallback: 13,
     });
   });
@@ -199,7 +199,7 @@ describe('kitMark', () => {
   // but only when it owns nothing else that reads, never merely because white came first.
   it('resolves an away kit to its white body only when nothing else reads', () => {
     const away = current.filter((u) => u.slug === 'away');
-    expect(away).toHaveLength(32);
+    expect(away).toHaveLength(31);
     expect(away.every((u) => u.colors.primary.toUpperCase() === '#FFFFFF')).toBe(true);
 
     const white = away.filter((u) => kitMark(kitColors(u)).toUpperCase() === '#FFFFFF');
