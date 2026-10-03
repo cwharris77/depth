@@ -1,11 +1,24 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collar } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// Modern Kelly-green jersey: the current throwback construction uses the same body, sleeve and
-// number treatment as the original, but restores the Eagles deep collar yoke.
-export const JERSEY_KELLY_MODERN: UniformPart = {
-  base: 'kelly',
-  layers: [...collar('white')],
-  number: { fill: 'white', outline: 'silver', outlineWidth: 14 },
+// Kelly-green body with a body-coloured keylined V collar and no sleeve band; white numerals
+// keylined black, the same on the shoulders.
+export const EAGLES_JERSEY_KELLY_MODERN: CompleteJerseySpec = {
+  body: 'kelly',
+  collar: {
+    style: 'inset-v',
+    color: 'kelly',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'black' },
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'black', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [],
 };

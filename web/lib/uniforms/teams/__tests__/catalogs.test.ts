@@ -982,6 +982,101 @@ describe('Dolphins catalog conversion', () => {
   });
 });
 
+// Pins the catalog to the rows and accents the Eagles had before the catalog existed.
+describe('Eagles catalog conversion', () => {
+  const catalog = getTeamCatalog('eagles');
+  if (!catalog) throw new Error('Eagles catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        {
+          teamId: 'eagles',
+          slug: 'home',
+          constructionKey: 'home',
+          kind: 'home',
+          name: 'Home',
+          yearStart: 1996,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#004C54', secondary: '#A5ACAF', accent: '#A5ACAF' },
+        },
+        {
+          teamId: 'eagles',
+          slug: 'kelly-green',
+          constructionKey: 'kelly-green-original',
+          kind: 'throwback',
+          name: 'Kelly Green',
+          yearStart: 1987,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#046A38', secondary: '#A5ACAF', accent: '#FFFFFF' },
+        },
+        {
+          teamId: 'eagles',
+          slug: 'kelly-green-modern',
+          constructionKey: 'kelly-green-modern',
+          kind: 'throwback',
+          name: 'Kelly Green (Modern)',
+          yearStart: 2023,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#046A38', secondary: '#A5ACAF', accent: '#FFFFFF' },
+        },
+        {
+          teamId: 'eagles',
+          slug: 'away',
+          constructionKey: 'away',
+          kind: 'away',
+          name: 'Away',
+          yearStart: 1996,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FFFFFF', secondary: '#004C54', accent: '#A5ACAF' },
+        },
+        {
+          teamId: 'eagles',
+          slug: 'black-alt',
+          constructionKey: 'black-alt',
+          kind: 'alternate',
+          name: 'Black Alternate',
+          yearStart: 2003,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#000000', secondary: '#004C54', accent: '#A5ACAF' },
+        },
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'eagles-home-1996': { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
+      'eagles-kelly-green-1987': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
+      'eagles-kelly-green-modern-2023': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
+      'eagles-away-1996': { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
+      'eagles-black-alt-2003': { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('pairs each jersey with its verified helmet, pants and socks', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'green', jersey: 'green', pants: 'white', socks: 'white' },
+      'kelly-green-original': { helmet: 'kelly', jersey: 'kelly-original', pants: 'kelly' },
+      'kelly-green-modern': {
+        helmet: 'kelly',
+        jersey: 'kelly-modern',
+        pants: 'silver',
+        socks: 'kelly-hoops',
+      },
+      away: { helmet: 'green', jersey: 'white', pants: 'white', socks: 'white' },
+      'away--green-pants': { helmet: 'green', jersey: 'white', pants: 'green', socks: 'white' },
+      'away--black-pants': { helmet: 'green', jersey: 'white', pants: 'black', socks: 'white' },
+      'black-alt': { helmet: 'black', jersey: 'black', pants: 'black' },
+    });
+  });
+});
+
 // A strict team's parts come only from its registered TeamSpec; the fixtures in team-spec.test.ts
 // prove the checks themselves.
 describe('strict teams', () => {

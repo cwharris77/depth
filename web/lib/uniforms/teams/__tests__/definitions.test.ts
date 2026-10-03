@@ -304,9 +304,13 @@ describe('team uniform definitions', () => {
     const original = resolveUniformModel(definition, 'kelly-green-original', EAGLES_KELLY_COLORS);
     const modern = resolveUniformModel(definition, 'kelly-green-modern', EAGLES_KELLY_COLORS);
 
-    expect(original.layers.find((layer) => layer.id === 'eagles-collar')?.d).not.toBe(
-      modern.layers.find((layer) => layer.id === 'eagles-collar')?.d
-    );
+    const collarPaths = (model: typeof original) =>
+      model.layers
+        .filter((layer) => layer.surface === 'collar')
+        .map((layer) => layer.d)
+        .join('|');
+    expect(collarPaths(original)).not.toBe('');
+    expect(collarPaths(original)).not.toBe(collarPaths(modern));
   });
 
   const definitions = Object.values(getAllTeamUniformDefinitions()).filter(

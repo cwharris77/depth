@@ -10,6 +10,7 @@ import { COLTS_CATALOG } from './teams/colts/catalog';
 import { COMMANDERS_CATALOG } from './teams/commanders/catalog';
 import { COWBOYS_CATALOG } from './teams/cowboys/catalog';
 import { DOLPHINS_CATALOG } from './teams/dolphins/catalog';
+import { EAGLES_CATALOG } from './teams/eagles/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -258,21 +259,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#A71930',
     },
   },
-  {
-    teamId: 'eagles',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 1996,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#004C54',
-      secondary: '#A5ACAF',
-      accent: '#A5ACAF',
-    },
-  },
+  catalogRow(EAGLES_CATALOG, 'home'),
   catalogRow(COMMANDERS_CATALOG, 'home'),
   {
     teamId: 'falcons',
@@ -363,36 +350,8 @@ export const UNIFORMS: UniformSeed[] = [
   // Eagles Kelly Green (1987–1995 era) — reintroduced as an active throwback in 2023, so
   // is_current: true. uiAccent brightens the era's deep kelly (#046A38) to clear the dark
   // UI.
-  {
-    teamId: 'eagles',
-    slug: 'kelly-green',
-    constructionKey: 'kelly-green-original',
-    kind: 'throwback',
-    name: 'Kelly Green',
-    yearStart: 1987,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#046A38',
-      secondary: '#A5ACAF',
-      accent: '#FFFFFF',
-    },
-  },
-  {
-    teamId: 'eagles',
-    slug: 'kelly-green-modern',
-    constructionKey: 'kelly-green-modern',
-    kind: 'throwback',
-    name: 'Kelly Green (Modern)',
-    yearStart: 2023,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#046A38',
-      secondary: '#A5ACAF',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(EAGLES_CATALOG, 'kelly-green'),
+  catalogRow(EAGLES_CATALOG, 'kelly-green-modern'),
 
   catalogRow(BRONCOS_CATALOG, 'orange-crush'),
 
@@ -594,21 +553,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#A71930',
     },
   },
-  {
-    teamId: 'eagles',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 1996,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#004C54',
-      accent: '#A5ACAF',
-    },
-  },
+  catalogRow(EAGLES_CATALOG, 'away'),
   catalogRow(COMMANDERS_CATALOG, 'away'),
   catalogRow(BEARS_CATALOG, 'away'),
   {
@@ -1011,21 +956,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   // Eagles black alternate (2020+). Black base, midnight-green/silver trim.
-  {
-    teamId: 'eagles',
-    slug: 'black-alt',
-    constructionKey: 'black-alt',
-    kind: 'alternate',
-    name: 'Black Alternate',
-    yearStart: 2003,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#000000',
-      secondary: '#004C54',
-      accent: '#A5ACAF',
-    },
-  },
+  catalogRow(EAGLES_CATALOG, 'black-alt'),
   // Lions 'Gridiron Gray' alternate. Silver-gray base, Honolulu-blue trim.
   {
     teamId: 'lions',

@@ -31,6 +31,9 @@ import { COWBOYS_SPEC } from './cowboys/parts';
 import { DOLPHINS_PARTS } from './dolphins';
 import { DOLPHINS_CATALOG } from './dolphins/catalog';
 import { DOLPHINS_SPEC } from './dolphins/parts';
+import { EAGLES_PARTS } from './eagles';
+import { EAGLES_CATALOG } from './eagles/catalog';
+import { EAGLES_SPEC } from './eagles/parts';
 import { JETS_PARTS } from './jets';
 import { JETS_CATALOG } from './jets/catalog';
 import { JETS_SPEC } from './jets/parts';
@@ -67,6 +70,7 @@ const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
     strict: COMMANDERS_SPEC,
   },
   cowboys: { catalog: COWBOYS_CATALOG, parts: COWBOYS_PARTS, strict: COWBOYS_SPEC },
+  eagles: { catalog: EAGLES_CATALOG, parts: EAGLES_PARTS, strict: EAGLES_SPEC },
   colts: { catalog: COLTS_CATALOG, parts: COLTS_PARTS, strict: COLTS_SPEC },
   dolphins: { catalog: DOLPHINS_CATALOG, parts: DOLPHINS_PARTS, strict: DOLPHINS_SPEC },
   jets: { catalog: JETS_CATALOG, parts: JETS_PARTS, strict: JETS_SPEC },

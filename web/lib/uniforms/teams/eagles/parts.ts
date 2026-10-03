@@ -1,121 +1,112 @@
-// Philadelphia authored as composable parts. Geometry is imported unchanged from eagles.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
-//
-// The current kits (home, away) are one construction: a deep collar yoke and a solid band at the
-// sleeve hem. The kelly-green throwback drops the cuff entirely (its sleeve runs unbroken to the
-// hem) and keeps only the collar. No helmet stripe, no pant stripe on any kit. All shells wear
-// the same wing: white, black and silver layers in source paint order, so none of its colors moves
-// with the shell. The five kits combine three helmets (green shell, kelly shell, black shell),
-// five jersey constructions (green, white, black, original kelly, modern kelly), and four pants.
+// Philadelphia as a complete team spec: every helmet, jersey, pants and socks part, with its own
+// art drawn by the marks in ./marks.
+import type { TeamSpec } from '../core/team-spec';
+import { EAGLES_WING_DECAL } from './marks/construction';
+import { EAGLES_JERSEY_BLACK } from './jerseys/black';
+import { EAGLES_JERSEY_GREEN } from './jerseys/green';
+import { EAGLES_JERSEY_KELLY_MODERN } from './jerseys/kelly-modern';
+import { EAGLES_JERSEY_KELLY_ORIGINAL } from './jerseys/kelly-original';
+import { EAGLES_JERSEY_WHITE } from './jerseys/white';
 
-import {
-  EAGLES_COLLAR_PATH,
-  EAGLES_COLLAR_WIDTH,
-  EAGLES_CUFF_LEFT,
-  EAGLES_CUFF_RIGHT,
-  EAGLES_DECAL_BLACK_PATH,
-  EAGLES_DECAL_SILVER_PATH,
-  EAGLES_DECAL_WHITE_PATH,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
+// Green, kelly, black, white and silver are the physical colours; each kit's primary, secondary
+// and accent slots carry them in different positions, so layers name these keys instead.
+export const EAGLES_PALETTE = {
+  green: '#004C54',
+  kelly: '#046A38',
+  black: '#000000',
+  white: '#FFFFFF',
+  silver: '#A5ACAF',
+};
 
-// The wing — source paint order is white substrate, black feather channels, then silver body.
-// Every shell shares this exact placement and fixed palette.
-export function wing(): PartLayer[] {
-  return [
-    {
-      id: 'eagles-decal-white',
-      surface: 'helmet',
-      d: EAGLES_DECAL_WHITE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
+export const EAGLES_SPEC: TeamSpec = {
+  helmets: {
+    // All three shells wear the same wing, over a black cage.
+    green: { shell: 'green', facemask: 'black', decal: EAGLES_WING_DECAL, number: 'none' },
+    black: { shell: 'black', facemask: 'black', decal: EAGLES_WING_DECAL, number: 'none' },
+    // The kelly shell wears a silver cage.
+    kelly: { shell: 'kelly', facemask: 'silver', decal: EAGLES_WING_DECAL, number: 'none' },
+  },
+  jerseys: {
+    green: EAGLES_JERSEY_GREEN,
+    white: EAGLES_JERSEY_WHITE,
+    black: EAGLES_JERSEY_BLACK,
+    'kelly-original': EAGLES_JERSEY_KELLY_ORIGINAL,
+    'kelly-modern': EAGLES_JERSEY_KELLY_MODERN,
+  },
+  pants: {
+    // A black stripe beside a narrower green one down the side seam.
+    white: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'black', size: 'm' },
+          { color: 'green', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
     },
-    {
-      id: 'eagles-decal-black',
-      surface: 'helmet',
-      d: EAGLES_DECAL_BLACK_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'black',
+    // A white stripe beside a narrower green one.
+    black: {
+      body: 'black',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'white', size: 'm' },
+          { color: 'green', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
     },
-    {
-      id: 'eagles-decal-silver',
-      surface: 'helmet',
-      d: EAGLES_DECAL_SILVER_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'silver',
+    // A black stripe beside a narrower silver one.
+    green: {
+      body: 'green',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'black', size: 'm' },
+          { color: 'silver', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
     },
-  ];
-}
-
-// The solid sleeve cuff band at the hem.
-export function cuff(color: string): PartLayer[] {
-  return [
-    {
-      id: 'eagles-cuff-left',
-      surface: 'sleeve-left',
-      d: EAGLES_CUFF_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
+    // Two kelly stripes split by a white one, every stripe piped black.
+    silver: {
+      body: 'silver',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'kelly', size: 's' },
+          { color: 'white', size: 's' },
+          { color: 'kelly', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'black',
+      },
+      marks: [],
     },
-    {
-      id: 'eagles-cuff-right',
-      surface: 'sleeve-right',
-      d: EAGLES_CUFF_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
+    // The 1987 pants: plain kelly.
+    kelly: { body: 'kelly', stripes: 'none', marks: [] },
+  },
+  socks: {
+    white: { color: 'white', stripes: 'none' },
+    // Two kelly hoops piped black.
+    'kelly-hoops': {
+      color: 'white',
+      stripes: {
+        bands: [
+          { color: 'kelly', size: 's' },
+          { color: 'kelly', size: 's' },
+        ],
+        gap: 'narrow',
+        edge: 'black',
+      },
     },
-  ];
-}
-
-// The deep collar yoke (deeper than the generic chevron).
-export function collar(color: string, path = EAGLES_COLLAR_PATH): PartLayer[] {
-  return [
-    {
-      id: 'eagles-collar',
-      surface: 'collar',
-      d: path,
-      clip: true,
-      kind: 'stroke',
-      stroke: color,
-      strokeWidth: EAGLES_COLLAR_WIDTH,
-    },
-  ];
-}
-
-// Green shell (H1) — shared by home and away.
-export const HELMET_GREEN: UniformPart = expandHelmet('eagles-green-helmet', {
-  shell: 'green',
-  facemask: 'black',
-  decal: placed(wing()),
-  number: 'none',
-});
-
-// Kelly-green shell (H2).
-export const HELMET_KELLY: UniformPart = expandHelmet('eagles-kelly-helmet', {
-  shell: 'kelly',
-  facemask: 'black',
-  decal: placed(wing()),
-  number: 'none',
-});
-
-// Black shell (H3, black-alt).
-export const HELMET_BLACK: UniformPart = expandHelmet('eagles-black-helmet', {
-  shell: 'black',
-  facemask: 'black',
-  decal: placed(wing()),
-  number: 'none',
-});
-
-// Pants — no pant stripe on any kit; each takes its body color.
-export const PANTS_GREEN: UniformPart = { base: 'green', layers: [] };
-export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-export const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
-export const PANTS_KELLY: UniformPart = { base: 'kelly', layers: [] };
+  },
+};
