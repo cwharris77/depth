@@ -1,9 +1,15 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// Home jersey (J1): teal body, no sleeve trim, white numerals keylined orange.
-export const JERSEY_TEAL: UniformPart = {
-  base: 'teal',
-  layers: [],
-  number: { fill: 'white', outline: 'orange', outlineWidth: 14 },
+// Home: teal body with no sleeve trim, white numerals keylined orange.
+export const DOLPHINS_JERSEY_TEAL: CompleteJerseySpec = {
+  body: 'teal',
+  collar: { style: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'orange' },
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'orange', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [],
 };

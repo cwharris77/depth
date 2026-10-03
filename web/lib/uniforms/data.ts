@@ -9,6 +9,7 @@ import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
 import { COMMANDERS_CATALOG } from './teams/commanders/catalog';
 import { COWBOYS_CATALOG } from './teams/cowboys/catalog';
+import { DOLPHINS_CATALOG } from './teams/dolphins/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -114,21 +115,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#C60C30',
     },
   },
-  {
-    teamId: 'dolphins',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2018,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#008E97',
-      secondary: '#FC4C02',
-      accent: '#FC4C02',
-    },
-  },
+  catalogRow(DOLPHINS_CATALOG, 'home'),
   {
     teamId: 'patriots',
     slug: 'home',
@@ -430,21 +417,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#C60C30',
     },
   },
-  {
-    teamId: 'dolphins',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2018,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#008E97',
-      accent: '#FC4C02',
-    },
-  },
+  catalogRow(DOLPHINS_CATALOG, 'away'),
   {
     teamId: 'patriots',
     slug: 'away',
@@ -842,22 +815,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#C60C30',
     },
   },
-  // Dolphins 2025 Rivalries: black base, aqua/orange. Heritage accents (aqua #008E97, orange #FC4C02).
-  {
-    teamId: 'dolphins',
-    slug: 'rivalries-2025',
-    constructionKey: 'rivalries-2025',
-    kind: 'alternate',
-    name: 'Rivalries',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#101820',
-      secondary: '#008E97',
-      accent: '#FC4C02',
-    },
-  },
+  catalogRow(DOLPHINS_CATALOG, 'rivalries-2025'),
   // Patriots 2025 Rivalries: Pat-Patriot-style royal fauxback. primary #002F6C is a derived royal (brighter than current navy); red/white heritage.
   {
     teamId: 'patriots',
@@ -919,22 +877,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(SEAHAWKS_CATALOG, 'color-rush'),
   // Wave 4: currently-worn alternates & throwbacks (heritage-derived; Browns '46 and
   // Packers Winter Warning verified from reveals). uiAccent reuses each team's live pair.
-  // Dolphins 1972 perfect-season aqua throwback. Heritage aqua/orange; throwback aqua reads slightly lighter in person (no published hex).
-  {
-    teamId: 'dolphins',
-    slug: '1972-throwback',
-    constructionKey: '1972-throwback',
-    kind: 'throwback',
-    name: '1972 Throwback',
-    yearStart: 1966,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#008E97',
-      secondary: '#FC4C02',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(DOLPHINS_CATALOG, '1972-throwback'),
   // Patriots 'Pat Patriot' red throwback (worn 2022+). Red #C8102E over royal #002F6C, white numbers.
   {
     teamId: 'patriots',

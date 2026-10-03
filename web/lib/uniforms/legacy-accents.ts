@@ -9,6 +9,7 @@ import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
 import { COMMANDERS_CATALOG } from './teams/commanders/catalog';
 import { COWBOYS_CATALOG } from './teams/cowboys/catalog';
+import { DOLPHINS_CATALOG } from './teams/dolphins/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -22,7 +23,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'browns-home-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'steelers-home-1997': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'bills-home-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-  'dolphins-home-2018': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'patriots-home-2020': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'texans-home-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'jaguars-home-2018': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
@@ -41,7 +41,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'eagles-kelly-green-1987': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
   'eagles-kelly-green-modern-2023': { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
   'bills-away-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-  'dolphins-away-2018': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'patriots-away-2020': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'cardinals-away-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'rams-away-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
@@ -66,11 +65,9 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'vikings-purple-classic-1961': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'packers-1923-throwback-1923': { uiAccent: '#CC8835', onAccent: '#0a0e1a' },
   'bills-rivalries-2025-2025': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-  'dolphins-rivalries-2025-2025': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'patriots-rivalries-2025-2025': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'cardinals-rivalries-2025-2025': { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
   'rams-rivalries-2025-2025': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
-  'dolphins-1972-throwback-1966': { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
   'patriots-pat-patriot-1961': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'steelers-bumblebee-1933': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'browns-1946-throwback-1946': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
@@ -124,6 +121,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(COLTS_CATALOG),
   ...catalogAccents(COMMANDERS_CATALOG),
   ...catalogAccents(COWBOYS_CATALOG),
+  ...catalogAccents(DOLPHINS_CATALOG),
   ...catalogAccents(JETS_CATALOG),
   ...catalogAccents(NINERS_CATALOG),
   ...catalogAccents(SEAHAWKS_CATALOG),

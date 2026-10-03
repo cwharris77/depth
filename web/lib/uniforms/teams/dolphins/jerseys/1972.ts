@@ -1,10 +1,17 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { throwbackStripes } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { DOLPHINS_THROWBACK_SLEEVE_BANDS } from '../marks/construction';
 
-// 1972 throwback jersey (J4): teal body, five-band sleeve set, white numerals keylined orange.
-export const JERSEY_1972: UniformPart = {
-  base: 'teal',
-  layers: throwbackStripes('white', 'orange'),
-  number: { fill: 'white', outline: 'orange', outlineWidth: 16 },
+// 1972 throwback: teal body, a five-band white-over-orange sleeve set, white numerals keylined
+// orange.
+export const DOLPHINS_JERSEY_1972: CompleteJerseySpec = {
+  body: 'teal',
+  collar: { style: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'orange' },
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'orange', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [{ paint: 'over', mark: DOLPHINS_THROWBACK_SLEEVE_BANDS }],
 };
