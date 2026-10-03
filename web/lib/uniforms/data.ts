@@ -16,6 +16,7 @@ import { GIANTS_CATALOG } from './teams/giants/catalog';
 import { JAGUARS_CATALOG } from './teams/jaguars/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { LIONS_CATALOG } from './teams/lions/catalog';
+import { PACKERS_CATALOG } from './teams/packers/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -189,21 +190,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(CHARGERS_CATALOG, 'home'),
   catalogRow(BEARS_CATALOG, 'home'),
   catalogRow(LIONS_CATALOG, 'home'),
-  {
-    teamId: 'packers',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 1959,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#203731',
-      secondary: '#FFB612',
-      accent: '#FFB612',
-    },
-  },
+  catalogRow(PACKERS_CATALOG, 'home'),
   {
     teamId: 'vikings',
     slug: 'home',
@@ -477,21 +464,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(COMMANDERS_CATALOG, 'away'),
   catalogRow(BEARS_CATALOG, 'away'),
   catalogRow(LIONS_CATALOG, 'away'),
-  {
-    teamId: 'packers',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 1959,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#203731',
-      accent: '#FFB612',
-    },
-  },
+  catalogRow(PACKERS_CATALOG, 'away'),
   {
     teamId: 'vikings',
     slug: 'away',
@@ -598,21 +571,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   // Packers 1923 throwback (navy body, old-gold/tan numbers, leather helmets; unveiled 2025). Colors EYEDROPPED from the reveal flat-lay: secondary/uiAccent #CC8835 sampled off the number (passes 6.55:1 on #0a0e1a); primary #1B2C4E is a brightened estimate of the underexposed navy. No published hex exists.
-  {
-    teamId: 'packers',
-    slug: '1923-throwback',
-    constructionKey: '1923-throwback',
-    kind: 'throwback',
-    name: '1923 Throwback',
-    yearStart: 1923,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#1B2C4E',
-      secondary: '#CC8835',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(PACKERS_CATALOG, '1923-throwback'),
   // 2025 Nike 'Rivalries' kits (AFC East + NFC West). Designs from the official Nike/NFL
   // product shots; identity hexes from published heritage. Derived approximations noted per row.
   // Bills 2025 Rivalries: white base, royal/red. Heritage hexes (royal #00338D, red #C60C30).
@@ -817,21 +776,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   // Packers 'Winter Warning' all-white alternate (verified 2025 reveal). White base + helmet, green/gold trim.
-  {
-    teamId: 'packers',
-    slug: 'winter-warning',
-    constructionKey: 'winter-warning',
-    kind: 'alternate',
-    name: 'Winter Warning',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#203731',
-      accent: '#FFB612',
-    },
-  },
+  catalogRow(PACKERS_CATALOG, 'winter-warning'),
   catalogRow(FALCONS_CATALOG, 'red-alt'),
   // Panthers black alternate. Black base, blue/silver trim.
   {

@@ -52,6 +52,9 @@ import { LIONS_SPEC } from './lions/parts';
 import { NINERS_PARTS } from './49ers';
 import { NINERS_CATALOG } from './49ers/catalog';
 import { NINERS_SPEC } from './49ers/parts';
+import { PACKERS_PARTS } from './packers';
+import { PACKERS_CATALOG } from './packers/catalog';
+import { PACKERS_SPEC } from './packers/parts';
 import { SEAHAWKS_PARTS } from './seahawks';
 import { SEAHAWKS_CATALOG } from './seahawks/catalog';
 import { SEAHAWKS_SPEC } from './seahawks/parts';
@@ -91,6 +94,7 @@ const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   dolphins: { catalog: DOLPHINS_CATALOG, parts: DOLPHINS_PARTS, strict: DOLPHINS_SPEC },
   jets: { catalog: JETS_CATALOG, parts: JETS_PARTS, strict: JETS_SPEC },
   '49ers': { catalog: NINERS_CATALOG, parts: NINERS_PARTS, strict: NINERS_SPEC },
+  packers: { catalog: PACKERS_CATALOG, parts: PACKERS_PARTS, strict: PACKERS_SPEC },
   seahawks: { catalog: SEAHAWKS_CATALOG, parts: SEAHAWKS_PARTS, strict: SEAHAWKS_SPEC },
 };
 
