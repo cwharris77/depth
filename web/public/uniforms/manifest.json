@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "0593e3410829c633e3805afdbb5db657fd64709b071ad368e18e0907d233fee2",
-  "revision": "27572e5f015c7c17",
+  "sourceDigest": "2a543c46e7a5ef848db1bb32b1008ce8139443a4e5b8860217b40a1e9c185757",
+  "revision": "ef67de3b9e2c4c98",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -760,45 +760,45 @@
     {
       "catalogId": "commanders-70s-burgundy-1972",
       "constructionKey": "70s-burgundy",
-      "revision": "ec81b9e7661872f8",
+      "revision": "317edc08e1016e39",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/commanders-70s-burgundy-1972.webp",
-          "sha256": "a52711127ad016f3a2c6c4b82b48356a87a5a6a0426034b1f8c353212957257d"
+          "sha256": "1f42d553c0af73526ba4a04d8da09de11b7a2425d040bbf3e2bddf0a48dee57b"
         },
         "full": {
           "path": "/uniforms/commanders-70s-burgundy-1972-full.webp",
-          "sha256": "0957ffcdca6156a5e47cc5873447bdac744c4882276bcc1c9171b3399788719f"
+          "sha256": "8fcb60a470f84f309fe80583e6b060f7c57db41ecabbc0a50aa0312e4c3a83d3"
         }
       }
     },
     {
       "catalogId": "commanders-away-2022",
       "constructionKey": "away",
-      "revision": "cb2883d029d06da5",
+      "revision": "2bb5b0553fcff591",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/commanders-away-2022.webp",
-          "sha256": "3e403ebae638f11d59934f1574cad66c742bac486524da2a4afb065fc20ff48a"
+          "sha256": "a1e222ea02487a69b8fa45ed9ee299d8f9add712b7f8017c01b3d0370db6b322"
         },
         "full": {
           "path": "/uniforms/commanders-away-2022-full.webp",
-          "sha256": "351f049dd159c3c6582a4e19180d097c6b4b64503551cb0a3d49ccc6dc26f28c"
+          "sha256": "a8f5485a48a996d3c59923df33b113875f4a97217e7fd271a664e4d7858ce833"
         }
       }
     },
     {
       "catalogId": "commanders-home-2022",
       "constructionKey": "home",
-      "revision": "34bbb09f0b257928",
+      "revision": "a2f53b88d5d45091",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/commanders-home-2022.webp",
-          "sha256": "a52711127ad016f3a2c6c4b82b48356a87a5a6a0426034b1f8c353212957257d"
+          "sha256": "1f42d553c0af73526ba4a04d8da09de11b7a2425d040bbf3e2bddf0a48dee57b"
         },
         "full": {
           "path": "/uniforms/commanders-home-2022-full.webp",
-          "sha256": "0957ffcdca6156a5e47cc5873447bdac744c4882276bcc1c9171b3399788719f"
+          "sha256": "8fcb60a470f84f309fe80583e6b060f7c57db41ecabbc0a50aa0312e4c3a83d3"
         }
       }
     },
