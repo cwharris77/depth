@@ -1,10 +1,24 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collarArcs, sleeveBand } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-// Home jersey (J1): teal body, black band + collar arcs, white numerals.
-export const JERSEY_TEAL: UniformPart = {
-  base: 'teal',
-  layers: [...sleeveBand('black'), ...collarArcs('black')],
-  number: { fill: 'white', outline: 'white', outlineWidth: 10 },
+// Teal body with a black V collar band keylined grey, a teal back bar, white shoulder numerals, a
+// black sleeve hem band and plain white numerals.
+export const JAGUARS_JERSEY_TEAL: CompleteJerseySpec = {
+  body: 'teal',
+  collar: {
+    style: 'inset-v',
+    color: 'black',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'teal',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'none' },
+  sleeveStripes: 'none',
+  cuff: { color: 'black', size: 'l' },
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'teal', outlineWeight: 'none', texture: 'mesh' },
+  marks: [],
 };

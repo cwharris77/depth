@@ -1,10 +1,17 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collarArcs, sleeveBand } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { JAGUARS_BLACK_ALT_TRIM } from '../marks/construction';
 
-// black-alt jersey (J4): black body, gold band + collar arcs, white numerals keylined gold.
-export const JERSEY_BLACK_ALT: UniformPart = {
-  base: 'black',
-  layers: [...sleeveBand('gold'), ...collarArcs('gold')],
-  number: { fill: 'white', outline: 'gold', outlineWidth: 16 },
+// Black body with gold sleeve bands and neck arcs drawn by the trim mark, and white numerals
+// outlined in gold.
+export const JAGUARS_JERSEY_BLACK_ALT: CompleteJerseySpec = {
+  body: 'black',
+  collar: { style: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'gold', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [{ paint: 'over', mark: JAGUARS_BLACK_ALT_TRIM }],
 };

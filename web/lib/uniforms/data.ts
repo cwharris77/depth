@@ -13,6 +13,7 @@ import { DOLPHINS_CATALOG } from './teams/dolphins/catalog';
 import { EAGLES_CATALOG } from './teams/eagles/catalog';
 import { FALCONS_CATALOG } from './teams/falcons/catalog';
 import { GIANTS_CATALOG } from './teams/giants/catalog';
+import { JAGUARS_CATALOG } from './teams/jaguars/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -151,21 +152,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(COLTS_CATALOG, 'home'),
-  {
-    teamId: 'jaguars',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2018,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#006778',
-      secondary: '#D7A22A',
-      accent: '#D7A22A',
-    },
-  },
+  catalogRow(JAGUARS_CATALOG, 'home'),
   {
     teamId: 'titans',
     slug: 'home',
@@ -463,21 +450,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(COLTS_CATALOG, 'away'),
-  {
-    teamId: 'jaguars',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2018,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#006778',
-      accent: '#D7A22A',
-    },
-  },
+  catalogRow(JAGUARS_CATALOG, 'away'),
   {
     teamId: 'titans',
     slug: 'away',
@@ -631,28 +604,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#D3BC8D',
     },
   },
-  // Jaguars "Prowler Throwback" — recreates the 1998-2008 original teal design (curved
-  // three-color numbers, running-jaguar sleeve patch); the team's primary color from
-  // 1995-2008 before black took over 2009-2020, then dormant until this recreation
-  // debuted 2024 (jaguars.com). yearStart is the era it recreates, matching the app's
-  // other current throwbacks (Packers 1923 Throwback, Eagles Kelly Green), not the 2024
-  // revival year. Hexes: teal #006778, gold #D7A22A, black #101820.
-  // uiAccent reuses the team's bright teal.
-  {
-    teamId: 'jaguars',
-    slug: 'teal-throwback',
-    constructionKey: 'teal-throwback',
-    kind: 'throwback',
-    name: 'Prowler Throwback',
-    yearStart: 1998,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#006778',
-      secondary: '#D7A22A',
-      accent: '#101820',
-    },
-  },
+  catalogRow(JAGUARS_CATALOG, 'teal-throwback'),
   // Washington 1970s burgundy & gold (George Allen gold-helmet era). Hexes: burgundy #5A1414, gold #FFB612. uiAccent reuses the team's gold.
   catalogRow(COMMANDERS_CATALOG, '70s-burgundy'),
   // Throwbacks (Wave 2b): Vikings 1960s purple classic + Packers 1923 throwback (eyedropped).
@@ -852,22 +804,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFFFFF',
     },
   },
-  // Jaguars black alternate. Black base, gold/teal trim.
-  {
-    teamId: 'jaguars',
-    slug: 'black-alt',
-    constructionKey: 'black-alt',
-    kind: 'alternate',
-    name: 'Black Alternate',
-    yearStart: 2018,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#101820',
-      secondary: '#D7A22A',
-      accent: '#006778',
-    },
-  },
+  catalogRow(JAGUARS_CATALOG, 'black-alt'),
   // Titans navy alternate. Navy base, Titans-blue/red trim.
   {
     teamId: 'titans',
