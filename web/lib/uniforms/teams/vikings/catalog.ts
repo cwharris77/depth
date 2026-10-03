@@ -72,7 +72,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
       name: 'Winter Warrior',
       kind: 'alternate',
       jersey: 'winter-white',
-      colors: { primary: '#FFFFFF', secondary: '#4F2683', accent: '#A7A9AC' },
+      colors: { primary: '#FFFFFF', secondary: '#4F2683', accent: '#FFC62F' },
       legacyAccent,
       periods: [{ from: 2024 }],
       combinations: [
