@@ -60,12 +60,10 @@ function decal(): PartLayer[] {
 
 // The navy shell with the flaming-T — one object, shared by home, away and navy-alt.
 //
-// White cage. The Titans' navy shell wears a white facemask (named sources: the 2026 rebrand
-// "helmet is white with white facemask", and the pre-rebrand navy-shell era wore white/gray; the
-// white cage reads cleanly against the navy shell).
+// The navy shell wears the metallic-silver facemask introduced with the 2018 design.
 const HELMET_NAVY_T: UniformPart = expandHelmet('titans-navy-t-helmet', {
   shell: 'navy',
-  facemask: 'white',
+  facemask: 'silver',
   decal: placed(decal()),
   number: 'none',
 });
@@ -79,9 +77,9 @@ const HELMET_WHITE: UniformPart = expandHelmet('titans-white-helmet', {
   number: 'none',
 });
 
-// Home jersey: navy body, navy bar on the silver yoke, navy numerals keylined white.
+// Home jersey: navy body and white numerals keylined light blue.
 
-// Away jersey: white body, navy bar, navy numerals keylined white.
+// Away jersey: white body and navy numerals keylined light blue.
 
 // Navy-alt jersey: navy body, light-blue bar (keeps the bar legible against the navy), white
 // numerals keylined light-blue.

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "36779aceb9bd86bd257ef312823031086989b126c1d4abd098f03fd5e87ab2a1",
-  "revision": "b491941991eacee7",
+  "sourceDigest": "89356559dbe390334a075c4bc6e312a28458295015a0c79fd8d73df670b97f0a",
+  "revision": "81313398102680d3",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2013,37 +2013,37 @@
     {
       "catalogId": "titans-away-2018",
       "constructionKey": "away",
-      "revision": "a7d981468c7eb0ed",
+      "revision": "4972956128518c8d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-away-2018.webp",
-          "sha256": "46330bc876748424cebdaa70a39463e17f427bf103e87a0bdd5093eb5bb46686"
+          "sha256": "fe6fb062ffba6e2410a54bb58e65e85a7e64cc1e2957fd17d303bd572bf3ceb4"
         },
         "full": {
           "path": "/uniforms/titans-away-2018-full.webp",
-          "sha256": "bbcc9a46d7146f1612ad9e21e299da5b0861cd7fd6f1498527c571278d9ec63b"
+          "sha256": "04b45ba8d612da5d00e36c5df6fcd5207e9e4541ec64f8d0b6c6640f43a5cf6b"
         }
       }
     },
     {
       "catalogId": "titans-home-2018",
       "constructionKey": "home",
-      "revision": "0671753d974a21ca",
+      "revision": "f3498740ed360576",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-home-2018.webp",
-          "sha256": "d9b28f1c29b41414e1d5232c886329f85781916307fa207fc3af8011b6cbffd2"
+          "sha256": "482ddf1d82aac2fa08fb85433acc4f2e48559a8498451d706b77dd017cc22239"
         },
         "full": {
           "path": "/uniforms/titans-home-2018-full.webp",
-          "sha256": "4e72e5b09cc0c7a3d61a4ed9debd179d6b3b0c7131ca6f84ee6cf8a529306a45"
+          "sha256": "cf5e11cd433ccfc88117daf98de6b6f2273e69e50717757408e263d12ffa7edd"
         }
       }
     },
     {
       "catalogId": "titans-navy-alt-2018",
       "constructionKey": "navy-alt",
-      "revision": "e6cf4295bebdcbef",
+      "revision": "4ee723d2751c43f5",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-navy-alt-2018.webp",
@@ -2051,7 +2051,7 @@
         },
         "full": {
           "path": "/uniforms/titans-navy-alt-2018-full.webp",
-          "sha256": "7dd45839ff35d3ab1c36c41a72d63ff0981839936b14ffdc547f94756e772031"
+          "sha256": "db5bb0006b30be612f3618feec2c934ddbbdde33bf508b5f0283bdd506a46d79"
         }
       }
     },
