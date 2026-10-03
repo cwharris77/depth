@@ -1,10 +1,25 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collar, cuff } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { eaglesSleeveWing } from '../marks/construction';
 
-// Home jersey (J1): midnight-green body, black cuff + collar, white numerals keylined black.
-export const JERSEY_GREEN: UniformPart = {
-  base: 'green',
-  layers: [...cuff('black'), ...collar('black')],
-  number: { fill: 'white', outline: 'black', outlineWidth: 14 },
+// Midnight-green body, a black V collar over the body colour and a black sleeve hem band; white
+// numerals keylined black, the same on the shoulders.
+export const EAGLES_JERSEY_GREEN: CompleteJerseySpec = {
+  body: 'green',
+  collar: {
+    style: 'inset-v',
+    color: 'black',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'black' },
+  sleeveStripes: 'none',
+  cuff: { color: 'black', size: 'm' },
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'black', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [eaglesSleeveWing()],
 };
