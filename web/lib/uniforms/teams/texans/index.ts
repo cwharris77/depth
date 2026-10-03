@@ -1,19 +1,14 @@
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
-import { TEXANS_PALETTE, TEXANS_HELMETS, TEXANS_PANTS, TEXANS_KITS } from './parts';
-import { JERSEY_NAVY } from './jerseys/navy';
-import { JERSEY_WHITE } from './jerseys/white';
-import { JERSEY_RED } from './jerseys/red';
+import { catalogKits } from '../core/catalog';
+import { expandTeamSpec } from '../core/team-spec';
+import { TEXANS_CATALOG } from './catalog';
+import { TEXANS_PALETTE, TEXANS_SPEC } from './parts';
 
 export const TEXANS_PARTS: TeamPartsDefinition = {
   teamId: 'texans',
   palette: TEXANS_PALETTE,
-  helmets: TEXANS_HELMETS,
-  jerseys: {
-    navy: JERSEY_NAVY,
-    white: JERSEY_WHITE,
-    red: JERSEY_RED,
-  },
-  pants: TEXANS_PANTS,
-  kits: TEXANS_KITS,
+  ...expandTeamSpec('texans', TEXANS_SPEC),
+  kits: catalogKits(TEXANS_CATALOG),
 };
+
 export const TEXANS_UNIFORMS_FROM_PARTS = compileParts(TEXANS_PARTS);

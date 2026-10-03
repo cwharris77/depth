@@ -1,161 +1,65 @@
-// Houston authored as composable parts. Geometry is imported unchanged from texans.ts — this file
-// only restates WHICH parts each kit combines, and names every color from the team palette instead
-// of the kit row's shifting primary/secondary/accent.
-//
-// This is a minimal uniform: no sleeve stripe, no pant stripe, no helmet stripe. The two navy
-// kits (home, away) share the SAME navy shell wearing the hand-drawn bull (white keyline, navy
-// head, red horn, white star); the Battle Red kit wears a RED shell with its own different mark, a
-// large stylized horn sweeping the crown. The three bodies and three pants differ: home is
-// navy-over-white, away white-over-navy, Battle Red red-over-red.
-
-import {
-  TEXANS_BATTLE_RED_DECAL_PATH,
-  TEXANS_BULL_KEYLINE_WIDTH,
-  TEXANS_BULL_NAVY_PATH,
-  TEXANS_BULL_RED_PATH,
-  TEXANS_BULL_STAR_PATH,
-  TEXANS_COLLAR_LEFT,
-  TEXANS_COLLAR_RIGHT,
-  TEXANS_COLLAR_WIDTH,
-  TEXANS_DECAL_NAVY,
-  TEXANS_DECAL_RED,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
-
-// The navy shell's collar trim (home only): two arcs, not a chevron (the arms never meet).
-export function collar(): PartLayer[] {
-  return [
-    {
-      id: 'texans-collar-left',
-      surface: 'collar',
-      d: TEXANS_COLLAR_LEFT,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'red',
-      strokeWidth: TEXANS_COLLAR_WIDTH,
-    },
-    {
-      id: 'texans-collar-right',
-      surface: 'collar',
-      d: TEXANS_COLLAR_RIGHT,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'red',
-      strokeWidth: TEXANS_COLLAR_WIDTH,
-    },
-  ];
-}
-
-// The bull the navy shells wear: white keyline under a navy head and a red horn, star last. Fixed
-// art — the mark is the same three colors on every shell, so nothing here takes a team token.
-function bullDecal(): PartLayer[] {
-  return [
-    {
-      id: 'texans-bull-keyline-navy',
-      surface: 'helmet',
-      d: TEXANS_BULL_NAVY_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'white',
-      strokeWidth: TEXANS_BULL_KEYLINE_WIDTH,
-    },
-    {
-      id: 'texans-bull-keyline-red',
-      surface: 'helmet',
-      d: TEXANS_BULL_RED_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'white',
-      strokeWidth: TEXANS_BULL_KEYLINE_WIDTH,
-    },
-    {
-      id: 'texans-bull-head',
-      surface: 'helmet',
-      d: TEXANS_BULL_NAVY_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decalNavy',
-    },
-    {
-      id: 'texans-bull-horn',
-      surface: 'helmet',
-      d: TEXANS_BULL_RED_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decalRed',
-    },
-    {
-      id: 'texans-bull-star',
-      surface: 'helmet',
-      d: TEXANS_BULL_STAR_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
-    },
-  ];
-}
-
-// The navy shell with the bull — one object, shared by home and away. The bull is fixed art; its
-// keyline is a stroke (safe here only because the curves are hand-drawn, see texans.ts).
-//
-// White cage. The Texans' navy shell wears a white facemask (named sources; the navy shell + white
-// cage reads cleanly in the composite). The shared neutral #4b5158 it replaces is a grey that
-// floats against the navy.
-const HELMET_NAVY_BULL: UniformPart = expandHelmet('texans-navy-bull-helmet', {
-  shell: 'navy',
-  facemask: 'white',
-  decal: placed(bullDecal()),
-  number: 'none',
-});
-
-// Battle Red's red shell with its own large stylized horn — a different mark from the bull.
-//
-// White cage. Battle Red wears the same white facemask as the navy shell (named sources; the red
-// shell + white cage reads cleanly).
-const HELMET_RED_HORN: UniformPart = expandHelmet('texans-red-horn-helmet', {
-  shell: 'red',
-  facemask: 'white',
-  decal: placed([
-    {
-      id: 'texans-decal-battle-red-horn',
-      surface: 'helmet',
-      d: TEXANS_BATTLE_RED_DECAL_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'decalNavy',
-    },
-  ]),
-  number: 'none',
-});
-
-// Home jersey: navy body, red collar trim, white numerals keylined red.
-
-// Away jersey: white body, no collar trim, navy numerals keylined red.
-
-// Battle Red jersey: red body, no collar trim, navy numerals keylined white.
-
-// Home pants, white.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-// Away pants, navy.
-const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
-
-// Battle Red pants, red.
-const PANTS_RED: UniformPart = { base: 'red', layers: [] };
+import type { TeamSpec } from '../core/team-spec';
+import { TEXANS_BATTLE_RED_HORN, TEXANS_BULL } from './marks/construction';
+import { TEXANS_JERSEY_NAVY } from './jerseys/navy';
+import { TEXANS_JERSEY_RED } from './jerseys/red';
+import { TEXANS_JERSEY_WHITE } from './jerseys/white';
 
 export const TEXANS_PALETTE = {
   navy: '#03202F',
   red: '#A71930',
   white: '#FFFFFF',
-  decalNavy: TEXANS_DECAL_NAVY,
-  decalRed: TEXANS_DECAL_RED,
+  decalNavy: '#031825',
+  decalRed: '#C80023',
 };
-export const TEXANS_HELMETS = { 'navy-bull': HELMET_NAVY_BULL, 'red-horn': HELMET_RED_HORN };
-export const TEXANS_PANTS = { white: PANTS_WHITE, navy: PANTS_NAVY, red: PANTS_RED };
-export const TEXANS_KITS = {
-  home: { helmet: 'navy-bull', jersey: 'navy', pants: 'white' },
-  away: { helmet: 'navy-bull', jersey: 'white', pants: 'navy' },
-  'battle-red': { helmet: 'red-horn', jersey: 'red', pants: 'red' },
+
+export const TEXANS_SPEC: TeamSpec = {
+  helmets: {
+    'navy-bull': { shell: 'navy', facemask: 'navy', decal: TEXANS_BULL, number: 'none' },
+    'red-horn': { shell: 'red', facemask: 'red', decal: TEXANS_BATTLE_RED_HORN, number: 'none' },
+  },
+  jerseys: {
+    navy: TEXANS_JERSEY_NAVY,
+    white: TEXANS_JERSEY_WHITE,
+    red: TEXANS_JERSEY_RED,
+  },
+  pants: {
+    white: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'navy', size: 'm' },
+          { color: 'red', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    navy: {
+      body: 'navy',
+      stripes: {
+        position: 'leg-edge',
+        bands: [{ color: 'red', size: 'm' }],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    red: {
+      body: 'red',
+      stripes: {
+        position: 'leg-edge',
+        bands: [{ color: 'navy', size: 'm' }],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+  },
+  socks: {
+    navy: { color: 'navy', stripes: 'none' },
+    white: { color: 'white', stripes: 'none' },
+    red: { color: 'red', stripes: 'none' },
+  },
 };
