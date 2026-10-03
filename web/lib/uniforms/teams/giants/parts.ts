@@ -1,83 +1,89 @@
-// New York authored as composable parts. Geometry is imported unchanged from giants.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
-//
-// The three kits do not share one construction: the royal home jersey has NO sleeve stripes, the
-// white away jersey carries a thin/thick/thin red set, and the 1980s throwback carries a
-// red/white/red set at the cuff plus the only collar trim. What IS shared: home and away wear the
-// SAME blue shell with the white monogram, and all three wear white pants. The throwback's shell
-// is bare (a GIANTS wordmark that is out of scope, not a borrowed monogram) — so it is the second
-// helmet part, same blue, different layers.
+// New York as a complete team spec: every helmet, jersey, pants and socks part, with its own art
+// drawn by the marks in ./marks.
+import type { TeamSpec } from '../core/team-spec';
+import { GIANTS_MONOGRAM_DECAL } from './marks/construction';
+import { GIANTS_JERSEY_ROYAL } from './jerseys/royal';
+import { GIANTS_JERSEY_THROWBACK } from './jerseys/throwback';
+import { GIANTS_JERSEY_WHITE } from './jerseys/white';
 
-import { GIANTS_DECAL_MODERN_PATHS } from './decal';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
+// Royal, red and white are the physical colours; each kit's primary, secondary and accent slots
+// carry them in different positions, so layers name these keys instead. Cage grey is the modern
+// shell's facemask and the silver of the home leg stripe.
+export const GIANTS_PALETTE = {
+  royal: '#0B2265',
+  white: '#FFFFFF',
+  red: '#A71930',
+  cageGrey: '#9A9A9A',
+};
 
-export const COLLAR_PATH = 'M206,388 L294,455 L386,388';
+const none = 'none' as const;
 
-export function sleeveStripes(
-  bands: [number, number][],
-  xLeft: number[],
-  xRight: number[],
-  fills: string[]
-): PartLayer[] {
-  const out: PartLayer[] = [];
-  const sides: [UniformSurface, number[]][] = [
-    ['sleeve-left', xLeft],
-    ['sleeve-right', xRight],
-  ];
-  bands.forEach(([top, bottom], i) => {
-    for (const [surface, [x0, x1]] of sides) {
-      const side = surface === 'sleeve-left' ? 'left' : 'right';
-      out.push({
-        id: `giants-sleeve-stripe-${i}-${side}`,
-        surface,
-        d: `M${x0},${top} H${x1} V${bottom} H${x0} Z`,
-        clip: true,
-        kind: 'fill',
-        fill: fills[i],
-      });
-    }
-  });
-  return out;
-}
-
-// The blue shell with the white monogram — one object, shared by home and away.
-//
-// Grey cage. The modern metallic-blue shell carries a grey facemask (named sources; the
-// composite reads the bars at ~#9a9a9a against the blue shell). The shared neutral #4b5158 it
-// replaces is a noticeably darker grey.
-export const HELMET_BLUE_MONOGRAM: UniformPart = expandHelmet('giants-blue-monogram-helmet', {
-  shell: 'royal',
-  facemask: 'cageGrey',
-  decal: placed([
-    {
-      id: 'giants-decal-monogram',
-      surface: 'helmet',
-      d: GIANTS_DECAL_MODERN_PATHS.map((path) => path.d).join(' '),
-      clip: true,
-      kind: 'fill',
-      fill: 'white',
+export const GIANTS_SPEC: TeamSpec = {
+  helmets: {
+    // The royal shell with the white monogram and a grey cage, on home and away.
+    'blue-monogram': {
+      shell: 'royal',
+      facemask: 'cageGrey',
+      decal: GIANTS_MONOGRAM_DECAL,
+      number: none,
     },
-  ]),
-  number: 'none',
-});
-
-// The throwback's bare blue shell — the wordmark is out of scope, so it keeps the shell color and
-// nothing else (this is the second helmet part: same shell, no monogram).
-//
-// White cage. The 1980-1999 era (restored as the Legacy look) wore a navy shell with a WHITE
-// facemask (giantswire: "navy with a white facemask"; pocketprohelmets notes the 1975 switch from
-// grey to white). The composite cannot cleanly separate a white cage from the surrounding blues, so the
-// named sources are the source of truth here.
-export const HELMET_BLUE_BARE: UniformPart = expandHelmet('giants-blue-bare-helmet', {
-  shell: 'royal',
-  facemask: 'white',
-  decal: 'none',
-  number: 'none',
-});
-
-// Plain white pants, shared by every kit.
-export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
+    // The throwback's bare royal shell with a white cage.
+    'blue-bare': { shell: 'royal', facemask: 'white', decal: none, number: none },
+  },
+  jerseys: {
+    royal: GIANTS_JERSEY_ROYAL,
+    white: GIANTS_JERSEY_WHITE,
+    throwback: GIANTS_JERSEY_THROWBACK,
+  },
+  // White pants, each with its kit's leg stripe on the outer seam.
+  pants: {
+    home: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'royal', size: 's' },
+          { color: 'cageGrey', size: 's' },
+          { color: 'red', size: 's' },
+          { color: 'cageGrey', size: 's' },
+          { color: 'royal', size: 's' },
+        ],
+        gap: none,
+        edge: none,
+      },
+      marks: [],
+    },
+    away: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'red', size: 's' },
+          { color: 'red', size: 'l' },
+          { color: 'red', size: 's' },
+        ],
+        gap: 'narrow',
+        edge: none,
+      },
+      marks: [],
+    },
+    throwback: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'royal', size: 's' },
+          { color: 'red', size: 's' },
+          { color: 'royal', size: 's' },
+        ],
+        gap: none,
+        edge: none,
+      },
+      marks: [],
+    },
+  },
+  socks: {
+    royal: { color: 'royal', stripes: none },
+    red: { color: 'red', stripes: none },
+  },
+};

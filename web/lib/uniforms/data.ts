@@ -12,6 +12,7 @@ import { COWBOYS_CATALOG } from './teams/cowboys/catalog';
 import { DOLPHINS_CATALOG } from './teams/dolphins/catalog';
 import { EAGLES_CATALOG } from './teams/eagles/catalog';
 import { FALCONS_CATALOG } from './teams/falcons/catalog';
+import { GIANTS_CATALOG } from './teams/giants/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -245,21 +246,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(COWBOYS_CATALOG, 'home'),
-  {
-    teamId: 'giants',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2000,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0B2265',
-      secondary: '#A71930',
-      accent: '#A71930',
-    },
-  },
+  catalogRow(GIANTS_CATALOG, 'home'),
   catalogRow(EAGLES_CATALOG, 'home'),
   catalogRow(COMMANDERS_CATALOG, 'home'),
   catalogRow(FALCONS_CATALOG, 'home'),
@@ -525,21 +512,7 @@ export const UNIFORMS: UniformSeed[] = [
   },
   catalogRow(CHARGERS_CATALOG, 'away'),
   catalogRow(COWBOYS_CATALOG, 'away'),
-  {
-    teamId: 'giants',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2000,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#0B2265',
-      accent: '#A71930',
-    },
-  },
+  catalogRow(GIANTS_CATALOG, 'away'),
   catalogRow(EAGLES_CATALOG, 'away'),
   catalogRow(COMMANDERS_CATALOG, 'away'),
   catalogRow(BEARS_CATALOG, 'away'),
@@ -912,22 +885,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(BRONCOS_CATALOG, 'orange-alt'),
-  // Giants 1980s (LT-era) throwback (worn 2022+). Royal base, red/white 'GIANTS' wordmark.
-  {
-    teamId: 'giants',
-    slug: '1980s-throwback',
-    constructionKey: '1980s-throwback',
-    kind: 'throwback',
-    name: '1980s Throwback',
-    yearStart: 1980,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0B2265',
-      secondary: '#A71930',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(GIANTS_CATALOG, '1980s-throwback'),
   // Eagles black alternate (2020+). Black base, midnight-green/silver trim.
   catalogRow(EAGLES_CATALOG, 'black-alt'),
   // Lions 'Gridiron Gray' alternate. Silver-gray base, Honolulu-blue trim.
