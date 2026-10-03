@@ -1,114 +1,115 @@
-// Tennessee authored as composable parts. Geometry is imported from titans.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
-//
-// The four kits resolve to two helmets: the navy shell wearing the flaming-T (home, away, navy-alt
-// share it) and the oilers throwback.s light-blue shell (no decal — its mark is a different logo with
-// no figure on the sheet). The silver shoulder yoke is one construction in four colorways: the
-// yoke itself is always the silver literal, and the navy bar inside it is the kit's navy. The
-// bodies/pants differ as home navy/white, away white/navy, oilers light-blue/light-blue, navy-alt
-// navy/navy.
-//
-// NOTE: the stored palettes predate the 2025 rebrand (see titans.ts) — only `away` can be
-// verified against a figure. This migration preserves the existing render; it does not re-derive
-// the token assignments.
-
+import type { TeamSpec } from '../core/team-spec';
 import {
-  TITANS_BAR_LEFT,
-  TITANS_BAR_RIGHT,
-  TITANS_DECAL_PATHS,
-  TITANS_SILVER,
-  TITANS_YOKE_LEFT,
-  TITANS_YOKE_RIGHT,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
-
-// The silver shoulder yoke with the navy bar over it — the same construction in every kit, with
-// only the bar color differing (which the jersey supplies).
-export function shoulders(bar: string): PartLayer[] {
-  const shapes: [string, UniformSurface, string, string][] = [
-    ['titans-yoke-left', 'sleeve-left', TITANS_YOKE_LEFT, 'silver'],
-    ['titans-yoke-right', 'sleeve-right', TITANS_YOKE_RIGHT, 'silver'],
-    ['titans-bar-left', 'sleeve-left', TITANS_BAR_LEFT, bar],
-    ['titans-bar-right', 'sleeve-right', TITANS_BAR_RIGHT, bar],
-  ];
-  return shapes.map(([id, surface, d, fill]) => ({
-    id,
-    surface,
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
-
-// The complete supplied flaming-T, in original SVG paint order and colors.
-// The historical Oilers helmet carries a different mark and does not receive this decal.
-function decal(): PartLayer[] {
-  return TITANS_DECAL_PATHS.map(({ d, fill }, index) => ({
-    id: `titans-decal-${index}`,
-    surface: 'helmet',
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
-
-// The navy shell with the flaming-T — one object, shared by home, away and navy-alt.
-//
-// The navy shell wears the metallic-silver facemask introduced with the 2018 design.
-const HELMET_NAVY_T: UniformPart = expandHelmet('titans-navy-t-helmet', {
-  shell: 'navy',
-  facemask: 'silver',
-  decal: placed(decal()),
-  number: 'none',
-});
-
-// The oilers throwback's light-blue shell, bare (its oil-derrick mark has no figure on the sheet;
-// the shell inherits the kit's primary, light blue). Same white cage as the modern shell.
-const HELMET_WHITE: UniformPart = expandHelmet('titans-white-helmet', {
-  shell: 'lightBlue',
-  facemask: 'white',
-  decal: 'none',
-  number: 'none',
-});
-
-// Home jersey: navy body and white numerals keylined light blue.
-
-// Away jersey: white body and navy numerals keylined light blue.
-
-// Navy-alt jersey: navy body, light-blue bar (keeps the bar legible against the navy), white
-// numerals keylined light-blue.
-
-// Oilers jersey: light-blue body, red bar, white numerals keylined red.
-
-// Home + navy-alt pants, navy.
-const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
-
-// Away pants, white.
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-// Oilers pants, light-blue.
-const PANTS_LIGHT_BLUE: UniformPart = { base: 'lightBlue', layers: [] };
+  TITANS_2018_HELMET,
+  TITANS_2018_PANTS_SWORD,
+  TITANS_2026_HELMET,
+  OILERS_1960_HELMET,
+} from './marks/construction';
+import { TITANS_FLAMING_T_PATHS } from './marks/flaming-t';
+import { JERSEY_NAVY } from './jerseys/navy';
+import { JERSEY_WHITE } from './jerseys/white';
+import { JERSEY_NAVY_ALT } from './jerseys/navy-alt';
+import { JERSEY_LIGHT_BLUE } from './jerseys/light-blue';
+import { JERSEY_BLUE_2025 } from './jerseys/blue-2025';
+import { JERSEY_BLUE_2026 } from './jerseys/blue-2026';
+import { JERSEY_WHITE_2026 } from './jerseys/white-2026';
 
 export const TITANS_PALETTE = {
   navy: '#0C2340',
   lightBlue: '#4B92DB',
   red: '#C8102E',
   white: '#FFFFFF',
-  silver: TITANS_SILVER,
-  // Every decal hex is kept from the source artwork.
-  ...Object.fromEntries(TITANS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
+  silver: '#A5ACAF',
+  lightBlue2026: '#4495D2',
+  red2026: '#D50A0A',
+  ...Object.fromEntries(TITANS_FLAMING_T_PATHS.map(({ fill }) => [fill, fill])),
 };
-export const TITANS_HELMETS = { 'navy-t': HELMET_NAVY_T, white: HELMET_WHITE };
-export const TITANS_PANTS = { navy: PANTS_NAVY, white: PANTS_WHITE, lightBlue: PANTS_LIGHT_BLUE };
-export const TITANS_KITS = {
-  home: { helmet: 'navy-t', jersey: 'navy', pants: ['navy', 'lightBlue'] },
-  away: { helmet: 'navy-t', jersey: 'white', pants: ['white', 'lightBlue'] },
-  'navy-alt': { helmet: 'navy-t', jersey: 'navy-alt', pants: ['navy', 'lightBlue'] },
-  'oilers-throwback': { helmet: 'white', jersey: 'light-blue', pants: ['lightBlue', 'white'] },
+
+export const TITANS_SPEC: TeamSpec = {
+  helmets: {
+    'navy-t': { shell: 'navy', facemask: 'silver', decal: TITANS_2018_HELMET, number: 'none' },
+    oilers: { shell: 'lightBlue', facemask: 'silver', decal: OILERS_1960_HELMET, number: 'none' },
+    'white-2026': { shell: 'white', facemask: 'white', decal: TITANS_2026_HELMET, number: 'none' },
+  },
+  jerseys: {
+    navy: JERSEY_NAVY,
+    white: JERSEY_WHITE,
+    'navy-alt': JERSEY_NAVY_ALT,
+    'light-blue': JERSEY_LIGHT_BLUE,
+    'blue-2025': JERSEY_BLUE_2025,
+    'blue-2026': JERSEY_BLUE_2026,
+    'white-2026': JERSEY_WHITE_2026,
+  },
+  pants: {
+    navy: {
+      body: 'navy',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: TITANS_2018_PANTS_SWORD }],
+    },
+    white: {
+      body: 'white',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: TITANS_2018_PANTS_SWORD }],
+    },
+    oilers: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'red', size: 's' },
+          { color: 'lightBlue', size: 'm' },
+          { color: 'red', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    'white-2026': {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'red2026', size: 's' },
+          { color: 'lightBlue2026', size: 's' },
+          { color: 'navy', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    'blue-2026': {
+      body: 'lightBlue2026',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'red2026', size: 's' },
+          { color: 'white', size: 's' },
+          { color: 'navy', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+  },
+  socks: {
+    navy: { color: 'navy', stripes: 'none' },
+    white: { color: 'white', stripes: 'none' },
+    oilers: {
+      color: 'lightBlue',
+      stripes: {
+        bands: [
+          { color: 'red', size: 's' },
+          { color: 'white', size: 's' },
+          { color: 'red', size: 's' },
+        ],
+        gap: 'narrow',
+        edge: 'none',
+      },
+    },
+    lightBlue: { color: 'lightBlue', stripes: 'none' },
+    lightBlue2026: { color: 'lightBlue2026', stripes: 'none' },
+  },
 };

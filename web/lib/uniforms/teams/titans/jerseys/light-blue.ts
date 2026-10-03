@@ -1,8 +1,14 @@
-import type { UniformPart } from '../../core/parts';
-import { shoulders } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-export const JERSEY_LIGHT_BLUE: UniformPart = {
-  base: 'lightBlue',
-  layers: shoulders('red'),
-  number: { fill: 'white', outline: 'red', outlineWidth: 14 },
+export const JERSEY_LIGHT_BLUE: CompleteJerseySpec = {
+  body: 'lightBlue',
+  collar: { style: 'rounded', color: 'lightBlue', trim: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: { fill: 'white' },
+  number: { fill: 'white', outline: 'red', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [],
 };
