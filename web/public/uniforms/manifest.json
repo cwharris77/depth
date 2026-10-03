@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "82a01ea70768209545bc3b20c0f84f11d5a4ca8d02b2beab2a71446f7fac0e8b",
-  "revision": "0926d12cb66578bd",
+  "sourceDigest": "b469300eefd2c6bd5102454173cee9d0f7a6823b5f70422225373e07bcc13917",
+  "revision": "0fe99cc687763182",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1108,60 +1108,88 @@
     {
       "catalogId": "jaguars-away-2018",
       "constructionKey": "away",
-      "revision": "e0ff99511ce60ac2",
+      "revision": "4668f0bec4ab59a8",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-away-2018.webp",
-          "sha256": "bdf55cc1c4a4313ca131571ebe2b867e4d3df2913c876e0af4aeda27dbacd9ad"
+          "sha256": "860fecf68f05e53f2ac86f47c39c75e95a77b020fc0705df1bbd5612be7c3a80"
         },
         "full": {
           "path": "/uniforms/jaguars-away-2018-full.webp",
-          "sha256": "83ad94fcd98ebe768afd918e15452f866c6d18dcfb63d42730a4ec5a1b9a49ec"
+          "sha256": "92842b37e22de2f33930287174834c4ac3b552fa03052273ae2bd2e1deb0773a"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "teal-pants",
+          "label": "Teal pants",
+          "full": {
+            "path": "/uniforms/jaguars-away-2018--teal-pants-full.webp",
+            "sha256": "078757b731d8c9cb7da4a89e65cfc6ff06bcbe36567332024a31a1153dcfd775"
+          }
+        },
+        {
+          "key": "black-pants",
+          "label": "Black pants",
+          "full": {
+            "path": "/uniforms/jaguars-away-2018--black-pants-full.webp",
+            "sha256": "8a2fc5e5604ae37ceda4b1c261a132a6dfbb900a5192d0fa3395ad50076919ef"
+          }
+        }
+      ]
     },
     {
       "catalogId": "jaguars-black-alt-2018",
       "constructionKey": "black-alt",
-      "revision": "1c538a132e40f9df",
+      "revision": "d40430f76979db95",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-black-alt-2018.webp",
-          "sha256": "99c2f44c5f9247fd115c3ef689861ae34ecf14d74a5e0da9bcf2ce20cebe41f5"
+          "sha256": "aee7f4247bfdcad4eb17a0a3d256515193d357d0e9ede397fa0ef92957ea1c98"
         },
         "full": {
           "path": "/uniforms/jaguars-black-alt-2018-full.webp",
-          "sha256": "6f27344cb1c7bc055d380f87ebbf9c22aa87c17d2724913494effde03fbfd443"
+          "sha256": "1212452e6e91c76986dc9c3a883be38b03c822941b518d60d0e2d47c11e3ca6a"
         }
       }
     },
     {
       "catalogId": "jaguars-home-2018",
       "constructionKey": "home",
-      "revision": "99e06127c76a0531",
+      "revision": "309bf10e83e5c611",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-home-2018.webp",
-          "sha256": "907816463f8faa1f2ee176e1247511882a113a13879b194a8cb9f8fca0e0c03b"
+          "sha256": "a676dfc3456e7768fd0801ba6dbf08cebe166ccbb0377de0a2bbaefa583e4b90"
         },
         "full": {
           "path": "/uniforms/jaguars-home-2018-full.webp",
-          "sha256": "f15c1cdd49e7cfbb1a9de311f7d387da3a5e1af8a9b43ff2d0f19a21bbe612d9"
+          "sha256": "ce4b9046970d6b993ac20639341d45426f6c8e08707e2a13c1c9f4a91c6df54f"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "teal-pants",
+          "label": "Teal pants",
+          "full": {
+            "path": "/uniforms/jaguars-home-2018--teal-pants-full.webp",
+            "sha256": "c04bb7ca5865fd54152df7343cc3dc4c525e00931636f3f9ff1f60d0884b0e34"
+          }
+        }
+      ]
     },
     {
       "catalogId": "jaguars-teal-throwback-1998",
       "constructionKey": "teal-throwback",
-      "revision": "62892b072c812934",
+      "revision": "24f3dbfd92055d2e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-teal-throwback-1998.webp",
-          "sha256": "d5c71181a710efc99e3947aded187af8cd49f95a16c936162be95b8942583ba9"
+          "sha256": "c4f52ab0c4d3f53a04818fe807101ed44e2b659c1c73f4e14a198e6d8f1b0197"
         },
         "full": {
           "path": "/uniforms/jaguars-teal-throwback-1998-full.webp",
-          "sha256": "9490868084a78772e11a0ee996d042eb4d7b359c4b6af32402d354edbbbf02c9"
+          "sha256": "9b8f5ce37cf6d6fbebd5f001000f781e4048a3319e006ccff214627bc65f5b37"
         }
       }
     },

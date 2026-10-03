@@ -1,166 +1,60 @@
-// Jacksonville authored as composable parts. Geometry is imported from jaguars.ts — this
-// file only restates WHICH parts each kit combines, and names every color from the team palette
-// instead of the kit row's shifting primary/secondary/accent.
-//
-// Every kit is a black shell over a body carrying a band at the sleeve hem and trim at the neck.
-// What changes is how each is built: the current kits wear one solid band and a short arc down each
-// side of the neck opening, while the throwback wears a two-color band and a full V that closes at
-// the chest. No helmet stripe and no pant stripe. The jaguar-head decal (white jaw, gold crown,
-// teal tongue) is fixed art on the current black shell. Historical throwback art is separate.
-//
-// The kits combine two helmets, four jerseys, and three pants colors. Alternate pant options
-// preserve the canonical first pairing used by the committed rasters.
+// Jacksonville as a complete team spec: every helmet, jersey, pants and socks part, with its own
+// art drawn by the marks in ./marks.
+import type { TeamSpec } from '../core/team-spec';
+import { JAGUARS_DECAL_PATHS } from './marks/decal';
+import { JAGUARS_HELMET_DECAL } from './marks/construction';
+import { JAGUARS_JERSEY_BLACK_ALT } from './jerseys/black-alt';
+import { JAGUARS_JERSEY_TEAL } from './jerseys/teal';
+import { JAGUARS_JERSEY_THROWBACK } from './jerseys/throwback';
+import { JAGUARS_JERSEY_WHITE } from './jerseys/white';
 
-import {
-  JAGUARS_BAND_LEFT,
-  JAGUARS_BAND_RIGHT,
-  JAGUARS_COLLAR_ARC_LEFT,
-  JAGUARS_COLLAR_ARC_RIGHT,
-  JAGUARS_COLLAR_ARC_WIDTH,
-  JAGUARS_DECAL_PATHS,
-  JAGUARS_TB_BAND_LOWER_LEFT,
-  JAGUARS_TB_BAND_LOWER_RIGHT,
-  JAGUARS_TB_BAND_UPPER_LEFT,
-  JAGUARS_TB_BAND_UPPER_RIGHT,
-  JAGUARS_TB_COLLAR_PATH,
-  JAGUARS_TB_COLLAR_WIDTH,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
+// Teal, gold, black and white are the physical colours. Every decal fill is kept from the
+// supplied artwork, including its minor shading, and is its own key.
+export const JAGUARS_PALETTE = {
+  teal: '#006778',
+  gold: '#D7A22A',
+  black: '#101820',
+  white: '#FFFFFF',
+  ...Object.fromEntries(JAGUARS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
+};
 
-// Preserve the supplied SVG's paint order, including its black keyline and gold shading.
-export function jaguarDecal(): PartLayer[] {
-  return JAGUARS_DECAL_PATHS.map(({ d, fill }, index) => ({
-    id: `jaguars-decal-${index}`,
-    surface: 'helmet',
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  }));
-}
+const none = 'none' as const;
 
-// The current kits' single solid sleeve band.
-export function sleeveBand(color: string): PartLayer[] {
-  return [
-    {
-      id: 'jaguars-band-left',
-      surface: 'sleeve-left',
-      d: JAGUARS_BAND_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
+export const JAGUARS_SPEC: TeamSpec = {
+  helmets: {
+    // The black shell with the jaguar-head decal and a black cage, on every current kit.
+    black: { shell: 'black', facemask: 'black', decal: JAGUARS_HELMET_DECAL, number: none },
+    // The throwback's bare black shell.
+    'black-bare': { shell: 'black', facemask: 'black', decal: none, number: none },
+  },
+  jerseys: {
+    teal: JAGUARS_JERSEY_TEAL,
+    white: JAGUARS_JERSEY_WHITE,
+    throwback: JAGUARS_JERSEY_THROWBACK,
+    'black-alt': JAGUARS_JERSEY_BLACK_ALT,
+  },
+  pants: {
+    white: { body: 'white', stripes: none, marks: [] },
+    teal: { body: 'teal', stripes: none, marks: [] },
+    black: { body: 'black', stripes: none, marks: [] },
+    // A wide black stripe either side of a teal one, gold-piped, down the outer seam.
+    throwback: {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'black', size: 's' },
+          { color: 'teal', size: 'm' },
+          { color: 'black', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'gold',
+      },
+      marks: [],
     },
-    {
-      id: 'jaguars-band-right',
-      surface: 'sleeve-right',
-      d: JAGUARS_BAND_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: color,
-    },
-  ];
-}
-
-// The current kits' two short collar arcs (arms never meet — not a chevron).
-export function collarArcs(color: string): PartLayer[] {
-  return [
-    {
-      id: 'jaguars-collar-left',
-      surface: 'collar',
-      d: JAGUARS_COLLAR_ARC_LEFT,
-      clip: true,
-      kind: 'stroke',
-      stroke: color,
-      strokeWidth: JAGUARS_COLLAR_ARC_WIDTH,
-    },
-    {
-      id: 'jaguars-collar-right',
-      surface: 'collar',
-      d: JAGUARS_COLLAR_ARC_RIGHT,
-      clip: true,
-      kind: 'stroke',
-      stroke: color,
-      strokeWidth: JAGUARS_COLLAR_ARC_WIDTH,
-    },
-  ];
-}
-
-// The throwback's two-color band and closing collar V.
-export function throwbackBands(upper: string, lower: string): PartLayer[] {
-  return [
-    {
-      id: 'jaguars-band-upper-left',
-      surface: 'sleeve-left',
-      d: JAGUARS_TB_BAND_UPPER_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: upper,
-    },
-    {
-      id: 'jaguars-band-upper-right',
-      surface: 'sleeve-right',
-      d: JAGUARS_TB_BAND_UPPER_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: upper,
-    },
-    {
-      id: 'jaguars-band-lower-left',
-      surface: 'sleeve-left',
-      d: JAGUARS_TB_BAND_LOWER_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: lower,
-    },
-    {
-      id: 'jaguars-band-lower-right',
-      surface: 'sleeve-right',
-      d: JAGUARS_TB_BAND_LOWER_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: lower,
-    },
-    {
-      id: 'jaguars-collar-v',
-      surface: 'collar',
-      d: JAGUARS_TB_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: lower,
-      strokeWidth: JAGUARS_TB_COLLAR_WIDTH,
-    },
-  ];
-}
-
-// The black shell with the jaguar decal (H1) — shared by home, away and black-alt.
-//
-// Black cage. The black Jaguars shell wears a black facemask (named sources; the matte black shell
-// pairs a dark cage).
-export const HELMET_BLACK: UniformPart = expandHelmet('jaguars-black-helmet', {
-  shell: 'black',
-  facemask: 'black',
-  decal: placed(jaguarDecal()),
-  number: 'none',
-});
-
-// The 1998 throwback shell (H2): a BLACK shell (the kit's accent #101820) with NO decal. The flat
-// sets helmetColor to accent = black, so the shell is black and stays bare. The module note about
-// "teal shell" describes the hypothetical case; the actual accent is black. The jaguar decal is
-// therefore only on H1 (home/away/black-alt).
-export const HELMET_TEAL: UniformPart = expandHelmet('jaguars-throwback-helmet', {
-  shell: 'black',
-  facemask: 'black',
-  decal: 'none',
-  number: 'none',
-});
-
-// White pants (P1, home/away/teal-throwback).
-export const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-
-// Black pants (P2, black-alt).
-export const PANTS_BLACK: UniformPart = { base: 'black', layers: [] };
-
-// 2025 JAX composite: teal pants with both current teal and white jerseys.
-export const PANTS_TEAL: UniformPart = { base: 'teal', layers: [] };
+  },
+  socks: {
+    white: { color: 'white', stripes: none },
+    black: { color: 'black', stripes: none },
+  },
+};
