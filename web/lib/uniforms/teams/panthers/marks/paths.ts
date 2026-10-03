@@ -1,36 +1,13 @@
-// Carolina's three archived kits, redrawn from the 2025 composite in
-// nfl-uniform-refs/panthers (black alternate is that sheet's row-2 figure 1, home its row-2
-// figure 5, away its row-3 figure 1 — each row's later figures are pant combinations, and the
-// blue-boxed group in row 1 is labelled "worn in preseason games only", so none of those were
-// used). Sleeve paths use the outer 588-wide mannequin space; the helmet decal stays in raw helmet
-// coordinates (x:139-802, y:65-674). Right paths mirror the left across x=294 (mirroredX = 588 - x).
+// Carolina's raw construction paths: the helmet mark (raw helmet coordinates, x 139-802, y 65-674),
+// the shoulder fan and the collar V (mannequin space, right paths mirror the left across x=294) and
+// the leg stripe centre.
 //
-// All three kits are ONE construction with the tokens swapped: the panther on the shell, a deep
-// V-collar, and on each shoulder a fan of three tapering wedges that converge to a point above the
-// sleeve hem. The fan is always [outer, inner, outer, body] reading inward — white/black on the
-// blue kit, silver/blue on the black kit, black/blue on the white kit — which is why it is authored
-// as one wedge painted over a wider one rather than as three separate stripes. No helmet stripe:
-// the composite's helmet swatch shows the mark's own tail crossing the crown, not a centre stripe.
-//
-// Out of scope on every kit: the chest wordmark, the league shield, the "KEEP POUNDING" collar
-// script, the panther patch on each sleeve, and the shoulder numerals drawn above the fan.
-//
-// Construction geometry only — the mark, fan, collar and pant-stripe paths. The composable parts
-// definition that consumes them lives in ./panthers.parts.ts; the former flat PANTHERS_UNIFORMS
-// was deleted in the migration that proved parts render byte-identically (see parts-parity.test.ts
-// for the one-time gate). The collar path/width were module-private consts; they are now exported
-// for the parts file.
-
 // Emitted by scripts/uniform-draw/panthers_decal.py. Re-run that script rather than hand-editing
 // these strings; it carries the measured placement box, the topology and the layer stack.
 //
-// Four layers, no fill rule anywhere. Measured topology: the mark is ONE connected component with
-// NO enclosed white area, so every gap that reads as a whisker or a muzzle slash is BLUE showing
-// through the black rather than the shell. That makes the stack four plain unions in paint order
-// — blue silhouette, black body over it, those blue gaps painted back on top, then the grey fangs
-// — and sidesteps the evenodd hole that punched straight through the 49ers "F". The previous pass
-// authored only the first two of these off the 46px helmet composite; it lost the jaw, the fangs
-// and every interior line, which is what this replaces.
+// Four plain unions in paint order, no fill rule: the mark is one connected component with no
+// enclosed shell-coloured area, so every whisker or muzzle slash is blue showing through the black.
+// Blue silhouette, black body over it, the blue gaps painted back on top, then the grey fangs.
 export const PANTHERS_DECAL_KEYLINE_PATH =
   'M388.9,129.7 L414.1,129.7 L431.6,131.6 L452.6,136.2 L473.6,143.7 L486.0,145.1 L487.3,147.5 L486.0,154.0 L483.8,159.2 L478.7,166.2 L480.0,169.9 L480.0,173.7 L482.5,174.6 L485.5,174.6 L494.5,176.5 L502.2,179.3 L504.8,181.2 L495.0,178.3 L483.4,176.9 L480.0,176.9 L479.1,181.2 L479.6,181.6 L488.5,182.1 L497.5,184.0 L505.6,186.8 L510.8,189.6 L510.4,190.0 L506.5,188.2 L499.7,186.3 L490.7,184.9 L478.7,184.9 L477.8,186.3 L477.4,189.1 L478.7,190.0 L487.3,190.5 L497.9,192.9 L507.8,196.6 L513.8,200.3 L513.3,200.8 L507.4,198.0 L494.5,194.7 L483.8,193.3 L476.1,193.3 L475.7,193.8 L471.0,206.9 L462.4,224.2 L453.9,237.3 L445.8,246.2 L446.6,250.4 L446.2,264.4 L444.9,271.0 L441.9,278.9 L438.1,284.5 L435.1,287.3 L429.9,290.6 L434.2,309.3 L435.9,319.6 L435.9,323.4 L425.7,323.8 L425.2,323.4 L413.7,322.9 L402.6,321.0 L388.0,317.3 L358.9,306.5 L318.7,288.7 L305.0,284.1 L287.9,280.3 L284.1,278.9 L270.4,277.1 L267.0,277.5 L259.7,276.6 L234.9,276.6 L234.5,277.1 L228.0,277.1 L210.9,278.9 L187.4,283.6 L207.9,257.4 L228.5,235.0 L245.6,218.6 L264.4,202.7 L279.4,191.4 L296.5,180.2 L315.3,169.9 L308.0,158.2 L305.9,152.6 L305.5,147.0 L305.9,145.6 L307.6,143.7 L326.0,142.3 L342.7,137.2 L359.4,133.4 L374.3,131.1 L388.4,130.2 Z';
 export const PANTHERS_DECAL_BODY_PATH =
@@ -40,28 +17,21 @@ export const PANTHERS_DECAL_DETAIL_PATH =
 export const PANTHERS_DECAL_HIGHLIGHT_PATH =
   'M423.9,196.6 L440.6,197.1 L446.6,198.5 L450.5,200.3 L450.0,204.1 L447.9,211.1 L442.8,221.4 L441.1,223.3 L441.9,221.4 L443.2,214.4 L442.8,204.1 L441.1,203.1 L435.1,202.2 L426.1,202.7 L421.0,204.1 L416.2,214.4 L411.5,221.9 L408.1,225.6 L409.8,220.9 L411.1,213.9 L411.1,203.1 L410.3,200.3 L418.4,197.5 L423.5,197.1 Z M437.2,245.2 L438.5,250.9 L438.1,256.0 L436.8,258.8 L433.8,261.6 L427.8,263.5 L418.0,263.5 L412.4,261.6 L415.4,256.9 L419.7,246.6 L420.1,249.5 L419.7,257.9 L421.4,258.8 L428.7,258.8 L431.2,258.3 L435.1,254.1 L436.8,249.9 L437.2,245.7 Z M394.4,149.8 L402.6,151.7 L408.5,155.0 L413.7,159.2 L403.0,157.3 L388.9,156.8 L390.2,152.6 L391.4,151.2 L394.0,150.3 Z M453.9,155.9 L459.9,155.9 L465.4,158.7 L461.6,158.2 L455.6,158.7 L452.6,159.6 L449.6,161.5 L450.5,158.7 L452.2,156.8 L453.5,156.4 Z';
 
-// The shoulder fan, measured on the home figure (jersey top y=700, sleeve hem y=766, figure center
-// x=1118.5, so scaleY = 191/66 and scaleX = 264/84.5). Reading inward at reference y=725 the bands
-// are x1051-1054, x1056-1059 and x1060-1062; all three taper to a shared point at (1068,753), and
-// the middle band dies early at (1063,738). So the outer color is authored as one triangle and the
-// middle band as a shorter triangle over it, which reproduces the outer/inner/outer read exactly.
+// The shoulder fan: three bands tapering to a shared point above the sleeve hem, the middle band
+// ending early. The outer colour is one triangle and the middle band a shorter triangle over it,
+// which reads outer/inner/outer.
 export const PANTHERS_FAN_LEFT = 'M61,435 L111,421 L136,539 Z';
 export const PANTHERS_FAN_RIGHT = 'M527,435 L477,421 L452,539 Z';
 export const PANTHERS_WEDGE_LEFT = 'M74,421 L102,426 L121,493 Z';
 export const PANTHERS_WEDGE_RIGHT = 'M514,421 L486,426 L467,493 Z';
 
-// The collar V, measured on the same figure: the band's outer corner sits at reference (1085,703)
-// and both arms meet at (1119,745) — far deeper than the generic chevron, whose point is at y=455.
-// Roughly 9 reference px thick measured horizontally, which is ~24 units perpendicular to the arm.
+// The collar V: both arms meet at y=513, far deeper than the generic chevron, whose point is at
+// y=455. The band is 24 units thick perpendicular to the arm.
 export const PANTHERS_COLLAR_PATH = 'M189,392 L295,513 L399,392';
 export const PANTHERS_COLLAR_WIDTH = 24;
 
-// The pant leg stripe. The composite draws a team's stripe pattern in a leg-shaped swatch beside each
-// figure rather than on the small front-view figure itself, which is why an earlier pass read
-// these pants as unbroken; every one of Carolina's four pant colors carries the same three-band
-// stripe. Measured across those swatches at the sheet's scale: a hairline keyline, a wide centre,
-// a hairline keyline, spanning 11px of a 29px leg — so the centre is 82% of the band. The
-// mannequin's own generic-pants-stripe-* layer IS that 16-unit band, so a part paints the generic
-// layer as the keyline color and only the centre is authored here.
+// The leg stripe centre: a hairline keyline, a wide centre, a hairline keyline, so the centre is
+// 82% of the mannequin's 16-unit generic stripe band. The generic stripe layers paint the keyline
+// colour and only the centre is authored here.
 export const PANTHERS_STRIPE_CENTER_LEFT = 'M119.5,807 H132.5 V1462 H119.5 Z';
 export const PANTHERS_STRIPE_CENTER_RIGHT = 'M455.5,807 H468.5 V1462 H455.5 Z';

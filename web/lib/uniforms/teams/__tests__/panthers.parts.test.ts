@@ -1,9 +1,9 @@
 // Guards the two facts about Carolina that nothing else can catch: the helmet mark's paint order
-// (reverse any pair and the linework the re-author added disappears back into the body) and the
-// pant options enumerated from the 2025 composite, which only the canonical entry compiles so
-// a wrong list is otherwise invisible in every raster.
+// (reverse any pair and the linework disappears back into the body) and the pairings enumerated
+// from the 2025 composite, which only the canonical entry renders as the row's own raster.
 import { describe, expect, it } from 'vitest';
 import { PANTHERS_PARTS } from '../panthers';
+import { PANTHERS_CATALOG } from '../panthers/catalog';
 
 describe('Panthers helmet parts', () => {
   const layerIds = (helmet: keyof typeof PANTHERS_PARTS.helmets) =>
@@ -29,29 +29,34 @@ describe('Panthers helmet parts', () => {
 });
 
 describe('Panthers pants parts', () => {
-  it('offers the pant colors each kit is worn with, canonical first', () => {
-    expect(PANTHERS_PARTS.kits.home.pants).toEqual(['black', 'blue']);
-    expect(PANTHERS_PARTS.kits.away.pants).toEqual(['black', 'white', 'blue', 'silver']);
-    expect(PANTHERS_PARTS.kits['black-alt'].pants).toEqual(['black', 'silver']);
+  it('pairs each design with the pants and socks the composite shows, canonical first', () => {
+    const pairs = Object.fromEntries(
+      PANTHERS_CATALOG.designs.map((d) => [d.slug, d.combinations.map((c) => c.pants)])
+    );
+    expect(pairs).toEqual({
+      home: ['black', 'blue'],
+      away: ['black', 'white', 'white', 'blue', 'blue', 'silver'],
+      'black-alt': ['black', 'black', 'silver'],
+    });
   });
 
-  it('keeps black canonical so the committed raster is unchanged by the options', () => {
-    for (const kit of Object.values(PANTHERS_PARTS.kits)) {
-      expect(Array.isArray(kit.pants) ? kit.pants[0] : kit.pants).toBe('black');
+  it('keeps black canonical so the committed raster pairs the black leg', () => {
+    for (const design of PANTHERS_CATALOG.designs) {
+      expect(design.combinations[0].pants).toBe('black');
     }
   });
 
   // One `it` per leg so a failure names the offending pant, per the data-integrity convention.
   for (const [name, part] of Object.entries(PANTHERS_PARTS.pants)) {
-    it(`stripes the ${name} leg with a keylined centre`, () => {
-      expect(part.layers.map((layer) => layer.id)).toEqual([
-        'generic-pants-stripe-left',
-        'generic-pants-stripe-right',
-        'panthers-stripe-center-left',
-        'panthers-stripe-center-right',
-      ]);
+    it(`stripes the ${name} leg with a keylined centre that stops at the hem`, () => {
       const fills = part.layers.map((layer) => (layer.kind === 'fill' ? layer.fill : layer.stroke));
-      const [keyline, , center] = fills;
+      const [keyline, center] = [fills[0], fills[2]];
+      expect(part.layers.map((layer) => layer.id)).toEqual([
+        'panthers-pants-' + name + '-stripe-0-edge-left',
+        'panthers-pants-' + name + '-stripe-0-edge-right',
+        'panthers-pants-' + name + '-stripe-0-left',
+        'panthers-pants-' + name + '-stripe-0-right',
+      ]);
       // The stripe has to read against the leg it sits on and against its own keyline.
       expect(new Set([part.base, keyline, center]).size).toBe(3);
     });
