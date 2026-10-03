@@ -1,27 +1,7 @@
-// New England's four archived kits, redrawn from the 2025 composite in
-// nfl-uniform-refs/patriots (home is that sheet's row-2 figure 3, away its row-1 figure 1, Pat
-// Patriot its row-1 figure 7 — boxed "worn in same games"). Right paths mirror the left across the
-// centerline x=294.
+// Patriots construction paths in mannequin space: the three diagonal shoulder bands per sleeve
+// (the right set mirrors the left across the centreline x=294) and the helmet mark's five
+// components, emitted by scripts/uniform-draw/patriots_mark.py.
 //
-// One construction throughout: three parallel bands running diagonally down each shoulder cap,
-// outer/inner/outer, and nothing else. No collar trim, no helmet stripe, no pant stripe.
-//
-// The band COLORS are measured on three of the four kits and they are not a simple token swap:
-// navy body wears red/white/red, white body wears red/navy/red, red body wears white/navy/white.
-// So both the outer and inner colors are parameters — assuming either one is fixed renders one of
-// the kits wrong, the same trap Denver's shoulder wedge sets.
-//
-// THE RIVALRIES KIT IS INFERRED — no figure of its own on the sheet. It takes the home pattern
-// against its own palette.
-//
-// Out of scope on every kit: the chest wordmark, the league shield, the "WE ARE ALL PATRIOTS"
-// collar tab, the Super Bowl and USA-250 patches, the logo on each sleeve, and shoulder numerals.
-//
-// Construction geometry only — the band and mark paths. The composable parts definition that
-// consumes them lives in ./patriots.parts.ts; the former flat PATRIOTS_UNIFORMS was deleted in the
-// migration that proved parts render byte-identically (see parts-parity.test.ts for the one-time
-// gate).
-
 // The shoulder bands, measured on the home figure (jersey top y=901, sleeve hem y=967, figure center
 // x=714.5, so scaleY = 191/66 and scaleX = 264/84.5). At reference y=913 the three run x650-656,
 // x657-662 and x662-667; by y=937 each has shifted about 7px right, which is the slant. The set

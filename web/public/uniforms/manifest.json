@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "3b39251cd9bd1ba8c7c69393729804441448c992d9a0e7aef906715d0112a2a1",
-  "revision": "db5cc650f7d72f96",
+  "sourceDigest": "0fb4a482c49769451258ce6f65b9dad460ecc47f69760238e6576bf65617762f",
+  "revision": "d363127deb1ba49b",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1548,60 +1548,80 @@
     {
       "catalogId": "patriots-away-2020",
       "constructionKey": "away",
-      "revision": "c0ce067b68cab0ac",
+      "revision": "d90bdc4f3a451ca3",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/patriots-away-2020.webp",
-          "sha256": "4e9d00ed092e369dcfdccf17d30aabe59f7e086a740f0e3fb107f33993829ec4"
+          "sha256": "27ae0fc43be7b8b59b54a3b6d7a1c71d3368f24db8c843a9bf04b6457b446f32"
         },
         "full": {
           "path": "/uniforms/patriots-away-2020-full.webp",
-          "sha256": "ce139d7f1fb75f8b7e7d866251f36db88b31fc9dc168ef840cdfb78a6da9a890"
+          "sha256": "70d2496a4ad94944ff3cbcb4780fbdf31b51b49884615e3ec426ffafca681005"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "navy-pants",
+          "label": "Navy pants",
+          "full": {
+            "path": "/uniforms/patriots-away-2020--navy-pants-full.webp",
+            "sha256": "4f9d01c1ad2754911e88f0cae4c37f952fa9371f6615f75e91bbd1b66f1b549b"
+          }
+        }
+      ]
     },
     {
       "catalogId": "patriots-home-2020",
       "constructionKey": "home",
-      "revision": "0a38e22c7c75e94b",
+      "revision": "8be95c4ae6cd12df",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/patriots-home-2020.webp",
-          "sha256": "d3094a2cc78cef23dfd2d983e89f1b46566dc901bfc60a347bd2909e4497f87f"
+          "sha256": "4396fe1f237c1d960e3a8c14a9604b0d0845aaa1d7ea23e8f46487bcf0d37542"
         },
         "full": {
           "path": "/uniforms/patriots-home-2020-full.webp",
-          "sha256": "0d3fdd166b3b8bb607575c6cfdc7bba0a7f310081267d7d64e089094ba8cd75e"
+          "sha256": "c40343756e7d7b8918c59bc3f3586a4b2e2e8982643a44fcc8061bf00db303ab"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "silver-pants",
+          "label": "Silver pants",
+          "full": {
+            "path": "/uniforms/patriots-home-2020--silver-pants-full.webp",
+            "sha256": "27cb642718cdd4dd20d23f6dcbdb9aa17bdd16d5ded2821170902e92a17e758a"
+          }
+        }
+      ]
     },
     {
       "catalogId": "patriots-pat-patriot-1961",
       "constructionKey": "pat-patriot",
-      "revision": "bcdb0b4965570797",
+      "revision": "0407db9529b69eb1",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/patriots-pat-patriot-1961.webp",
-          "sha256": "7d5e6554cfd74cb59e46096fe00ac4dfbd32d3e81f60c04902feba1133b8a764"
+          "sha256": "0662fac222d39220912dba63a9e328843eced5b92faa15a311818f95c25dfd99"
         },
         "full": {
           "path": "/uniforms/patriots-pat-patriot-1961-full.webp",
-          "sha256": "5f996b4195cd516d33559e32f6efe807e64575ffda6037e8d00e6bc25722c92e"
+          "sha256": "a74d385193f1c8073102dc2795ed13163a89eae98f35ca683ed6b42a246b1d22"
         }
       }
     },
     {
       "catalogId": "patriots-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "6ca0589db6bc20b7",
+      "revision": "a78ee4c8448f350d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/patriots-rivalries-2025-2025.webp",
-          "sha256": "88e0ab12ea665ab298a829dfa8d39f9750ebc19c6fcedcf1cd9ff1b8a7bf4173"
+          "sha256": "340cd4dff9d55a5c8b4a84856d79876ce7a4dfa5c1ac08a3d178100524fa8643"
         },
         "full": {
           "path": "/uniforms/patriots-rivalries-2025-2025-full.webp",
-          "sha256": "df8d6b8a383cff37e268a861ded0691edf9ac74420f55c7b8ad9ecd3cc84d506"
+          "sha256": "9626dd6e3e9e6cdb4c9d0c3066eb4050cf9d9bf564962dc41da6acbd804e578a"
         }
       }
     },

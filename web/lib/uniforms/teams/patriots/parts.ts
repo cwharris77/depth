@@ -1,136 +1,15 @@
-// New England authored as composable parts. Geometry is imported unchanged from patriots.ts —
-// this file only restates WHICH parts each kit combines, and names every color from the team
-// palette instead of the kit row's shifting primary/secondary/accent.
-//
-// One construction throughout: three parallel bands running diagonally down each shoulder cap,
-// outer/inner/outer, and nothing else. No collar trim, no helmet stripe, no pant stripe.
-//
-// The measured target is 4 helmet / 4 jersey / 4 pants — every kit its own parts, nothing shared,
-// and that is what this factors to. New England is the one team in the epic where the parts model
-// buys no deduplication at all, and that is the honest answer rather than a failure to look: the
-// band colors are not a token swap (navy body wears red/white/red, white body red/navy/red, red
-// body white/navy/white), the four kits carry four different body colors, and two different navies
-// are in play — #002244 on home/away and #002F6C on Rivalries and Pat Patriot. What the migration
-// does buy here is the palette: those two navies and two reds (#C60C30, #C8102E) are now named and
-// impossible to confuse, where the flat form left them scattered across primary/secondary/accent.
-//
-// Pat Patriot carries NO helmet mark — that era wore a different logo, which no figure on the
-// sheet draws.
+// New England as a complete team spec: every helmet, jersey, pants and socks part, with the helmet
+// mark and the diagonal shoulder bands drawn by the marks in ./marks.
+import type { CompletePantsSpec } from '../core/complete';
+import type { TeamSpec } from '../core/team-spec';
+import { PATRIOTS_HELMET_DECAL } from './marks/construction';
+import { PATRIOTS_JERSEY_NAVY } from './jerseys/navy';
+import { PATRIOTS_JERSEY_PAT } from './jerseys/pat';
+import { PATRIOTS_JERSEY_RIVALRIES } from './jerseys/rivalries';
+import { PATRIOTS_JERSEY_WHITE } from './jerseys/white';
 
-import {
-  PATRIOTS_BANDS_LEFT,
-  PATRIOTS_BANDS_RIGHT,
-  PATRIOTS_DECAL_FACE_PATH,
-  PATRIOTS_DECAL_KEYLINE_PATH,
-  PATRIOTS_DECAL_SILVER_PATH,
-  PATRIOTS_DECAL_STAR_PATH,
-  PATRIOTS_DECAL_STREAMERS_PATH,
-} from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { placed } from '../core/marks';
-import { type PartLayer, type UniformPart } from '../core/parts';
-import type { UniformSurface } from '../core/types';
-
-// Three bands per shoulder; the middle one takes the inner color, the outer two the outer color.
-export function shoulderBands(outer: string, inner: string): PartLayer[] {
-  const out: PartLayer[] = [];
-  const sides: [UniformSurface, string[]][] = [
-    ['sleeve-left', PATRIOTS_BANDS_LEFT],
-    ['sleeve-right', PATRIOTS_BANDS_RIGHT],
-  ];
-
-  for (const [surface, paths] of sides) {
-    const side = surface === 'sleeve-left' ? 'left' : 'right';
-    paths.forEach((d, i) => {
-      out.push({
-        id: `patriots-band-${i}-${side}`,
-        surface,
-        d,
-        clip: true,
-        kind: 'fill',
-        fill: i === 1 ? inner : outer,
-      });
-    });
-  }
-
-  return out;
-}
-
-// Keyline, face, streamers, star — fixed art on every shell that carries the modern mark.
-function decal(): PartLayer[] {
-  return (
-    [
-      ['patriots-decal-keyline', PATRIOTS_DECAL_KEYLINE_PATH, 'white'],
-      ['patriots-decal-face', PATRIOTS_DECAL_FACE_PATH, 'navy'],
-      ['patriots-decal-streamers', PATRIOTS_DECAL_STREAMERS_PATH, 'red'],
-      ['patriots-decal-silver', PATRIOTS_DECAL_SILVER_PATH, 'silver'],
-      ['patriots-decal-star', PATRIOTS_DECAL_STAR_PATH, 'white'],
-    ] as [string, string, string][]
-  ).map(([id, d, fill]) => ({
-    id,
-    surface: 'helmet' as const,
-    d,
-    clip: true,
-    kind: 'fill' as const,
-    fill,
-  }));
-}
-
-// Home shell (H1). The cage is red on every silver-shell figure of the 2025 composite
-// (nfl-uniform-refs/patriots) — vividly so, and it is the club's signature facemask. The source
-// is a GIF and its cage quantizes to #e30003, which is palette noise rather than a documented color,
-// so this uses the archive's own stored club red (#C60C30, the home row's secondary) instead of
-// eyedropping the source.
-const HELMET_NAVY: UniformPart = expandHelmet('patriots-navy-helmet', {
-  shell: 'navy',
-  facemask: 'red',
-  decal: placed(decal()),
-  number: 'none',
-});
-
-// Away shell (H2): silver, same mark, same red cage.
-const HELMET_SILVER: UniformPart = expandHelmet('patriots-silver-helmet', {
-  shell: 'silver',
-  facemask: 'red',
-  decal: placed(decal()),
-  number: 'none',
-});
-
-// Pat Patriot shell (H3): the throwback red shell, and NO mark — that era wore a different logo,
-// which no figure on the sheet draws. Its white-shell figure in the boxed group wears a white cage.
-const HELMET_PAT: UniformPart = expandHelmet('patriots-pat-helmet', {
-  shell: 'patRed',
-  facemask: 'white',
-  decal: 'none',
-  number: 'none',
-});
-
-// Rivalries shell (H4). This is the modern Patriots navy-shell treatment, including the red cage;
-// the kit has no figure of its own on the sheet, so its helmet mark and placement are inherited from
-// the current-season modern figures rather than from the throwback group.
-const HELMET_RIVALRIES: UniformPart = expandHelmet('patriots-rivalries-helmet', {
-  shell: 'rivalNavy',
-  facemask: 'red',
-  decal: placed(decal()),
-  number: 'none',
-});
-
-// Home jersey (J1): navy body, banded red/white/red, white numerals.
-
-// Away jersey (J2): white body, banded red/navy/red — the inner band picks up the body's contrast
-// rather than staying white.
-
-// Pat Patriot jersey (J3): red body, banded white/navy/white against it.
-
-// Rivalries jersey (J4): the home pattern against its own navy.
-
-// Pants — unbroken on every kit; each simply takes its body color.
-const PANTS_NAVY: UniformPart = { base: 'navy', layers: [] };
-const PANTS_WHITE: UniformPart = { base: 'white', layers: [] };
-const PANTS_PAT: UniformPart = { base: 'patRed', layers: [] };
-const PANTS_RIVALRIES: UniformPart = { base: 'rivalNavy', layers: [] };
-const PANTS_SILVER: UniformPart = { base: 'silver', layers: [] };
-
+// Two navies and two reds are in play: navy and red on the modern kits, rivalNavy and patRed on the
+// royal and throwback ones.
 export const PATRIOTS_PALETTE = {
   navy: '#002244',
   rivalNavy: '#002F6C',
@@ -139,26 +18,53 @@ export const PATRIOTS_PALETTE = {
   silver: '#B0B7BC',
   white: '#FFFFFF',
 };
-export const PATRIOTS_HELMETS = {
-  navy: HELMET_NAVY,
-  silver: HELMET_SILVER,
-  pat: HELMET_PAT,
-  rivalries: HELMET_RIVALRIES,
-};
-export const PATRIOTS_PANTS = {
-  navy: PANTS_NAVY,
-  white: PANTS_WHITE,
-  pat: PANTS_PAT,
-  rivalries: PANTS_RIVALRIES,
-  silver: PANTS_SILVER,
-};
-export const PATRIOTS_KITS = {
-  home: { helmet: 'navy', jersey: 'navy', pants: ['navy', 'silver'] },
-  away: { helmet: 'silver', jersey: 'white', pants: ['white', 'navy'] },
-  'pat-patriot': { helmet: 'pat', jersey: 'pat', pants: ['pat', 'white'] },
-  'rivalries-2025': {
-    helmet: 'rivalries',
-    jersey: 'rivalries',
-    pants: ['rivalries', 'silver'],
+
+// Unbroken legs: each takes its body colour and carries no stripe.
+const legs = (body: string): CompletePantsSpec => ({ body, stripes: 'none', marks: [] });
+
+export const PATRIOTS_SPEC: TeamSpec = {
+  helmets: {
+    // The modern mark on a navy shell with a red cage.
+    navy: { shell: 'navy', facemask: 'red', decal: PATRIOTS_HELMET_DECAL, number: 'none' },
+    // The same mark and cage on a silver shell.
+    silver: { shell: 'silver', facemask: 'red', decal: PATRIOTS_HELMET_DECAL, number: 'none' },
+    // The throwback white shell with a white cage and no mark.
+    pat: { shell: 'white', facemask: 'white', decal: 'none', number: 'none' },
+    // The modern mark on a white shell with a silver cage.
+    rivalries: {
+      shell: 'white',
+      facemask: 'silver',
+      decal: PATRIOTS_HELMET_DECAL,
+      number: 'none',
+    },
+  },
+  jerseys: {
+    navy: PATRIOTS_JERSEY_NAVY,
+    white: PATRIOTS_JERSEY_WHITE,
+    pat: PATRIOTS_JERSEY_PAT,
+    rivalries: PATRIOTS_JERSEY_RIVALRIES,
+  },
+  pants: {
+    navy: legs('navy'),
+    white: legs('white'),
+    silver: legs('silver'),
+  },
+  socks: {
+    navy: { color: 'navy', stripes: 'none' },
+    white: { color: 'white', stripes: 'none' },
+    // White hoops of red, blue and red around the calf.
+    hoops: {
+      color: 'white',
+      stripes: {
+        bands: [
+          { color: 'patRed', size: 's' },
+          { color: 'rivalNavy', size: 's' },
+          { color: 'patRed', size: 's' },
+        ],
+        gap: 'narrow',
+        edge: 'none',
+      },
+    },
+    royal: { color: 'rivalNavy', stripes: 'none' },
   },
 };
