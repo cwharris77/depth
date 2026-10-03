@@ -24,7 +24,7 @@ export const CARDINALS_EGGSHELL_DECAL_BEAK_LOWER_PATH =
 export const CARDINALS_EGGSHELL_DECAL_EYE_PATH =
   'M388.92,268.74 m 0 0 1.24 0.74 2.72 2.72 1.98 1.73 3.46 2.97 3.95 3.21 4.45 3.21 5.19 3.46 5.44 3.21 6.67 3.46 2.22 0.99 0.25 0.49 -0.74 0.25 -11.37 0.99 -2.97 0.25 1.98 4.45 2.22 3.71 2.47 3.21 3.21 3.21 3.46 2.22 3.46 1.48 1.73 0.49 h 6.43 l 3.95 -1.24 3.21 -1.73 2.22 -1.73 1.98 -1.73 2.22 -2.72 1.73 -2.47 1.98 -3.21 5.93 -0.49 0.25 0.49 -1.98 4.45 -1.98 3.71 -1.98 2.72 -1.98 2.47 -2.72 2.72 -2.97 2.22 -3.95 2.22 -4.20 1.48 -3.46 0.74 -2.72 0.25 h -3.46 l -5.19 -0.74 -5.93 -1.98 -4.70 -2.47 -3.46 -2.47 -3.21 -2.72 -2.97 -2.97 -3.21 -4.20 -2.22 -3.46 -2.97 -5.68 -2.22 -5.68 -1.73 -6.43 -0.99 -5.68 -0.49 -4.45 z';
 
-// Source colors are taken directly from the two supplied SVGs.
+// Fixed art colours of the two helmet marks.
 export const CARDINALS_DECAL_RED = '#9C0A0E';
 export const CARDINALS_DECAL_GOLD = '#F9D300';
 export const CARDINALS_EGGSHELL_DECAL_RED = '#850226';

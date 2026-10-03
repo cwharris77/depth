@@ -5,6 +5,7 @@ import { BUCCANEERS_CATALOG } from './teams/buccaneers/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BILLS_CATALOG } from './teams/bills/catalog';
+import { CARDINALS_CATALOG } from './teams/cardinals/catalog';
 import { BROWNS_CATALOG } from './teams/browns/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
@@ -100,21 +101,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(PANTHERS_CATALOG, 'home'),
   catalogRow(SAINTS_CATALOG, 'home'),
   catalogRow(BUCCANEERS_CATALOG, 'home'),
-  {
-    teamId: 'cardinals',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2023,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#97233F',
-      secondary: '#000000',
-      accent: '#FFB612',
-    },
-  },
+  catalogRow(CARDINALS_CATALOG, 'home'),
   catalogRow(RAMS_CATALOG, 'home'),
   catalogRow(NINERS_CATALOG, 'home'),
   catalogRow(SEAHAWKS_CATALOG, 'home'),
@@ -144,21 +131,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(DOLPHINS_CATALOG, 'away'),
   catalogRow(PATRIOTS_CATALOG, 'away'),
   catalogRow(JETS_CATALOG, 'away'),
-  {
-    teamId: 'cardinals',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2023,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#97233F',
-      accent: '#FFB612',
-    },
-  },
+  catalogRow(CARDINALS_CATALOG, 'away'),
   catalogRow(RAMS_CATALOG, 'away'),
   catalogRow(NINERS_CATALOG, 'away'),
   // Away kits — second tranche (remaining 24 teams). Same rule as the first tranche:
@@ -211,28 +184,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(DOLPHINS_CATALOG, 'rivalries-2025'),
   catalogRow(PATRIOTS_CATALOG, 'rivalries-2025'),
   catalogRow(JETS_CATALOG, 'rivalries-2025'),
-  // Cardinals 2025 Rivalries. Corrected from a white/cardinal/black guess (the original comment
-  // noted the reveal was shot under red stage lighting, which is what it was read from) after
-  // checking it against a 2025 composite reveal image: it is a sandstone kit — speckled cream body
-  // and shell, a brighter red than heritage cardinal, and an orange offset on the numerals. Black
-  // appears nowhere on it. All three sampled from that composite; same caveat as any eyedropped
-  // sample, its renderings run a step brighter than official hexes. uiAccent is the orange, which
-  // clears AA on the dark UI at 6.24 where the kit's red is 2.80.
-  {
-    teamId: 'cardinals',
-    slug: 'rivalries-2025',
-    constructionKey: 'rivalries-2025',
-    kind: 'alternate',
-    name: 'Rivalries',
-    yearStart: 2025,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFF7E3',
-      secondary: '#B31529',
-      accent: '#EE6B3D',
-    },
-  },
+  catalogRow(CARDINALS_CATALOG, 'rivalries-2025'),
   catalogRow(RAMS_CATALOG, 'rivalries-2025'),
   // 49ers 2025 Rivalries: black base, gold numbers, scarlet accent. Heritage gold #B3995D (uiAccent, 7.0:1) + scarlet #AA0000.
   catalogRow(NINERS_CATALOG, 'rivalries-2025'),
@@ -270,20 +222,6 @@ export const UNIFORMS: UniformSeed[] = [
   // Panthers black alternate. Black base, blue/silver trim.
   catalogRow(PANTHERS_CATALOG, 'black-alt'),
   // Cardinals black alternate (2023+). Black base, cardinal-red trim.
-  {
-    teamId: 'cardinals',
-    slug: 'black-alt',
-    constructionKey: 'black-alt',
-    kind: 'alternate',
-    name: 'Black Alternate',
-    yearStart: 2023,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#000000',
-      secondary: '#97233F',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(CARDINALS_CATALOG, 'black-alt'),
   catalogRow(RAMS_CATALOG, 'bone'),
 ];

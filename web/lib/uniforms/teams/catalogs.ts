@@ -19,6 +19,9 @@ import { BILLS_SPEC } from './bills/parts';
 import { BROWNS_PARTS } from './browns';
 import { BROWNS_CATALOG } from './browns/catalog';
 import { BROWNS_SPEC } from './browns/parts';
+import { CARDINALS_PARTS } from './cardinals';
+import { CARDINALS_CATALOG } from './cardinals/catalog';
+import { CARDINALS_SPEC } from './cardinals/parts';
 import { BRONCOS_PARTS } from './broncos';
 import { BRONCOS_CATALOG } from './broncos/catalog';
 import { BRONCOS_SPEC } from './broncos/parts';
@@ -109,6 +112,7 @@ const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   bengals: { catalog: BENGALS_CATALOG, parts: BENGALS_PARTS, strict: BENGALS_SPEC },
   bills: { catalog: BILLS_CATALOG, parts: BILLS_PARTS, strict: BILLS_SPEC },
   browns: { catalog: BROWNS_CATALOG, parts: BROWNS_PARTS, strict: BROWNS_SPEC },
+  cardinals: { catalog: CARDINALS_CATALOG, parts: CARDINALS_PARTS, strict: CARDINALS_SPEC },
   broncos: { catalog: BRONCOS_CATALOG, parts: BRONCOS_PARTS, strict: BRONCOS_SPEC },
   buccaneers: {
     catalog: BUCCANEERS_CATALOG,
