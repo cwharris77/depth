@@ -1,62 +1,25 @@
-import {
-  DOLPHINS_COLLAR_PATH,
-  DOLPHINS_COLLAR_WIDTH,
-  DOLPHINS_SLASH_LEFT,
-  DOLPHINS_SLASH_RIGHT,
-  DOLPHINS_SLASH_WIDTH,
-  DOLPHINS_WEDGE_LEFT,
-  DOLPHINS_WEDGE_RIGHT,
-} from '../source';
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { DOLPHINS_RIVALRIES_TRIM } from '../marks/construction';
 
-// Navy rivalries jersey (J3): navy body, teal wedge + orange slash + orange collar V, teal numerals.
-export const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: [
-    {
-      id: 'dolphins-wedge-left',
-      surface: 'sleeve-left',
-      d: DOLPHINS_WEDGE_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'teal',
-    },
-    {
-      id: 'dolphins-wedge-right',
-      surface: 'sleeve-right',
-      d: DOLPHINS_WEDGE_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'teal',
-    },
-    {
-      id: 'dolphins-slash-left',
-      surface: 'sleeve-left',
-      d: DOLPHINS_SLASH_LEFT,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'orange',
-      strokeWidth: DOLPHINS_SLASH_WIDTH,
-    },
-    {
-      id: 'dolphins-slash-right',
-      surface: 'sleeve-right',
-      d: DOLPHINS_SLASH_RIGHT,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'orange',
-      strokeWidth: DOLPHINS_SLASH_WIDTH,
-    },
-    {
-      id: 'dolphins-collar',
-      surface: 'collar',
-      d: DOLPHINS_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'orange',
-      strokeWidth: DOLPHINS_COLLAR_WIDTH,
-    },
-  ],
-  number: { fill: 'teal', outline: 'teal', outlineWidth: 10 },
+// Rivalries: navy body, a teal wedge with an orange slash on each sleeve and an orange-lined
+// keylined collar, teal numerals.
+export const DOLPHINS_JERSEY_NAVY: CompleteJerseySpec = {
+  body: 'navy',
+  collar: {
+    style: 'inset-v',
+    color: 'navy',
+    trim: 'none',
+    inside: 'body',
+    lining: 'orange',
+    backBar: 'orange',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'teal', outline: 'none' },
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'teal', outline: 'teal', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [{ paint: 'over', mark: DOLPHINS_RIVALRIES_TRIM }],
 };

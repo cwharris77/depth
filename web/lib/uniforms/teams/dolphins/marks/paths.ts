@@ -1,20 +1,7 @@
-// Miami's construction geometry — the two decal sets, the sleeve wedge/slash/collar and 1972
-// band paths, and the construction color literal only. The composable parts definition that
-// consumes them lives in ./dolphins.parts.ts; the former flat DOLPHINS_UNIFORMS was deleted in the
-// migration that proved parts render byte-identically (see parts-parity.test.ts for the one-time
-// gate).
-//
-// The four kits are NOT one construction: home/away carry no sleeve trim; the 1972 throwback
-// carries a five-band sleeve set and a teal crown stripe; Rivalries carries a teal wedge with an
-// orange slash plus an orange collar V. All four wear a helmet crown stripe (shared geometry from
-// ./shared.ts).
+// Miami's construction geometry in mannequin space: the two helmet decals, the 1972 sleeve band
+// bounds and the Rivalries sleeve wedge and slash paths.
 
-// White is a literal on the home kit only. Its palette is teal over orange with accent ===
-// secondary (ESPN supplies only two colors), so no token resolves to its white shell, white pants
-// or white numeral face.
-export const DOLPHINS_WHITE = '#FFFFFF';
-
-// TWO marks: the current kits wear a teal dolphin inside an orange sunburst; the throwback wears a
+// Two decals: the current kits wear a teal dolphin inside an orange sunburst; the throwback wears a
 // teal dolphin breaking through a solid orange ring. The "M" on the throwback dolphin's helmet is
 // dropped (about 2px in the reference).
 export const DOLPHINS_DECAL_SUNBURST_PATH =
@@ -39,7 +26,3 @@ export const DOLPHINS_WEDGE_RIGHT = 'M558,496 L496,545 L558,545 Z';
 export const DOLPHINS_SLASH_LEFT = 'M30,507 L55,519';
 export const DOLPHINS_SLASH_RIGHT = 'M558,507 L533,519';
 export const DOLPHINS_SLASH_WIDTH = 7;
-
-// The Rivalries collar V.
-export const DOLPHINS_COLLAR_PATH = 'M208,415 L294,455 L380,415';
-export const DOLPHINS_COLLAR_WIDTH = 10;

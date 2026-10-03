@@ -911,6 +911,77 @@ describe('Cowboys catalog conversion', () => {
   });
 });
 
+// Pins the catalog to the rows and accents the Dolphins had before the catalog existed.
+describe('Dolphins catalog conversion', () => {
+  const catalog = getTeamCatalog('dolphins');
+  if (!catalog) throw new Error('Dolphins catalog is not registered');
+
+  const row = (
+    slug: string,
+    kind: 'home' | 'away' | 'alternate' | 'throwback',
+    name: string,
+    yearStart: number,
+    colors: { primary: string; secondary: string; accent: string }
+  ) => ({
+    teamId: 'dolphins',
+    slug,
+    constructionKey: slug,
+    kind,
+    name,
+    yearStart,
+    yearEnd: null,
+    isCurrent: true,
+    colors,
+  });
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        row('home', 'home', 'Home', 2018, {
+          primary: '#008E97',
+          secondary: '#FC4C02',
+          accent: '#FC4C02',
+        }),
+        row('away', 'away', 'Away', 2018, {
+          primary: '#FFFFFF',
+          secondary: '#008E97',
+          accent: '#FC4C02',
+        }),
+        row('rivalries-2025', 'alternate', 'Rivalries', 2025, {
+          primary: '#101820',
+          secondary: '#008E97',
+          accent: '#FC4C02',
+        }),
+        row('1972-throwback', 'throwback', '1972 Throwback', 1966, {
+          primary: '#008E97',
+          secondary: '#FC4C02',
+          accent: '#FFFFFF',
+        }),
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    const pair = { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' };
+    expect(catalogAccents(catalog)).toEqual({
+      'dolphins-home-2018': pair,
+      'dolphins-away-2018': pair,
+      'dolphins-rivalries-2025-2025': pair,
+      'dolphins-1972-throwback-1966': pair,
+    });
+  });
+
+  it('registers one kit per verified pairing, the away white pants as an extra', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'white', jersey: 'teal', pants: 'white', socks: 'teal' },
+      away: { helmet: 'white', jersey: 'white', pants: 'teal', socks: 'teal' },
+      'away--white-pants': { helmet: 'white', jersey: 'white', pants: 'white' },
+      'rivalries-2025': { helmet: 'navy', jersey: 'navy', pants: 'navy' },
+      '1972-throwback': { helmet: 'white1972', jersey: '1972', pants: 'white1972' },
+    });
+  });
+});
+
 // A strict team's parts come only from its registered TeamSpec; the fixtures in team-spec.test.ts
 // prove the checks themselves.
 describe('strict teams', () => {
