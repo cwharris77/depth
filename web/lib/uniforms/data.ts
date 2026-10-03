@@ -17,6 +17,7 @@ import { JAGUARS_CATALOG } from './teams/jaguars/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { LIONS_CATALOG } from './teams/lions/catalog';
 import { PACKERS_CATALOG } from './teams/packers/catalog';
+import { PANTHERS_CATALOG } from './teams/panthers/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -211,21 +212,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(EAGLES_CATALOG, 'home'),
   catalogRow(COMMANDERS_CATALOG, 'home'),
   catalogRow(FALCONS_CATALOG, 'home'),
-  {
-    teamId: 'panthers',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2012,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#0085CA',
-      secondary: '#101820',
-      accent: '#101820',
-    },
-  },
+  catalogRow(PANTHERS_CATALOG, 'home'),
   {
     teamId: 'saints',
     slug: 'home',
@@ -481,21 +468,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(FALCONS_CATALOG, 'away'),
-  {
-    teamId: 'panthers',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2012,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#0085CA',
-      accent: '#101820',
-    },
-  },
+  catalogRow(PANTHERS_CATALOG, 'away'),
   {
     teamId: 'saints',
     slug: 'away',
@@ -779,21 +752,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(PACKERS_CATALOG, 'winter-warning'),
   catalogRow(FALCONS_CATALOG, 'red-alt'),
   // Panthers black alternate. Black base, blue/silver trim.
-  {
-    teamId: 'panthers',
-    slug: 'black-alt',
-    constructionKey: 'black-alt',
-    kind: 'alternate',
-    name: 'Black Alternate',
-    yearStart: 2012,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#101820',
-      secondary: '#0085CA',
-      accent: '#A5ACAF',
-    },
-  },
+  catalogRow(PANTHERS_CATALOG, 'black-alt'),
   // Cardinals black alternate (2023+). Black base, cardinal-red trim.
   {
     teamId: 'cardinals',

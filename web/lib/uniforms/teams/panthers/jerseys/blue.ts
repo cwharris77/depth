@@ -1,10 +1,19 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { collar, shoulderFan } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { panthersCollar, panthersShoulderFan } from '../marks/construction';
 
-// Home jersey (J1): blue body, white-outside-black fan, black collar, white numerals.
-export const JERSEY_BLUE: UniformPart = {
-  base: 'blue',
-  layers: [...shoulderFan('white', 'black'), ...collar('black')],
-  number: { fill: 'white', outline: 'black', outlineWidth: 14 },
+// Blue body, a white-outside-black shoulder fan and a black collar V, with white numerals outlined in black.
+export const PANTHERS_JERSEY_BLUE: CompleteJerseySpec = {
+  body: 'blue',
+  collar: { style: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'black', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [
+    { paint: 'over', mark: panthersShoulderFan('white', 'black') },
+    { paint: 'over', mark: panthersCollar('black') },
+  ],
 };

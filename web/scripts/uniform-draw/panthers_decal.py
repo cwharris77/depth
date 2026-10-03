@@ -1,7 +1,7 @@
-"""Regenerates the Carolina helmet mark in lib/uniforms/teams/panthers.ts.
+"""Regenerates the Carolina helmet mark in lib/uniforms/teams/panthers/marks/paths.ts.
 
     python3 scripts/uniform-draw/panthers_decal.py            # print the four paths
-    python3 scripts/uniform-draw/panthers_decal.py --check    # verify panthers.ts matches
+    python3 scripts/uniform-draw/panthers_decal.py --check    # verify marks/paths.ts matches
 
 This is a CONTOUR TRACE, not hand-drawn geometry. The panther head is carried by fine positive
 detail — jaw, fangs, whisker slashes — that a hand-drawn anchor list cannot hold at helmet scale,
@@ -54,7 +54,7 @@ from drawkit import (  # noqa: E402
 )
 
 REF = Path.home() / 'Documents/GitHubProjects/nfl-uniform-refs/panthers/panthers-mark.svg'
-MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'panthers.ts'
+MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'panthers' / 'marks' / 'paths.ts'
 
 # Render width for the trace. 1200 crops to 764px of art, so one source pixel is
 # under half a unit in the placement box below — finer than the renderer resolves.
