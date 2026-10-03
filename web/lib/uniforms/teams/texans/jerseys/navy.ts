@@ -1,8 +1,22 @@
-import type { UniformPart } from '../../core/parts';
-import { collar } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
-export const JERSEY_NAVY: UniformPart = {
-  base: 'navy',
-  layers: collar(),
-  number: { fill: 'white', outline: 'red', outlineWidth: 14 },
+export const TEXANS_JERSEY_NAVY: CompleteJerseySpec = {
+  body: 'navy',
+  collar: {
+    style: 'inset-v',
+    color: 'navy',
+    trim: 'none',
+    inside: 'body',
+    lining: 'red',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'white', outline: 'none' },
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'red', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [],
 };

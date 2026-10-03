@@ -24,6 +24,7 @@ import { RAMS_CATALOG } from './teams/rams/catalog';
 import { RAVENS_CATALOG } from './teams/ravens/catalog';
 import { SAINTS_CATALOG } from './teams/saints/catalog';
 import { STEELERS_CATALOG } from './teams/steelers/catalog';
+import { TEXANS_CATALOG } from './teams/texans/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -103,21 +104,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(DOLPHINS_CATALOG, 'home'),
   catalogRow(PATRIOTS_CATALOG, 'home'),
   catalogRow(JETS_CATALOG, 'home'),
-  {
-    teamId: 'texans',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#03202F',
-      secondary: '#A71930',
-      accent: '#A71930',
-    },
-  },
+  catalogRow(TEXANS_CATALOG, 'home'),
   catalogRow(COLTS_CATALOG, 'home'),
   catalogRow(JAGUARS_CATALOG, 'home'),
   {
@@ -261,21 +248,7 @@ export const UNIFORMS: UniformSeed[] = [
     },
   },
   catalogRow(STEELERS_CATALOG, 'away'),
-  {
-    teamId: 'texans',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#03202F',
-      accent: '#A71930',
-    },
-  },
+  catalogRow(TEXANS_CATALOG, 'away'),
   catalogRow(COLTS_CATALOG, 'away'),
   catalogRow(JAGUARS_CATALOG, 'away'),
   {
@@ -442,21 +415,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(BENGALS_CATALOG, 'color-rush'),
   catalogRow(RAVENS_CATALOG, 'black-alt'),
   // Texans 'Battle Red' alternate. Deep red base, navy/white trim.
-  {
-    teamId: 'texans',
-    slug: 'battle-red',
-    constructionKey: 'battle-red',
-    kind: 'alternate',
-    name: 'Battle Red',
-    yearStart: 2024,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#A71930',
-      secondary: '#03202F',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(TEXANS_CATALOG, 'battle-red'),
   catalogRow(JAGUARS_CATALOG, 'black-alt'),
   // Titans navy alternate. Navy base, Titans-blue/red trim.
   {
