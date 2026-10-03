@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "6a351d52494ced8bb047972601dc9f23b472f2db3e6fab14b3fd14b581368e85",
-  "revision": "122d77e3eed3a16f",
+  "sourceDigest": "9404fd23aeae6b04d3a9f7e6c61ba110969dc77ff99da7b214d2e86b42cbead6",
+  "revision": "74936a941eb10312",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1903,45 +1903,45 @@
     {
       "catalogId": "steelers-away-1997",
       "constructionKey": "away",
-      "revision": "7134da96feff8219",
+      "revision": "7d73df7db930969f",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/steelers-away-1997.webp",
-          "sha256": "117920411b2dd39d7bdf5ae72f27c4866a11d91c082351a94b6776afbc9c6df1"
+          "sha256": "977b5d81556da0cf9d9875c19fa58e62667690e3fa53290962a623b4e8650a7c"
         },
         "full": {
           "path": "/uniforms/steelers-away-1997-full.webp",
-          "sha256": "d5711695022b27f81924028b7fc60f114f40ec2c4f11a4713e47509a457be05a"
+          "sha256": "3882a920c3dca4093da21ceaeb13e2ed4c1520baaf4268e9f6c9ce7d39d8a078"
         }
       }
     },
     {
       "catalogId": "steelers-bumblebee-1933",
       "constructionKey": "bumblebee",
-      "revision": "b6dc59cb4d56a068",
+      "revision": "5d2d78f476a5d44a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/steelers-bumblebee-1933.webp",
-          "sha256": "65e4038098fc93cbbbeb614470a991304cc4700c60b6331c2fe55cff45a74dd7"
+          "sha256": "7207cdd504bf6828b14746e220770546a85e147c4adf1d30189a5057fe6a917e"
         },
         "full": {
           "path": "/uniforms/steelers-bumblebee-1933-full.webp",
-          "sha256": "2eeb189184b73b7359c0dd75c3c463cd2f0444afce4657a080ddfba769e9d85d"
+          "sha256": "bdce43a079ec5464418928e0aab029b3fb3e9498a6a316c84ad81bedca4b1b8a"
         }
       }
     },
     {
       "catalogId": "steelers-home-1997",
       "constructionKey": "home",
-      "revision": "e94d8bfc63ec9c90",
+      "revision": "bdfe6401b2cdd546",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/steelers-home-1997.webp",
-          "sha256": "0f0d7bcc9469971c9d8d502ad8180599278254d9dd3a87667e4c0d0acdb4872d"
+          "sha256": "676ecd4f1348aae09416ab7e3c71ba2d0dbeb3cb807fe05a5f19fef7fb3861be"
         },
         "full": {
           "path": "/uniforms/steelers-home-1997-full.webp",
-          "sha256": "577c0102c57fdfdbb6ec79ba2af8325d66f853d2c6979e9498c9d6cfc4d64ab7"
+          "sha256": "e75799dc45f846e65d33739e1373d23eae0bfef9e294790e15122a5376863c08"
         }
       }
     },
