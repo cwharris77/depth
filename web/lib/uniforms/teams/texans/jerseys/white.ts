@@ -1,6 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { anchoredMark } from '../../core/jersey-spec';
-import { TEXANS_SHOULDER_HORN } from '../marks/construction';
+import { TEXANS_AWAY_SLEEVE_SWOOSH } from '../marks/construction';
 
 export const TEXANS_JERSEY_WHITE: CompleteJerseySpec = {
   body: 'white',
@@ -15,7 +15,7 @@ export const TEXANS_JERSEY_WHITE: CompleteJerseySpec = {
   },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
-  shoulderNumber: { fill: 'navy', outline: 'none' },
+  shoulderNumber: 'none',
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
@@ -23,10 +23,10 @@ export const TEXANS_JERSEY_WHITE: CompleteJerseySpec = {
   marks: [
     anchoredMark({
       paint: 'over',
-      mark: TEXANS_SHOULDER_HORN,
-      anchor: 'shoulders',
+      mark: TEXANS_AWAY_SLEEVE_SWOOSH,
+      anchor: 'sleeves',
       slots: { navy: 'navy', red: 'red' },
-      id: 'shoulder-horn',
+      id: 'sleeve-swoosh',
     }),
   ],
 };

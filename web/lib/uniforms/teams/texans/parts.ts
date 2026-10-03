@@ -25,35 +25,17 @@ export const TEXANS_SPEC: TeamSpec = {
   pants: {
     white: {
       body: 'white',
-      stripes: {
-        position: 'leg-edge',
-        bands: [
-          { color: 'navy', size: 'm' },
-          { color: 'red', size: 's' },
-        ],
-        gap: 'none',
-        edge: 'none',
-      },
+      stripes: 'none',
       marks: [],
     },
     navy: {
       body: 'navy',
-      stripes: {
-        position: 'leg-edge',
-        bands: [{ color: 'red', size: 'm' }],
-        gap: 'none',
-        edge: 'none',
-      },
+      stripes: 'none',
       marks: [],
     },
     red: {
       body: 'red',
-      stripes: {
-        position: 'leg-edge',
-        bands: [{ color: 'navy', size: 'm' }],
-        gap: 'none',
-        edge: 'none',
-      },
+      stripes: 'none',
       marks: [],
     },
   },

@@ -25,7 +25,7 @@ export const TEXANS_JERSEY_NAVY: CompleteJerseySpec = {
       paint: 'over',
       mark: TEXANS_HOME_SLEEVE_HORN,
       anchor: 'sleeves',
-      slots: { white: 'white', red: 'red' },
+      slots: { red: 'red' },
       id: 'home-sleeve-horn',
     }),
   ],

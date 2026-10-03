@@ -40,30 +40,37 @@ export const TEXANS_BATTLE_RED_HORN = placed([
   fill('texans-decal-battle-red-horn', TEXANS_BATTLE_RED_DECAL_PATH, 'decalNavy'),
 ]);
 
-export const TEXANS_SHOULDER_HORN: Mark<'navy' | 'red'> = {
-  box: [0, 0, 200, 100],
+// Sleeve marks are drawn for the right sleeve, outer edge at x=100.
+export const TEXANS_AWAY_SLEEVE_SWOOSH: Mark<'navy' | 'red'> = {
+  box: [0, 0, 100, 130],
   paths: [
     {
       slot: 'navy',
-      d: 'M100,8 C75,2 55,8 39,22 C24,35 13,51 0,69 L0,100 C21,85 36,66 51,48 C66,31 82,25 100,33 Z',
+      d: 'M0,0 C44,6 78,16 100,34 L100,130 C62,114 24,76 0,0 Z',
     },
     {
       slot: 'red',
-      d: 'M100,46 C79,35 61,39 46,51 C29,64 14,82 0,95 L0,82 C21,55 38,39 55,29 C72,20 88,22 100,30 Z',
+      d: 'M40,92 C58,100 78,102 100,100 L100,114 C76,116 54,110 36,98 Z',
     },
   ],
 };
 
-export const TEXANS_HOME_SLEEVE_HORN: Mark<'white' | 'red'> = {
-  box: [0, 0, 100, 70],
+export const TEXANS_BATTLE_RED_SLEEVE_SWOOSH: Mark<'navy'> = {
+  box: [0, 0, 100, 130],
   paths: [
     {
-      slot: 'white',
-      d: 'M100,2 C76,0 58,8 43,22 C26,37 13,54 0,65 L0,70 C27,61 48,46 64,30 C77,18 89,17 100,24 Z',
+      slot: 'navy',
+      d: 'M0,0 C44,6 78,16 100,34 L100,130 L60,130 Q50,124 48,114 Q38,110 34,100 Q26,96 22,86 Q12,80 8,68 Q2,50 1,34 Q1,16 0,0 Z',
     },
+  ],
+};
+
+export const TEXANS_HOME_SLEEVE_HORN: Mark<'red'> = {
+  box: [0, 0, 100, 100],
+  paths: [
     {
       slot: 'red',
-      d: 'M100,28 C79,19 62,24 48,36 C31,50 16,65 0,70 L0,61 C22,40 39,25 55,17 C72,10 88,15 100,21 Z',
+      d: 'M18,10 C46,12 70,28 80,52 C85,66 86,80 80,94 C70,76 56,64 40,48 C34,40 26,28 18,10 Z',
     },
   ],
 };
