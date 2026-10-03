@@ -5,6 +5,7 @@ import { BUCCANEERS_CATALOG } from './teams/buccaneers/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
 import { BILLS_CATALOG } from './teams/bills/catalog';
+import { BROWNS_CATALOG } from './teams/browns/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
@@ -73,21 +74,7 @@ export const UNIFORMS: UniformSeed[] = [
   // uiAccent/onAccent are the established dark-UI pair and are contrast-tested below.
   catalogRow(RAVENS_CATALOG, 'home'),
   catalogRow(BENGALS_CATALOG, 'home'),
-  {
-    teamId: 'browns',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#311D00',
-      secondary: '#FF3C00',
-      accent: '#FF3C00',
-    },
-  },
+  catalogRow(BROWNS_CATALOG, 'home'),
   catalogRow(STEELERS_CATALOG, 'home'),
   catalogRow(BILLS_CATALOG, 'home'),
   catalogRow(DOLPHINS_CATALOG, 'home'),
@@ -179,21 +166,7 @@ export const UNIFORMS: UniformSeed[] = [
   // Generated from lib/teams/league.ts.
   catalogRow(RAVENS_CATALOG, 'away'),
   catalogRow(BENGALS_CATALOG, 'away'),
-  {
-    teamId: 'browns',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#311D00',
-      accent: '#FF3C00',
-    },
-  },
+  catalogRow(BROWNS_CATALOG, 'away'),
   catalogRow(STEELERS_CATALOG, 'away'),
   catalogRow(TEXANS_CATALOG, 'away'),
   catalogRow(COLTS_CATALOG, 'away'),
@@ -272,21 +245,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(JETS_CATALOG, 'black-alt'),
   catalogRow(STEELERS_CATALOG, 'bumblebee'),
   // Browns 1946 throwback (verified from reveal: WHITE jersey, orange/brown stripes, black numbers). Worn 2024+.
-  {
-    teamId: 'browns',
-    slug: '1946-throwback',
-    constructionKey: '1946-throwback',
-    kind: 'throwback',
-    name: '1946 Throwback',
-    yearStart: 1946,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#FF3C00',
-      accent: '#311D00',
-    },
-  },
+  catalogRow(BROWNS_CATALOG, '1946-throwback'),
   catalogRow(BENGALS_CATALOG, 'orange-alt'),
   catalogRow(BENGALS_CATALOG, 'color-rush'),
   catalogRow(RAVENS_CATALOG, 'black-alt'),
