@@ -17,7 +17,7 @@ path 12 and is rendered red in the parts definition; its black pupil remains the
 beside it. Do not select the white SVG backdrop, helmet shell, or facemask as decal geometry.
 
 ``drawkit.main`` owns ``--check``. The generated literals are mechanically copied into
-``lib/uniforms/teams/ravens-decal.ts`` and checked byte-for-byte.
+``lib/uniforms/teams/ravens/marks/decal.ts`` and checked byte-for-byte.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from drawkit import main  # noqa: E402
 
 REF = Path(os.environ.get('DECAL_SVGS', '.')) / '2026_Baltimore.svg'
-MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'ravens-decal.ts'
+MODULE = Path(__file__).resolve().parents[2] / 'lib' / 'uniforms' / 'teams' / 'ravens' / 'marks' / 'decal.ts'
 SOURCE_X0, SOURCE_Y0 = 326.0, 677.0
 TARGET_X0, TARGET_Y0 = 330.0, 130.0
 SCALE = 311.0 / 1447.0

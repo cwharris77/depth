@@ -67,6 +67,9 @@ import { RAIDERS_SPEC } from './raiders/parts';
 import { RAMS_PARTS } from './rams';
 import { RAMS_CATALOG } from './rams/catalog';
 import { RAMS_SPEC } from './rams/parts';
+import { RAVENS_PARTS } from './ravens';
+import { RAVENS_CATALOG } from './ravens/catalog';
+import { RAVENS_SPEC } from './ravens/parts';
 import { SEAHAWKS_PARTS } from './seahawks';
 import { SEAHAWKS_CATALOG } from './seahawks/catalog';
 import { SEAHAWKS_SPEC } from './seahawks/parts';
@@ -111,6 +114,7 @@ const CATALOGS: Readonly<Partial<Record<string, RegisteredCatalog>>> = {
   patriots: { catalog: PATRIOTS_CATALOG, parts: PATRIOTS_PARTS, strict: PATRIOTS_SPEC },
   raiders: { catalog: RAIDERS_CATALOG, parts: RAIDERS_PARTS, strict: RAIDERS_SPEC },
   rams: { catalog: RAMS_CATALOG, parts: RAMS_PARTS, strict: RAMS_SPEC },
+  ravens: { catalog: RAVENS_CATALOG, parts: RAVENS_PARTS, strict: RAVENS_SPEC },
   seahawks: { catalog: SEAHAWKS_CATALOG, parts: SEAHAWKS_PARTS, strict: SEAHAWKS_SPEC },
 };
 
