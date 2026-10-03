@@ -1,27 +1,16 @@
-import { COWBOYS_SLEEVE_CAP_LEFT, COWBOYS_SLEEVE_CAP_RIGHT } from '../source';
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { COWBOYS_SLEEVE_CAPS_NAVY } from '../marks/construction';
 
-// Away jersey: white body under navy sleeve caps, navy numerals.
-export const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: [
-    {
-      id: 'cowboys-sleeve-cap-left',
-      surface: 'sleeve-left',
-      d: COWBOYS_SLEEVE_CAP_LEFT,
-      clip: true,
-      kind: 'fill',
-      fill: 'navy',
-    },
-    {
-      id: 'cowboys-sleeve-cap-right',
-      surface: 'sleeve-right',
-      d: COWBOYS_SLEEVE_CAP_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: 'navy',
-    },
-  ],
-  number: { fill: 'navy', outline: 'navy', outlineWidth: 10 },
+// White body under navy sleeve caps, navy numerals.
+export const COWBOYS_JERSEY_WHITE: CompleteJerseySpec = {
+  body: 'white',
+  collar: { style: 'none' },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: { fill: 'white' },
+  number: { fill: 'navy', outline: 'navy', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [{ paint: 'under', mark: COWBOYS_SLEEVE_CAPS_NAVY }],
 };
