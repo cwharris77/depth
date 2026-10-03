@@ -11,6 +11,7 @@ import { COMMANDERS_CATALOG } from './teams/commanders/catalog';
 import { COWBOYS_CATALOG } from './teams/cowboys/catalog';
 import { DOLPHINS_CATALOG } from './teams/dolphins/catalog';
 import { EAGLES_CATALOG } from './teams/eagles/catalog';
+import { FALCONS_CATALOG } from './teams/falcons/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -261,21 +262,7 @@ export const UNIFORMS: UniformSeed[] = [
   },
   catalogRow(EAGLES_CATALOG, 'home'),
   catalogRow(COMMANDERS_CATALOG, 'home'),
-  {
-    teamId: 'falcons',
-    slug: 'home',
-    constructionKey: 'home',
-    kind: 'home',
-    name: 'Home',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#A71930',
-      secondary: '#000000',
-      accent: '#000000',
-    },
-  },
+  catalogRow(FALCONS_CATALOG, 'home'),
   {
     teamId: 'panthers',
     slug: 'home',
@@ -601,21 +588,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFC62F',
     },
   },
-  {
-    teamId: 'falcons',
-    slug: 'away',
-    constructionKey: 'away',
-    kind: 'away',
-    name: 'Away',
-    yearStart: 2020,
-    yearEnd: null,
-    isCurrent: true,
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#A71930',
-      accent: '#A71930',
-    },
-  },
+  catalogRow(FALCONS_CATALOG, 'away'),
   {
     teamId: 'panthers',
     slug: 'away',
@@ -1005,22 +978,7 @@ export const UNIFORMS: UniformSeed[] = [
       accent: '#FFB612',
     },
   },
-  // Falcons red alternate. Red base, black trim.
-  {
-    teamId: 'falcons',
-    slug: 'red-alt',
-    constructionKey: 'red-alt',
-    kind: 'alternate',
-    name: 'Red Alternate',
-    yearStart: 2020,
-    yearEnd: 2022,
-    isCurrent: false,
-    colors: {
-      primary: '#A71930',
-      secondary: '#000000',
-      accent: '#FFFFFF',
-    },
-  },
+  catalogRow(FALCONS_CATALOG, 'red-alt'),
   // Panthers black alternate. Black base, blue/silver trim.
   {
     teamId: 'panthers',

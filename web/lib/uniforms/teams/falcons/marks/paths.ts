@@ -1,37 +1,23 @@
-// Atlanta's construction geometry — the side-seam piping and the falcon decal paths only. The
-// composable parts definition that consumes them lives in ./falcons.parts.ts; the former flat
-// FALCONS_UNIFORMS was deleted in the migration that proved parts render byte-identically (see
-// parts-parity.test.ts for the one-time gate).
+// Atlanta's fixed path art: the falcon decal and the side-seam piping and leg-stripe shapes.
 
-// Black is a literal on the away and red-alt kits. Atlanta's away palette resolves secondary AND
-// accent to the same red (#A71930), so no token supplies the black shell and pants those kits
-// wear.
-export const FALCONS_BLACK = '#000000';
-
-// The side-seam piping, measured at x=52 and x=148 on a reference figure centered at 99.5, running
-// from y=208 to the jersey hem (jersey top 126, sleeve hem 189).
+// The side-seam piping, a thin bar down each side of the jersey body.
 export const FALCONS_SIDE_STRIPE_LEFT = 'M141,631 H147 V806 H141 Z';
 export const FALCONS_SIDE_STRIPE_RIGHT = 'M441,631 H447 V806 H441 Z';
 
-// The falcon, traced from the home figure's shell (bbox x55-161, y20-117 in the reference) mapped
-// onto the raw helmet space at ~6.25x. Three plain-union fills in paint order: white silhouette,
-// black body, red streaks.
-//
-// This mark was the archive's reference example of "does not trace" — cited in the brief and in
-// three other modules as the thing that shreds. It does trace. What was true is that its BODY is
-// the same black as the shell, so there is nothing to separate the mark from the surface; what was
-// wrong is concluding from that that the mark is unreachable. The white keyline around it is a
-// CLOSED RING, and a closed ring is a separator: fill its hole and you have the silhouette, and the
-// body then falls out as the black component that does not touch the crop border (the shell black
-// does). Houston's identical problem is unsolvable from its own figure precisely because its
-// keyline is broken into four pieces — the ring, not the color, is what decides this.
-//
-// All three archived kits wear a black shell, so the body layer is redundant on every one of them
-// today. It is authored anyway: it costs one path and it is what keeps the mark correct if a
-// non-black shell is ever added, which is exactly the check Jacksonville's spots failed.
-//
-// The regenerated standalone mark adds the silver outer rim and preserves the full red detail set.
-export const FALCONS_DECAL_RED = '#A71930'; // standalone mark's red
+// The leg stripe: a tapered centre with a wider backing that frames it, following the leg edge
+// down to the pant hem.
+export const FALCONS_PANTS_BACKING_LEFT =
+  'M170,807 L178,807 L158,918 L143,932 L132,1050 L143,1082 L143,1100 L136,1134 L136,1196 L120,1196 L120,1134 L127,1100 L127,1082 L116,1050 L127,928 L142,914 Z';
+export const FALCONS_PANTS_BACKING_RIGHT =
+  'M418,807 L410,807 L430,918 L445,932 L456,1050 L445,1082 L445,1100 L452,1134 L452,1196 L468,1196 L468,1134 L461,1100 L461,1082 L472,1050 L461,928 L446,914 Z';
+export const FALCONS_PANTS_STRIPE_LEFT =
+  'M173,807 L175,807 L154,918 L139,932 L129,1050 L138,1082 L138,1100 L132,1134 L129,1196 L127,1196 L124,1134 L132,1100 L132,1082 L121,1050 L132,928 L146,914 Z';
+export const FALCONS_PANTS_STRIPE_RIGHT =
+  'M415,807 L413,807 L434,918 L449,932 L459,1050 L450,1082 L450,1100 L456,1134 L459,1196 L461,1196 L464,1134 L456,1100 L456,1082 L467,1050 L456,928 L442,914 Z';
+
+// The falcon: a white silhouette, a black body and the red streaks over a silver outer rim, in
+// paint order. The body is the shell's own black, so it only separates the mark from the shell on
+// a non-black shell.
 export const FALCONS_DECAL_SILVER_PATH =
   'M355.9,103.7 L357.5,103.7 L364.6,105.7 L370.6,106.8 L384.8,110.5 L386.1,110.5 L389.7,111.6 L422.4,119.2 L424.6,120.0 L430.3,121.2 L440.4,124.0 L442.6,124.2 L443.7,124.8 L446.9,125.4 L448.0,125.9 L450.2,126.2 L451.3,126.8 L453.5,127.1 L455.7,127.9 L456.7,127.9 L463.0,129.9 L464.1,129.9 L488.1,136.6 L509.9,143.4 L527.1,149.3 L539.6,154.1 L554.6,160.5 L566.3,166.4 L574.8,171.5 L582.2,177.1 L587.6,183.0 L591.4,188.9 L593.9,195.4 L594.7,200.4 L594.4,207.5 L593.3,210.6 L593.1,212.5 L589.5,219.0 L586.8,222.4 L582.4,226.0 L576.7,229.1 L572.1,230.5 L571.5,230.5 L571.5,230.0 L572.6,225.5 L571.0,221.5 L565.8,218.4 L557.4,217.3 L505.8,217.3 L505.5,217.6 L519.2,227.4 L532.8,238.7 L539.4,245.1 L543.4,249.9 L547.0,255.3 L547.3,256.4 L544.3,260.3 L538.3,266.5 L534.4,269.6 L527.1,274.4 L521.6,277.2 L514.0,280.3 L507.7,282.3 L499.0,284.2 L485.4,285.9 L478.0,285.9 L480.5,281.4 L480.5,280.0 L479.1,276.6 L474.5,274.1 L472.6,273.8 L467.1,273.3 L455.7,273.3 L450.5,282.8 L447.5,289.3 L406.3,370.0 L402.2,379.5 L400.3,387.7 L400.3,390.8 L400.0,391.1 L400.0,396.7 L400.6,401.8 L401.7,405.4 L401.7,406.5 L403.6,412.2 L407.4,420.6 L398.7,418.3 L391.6,415.8 L380.7,410.5 L372.5,405.1 L368.1,401.8 L358.3,392.2 L353.1,386.0 L344.4,372.8 L337.6,359.0 L331.6,342.4 L328.1,328.7 L325.1,311.2 L325.1,308.7 L324.2,303.4 L324.0,295.5 L323.7,295.2 L323.7,287.0 L323.4,286.8 L323.7,273.3 L324.0,273.0 L324.2,264.8 L325.1,257.2 L327.2,243.5 L331.6,225.7 L337.0,210.6 L340.6,203.0 L343.9,197.1 L343.6,196.8 L339.5,196.8 L339.2,197.1 L325.6,197.1 L325.3,197.4 L312.2,197.4 L312.0,197.6 L270.5,198.5 L355.9,104.0 Z';
 export const FALCONS_DECAL_SILHOUETTE_PATH =

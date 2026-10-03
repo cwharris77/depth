@@ -1151,3 +1151,77 @@ describe('strict teams', () => {
     });
   }
 });
+
+// Pins the catalog to the rows and accents the Falcons had before the catalog existed.
+describe('Falcons catalog conversion', () => {
+  const catalog = getTeamCatalog('falcons');
+  if (!catalog) throw new Error('Falcons catalog is not registered');
+
+  it('reproduces the archived rows', () => {
+    expect(byId(catalogRows(catalog))).toEqual(
+      byId([
+        {
+          teamId: 'falcons',
+          slug: 'home',
+          constructionKey: 'home',
+          kind: 'home',
+          name: 'Home',
+          yearStart: 2020,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#A71930', secondary: '#000000', accent: '#000000' },
+        },
+        {
+          teamId: 'falcons',
+          slug: 'away',
+          constructionKey: 'away',
+          kind: 'away',
+          name: 'Away',
+          yearStart: 2020,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#FFFFFF', secondary: '#A71930', accent: '#A71930' },
+        },
+        {
+          teamId: 'falcons',
+          slug: 'red-alt',
+          constructionKey: 'red-alt',
+          kind: 'alternate',
+          name: 'Red Alternate',
+          yearStart: 2020,
+          yearEnd: 2022,
+          isCurrent: false,
+          colors: { primary: '#A71930', secondary: '#000000', accent: '#FFFFFF' },
+        },
+      ])
+    );
+  });
+
+  it('reproduces the frozen legacy accents', () => {
+    expect(catalogAccents(catalog)).toEqual({
+      'falcons-home-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
+      'falcons-away-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
+      'falcons-red-alt-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
+    });
+  });
+
+  it('pairs each jersey with its verified helmet, pants and socks', () => {
+    expect(catalogKits(catalog)).toEqual({
+      home: { helmet: 'black-falcon', jersey: 'black', pants: 'black', socks: 'black' },
+      'home--white-pants': {
+        helmet: 'black-falcon',
+        jersey: 'black',
+        pants: 'white',
+        socks: 'black',
+      },
+      away: { helmet: 'black-falcon', jersey: 'white', pants: 'black', socks: 'black' },
+      'away--white-pants': {
+        helmet: 'black-falcon',
+        jersey: 'white',
+        pants: 'white',
+        socks: 'white',
+      },
+      'red-alt': { helmet: 'black-falcon', jersey: 'red', pants: 'black', socks: 'black' },
+    });
+  });
+});

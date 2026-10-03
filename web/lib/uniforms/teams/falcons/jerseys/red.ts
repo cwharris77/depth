@@ -1,11 +1,24 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { sideStripes } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { falconsSideStripes } from '../marks/construction';
 
-// Red alternate jersey: red body, white side piping, white numerals ringed in black. Inferred
-// construction (no red kit in the 2025 composite), same caveat as the flat form.
-export const JERSEY_RED: UniformPart = {
-  base: 'red',
-  layers: sideStripes('white'),
-  number: { fill: 'white', outline: 'black', outlineWidth: 10 },
+// Red body with a red V collar keylined grey, white side piping, and white numerals keylined black.
+export const FALCONS_JERSEY_RED: CompleteJerseySpec = {
+  body: 'red',
+  collar: {
+    style: 'inset-v',
+    color: 'red',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'white', outline: 'black', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [{ paint: 'under', mark: falconsSideStripes('white') }],
 };

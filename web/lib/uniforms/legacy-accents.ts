@@ -11,6 +11,7 @@ import { COMMANDERS_CATALOG } from './teams/commanders/catalog';
 import { COWBOYS_CATALOG } from './teams/cowboys/catalog';
 import { DOLPHINS_CATALOG } from './teams/dolphins/catalog';
 import { EAGLES_CATALOG } from './teams/eagles/catalog';
+import { FALCONS_CATALOG } from './teams/falcons/catalog';
 import { JETS_CATALOG } from './teams/jets/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
@@ -33,7 +34,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'packers-home-1959': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'vikings-home-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'giants-home-2000': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-  'falcons-home-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'panthers-home-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'saints-home-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'cardinals-home-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
@@ -53,7 +53,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'lions-away-2024': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'packers-away-1959': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'vikings-away-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
-  'falcons-away-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'panthers-away-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'saints-away-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'titans-oilers-throwback-1960': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
@@ -76,7 +75,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'lions-gridiron-gray-2017': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'vikings-winter-warrior-2024': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'packers-winter-warning-2025': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
-  'falcons-red-alt-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
   'panthers-black-alt-2012': { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
   'cardinals-black-alt-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'rams-bone-2020': { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
@@ -119,6 +117,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(COWBOYS_CATALOG),
   ...catalogAccents(DOLPHINS_CATALOG),
   ...catalogAccents(EAGLES_CATALOG),
+  ...catalogAccents(FALCONS_CATALOG),
   ...catalogAccents(JETS_CATALOG),
   ...catalogAccents(NINERS_CATALOG),
   ...catalogAccents(SEAHAWKS_CATALOG),
