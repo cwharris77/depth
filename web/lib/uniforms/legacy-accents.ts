@@ -4,6 +4,7 @@ import { BENGALS_CATALOG } from './teams/bengals/catalog';
 import { BUCCANEERS_CATALOG } from './teams/buccaneers/catalog';
 import { BEARS_CATALOG } from './teams/bears/catalog';
 import { CHARGERS_CATALOG } from './teams/chargers/catalog';
+import { BILLS_CATALOG } from './teams/bills/catalog';
 import { BRONCOS_CATALOG } from './teams/broncos/catalog';
 import { CHIEFS_CATALOG } from './teams/chiefs/catalog';
 import { COLTS_CATALOG } from './teams/colts/catalog';
@@ -36,12 +37,9 @@ export type LegacyAccentPair = Pick<TeamColors, 'uiAccent' | 'onAccent'>;
 // entries move out of here into its `teams/<team>/catalog.ts` instead.
 export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'browns-home-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
-  'bills-home-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'cardinals-home-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
-  'bills-away-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'cardinals-away-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
   'browns-away-2020': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
-  'bills-rivalries-2025-2025': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'cardinals-rivalries-2025-2025': { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
   'browns-1946-throwback-1946': { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
   'cardinals-black-alt-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
@@ -76,6 +74,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(BEARS_CATALOG),
   ...catalogAccents(BENGALS_CATALOG),
   ...catalogAccents(CHARGERS_CATALOG),
+  ...catalogAccents(BILLS_CATALOG),
   ...catalogAccents(BRONCOS_CATALOG),
   ...catalogAccents(BUCCANEERS_CATALOG),
   ...catalogAccents(CHIEFS_CATALOG),

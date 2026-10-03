@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "9b57308703bcc6730ecc41dfafa7d49c2f8b260ac093c34e71a465386b312165",
-  "revision": "997542721d15f26b",
+  "sourceDigest": "a74d1cb8a85fd83f00e11eb213496028c1c0412a007cc688f53be39491606442",
+  "revision": "1dc2917cfc3a824e",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -228,7 +228,17 @@
           "path": "/uniforms/bills-away-2011-full.webp",
           "sha256": "5dbd6666a323d0d02a9b29b83fd2d82b571f891a8107eee387641de50733ed7e"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "royal-pants",
+          "label": "Royal pants",
+          "full": {
+            "path": "/uniforms/bills-away-2011--royal-pants-full.webp",
+            "sha256": "b282f68f6241b31d62a5e98d0ce32451be6fda16ec2f11c57fe0f9fb8c268be1"
+          }
+        }
+      ]
     },
     {
       "catalogId": "bills-home-2011",
@@ -243,7 +253,17 @@
           "path": "/uniforms/bills-home-2011-full.webp",
           "sha256": "8d02fb29ab93070c2e23cd749f0b92632ebacc10d561c543acd0133b1b6a61f2"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "white-pants",
+          "label": "White pants",
+          "full": {
+            "path": "/uniforms/bills-home-2011--white-pants-full.webp",
+            "sha256": "ad46043e74dda6a28fad00af556ef4373fc7a0872dd35eb3fae8d466f1c4947d"
+          }
+        }
+      ]
     },
     {
       "catalogId": "bills-rivalries-2025-2025",
