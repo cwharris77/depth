@@ -1,11 +1,24 @@
-// Jersey construction moved intact from parts.ts.
-import type { UniformPart } from '../../core/parts';
-import { sideStripes } from '../parts';
+import type { CompleteJerseySpec } from '../../core/complete';
+import { falconsSideStripes } from '../marks/construction';
 
-// Away jersey: white body, red side piping, black numerals ringed in red. The black number fill
-// is a literal in the flat form (no token supplies it on the away row); here it is the palette.
-export const JERSEY_WHITE: UniformPart = {
-  base: 'white',
-  layers: sideStripes('red'),
-  number: { fill: 'black', outline: 'red', outlineWidth: 10 },
+// White body with a white V collar keylined grey, black shoulder numerals edged red, red side piping, and black numerals keylined red.
+export const FALCONS_JERSEY_WHITE: CompleteJerseySpec = {
+  body: 'white',
+  collar: {
+    style: 'inset-v',
+    color: 'white',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
+  shoulderNumber: { fill: 'black', outline: 'red' },
+  sleeveStripes: 'none',
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'black', outline: 'red', outlineWeight: 'thin', texture: 'mesh' },
+  marks: [{ paint: 'under', mark: falconsSideStripes('red') }],
 };
