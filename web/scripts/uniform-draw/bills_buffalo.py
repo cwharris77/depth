@@ -25,7 +25,7 @@ from PIL import Image  # noqa: E402
 from drawkit import Box, crop_to_art, main, mask, trace  # noqa: E402
 
 REF = Path.home() / 'Documents/GitHubProjects/nfl-uniform-refs/bills/bills-mark.svg'
-MODULE = Path(__file__).resolve().parents[2] / 'lib/uniforms/teams/bills.ts'
+MODULE = Path(__file__).resolve().parents[2] / 'lib/uniforms/teams/bills/marks/decal.ts'
 BOX = Box(204.0, 123.0, 344.0, 272.0)
 UPSCALE = 4
 EPS = 1.6

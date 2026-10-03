@@ -1,11 +1,20 @@
-import { expandJersey } from '../../core/jersey-spec';
-import type { UniformPart } from '../../core/parts';
+import type { CompleteJerseySpec } from '../../core/complete';
 
 // White body. The collar band reverses the royal jersey's: red on its outer half, royal lining on
 // the inner half, red across the back of the neck. Sleeve stripes and shoulder numeral go royal.
-export const JERSEY_WHITE: UniformPart = expandJersey('bills-white', {
+export const BILLS_JERSEY_WHITE: CompleteJerseySpec = {
   body: 'white',
-  collar: { style: 'inset-v', color: 'red', lining: 'navy', backBar: 'red', inside: 'white' },
+  collar: {
+    style: 'inset-v',
+    color: 'red',
+    trim: 'none',
+    inside: 'white',
+    lining: 'navy',
+    backBar: 'red',
+    outline: false,
+  },
+  shoulderPanel: 'none',
+  shoulderStripes: 'none',
   shoulderNumber: { fill: 'navy', outline: 'red' },
   sleeveStripes: {
     bands: [
@@ -15,5 +24,8 @@ export const JERSEY_WHITE: UniformPart = expandJersey('bills-white', {
     gap: 'wide',
     edge: 'red',
   },
-  number: { fill: 'navy', outline: 'red', outlineWeight: 'regular' },
-});
+  cuff: 'none',
+  sleeveNumber: 'none',
+  number: { fill: 'navy', outline: 'red', outlineWeight: 'regular', texture: 'mesh' },
+  marks: [],
+};

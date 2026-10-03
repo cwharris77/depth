@@ -1,125 +1,63 @@
-// Buffalo authored as composable parts: the palette, the two helmets and the three pants options.
-// Each kit's jersey is a JerseySpec in ./jerseys.
+// Buffalo as a complete team spec: every helmet, jersey, pants and socks part, with its own art
+// drawn by the marks in ./marks.
 //
 // The two modern kits (home, away) share the same white shell with the navy buffalo and red
-// diagonal stripe. The Rivalries kit is the genuinely different one: an ice-silver tone-on-tone
+// diagonal stripe. The Rivalries kit is the genuinely different one: a tone-on-tone ice-silver
 // helmet treatment. Body and pants are royal at home, white at away; the Rivalries body is white.
+import type { TeamSpec } from '../core/team-spec';
+import { BILLS_BUFFALO_DECAL, BILLS_ICE_DECAL } from './marks/construction';
+import { BILLS_JERSEY_BLUE } from './jerseys/blue';
+import { BILLS_JERSEY_RIVALRIES } from './jerseys/rivalries';
+import { BILLS_JERSEY_WHITE } from './jerseys/white';
 
-import { BILLS_HELMET_DECAL_BUFFALO_PATH, BILLS_HELMET_DECAL_STRIPE_PATH } from './source';
-import { expandHelmet } from '../core/helmet-spec';
-import { expandPants, expandSocks } from '../core/pants-spec';
-import { placed } from '../core/marks';
-import type { UniformPart } from '../core/parts';
+export const BILLS_PALETTE = {
+  navy: '#00338D',
+  red: '#C60C30',
+  white: '#ffffff',
+  iceSilver: '#9CA0A4',
+  iceSilverLight: '#D6D8DA',
+  rivalriesNumber: '#A9ADB1',
+};
 
-// The white shell with the navy buffalo and red diagonal stripe, shared by home and away.
-const HELMET_WHITE: UniformPart = expandHelmet('bills-white-helmet', {
-  shell: 'white',
-  facemask: 'white',
-  decal: placed([
-    {
-      id: 'bills-helmet-buffalo',
-      surface: 'helmet',
-      d: BILLS_HELMET_DECAL_BUFFALO_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'navy',
-    },
-    {
-      id: 'bills-helmet-stripe',
-      surface: 'helmet',
-      d: BILLS_HELMET_DECAL_STRIPE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'red',
-    },
-  ]),
-  number: 'none',
-});
-
-// Rivalries' ice-silver helmet: the shell stays white and only the decal/stripe treatment is
-// silver, each outlined in navy. No red. Same white cage as the modern shell.
-const HELMET_ICE: UniformPart = expandHelmet('bills-ice-helmet', {
-  shell: 'white',
-  facemask: 'white',
-  decal: placed([
-    {
-      id: 'bills-helmet-buffalo',
-      surface: 'helmet',
-      d: BILLS_HELMET_DECAL_BUFFALO_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'iceSilver',
-    },
-    {
-      id: 'bills-helmet-buffalo-outline',
-      surface: 'helmet',
-      d: BILLS_HELMET_DECAL_BUFFALO_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'navy',
-      strokeWidth: 3,
-      lineCap: 'round',
-    },
-    {
-      id: 'bills-helmet-stripe',
-      surface: 'helmet',
-      d: BILLS_HELMET_DECAL_STRIPE_PATH,
-      clip: true,
-      kind: 'fill',
-      fill: 'iceSilverLight',
-    },
-    {
-      id: 'bills-helmet-stripe-outline',
-      surface: 'helmet',
-      d: BILLS_HELMET_DECAL_STRIPE_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: 'navy',
-      strokeWidth: 3,
-      lineCap: 'round',
-    },
-  ]),
-  number: 'none',
-});
-
-// Home pants, royal, with the red side stripe.
-const PANTS_BLUE = expandPants('bills-blue-pants', {
-  body: 'navy',
-  stripes: { position: 'center', bands: [{ color: 'red', size: 'm' }], gap: 'none' },
-});
-
-// White pants are the canonical away option and the alternate home option; their red stripe is
-// part of the pants so this option remains correct when paired with either standard jersey.
-const PANTS_WHITE = expandPants('bills-white-pants', {
-  body: 'white',
-  stripes: { position: 'center', bands: [{ color: 'red', size: 'm' }], gap: 'none' },
-});
-
-// Rivalries pants, white, unbanded.
-const PANTS_RIVALRIES: UniformPart = { base: 'white', layers: [] };
-const SOCKS_NAVY = expandSocks('bills-navy-socks', { color: 'navy' });
-const SOCKS_WHITE = expandSocks('bills-white-socks', { color: 'white' });
-
-export const BILLS_CONSTRUCTION = {
-  teamId: 'bills',
-  // Navy and red are the official brand hexes; the ice-silver shades and the Rivalries numeral
-  // silver are fixed approximations for a treatment the brand palette has no token for.
-  palette: {
-    navy: '#00338D',
-    red: '#C60C30',
-    white: '#ffffff',
-    iceSilver: '#9CA0A4',
-    iceSilverLight: '#D6D8DA',
-    rivalriesNumber: '#A9ADB1',
+export const BILLS_SPEC: TeamSpec = {
+  helmets: {
+    // The white shell with the navy buffalo and red diagonal stripe, with a white cage.
+    white: { shell: 'white', facemask: 'white', decal: BILLS_BUFFALO_DECAL, number: 'none' },
+    // Rivalries' shell stays white; only the decal treatment is silver. Same white cage.
+    ice: { shell: 'white', facemask: 'white', decal: BILLS_ICE_DECAL, number: 'none' },
   },
-  helmets: { white: HELMET_WHITE, ice: HELMET_ICE },
-  pants: { blue: PANTS_BLUE, white: PANTS_WHITE, rivalries: PANTS_RIVALRIES },
-  socks: { navy: SOCKS_NAVY, white: SOCKS_WHITE },
-  kits: {
-    // The 2025 composite shows both blue and white trousers with each modern top;
-    // canonical-first preserves the existing blue-over-blue and white-over-white rasters.
-    home: { helmet: 'white', jersey: 'blue', pants: ['blue', 'white'], socks: 'navy' },
-    away: { helmet: 'white', jersey: 'white', pants: ['white', 'blue'], socks: 'navy' },
-    'rivalries-2025': { helmet: 'ice', jersey: 'rivalries', pants: 'rivalries', socks: 'white' },
+  jerseys: {
+    blue: BILLS_JERSEY_BLUE,
+    white: BILLS_JERSEY_WHITE,
+    rivalries: BILLS_JERSEY_RIVALRIES,
+  },
+  pants: {
+    // A single red stripe down the leg seam, stopping at the hem.
+    blue: {
+      body: 'navy',
+      stripes: {
+        position: 'center',
+        bands: [{ color: 'red', size: 'm' }],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    white: {
+      body: 'white',
+      stripes: {
+        position: 'center',
+        bands: [{ color: 'red', size: 'm' }],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    // Rivalries pants, white, unbanded.
+    rivalries: { body: 'white', stripes: 'none', marks: [] },
+  },
+  socks: {
+    navy: { color: 'navy', stripes: 'none' },
+    white: { color: 'white', stripes: 'none' },
   },
 };

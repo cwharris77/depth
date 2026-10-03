@@ -1,5 +1,5 @@
-// Buffalo's helmet decal geometry: the abstract buffalo and the diagonal stripe. The parts
-// definition that consumes them lives in ./parts.ts; jersey construction is specced in ./jerseys.
+// Buffalo's helmet decal geometry: the abstract buffalo and the diagonal stripe, bound to palette
+// keys by ./construction.ts.
 
 // The abstract buffalo and diagonal stripe use the helmet's raw x:139-802, y:65-674 coordinates.
 // The stripe's unfilled notch intentionally lets the white shell show through.
