@@ -19,6 +19,7 @@ import { LIONS_CATALOG } from './teams/lions/catalog';
 import { PACKERS_CATALOG } from './teams/packers/catalog';
 import { PANTHERS_CATALOG } from './teams/panthers/catalog';
 import { PATRIOTS_CATALOG } from './teams/patriots/catalog';
+import { RAIDERS_CATALOG } from './teams/raiders/catalog';
 import { NINERS_CATALOG } from './teams/49ers/catalog';
 import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 
@@ -33,7 +34,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'bills-home-2011': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'texans-home-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'titans-home-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
-  'raiders-home-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'vikings-home-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'saints-home-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'cardinals-home-2023': { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
@@ -46,7 +46,6 @@ export const HAND_ACCENTS: Record<string, LegacyAccentPair> = {
   'steelers-away-1997': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
   'texans-away-2024': { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
   'titans-away-2018': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
-  'raiders-away-1963': { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
   'vikings-away-2013': { uiAccent: '#FFC62F', onAccent: '#0a0e1a' },
   'saints-away-2002': { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
   'titans-oilers-throwback-1960': { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' },
@@ -110,6 +109,7 @@ export const LEGACY_ACCENTS: Record<string, LegacyAccentPair> = {
   ...catalogAccents(PACKERS_CATALOG),
   ...catalogAccents(PANTHERS_CATALOG),
   ...catalogAccents(PATRIOTS_CATALOG),
+  ...catalogAccents(RAIDERS_CATALOG),
   ...catalogAccents(NINERS_CATALOG),
   ...catalogAccents(SEAHAWKS_CATALOG),
 };

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "0fb4a482c49769451258ce6f65b9dad460ecc47f69760238e6576bf65617762f",
-  "revision": "d363127deb1ba49b",
+  "sourceDigest": "8185d99ff89d4d1d4853446ab2e50a94d179dbbbc715064f654208c891027771",
+  "revision": "52e836d5bbda4095",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1628,30 +1628,30 @@
     {
       "catalogId": "raiders-away-1963",
       "constructionKey": "away",
-      "revision": "530b6dc1ee5624d2",
+      "revision": "aa024a236f52af36",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/raiders-away-1963.webp",
-          "sha256": "cc5a9b1bb7c2f19f83fe7b8570bc0f99ed54c2b5359b7f6b5d773b181ed47b76"
+          "sha256": "a455c1b9b2961affe74a2fa5555d057f5919ee713bbc2bc5fc1c2cc3ce39e7e9"
         },
         "full": {
           "path": "/uniforms/raiders-away-1963-full.webp",
-          "sha256": "5269dda1506588aad17b504c5c355604f68fb51c0c927611988fff00283633cc"
+          "sha256": "903655a90e37bd61b8e8c474d3bbeb40589c9c68ef6e6414167366b413d1aa02"
         }
       }
     },
     {
       "catalogId": "raiders-home-1963",
       "constructionKey": "home",
-      "revision": "c2298abf005e87b6",
+      "revision": "3a98cba9359303e2",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/raiders-home-1963.webp",
-          "sha256": "4f918fd462fee9d6d92902e31cbd61e5968314e9b27314d18808e525a91cce46"
+          "sha256": "ab4ef07850fb6dff86f589b1ab07207a130ba33869f68b9f8c924cb551088278"
         },
         "full": {
           "path": "/uniforms/raiders-home-1963-full.webp",
-          "sha256": "cb90dccf94ae84037e3a19409f38551cb03a67e573e00ee6ddf04ab5023b0ae6"
+          "sha256": "c882bb3c168af62003b2474e5066d52341ab26c2777d51502ea391822cada96c"
         }
       }
     },
