@@ -22,6 +22,10 @@ enum CoachmarkID: CaseIterable {
     case playerDot
     case overflowMenu
     case bottomTabs
+    case scheduleGame
+    case compareTeams
+    case compareSwitcher
+    case compareContent
 }
 
 private struct CoachmarkFrameKey: PreferenceKey {

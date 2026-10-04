@@ -99,6 +99,7 @@ struct CompareView: View {
         // already-visited instance the store update reaches while it's installed. Both
         // run `applyPendingCompareRequest`, whose `consume()` makes the second a no-op.
         .onAppear { applyPendingCompareRequest() }
+        .onAppear { DepthEnvironment.onboarding.pageDidAppear(.compare) }
         .onChange(of: compareRouteStore.pendingRequest) { _, _ in
             applyPendingCompareRequest()
         }
@@ -183,6 +184,7 @@ struct CompareView: View {
 
                 tabContent
                     .id(viewModel.tab)
+                    .coachmarkAnchor(.compareContent)
                     .transition(.opacity)
                     .animation(
                         reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection,
@@ -268,6 +270,7 @@ struct CompareView: View {
                 .accessibilityHidden(true)
             teamSlotButton(viewModel.teamB, slot: .b)
         }
+        .coachmarkAnchor(.compareTeams)
     }
 
     @ViewBuilder
@@ -399,6 +402,7 @@ struct CompareView: View {
             fullWidth: true
         )
         .accessibilityElement(children: .contain)
+        .coachmarkAnchor(.compareSwitcher)
     }
 
     @ViewBuilder

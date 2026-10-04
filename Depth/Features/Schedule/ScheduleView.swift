@@ -53,6 +53,7 @@ struct ScheduleView: View {
                     .navigationBarTitleDisplayMode(.inline)
             }
         }
+        .onAppear { DepthEnvironment.onboarding.pageDidAppear(.schedule) }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
         .sheet(isPresented: $showSeasonPicker) {
@@ -195,6 +196,10 @@ struct ScheduleView: View {
         if games.isEmpty {
             ContentUnavailableView(emptyMessage, systemImage: "calendar")
         } else {
+            let firstTappableGame = games.first {
+                !$0.isBye && $0.opponent != nil && !viewModel.isPastSeason
+                    && onSelectOpponent != nil
+            }?.id
             LazyVGrid(
                 columns: dynamicTypeSize.isAccessibilitySize
                     ? [GridItem(.flexible())]
@@ -208,6 +213,7 @@ struct ScheduleView: View {
                     ScheduleGameCard(
                         game: game,
                         isPastSeason: viewModel.isPastSeason,
+                        isTutorialTarget: game.id == firstTappableGame,
                         onSelectOpponent: onSelectOpponent
                     )
                 }
@@ -241,6 +247,7 @@ private enum SchedulePhase: String, CaseIterable {
 private struct ScheduleGameCard: View {
     let game: ScheduleGame
     let isPastSeason: Bool
+    let isTutorialTarget: Bool
     /// `nil` (no compare destination available) for bye weeks and — matching
     /// web's TeamScheduleView.tsx guard comment ("Historical seasons have no
     /// compare-page destination yet") — a past season's games, even though
@@ -259,7 +266,7 @@ private struct ScheduleGameCard: View {
             Button {
                 onSelectOpponent?(opponent)
             } label: {
-                cardContent
+                cardContent.coachmarkTarget(if: isTutorialTarget, id: .scheduleGame)
             }
             .buttonStyle(.plain)
             .accessibilityHint("Opens the matchup comparison")

@@ -50,12 +50,25 @@ struct CoachmarkOverlayView: View {
         }
     }
 
+    private var hasTarget: Bool {
+        guard let step = controller.currentStep else { return false }
+        return step.id == .bottomTabs || anchors[step.id] != nil
+    }
+
     var body: some View {
-        if let step = controller.currentStep, let rect = targetRect {
+        if let step = controller.currentStep {
+            let rect =
+                targetRect
+                ?? CGRect(
+                    x: proxy.size.width / 2 - 1,
+                    y: proxy.size.height / 2 - 1,
+                    width: 2,
+                    height: 2
+                )
             ZStack {
                 dimLayer
-                ring(around: rect)
-                bubble(for: step, around: rect)
+                if hasTarget { ring(around: rect) }
+                bubble(for: step, around: rect, hasTarget: hasTarget)
             }
             .ignoresSafeArea()
             .transition(.opacity)
@@ -91,7 +104,8 @@ struct CoachmarkOverlayView: View {
             .allowsHitTesting(false)
     }
 
-    private func bubble(for step: CoachmarkStep, around rect: CGRect) -> some View {
+    private func bubble(for step: CoachmarkStep, around rect: CGRect, hasTarget: Bool) -> some View
+    {
         let bubbleWidth = min(320, proxy.size.width - DesignTokens.Spacing.lg * 2)
         // Prefer the side of the target with more room, so the bubble never has to
         // overlap the spotlight it's explaining.
@@ -111,7 +125,7 @@ struct CoachmarkOverlayView: View {
 
         let content = VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             HStack {
-                Text("\(controller.stepNumber) of \(CoachmarkStep.all.count)")
+                Text("\(controller.stepNumber) of \(controller.totalStepCount)")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(DesignTokens.Colors.textFaint)
                 Spacer()
@@ -125,7 +139,7 @@ struct CoachmarkOverlayView: View {
             Text(step.title)
                 .font(.headline)
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
-            Text(step.message)
+            Text(hasTarget ? step.message : (step.fallbackMessage ?? step.message))
                 .font(.subheadline)
                 .foregroundStyle(DesignTokens.Colors.textSecondary)
             Button {

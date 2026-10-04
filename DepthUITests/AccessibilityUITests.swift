@@ -10,6 +10,122 @@ import XCTest
 // fixture-backed journey.
 @MainActor
 final class AccessibilityUITests: XCTestCase {
+    func testCompleteCoachmarkTourVisitsScheduleAndCompareOnce() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments =
+            XCUIApplication.hermeticLaunchArguments + [
+                "UI_TESTING_START_TEAM=bills", "UI_TESTING_SHOW_ONBOARDING",
+                "UI_TESTING_REDUCE_MOTION",
+            ]
+        app.launch()
+
+        let takeTour = app.buttons["Take the Tour"]
+        XCTAssertTrue(takeTour.waitForExistence(timeout: 30))
+        takeTour.tap()
+
+        let next = app.buttons["coachmark-next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Switch teams anytime"].exists)
+        for title in ["Tap any player", "More lives in here", "Explore the app"] {
+            next.tap()
+            XCTAssertTrue(app.staticTexts[title].waitForExistence(timeout: 10))
+        }
+        XCTAssertTrue(app.staticTexts["4 of 8"].exists)
+        next.tap()
+
+        XCTAssertTrue(app.staticTexts["Compare a matchup"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["5 of 8"].exists)
+        XCTAssertTrue(app.buttons["page-switcher-schedule"].exists)
+        let scheduleSurface = app.descendants(matching: .any).matching(
+            NSPredicate(
+                format: "identifier IN %@",
+                ["schedule-content", "schedule-empty", "schedule-error", "schedule-loading"]
+            )
+        ).firstMatch
+        XCTAssertTrue(scheduleSurface.waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "tutorial-schedule")
+        next.tap()
+
+        XCTAssertTrue(app.staticTexts["Pick two teams"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["6 of 8"].exists)
+        XCTAssertTrue(app.buttons["compare-slot-a"].exists)
+        attachScreenshot(app, named: "tutorial-compare")
+        next.tap()
+        XCTAssertTrue(app.staticTexts["Choose a view"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["7 of 8"].exists)
+        XCTAssertTrue(app.buttons["compare-tab-matchup"].exists)
+        attachScreenshot(app, named: "tutorial-compare-switcher")
+        next.tap()
+        XCTAssertTrue(app.staticTexts["Read the comparison"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["8 of 8"].exists)
+        XCTAssertTrue(app.scrollViews["compare-content"].exists)
+        attachScreenshot(app, named: "tutorial-compare-content")
+        next.tap()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 10))
+        XCTAssertTrue(app.buttons["compare-slot-a"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Depth Charts"].tap()
+        app.buttons["page-switcher-schedule"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
+
+        app.buttons["account-button"].tap()
+        let replay = app.buttons["settings-take-the-tour"]
+        XCTAssertTrue(replay.waitForExistence(timeout: 10))
+        reveal(replay, in: app)
+        replay.tap()
+        let replayTour = app.buttons["Take the Tour"]
+        XCTAssertTrue(replayTour.waitForExistence(timeout: 10))
+        replayTour.tap()
+        XCTAssertTrue(app.staticTexts["Switch teams anytime"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["page-switcher-roster"].isSelected)
+        app.buttons["coachmark-skip"].tap()
+
+        app.buttons["page-switcher-schedule"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
+    }
+
+    func testLegacyPageTutorialRunsOnceAcrossRelaunchAndSkip() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments =
+            XCUIApplication.hermeticLaunchArguments + [
+                "UI_TESTING_START_TEAM=bills", "UI_TESTING_LEGACY_ONBOARDING",
+                "UI_TESTING_REDUCE_MOTION",
+            ]
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart(timeout: 30))
+
+        app.buttons["page-switcher-schedule"].tap()
+        XCTAssertTrue(app.staticTexts["Compare a matchup"].waitForExistence(timeout: 15))
+        app.buttons["coachmark-skip"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
+
+        app.tabBars.buttons["Compare"].tap()
+        XCTAssertTrue(app.staticTexts["Pick two teams"].waitForExistence(timeout: 15))
+        app.buttons["coachmark-skip"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
+
+        app.terminate()
+        app.launchArguments = [XCUIApplication.fixtureBackendArgument, "UI_TESTING_REDUCE_MOTION"]
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart(timeout: 30))
+        app.tabBars.buttons["Compare"].tap()
+        XCTAssertTrue(app.buttons["compare-slot-a"].waitForExistence(timeout: 20))
+        app.tabBars.buttons["Depth Charts"].tap()
+        app.buttons["page-switcher-schedule"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
+        app.tabBars.buttons["Compare"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
+    }
+
     // Run with simctl's real content_size setting, so sheet presentations and native
     // controls are covered independently of the app's launch-argument override.
     func testSystemSizeSecondaryScreens() throws {

@@ -246,6 +246,13 @@ struct TeamDetailView: View {
             .onChange(of: page) { _, _ in
                 editMode.exitForContextChange()
             }
+            .onChange(of: DepthEnvironment.onboarding.teamPageRouteToken, initial: true) { _, _ in
+                switch DepthEnvironment.onboarding.consumeTeamPageRequest() {
+                case .roster: page = .roster
+                case .schedule: page = .schedule
+                case nil: break
+                }
+            }
             .onChange(of: historyViewModel.selectedSeason) { _, _ in
                 // Merge spec (2026-09-11): a season change pops the pushed profile, whose depth
                 // context belongs to the season that pushed it. The spec's other half — a team
