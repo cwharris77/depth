@@ -34,6 +34,22 @@ export interface SeasonBuild {
   games: PlayerGameRow[];
 }
 
+/** Concurrent uploads in flight during the publish phase. */
+export const UPLOAD_CONCURRENCY = 32;
+
+/** Runs `task` over `items` with at most `limit` in flight; the first failure rejects. */
+async function runPool<T>(
+  items: readonly T[],
+  limit: number,
+  task: (item: T) => Promise<void>
+): Promise<void> {
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (next < items.length) await task(items[next++]);
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+}
+
 export class MissingCheckpointError extends Error {
   constructor(readonly seasons: number[]) {
     super(
@@ -187,11 +203,17 @@ export async function runStatFileBuild(opts: BuildRunOptions): Promise<BuildRunR
   const publisher = await createPublisher(target, { currentSeason: completedSeason });
   const stagedKeys = staging.keys().filter((key) => !key.endsWith('/publish-index.json'));
   const manifest = manifestKey();
-  for (const key of [...stagedKeys.filter((k) => k !== manifest), manifest]) {
+  const upload = async (key: string): Promise<void> => {
     const gz = await staging.get(key);
-    if (!gz) continue;
-    await publisher.putEncoded(key, gunzipSync(Buffer.from(gz)), gz);
-  }
+    if (gz) await publisher.putEncoded(key, gunzipSync(Buffer.from(gz)), gz);
+  };
+  // A full backfill is ~63k small objects; one request at a time is hours of round trips.
+  await runPool(
+    stagedKeys.filter((key) => key !== manifest),
+    UPLOAD_CONCURRENCY,
+    upload
+  );
+  await upload(manifest);
   await publisher.flush();
 
   return {

@@ -4,6 +4,7 @@ import {
   mergeManifestSources,
   MissingCheckpointError,
   runStatFileBuild,
+  UPLOAD_CONCURRENCY,
   ShrinkGuardError,
   type SeasonBuild,
 } from './build-run';
@@ -79,6 +80,29 @@ describe('runStatFileBuild', () => {
     expect(target.puts).toContain(playerSeasonsKey('p0'));
     expect(target.puts).toContain(seasonCheckpointKey(2024));
     expect(target.puts[target.puts.length - 2]).toBe(manifestKey());
+  });
+
+  it('uploads concurrently but never starts the manifest before the other objects finish', async () => {
+    let inFlight = 0;
+    let peak = 0;
+    let finished = 0;
+    let manifestStartedAfter = -1;
+    class SlowTarget extends RecordingTarget {
+      override async put(key: string, body: Uint8Array, headers: StatFileHeaders): Promise<void> {
+        if (key === manifestKey()) manifestStartedAfter = finished;
+        inFlight++;
+        peak = Math.max(peak, inFlight);
+        await new Promise((resolve) => setTimeout(resolve, 1));
+        inFlight--;
+        finished++;
+        await super.put(key, body, headers);
+      }
+    }
+    const target = new SlowTarget();
+    await runStatFileBuild(options(target, [2023, 2024, 2025]));
+    expect(peak).toBeGreaterThan(1);
+    expect(peak).toBeLessThanOrEqual(UPLOAD_CONCURRENCY);
+    expect(manifestStartedAfter).toBe(target.puts.length - 2);
   });
 
   it('fails naming the backfill command when a needed checkpoint is missing, uploading nothing', async () => {
