@@ -119,7 +119,7 @@ export class R2StatFileTarget implements StatFileTarget {
       this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }))
     ).catch((error: unknown) => {
       if (isNotFound(error)) return null;
-      throw error;
+      throw describeFailure('GET', this.bucket, key, error);
     });
     if (!response || !response.Body) return null;
     // The SDK streams the body; the publisher wants the full bytes back.
@@ -138,7 +138,9 @@ export class R2StatFileTarget implements StatFileTarget {
           CacheControl: headers.cacheControl,
         })
       )
-    );
+    ).catch((error: unknown) => {
+      throw describeFailure('PUT', this.bucket, key, error);
+    });
   }
 
   destroy(): void {
@@ -177,6 +179,16 @@ async function withRetry<T>(operation: () => Promise<T>): Promise<T> {
     }
   }
   throw lastError;
+}
+
+/** An R2 error carrying the operation, bucket and key, which the SDK's own message omits. */
+function describeFailure(operation: string, bucket: string, key: string, error: unknown): Error {
+  const name = (error as { name?: string } | null)?.name ?? 'Error';
+  const status = httpStatus(error);
+  return new Error(
+    `R2 ${operation} ${bucket}/${key} failed: ${name}${status ? ` (${status})` : ''}`,
+    { cause: error }
+  );
 }
 
 /** A 404 / NoSuchKey means "not there yet" — a real answer, never retried. */
