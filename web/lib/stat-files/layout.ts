@@ -42,6 +42,26 @@ export function isBuildKey(key: string): boolean {
   return key.startsWith(`${PREFIX}/_build/`);
 }
 
+/** Root of the raw source archive. It sits beside `v1/`, so a schema bump never moves it. */
+export const RAW_PREFIX = '_raw';
+
+/**
+ * `_raw/{source}/{season}/{asset}.gz` — a fetched source file exactly as served, gzipped.
+ * `season` is `all` for a whole-history file.
+ */
+export function rawAssetKey(source: string, season: number | 'all', asset: string): string {
+  return `${RAW_PREFIX}/${source}/${season}/${asset}.gz`;
+}
+
+/** `_raw/{source}/{season}/{asset}.meta.json` — provenance for the archived copy. */
+export function rawMetaKey(source: string, season: number | 'all', asset: string): string {
+  return `${RAW_PREFIX}/${source}/${season}/${asset}.meta.json`;
+}
+
+export function isRawKey(key: string): boolean {
+  return key.startsWith(`${RAW_PREFIX}/`);
+}
+
 /**
  * The `Cache-Control` for an object. `players/{espn_id}/seasons.json` and the manifest
  * revalidate hourly (a current season's stats keep moving); a completed season's game log
@@ -49,7 +69,7 @@ export function isBuildKey(key: string): boolean {
  * `currentSeason` is the canonical `nflSeasonState()` value — never a source's own label.
  */
 export function cacheControlFor(key: string, currentSeason: number): string {
-  if (isBuildKey(key)) return 'no-store';
+  if (isBuildKey(key) || isRawKey(key)) return 'no-store';
   const gameLogMatch = key.match(/\/games\/(\d{4})\.json$/);
   if (gameLogMatch) {
     const season = Number(gameLogMatch[1]);
