@@ -190,6 +190,20 @@ Everything in `web/CLAUDE.md` §5's "Any code PR" checklist applies. Additionall
       ```
       scoped to the suites the diff touches — `DepthTests` for data/domain,
       `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed.
+- [ ] **Slim the simulator before booting it for anything that doesn't need full system
+      services** (UI tests, screenshots, layout checks, manual runs). `simslim` (Homebrew,
+      `mobai-app/tap/simslim`) disables background daemons a simulator doesn't need:
+      roughly 245 processes / 3.1 GB down to 88 / 1.0 GB on an iPhone 17. Find the UDID
+      with `xcrun simctl list devices`, then:
+      ```
+      simslim on <udid>                  # persist + reboot slim; `simslim off <udid>` reverts
+      simslim on <udid> --except store   # keep push + StoreKit
+      simslim watch                      # slim parallel-testing clones as they boot
+      ```
+      Use a stock boot for push-notification, StoreKit/paywall, iCloud/Keychain, HealthKit,
+      Photos-picker, or universal-link work, or keep just the needed category with
+      `--except` (`simslim profiles` lists them). `simslim doctor <udid>` confirms nothing
+      you need broke.
 - [ ] **Visual/screen-touching change: fill the PR's `## Screenshots` section.** A simple
       single-screen UI change gets `/ios-pr-screenshots`; a multi-screen or logic-heavy
       change you verify in the simulator instead gets one sentence justifying the skip.
