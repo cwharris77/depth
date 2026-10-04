@@ -4,7 +4,7 @@
 //
 // Usage (from web/):
 //   npm run stat-files:build -- --seasons 1999-2026 --out .stat-files [--no-games]
-//   npm run stat-files:build -- --target r2 --bucket <name> [--seasons 1999-2026]
+//   npm run stat-files:build -- --target r2 --bucket <name> [--seasons 1999-2026] [--teams]
 //
 // `--target r2` publishes to the bucket named by `--bucket` (credentials come from the
 // R2_* environment, never arguments). Without `--seasons` the build rebuilds the current
@@ -13,6 +13,10 @@
 // been built and has passed the shrink guard (`--allow-shrink <season>` overrides one
 // season). Every fetched source file is archived gzipped under `_raw/`; `--from-raw`
 // rebuilds from that archive instead of nflverse.
+//
+// Team files (`v1/teams/{team_id}/seasons.json`) are opt-in with `--teams`: per-game team
+// lines, defense-allowed rates and league ranks from `stats_team_week`, published in the same
+// all-or-nothing upload. A season with no stored team checkpoint is built from source.
 //
 // Game logs (`v1/players/{espn_id}/games/{season}.json`) are written from the same weekly
 // parse as the season ledgers, one season at a time so a season's weekly rows are released
@@ -59,6 +63,7 @@ import {
 import type { StatFileTarget } from '@/lib/stat-files/publish';
 import { createRawArchive, createSourceFetcher } from '@/lib/stat-files/raw-archive';
 import { FileSystemStatFileTarget, r2StatFileTargetFromEnv } from '@/lib/stat-files/targets';
+import { toTeamGameRows, type TeamGameRow } from '@/lib/stat-files/team-seasons';
 import {
   consolidateSeason,
   toPlayerWeekRows,
@@ -70,6 +75,7 @@ import {
 const PLAYERS_TAG = 'players';
 const PLAYERS_FILE = 'players.csv';
 const STATS_TAG = 'stats_player';
+const TEAM_STATS_TAG = 'stats_team';
 const SNAP_COUNTS_TAG = 'snap_counts';
 const NGS_TAG = 'nextgen_stats';
 const PFR_TAG = 'pfr_advstats';
@@ -119,6 +125,7 @@ interface Args {
   bucket: string | null;
   fromRaw: boolean;
   allowShrink: number[];
+  teams: boolean;
 }
 
 function flagValue(argv: string[], flag: string): string | null {
@@ -143,6 +150,7 @@ function parseArgs(argv: string[]): Args {
     bucket: flagValue(argv, '--bucket'),
     fromRaw: argv.includes('--from-raw'),
     allowShrink,
+    teams: argv.includes('--teams'),
   };
 }
 
@@ -360,6 +368,32 @@ async function buildSeason(
   };
 }
 
+/** One season of stats_team_week as team-games; an unpublished season has none. */
+async function buildTeamSeason(
+  season: number,
+  ctx: { latestCompletedSeason: number; loggedNewColumnSources: Set<string> }
+): Promise<TeamGameRow[]> {
+  const guarded = await fetchRawGroup(
+    {
+      source: 'stats_team_week',
+      table: 'stats_team_week',
+      season,
+      tasks: [{ url: assetUrl(TEAM_STATS_TAG, `stats_team_week_${season}.csv`) }],
+    },
+    {
+      fetchCsv: (url) => fetchSource(url),
+      latestCompletedSeason: ctx.latestCompletedSeason,
+      loggedNewColumns: ctx.loggedNewColumnSources,
+    }
+  );
+  if (guarded.status === 'skip') return [];
+  if (guarded.status === 'failure') throw new Error(guarded.message);
+  const result = toTeamGameRows(parseCsv(guarded.fetched[0].csv), resolveTeamCode);
+  recordSource('stats_team_week', season, result.unresolved);
+  console.log(`${season}: ${result.rows.length} team-game rows`);
+  return result.rows;
+}
+
 /** nfldata games.csv → the (season, week, team) → game index game rows join through. */
 async function loadGameIndex(loggedNewColumns: Set<string>): Promise<GameIndex> {
   const csv = await fetchSource(GAMES_URL);
@@ -475,6 +509,19 @@ async function main(): Promise<void> {
       completedSeason,
       allowShrink: args.allowShrink,
       sources: coverageSources,
+      teams: args.teams
+        ? {
+            // The in-progress season is rebuilt but not yet expected from a checkpoint.
+            expectedSeasons: [...new Set([...expectedSeasons, ...seasons])]
+              .filter((season) => isPublishedSeason('stats_team_week', season))
+              .sort((a, b) => a - b),
+            buildSeason: (season) =>
+              buildTeamSeason(season, {
+                latestCompletedSeason: completedSeason,
+                loggedNewColumnSources,
+              }),
+          }
+        : undefined,
       buildSeason: async (season) => {
         const built = await buildSeason(season, {
           latestCompletedSeason: completedSeason,
@@ -495,7 +542,7 @@ async function main(): Promise<void> {
     for (const violation of result.overridden) console.log(`allowed shrink: ${violation.message}`);
     console.log(
       `published ${result.uploaded} objects, skipped ${result.skipped} unchanged, ` +
-        `${result.playerFiles} player files, ${result.gameFiles} game files`
+        `${result.playerFiles} player files, ${result.gameFiles} game files, ${result.teamFiles} team files`
     );
     await recordRun({
       startedAt,

@@ -5,6 +5,7 @@
 // do with the violations.
 
 import type { PlayerSeasonRow, StatLine } from './player-seasons';
+import type { TeamGameRow } from './team-seasons';
 
 /** Every threshold in one place. Both are fractions of the previous checkpoint's count. */
 export const SHRINK_THRESHOLDS = {
@@ -41,6 +42,46 @@ export function fieldCounts(rows: readonly PlayerSeasonRow[]): Map<string, numbe
   return counts;
 }
 
+function compareCounts(opts: {
+  season: number;
+  rowLabel: string;
+  previousRows: number;
+  nextRows: number;
+  previousFields: ReadonlyMap<string, number>;
+  nextFields: ReadonlyMap<string, number>;
+  inProgress: boolean;
+}): ShrinkViolation[] {
+  const { season, rowLabel, previousRows, nextRows, previousFields, nextFields, inProgress } = opts;
+  const violations: ShrinkViolation[] = [];
+  const maxRowDrop = inProgress ? 0 : SHRINK_THRESHOLDS.playerRows;
+  const maxFieldDrop = inProgress ? 0 : SHRINK_THRESHOLDS.fieldNonNull;
+  const limit = (fraction: number) => (inProgress ? 'any drop' : `${fraction * 100}% drop`);
+
+  if (previousRows - nextRows > previousRows * maxRowDrop) {
+    violations.push({
+      season,
+      subject: rowLabel,
+      before: previousRows,
+      after: nextRows,
+      message: `${season}: ${rowLabel.replace('_', ' ')} ${previousRows} -> ${nextRows} exceeds the ${limit(maxRowDrop)} limit`,
+    });
+  }
+
+  for (const [field, before] of [...previousFields].sort(([a], [b]) => a.localeCompare(b))) {
+    const after = nextFields.get(field) ?? 0;
+    if (before - after > before * maxFieldDrop) {
+      violations.push({
+        season,
+        subject: field,
+        before,
+        after,
+        message: `${season}: ${field} non-null ${before} -> ${after} exceeds the ${limit(maxFieldDrop)} limit`,
+      });
+    }
+  }
+  return violations;
+}
+
 /**
  * Violations for one rebuilt season. A completed season may lose up to the thresholds; an
  * in-progress season is still being filled in, so it may only grow. No previous checkpoint
@@ -54,34 +95,47 @@ export function checkSeasonShrink(opts: {
 }): ShrinkViolation[] {
   const { season, previous, next, inProgress } = opts;
   if (!previous) return [];
+  return compareCounts({
+    season,
+    rowLabel: 'player_rows',
+    previousRows: previous.length,
+    nextRows: next.length,
+    previousFields: fieldCounts(previous),
+    nextFields: fieldCounts(next),
+    inProgress,
+  });
+}
 
-  const violations: ShrinkViolation[] = [];
-  const maxRowDrop = inProgress ? 0 : SHRINK_THRESHOLDS.playerRows;
-  const maxFieldDrop = inProgress ? 0 : SHRINK_THRESHOLDS.fieldNonNull;
-  const limit = (fraction: number) => (inProgress ? 'any drop' : `${fraction * 100}% drop`);
-
-  if (previous.length - next.length > previous.length * maxRowDrop) {
-    violations.push({
-      season,
-      subject: 'player_rows',
-      before: previous.length,
-      after: next.length,
-      message: `${season}: player rows ${previous.length} -> ${next.length} exceeds the ${limit(maxRowDrop)} limit`,
-    });
-  }
-
-  const nextCounts = fieldCounts(next);
-  for (const [field, before] of [...fieldCounts(previous)].sort(([a], [b]) => a.localeCompare(b))) {
-    const after = nextCounts.get(field) ?? 0;
-    if (before - after > before * maxFieldDrop) {
-      violations.push({
-        season,
-        subject: field,
-        before,
-        after,
-        message: `${season}: ${field} non-null ${before} -> ${after} exceeds the ${limit(maxFieldDrop)} limit`,
-      });
+/** Team-games that carry each `offense.field` / `allowed.field`. */
+export function teamFieldCounts(rows: readonly TeamGameRow[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    for (const section of ['offense', 'allowed'] as const) {
+      for (const field of Object.keys(row[section] ?? {})) {
+        const key = `${section}.${field}`;
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
     }
   }
-  return violations;
+  return counts;
+}
+
+/** The same guard over a season's team-games: row count, and each field's non-null count. */
+export function checkTeamSeasonShrink(opts: {
+  season: number;
+  previous: readonly TeamGameRow[] | null;
+  next: readonly TeamGameRow[];
+  inProgress: boolean;
+}): ShrinkViolation[] {
+  const { season, previous, next, inProgress } = opts;
+  if (!previous) return [];
+  return compareCounts({
+    season,
+    rowLabel: 'team_games',
+    previousRows: previous.length,
+    nextRows: next.length,
+    previousFields: teamFieldCounts(previous),
+    nextFields: teamFieldCounts(next),
+    inProgress,
+  });
 }

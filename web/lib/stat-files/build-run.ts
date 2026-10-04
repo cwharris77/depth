@@ -16,6 +16,8 @@ import {
   playerSeasonsKey,
   seasonCheckpointKey,
   STAT_FILES_SCHEMA_VERSION,
+  teamCheckpointKey,
+  teamSeasonsKey,
 } from './layout';
 import { buildPlayerGamesFiles, type PlayerGameRow } from './player-games';
 import {
@@ -24,8 +26,9 @@ import {
   type SeasonCheckpoint,
 } from './player-seasons';
 import { createPublisher, type StatFileTarget, type StatFilesManifest } from './publish';
-import { checkSeasonShrink, type ShrinkViolation } from './shrink-guard';
+import { checkSeasonShrink, checkTeamSeasonShrink, type ShrinkViolation } from './shrink-guard';
 import { MemoryStatFileTarget } from './targets';
+import { buildTeamFiles, type TeamGameRow, type TeamSeasonCheckpoint } from './team-seasons';
 
 export type ManifestSources = StatFilesManifest['sources'];
 
@@ -103,6 +106,12 @@ export function mergeManifestSources(
   return merged;
 }
 
+export interface TeamBuildOptions {
+  /** Every season the team source publishes up to the completed one. */
+  expectedSeasons: number[];
+  buildSeason: (season: number) => Promise<TeamGameRow[]>;
+}
+
 export interface BuildRunOptions {
   target: StatFileTarget;
   /** Seasons to rebuild from source. */
@@ -116,6 +125,12 @@ export interface BuildRunOptions {
   sources: () => ManifestSources;
   /** Seasons whose shrink violations are recorded instead of blocking the publish. */
   allowShrink?: readonly number[];
+  /**
+   * Team files, built beside the player files and published in the same all-or-nothing
+   * upload. A season without a stored team checkpoint is built from source rather than
+   * failing the run, since the team source is one small file per season.
+   */
+  teams?: TeamBuildOptions;
   now?: () => Date;
 }
 
@@ -124,6 +139,7 @@ export interface BuildRunResult {
   skipped: number;
   playerFiles: number;
   gameFiles: number;
+  teamFiles: number;
   /** Violations an `--allow-shrink` override let through. */
   overridden: ShrinkViolation[];
 }
@@ -175,6 +191,43 @@ export async function runStatFileBuild(opts: BuildRunOptions): Promise<BuildRunR
       gameFiles++;
     }
   }
+
+  let teamFiles = 0;
+  if (opts.teams) {
+    const { expectedSeasons, buildSeason } = opts.teams;
+    const rowsBySeason = new Map<number, TeamGameRow[]>();
+    const toBuild: number[] = [];
+    for (const season of expectedSeasons) {
+      const checkpoint = rebuilt.has(season)
+        ? null
+        : await readJson<TeamSeasonCheckpoint>(target, teamCheckpointKey(season));
+      if (checkpoint) rowsBySeason.set(season, checkpoint.rows);
+      else toBuild.push(season);
+    }
+    for (const season of toBuild) {
+      const rows = await buildSeason(season);
+      const previous = await readJson<TeamSeasonCheckpoint>(target, teamCheckpointKey(season));
+      const violations = checkTeamSeasonShrink({
+        season,
+        previous: previous?.rows ?? null,
+        next: rows,
+        inProgress: season > completedSeason,
+      });
+      (allowed.has(season) ? overridden : blocking).push(...violations);
+      rowsBySeason.set(season, rows);
+      await stager.put(teamCheckpointKey(season), {
+        schema_version: STAT_FILES_SCHEMA_VERSION,
+        season,
+        rows,
+      } satisfies TeamSeasonCheckpoint);
+    }
+    for (const [teamId, file] of [...buildTeamFiles(rowsBySeason, STAT_FILES_SCHEMA_VERSION)].sort(
+      ([a], [b]) => a.localeCompare(b)
+    )) {
+      await stager.put(teamSeasonsKey(teamId), file);
+      teamFiles++;
+    }
+  }
   if (blocking.length) throw new ShrinkGuardError(blocking);
 
   const byPlayer = new Map<string, PlayerSeasonRow[]>();
@@ -221,6 +274,7 @@ export async function runStatFileBuild(opts: BuildRunOptions): Promise<BuildRunR
     skipped: publisher.skipped,
     playerFiles: byPlayer.size,
     gameFiles,
+    teamFiles,
     overridden,
   };
 }

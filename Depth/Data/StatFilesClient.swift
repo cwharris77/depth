@@ -1,8 +1,8 @@
 import Foundation
 
-// Reads the per-player stat files published to R2. The default `URLSession` configuration
-// carries the shared `URLCache`, so the files' `Cache-Control`/`ETag` headers drive
-// revalidation, and gzip bodies are decoded transparently. Features never fetch these URLs:
+// Reads the per-player and per-team stat files published to R2. The default `URLSession`
+// configuration carries the shared `URLCache`, so the files' `Cache-Control`/`ETag` headers
+// drive revalidation, and gzip bodies are decoded transparently. Features never fetch these URLs:
 // `SupabaseDepthRepository` is the one caller.
 struct StatFilesClient: Sendable {
     typealias Load = @Sendable (URLRequest) async throws -> (Data, URLResponse)
@@ -32,11 +32,25 @@ struct StatFilesClient: Sendable {
         // An ESPN athlete id is numeric; anything else could not name a file and must not be
         // spliced into a path.
         guard !espnId.isEmpty, espnId.allSatisfy({ $0.isASCII && $0.isNumber }) else { return nil }
-        let url =
-            baseURL
-            .appending(path: "players")
-            .appending(path: espnId)
-            .appending(path: "seasons.json")
+        return try await fetch(
+            baseURL.appending(path: "players").appending(path: espnId)
+                .appending(path: "seasons.json"))
+    }
+
+    /// The team's per-game lines, allowed rates and ranks, or nil when no file exists for
+    /// that id (a 404).
+    func teamSeasons(teamId: String) async throws -> TeamSeasonsFileDTO? {
+        // A team id is a lowercase slug ("chiefs", "49ers"); anything else could not name a
+        // file and must not be spliced into a path.
+        guard !teamId.isEmpty,
+            teamId.allSatisfy({ $0.isASCII && ($0.isLowercase || $0.isNumber || $0 == "-") })
+        else { return nil }
+        return try await fetch(
+            baseURL.appending(path: "teams").appending(path: teamId)
+                .appending(path: "seasons.json"))
+    }
+
+    private func fetch<File: Decodable>(_ url: URL) async throws -> File? {
         do {
             let (data, response) = try await load(URLRequest(url: url))
             guard let http = response as? HTTPURLResponse else {
@@ -44,7 +58,7 @@ struct StatFilesClient: Sendable {
             }
             switch http.statusCode {
             case 200..<300:
-                return try JSONDecoder().decode(PlayerSeasonsFileDTO.self, from: data)
+                return try JSONDecoder().decode(File.self, from: data)
             case 404:
                 return nil
             default:

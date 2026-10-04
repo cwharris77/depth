@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { PlayerSeasonRow } from './player-seasons';
-import { checkSeasonShrink, fieldCounts, SHRINK_THRESHOLDS } from './shrink-guard';
+import {
+  checkSeasonShrink,
+  checkTeamSeasonShrink,
+  fieldCounts,
+  SHRINK_THRESHOLDS,
+} from './shrink-guard';
+import type { TeamGameRow } from './team-seasons';
 
 function rows(count: number, withPfr = count): PlayerSeasonRow[] {
   return Array.from({ length: count }, (_, i) => ({
@@ -61,5 +67,40 @@ describe('fieldCounts', () => {
       'box.passing_yards': 4,
       'pfr.carries': 1,
     });
+  });
+});
+
+describe('checkTeamSeasonShrink', () => {
+  const teamRows = (count: number, withAllowed = count): TeamGameRow[] =>
+    Array.from({ length: count }, (_, i) => ({
+      team: 'bills',
+      season: 2024,
+      season_type: 'REG' as const,
+      week: i + 1,
+      game_id: `g${i}`,
+      opponent: 'jets',
+      offense: { passing_yards: 200 },
+      ...(i < withAllowed ? { allowed: { passing_yards: 150 } } : {}),
+    }));
+  const guard = (previous: TeamGameRow[] | null, next: TeamGameRow[], inProgress = false) =>
+    checkTeamSeasonShrink({ season: 2024, previous, next, inProgress });
+
+  it('passes a first build', () => {
+    expect(guard(null, teamRows(10))).toEqual([]);
+  });
+
+  it('trips when team-games drop past the threshold', () => {
+    expect(guard(teamRows(100), teamRows(97)).map((v) => v.subject)).toEqual(['team_games']);
+    expect(guard(teamRows(100), teamRows(98))).toEqual([]);
+  });
+
+  it('trips when the allowed line disappears from too many games', () => {
+    const [violation] = guard(teamRows(100), teamRows(100, 80));
+    expect(violation).toMatchObject({ subject: 'allowed.passing_yards', before: 100, after: 80 });
+  });
+
+  it('lets an in-progress season only grow', () => {
+    expect(guard(teamRows(10), teamRows(9), true)).not.toEqual([]);
+    expect(guard(teamRows(10), teamRows(12), true)).toEqual([]);
   });
 });

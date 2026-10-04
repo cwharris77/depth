@@ -220,6 +220,12 @@ actor CachingDepthRepository: DepthRepository {
         try await underlying.playerStats(playerId: playerId, teamId: teamId)
     }
 
+    /// The files' own Cache-Control/ETag headers drive revalidation through URLCache, so this
+    /// decorator keeps no copy of its own.
+    func teamStatHistory(teamId: String) async throws -> TeamStatHistory? {
+        try await underlying.teamStatHistory(teamId: teamId)
+    }
+
     /// The database query is already season-bounded, and Compare needs the newest
     /// ingest window. Delegate directly without adding SwiftData, TTL, or dedup state.
     func recentParticipation(teamId: String) async throws -> RecentParticipation? {

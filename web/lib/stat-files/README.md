@@ -11,7 +11,9 @@ The writer for the stat-history objects served from Cloudflare R2. It knows noth
 | `v1/manifest.json` | schema version, `generated_at`, per-source coverage, crosswalk misses | `public, max-age=3600` |
 | `v1/players/{espn_id}/seasons.json` | one player's career ledger | `public, max-age=3600` |
 | `v1/players/{espn_id}/games/{season}.json` | one player-season game log | current season `max-age=3600`, completed `max-age=604800` |
+| `v1/teams/{team_id}/seasons.json` | one team's per-game lines, defense-allowed rates and ranks | `public, max-age=3600` |
 | `v1/_build/season-rows/{season}.json` | publisher checkpoint (private) | `no-store` |
+| `v1/_build/team-rows/{season}.json` | team-game checkpoint (private) | `no-store` |
 | `v1/_build/publish-index.json` | key → sha256 of the last uploaded body (private) | `no-store` |
 
 Every served object is gzip JSON with `Content-Type: application/json` and `Content-Encoding: gzip`. `_build/*` is working state and is never cached. `cacheControlFor(key, currentSeason)` derives the header; `currentSeason` is the canonical `nflSeasonState()` value, never a source's own label. A breaking shape change bumps `STAT_FILES_SCHEMA_VERSION` and writes a new `v2/` prefix.
@@ -30,6 +32,16 @@ Every served object is gzip JSON with `Content-Type: application/json` and `Cont
 ## Game logs
 
 `stat-files:build` also writes `v1/players/{espn_id}/games/{season}.json` from the same weekly parse as the season ledgers (`player-games.ts`). One row per player-week (REG and POST, a traded player's weeks stay on the team played for), each carrying the same `box` / `snaps` / `pfr` / `ngs` / `qbr` sections as a season row; a source with no row that week omits its section. `game_id` and `opponent` come from the nfldata schedule keyed by (season, week, team); a week with no schedule match omits them. Pass `--no-games` to rebuild only the season ledgers. Seasons are processed one at a time, so memory stays bounded by one season's weekly rows.
+
+## Team files
+
+`stat-files:build -- --teams` also writes `v1/teams/{team_id}/seasons.json` (`team-seasons.ts`), keyed by our team id (`bills`, `rams`), from nflverse `stats_team_week`. The flag is off by default, and the scheduled workflow does not pass it; a manual dispatch with `team_files` set does. Seasons are listed newest first.
+
+- **`games`** is source-faithful: per game `offense` (the team's own row), `allowed` (the opponent's offensive row for the same game, so no play-by-play fold is needed), `game_id`, `opponent`, `season_type` (REG or POST) and `week`. Source columns keep their nflverse names; a blank cell is omitted, never zero.
+- **`derived`** is our arithmetic over regular-season games that have an allowed line; playoff games are never ranked. `allowed_per_game` holds per-game `passing_yards`, `rushing_yards`, `total_yards`, `passing_epa`, `rushing_epa`, plus `passing_epa_per_dropback` (over attempts plus sacks) and `rushing_epa_per_carry`. A metric is omitted when any contributing game lacks an input, so a gap reads as absent rather than a smaller total.
+- **`ranks`** put 1 on the team that allowed the least (rank 4 of 32 is the fourth-best defense, rank 29 the fourth-worst); ties share a rank. A team needs at least two games to be ranked, and `ranked_teams` is the denominator. `derived.recent` repeats the rates and ranks over the team's last three regular-season games (`recent_window` in the file), with `through_week` marking where the window ends.
+- **Coverage.** `stats_team_week` has every game paired and all 32 teams from 2003; 1999-2002 have blank team cells, unpaired games or a missing franchise, so the floor is 2003 and the manifest records the seasons actually built.
+- **Checkpoints and guard.** Each season's team-games are stored at `v1/_build/team-rows/{season}.json` and run through the same shrink guard as player seasons. A season with no stored team checkpoint is built from source instead of failing the run, since the source is one small file per season.
 
 ## Publishing to R2
 
@@ -63,4 +75,4 @@ The `Content-Encoding: gzip` and `Cache-Control` in the response are the same on
 
 ## Edge caching
 
-The `stats` and `stats-staging` hostnames carry a Cloudflare Cache Rule (eligible for cache, edge TTL from the origin `Cache-Control`) covering `/v1/players/*` and `/v1/manifest.json`, with Tiered Cache enabled. `_build/` and `_raw/` are outside the rule and are never edge-cached. A republished object can therefore stay stale at the edge for up to its TTL (an hour for current-season files, a week for a completed season's game logs); after a correction backfill, purge the hostname under Caching → Configuration → Purge Cache.
+The `stats` and `stats-staging` hostnames carry a Cloudflare Cache Rule (eligible for cache, edge TTL from the origin `Cache-Control`) covering `/v1/players/*`, `/v1/teams/*` and `/v1/manifest.json`, with Tiered Cache enabled. `_build/` and `_raw/` are outside the rule and are never edge-cached. A republished object can therefore stay stale at the edge for up to its TTL (an hour for current-season files and team files, a week for a completed season's game logs); after a correction backfill, purge the hostname under Caching → Configuration → Purge Cache.

@@ -152,3 +152,24 @@ describe('ingest source-shape guard (fixture CSV)', () => {
     expect(result.failure).toMatch(/passing_yards/);
   });
 });
+
+describe('stats_team_week contract', () => {
+  const contract = sourceContract('stats_team_week');
+
+  it('requires the identity and offensive columns the team files read', () => {
+    expect(contract.columns).toEqual(
+      expect.arrayContaining(['team', 'opponent_team', 'game_id', 'passing_epa', 'rushing_yards'])
+    );
+  });
+
+  it('fails a renamed offensive column and names it', () => {
+    const header = contract.columns.filter((column) => column !== 'rushing_epa');
+    expect(checkHeader(contract, header)).toEqual({ ok: false, missing: ['rushing_epa'] });
+  });
+
+  it('ignores the many unread columns upstream publishes', () => {
+    expect(checkHeader(contract, [...contract.columns, 'def_sacks', 'fg_made'])).toEqual({
+      ok: true,
+    });
+  });
+});

@@ -25,6 +25,9 @@ export const SOURCE_COVERAGE: Record<SourceId, SourceCoverage> = {
   games: { minSeason: 1999 },
   stats_player_reg: { minSeason: 1999 },
   stats_team: { minSeason: 1999 },
+  // Every game is present and paired with its opponent from 2003; 1999-2002 have blank
+  // team cells, unpaired games or a missing franchise, so those seasons are not published.
+  stats_team_week: { minSeason: 2003 },
   stats_player_regpost: { minSeason: 1999 },
   stats_player_week: { minSeason: 1999 },
   pfr_advstats: { minSeason: 2018 },

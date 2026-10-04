@@ -7,6 +7,8 @@ import {
   playerSeasonsKey,
   publishIndexKey,
   seasonCheckpointKey,
+  teamCheckpointKey,
+  teamSeasonsKey,
 } from './layout';
 
 describe('v1 stat-file layout keys', () => {
@@ -16,6 +18,8 @@ describe('v1 stat-file layout keys', () => {
     expect(playerGamesKey('3139477', 2025)).toBe('v1/players/3139477/games/2025.json');
     expect(seasonCheckpointKey(2025)).toBe('v1/_build/season-rows/2025.json');
     expect(publishIndexKey()).toBe('v1/_build/publish-index.json');
+    expect(teamSeasonsKey('bills')).toBe('v1/teams/bills/seasons.json');
+    expect(teamCheckpointKey(2025)).toBe('v1/_build/team-rows/2025.json');
   });
 
   it('marks only _build keys as private working state', () => {
@@ -29,6 +33,8 @@ describe('cacheControlFor', () => {
   it('revalidates served objects hourly', () => {
     expect(cacheControlFor(manifestKey(), 2026)).toBe('public, max-age=3600');
     expect(cacheControlFor(playerSeasonsKey('1'), 2026)).toBe('public, max-age=3600');
+    expect(cacheControlFor(teamSeasonsKey('bills'), 2026)).toBe('public, max-age=3600');
+    expect(cacheControlFor(teamCheckpointKey(2020), 2026)).toBe('no-store');
   });
 
   it('caches a completed-season game log weekly and the current one hourly', () => {

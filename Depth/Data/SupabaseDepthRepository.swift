@@ -465,6 +465,11 @@ actor SupabaseDepthRepository: DepthRepository {
         }
     }
 
+    func teamStatHistory(teamId: String) async throws -> TeamStatHistory? {
+        guard let file = try await statFiles.teamSeasons(teamId: teamId) else { return nil }
+        return TeamStatFilesMapper.map(file)
+    }
+
     private func teamAbbrevLookup() async throws -> [String: String] {
         if let teamAbbrevs { return teamAbbrevs }
         struct TeamAbbrevDTO: Decodable {

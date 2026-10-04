@@ -46,6 +46,29 @@ export interface SourceContract {
   knownColumns?: readonly string[];
 }
 
+/**
+ * The stats_team_week columns the team stat files read. Identity first, then the offensive
+ * counting stats whose opponent-side copy is a team's defense-allowed line.
+ */
+export const TEAM_WEEK_COLUMNS = [
+  'season',
+  'week',
+  'team',
+  'season_type',
+  'game_id',
+  'opponent_team',
+  'attempts',
+  'sacks_suffered',
+  'passing_yards',
+  'passing_tds',
+  'passing_interceptions',
+  'passing_epa',
+  'carries',
+  'rushing_yards',
+  'rushing_tds',
+  'rushing_epa',
+] as const;
+
 export type HeaderCheck = { ok: true } | { ok: false; missing: string[] };
 
 /**
@@ -199,6 +222,12 @@ export const SOURCE_CONTRACTS = {
       ...TEAM_STATS_NUMERIC_COLUMNS.map(teamStatsSourceColumn),
       ...TEAM_STATS_DISTANCE_LIST_COLUMNS.map(teamStatsSourceColumn),
     ],
+  } satisfies SourceContract,
+  stats_team_week: {
+    id: 'stats_team_week',
+    // stats_team_week_<season>.csv — one row per team-game; a team's allowed line is its
+    // opponent's offensive row for the same game.
+    columns: [...TEAM_WEEK_COLUMNS],
   } satisfies SourceContract,
   snap_counts: {
     id: 'snap_counts',
