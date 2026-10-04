@@ -279,3 +279,115 @@ private func schedule(_ year: Int, _ results: [ScheduleResult?], byeWeek: Int? =
     #expect(
         TeamSeasonPace.compare(season(2026, wins: 2, losses: 1), priorSchedule: wrongYear) == nil)
 }
+
+// MARK: Defense allowed
+
+private func allowedWindow(
+    games: Int, throughWeek: Int? = nil, rank: Int = 16,
+    _ overrides: (inout TeamAllowedRanks) -> Void = { _ in }
+) -> TeamAllowedWindow {
+    var r = TeamAllowedRanks(
+        passingYards: rank, rushingYards: rank, totalYards: rank, passingEpa: rank,
+        rushingEpa: rank, passingEpaPerDropback: rank, rushingEpaPerCarry: rank)
+    overrides(&r)
+    return TeamAllowedWindow(
+        games: games, throughWeek: throughWeek,
+        rates: TeamAllowedRates(
+            passingYards: 212.4, rushingYards: 141.6, totalYards: 354, passingEpa: 1.2,
+            rushingEpa: 2.4, passingEpaPerDropback: 0.031, rushingEpaPerCarry: 0.082),
+        ranks: r, rankedTeams: 32)
+}
+
+@Test func aTopRunDefenseLeadsWithItsYardsAndPointsAllowed() throws {
+    let s = try #require(
+        TeamSeasonStoryBuilder.story(
+            stats: season(2026, metrics: metrics(2026)), ranks: ranks(16), priorRanks: nil,
+            allowed: allowedWindow(games: 11) { $0.rushingEpaPerCarry = 1 },
+            priorAllowed: allowedWindow(games: 17) { $0.rushingEpaPerCarry = 9 },
+            isFinal: false))
+    #expect(s.headline == "The league’s best run defense.")
+    #expect(s.lockupLabel == "in run defense")
+    #expect(s.leadContext == "Up from 9th in 2025")
+    #expect(s.evidence.map(\.id) == ["rush-epa-allowed", "rush-yds-allowed", "points-against"])
+    #expect(s.evidence[1].display == "142")
+}
+
+@Test func withoutTheTeamFileTheStoryUsesThePageAlone() throws {
+    let s = try #require(story(ranks(16) { $0.rushingEPA = 4 }))
+    #expect(!s.metricIds.contains("rush-epa-allowed"))
+    #expect(s.lead.id == "rush-epa")
+}
+
+// MARK: Recent form
+
+private func history(season: TeamAllowedWindow?, recent: TeamAllowedWindow?) -> TeamSeasonHistory {
+    TeamSeasonHistory(season: 2026, allowed: season, recent: recent, games: [])
+}
+
+@Test func aBottomFiveWindowCountsFromTheWorstDefense() throws {
+    let form = try #require(
+        TeamRecentFormBuilder.recentForm(
+            history(
+                season: allowedWindow(games: 9) { $0.rushingYards = 24 },
+                recent: allowedWindow(games: 3, throughWeek: 10) { $0.rushingYards = 29 })))
+    #expect(!form.isStrength)
+    #expect(form.overline == "LAST 3 GAMES · THROUGH WEEK 10")
+    #expect(form.headline == "Allowed the 4th-most rushing yards in the NFL")
+    #expect(form.detail == "142 per game · 9th-most over the season")
+}
+
+@Test func aTopFiveWindowLeadsWithTheBestRank() throws {
+    let form = try #require(
+        TeamRecentFormBuilder.recentForm(
+            history(
+                season: allowedWindow(games: 9) { $0.passingYards = 6 },
+                recent: allowedWindow(games: 3, throughWeek: 10) {
+                    $0.rushingYards = 4
+                    $0.passingYards = 1
+                })))
+    #expect(form.headline == "Allowed the fewest passing yards in the NFL")
+    #expect(form.detail == "212 per game · 6th-fewest over the season")
+}
+
+@Test func recentFormStaysHiddenUnlessItStandsApart() {
+    // The window is the whole season so far.
+    #expect(
+        TeamRecentFormBuilder.recentForm(
+            history(
+                season: allowedWindow(games: 3),
+                recent: allowedWindow(games: 3, throughWeek: 3) { $0.rushingYards = 1 })) == nil)
+    // Every rank sits in the middle of the league.
+    #expect(
+        TeamRecentFormBuilder.recentForm(
+            history(
+                season: allowedWindow(games: 9), recent: allowedWindow(games: 3, throughWeek: 10)))
+            == nil)
+    #expect(TeamRecentFormBuilder.recentForm(history(season: nil, recent: nil)) == nil)
+}
+
+// MARK: Opener
+
+private let patriots = Team(
+    id: "patriots", city: "New England", name: "Patriots", abbrev: "NE",
+    conference: "AFC", division: "East",
+    colors: TeamColors(primary: "#002244", secondary: "#c60c30", accent: "#c60c30"),
+    logo: nil, logoDark: nil)
+
+@Test func openerNamesTheFirstGameAndItsDate() throws {
+    let upcoming = TeamSchedule(
+        season: 2027,
+        games: [
+            ScheduleGame(
+                week: 2, isBye: false, date: "2027-09-19", isHome: false, opponent: patriots,
+                teamScore: nil, opponentScore: nil, result: nil),
+            ScheduleGame(
+                week: 1, isBye: false, date: "2027-09-12", isHome: true, opponent: patriots,
+                teamScore: nil, opponentScore: nil, result: nil),
+        ])
+    let opener = try #require(TeamSeasonOpener.first(in: upcoming))
+    #expect(opener.summary == "Opens Sep 12 vs. Patriots")
+
+    let undated = TeamSeasonOpener(week: 1, opponentName: "Bills", isHome: false, date: nil)
+    #expect(undated.summary == "Opens Week 1 at Bills")
+    #expect(TeamSeasonOpener.first(in: TeamSchedule(season: 2027, games: [])) == nil)
+}

@@ -1,8 +1,9 @@
 import SwiftUI
 
 // The Stats page overview: season picker, coach, the record hero with its pace against
-// last season, one verified season story, the facts behind it (expanded inline), and the
-// lens rows that push the full ledger (`TeamStatsReferenceView`). Renders entirely from
+// last season, one verified season story, the facts behind it (expanded inline), the
+// defense's recent form when it stands out, and the lens rows that push the full ledger
+// (`TeamStatsReferenceView`). Renders entirely from
 // the cached `TeamStatsPage`; season selection is local state with no refetch. Owns a
 // feature-local `TeamStatsViewModel` and loads lazily on first visit.
 struct TeamStatsView: View {
@@ -49,6 +50,7 @@ struct TeamStatsView: View {
                         lens: lens,
                         stats: stats,
                         ranks: ranks(for: stats),
+                        allowed: viewModel.statHistory?.season(stats.season)?.allowed,
                         leaders: viewModel.selectedSeasonLeaders,
                         storyMetricIds: storyMetricIds,
                         accent: teamAccent
@@ -142,6 +144,9 @@ struct TeamStatsView: View {
                     if let overview = viewModel.selectedStory {
                         storySection(overview)
                         evidenceSection(overview.story)
+                    }
+                    if let form = viewModel.selectedRecentForm {
+                        recentFormRow(form)
                     }
                     if viewModel.selectedSeasonStats != nil {
                         lensRows
@@ -288,6 +293,9 @@ struct TeamStatsView: View {
                 if let pace = viewModel.selectedSeasonPace {
                     paceLine(pace)
                 }
+                if let opener = viewModel.selectedSeasonOpener {
+                    openerLine(opener)
+                }
             }
             .padding(.top, DesignTokens.Spacing.sm)
         }
@@ -304,6 +312,13 @@ struct TeamStatsView: View {
             .font(.subheadline)
             .foregroundStyle(DesignTokens.Colors.textSecondary)
             .accessibilityIdentifier("stats-pace")
+    }
+
+    private func openerLine(_ opener: TeamSeasonOpener) -> some View {
+        Text(verbatim: opener.summary)
+            .font(.subheadline)
+            .foregroundStyle(DesignTokens.Colors.textSecondary)
+            .accessibilityIdentifier("stats-opener")
     }
 
     private func playoffLine(_ stats: TeamSeasonStats, conference: String) -> String {
@@ -387,7 +402,7 @@ struct TeamStatsView: View {
             scopeButton(story)
             if scopeExpanded {
                 Text(
-                    "Ranks compare NFL teams over the same span; line metrics rank only teams with enough charted plays. Records and points come from ESPN standings; EPA, sacks, takeaways and line metrics come from nflverse play-by-play, with pressure charted by FTN."
+                    "Ranks compare NFL teams over the same span; line metrics rank only teams with enough charted plays. Records and points come from ESPN standings; EPA, yards allowed, sacks, takeaways and line metrics come from nflverse play-by-play, with pressure charted by FTN."
                 )
                 .font(.caption)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
@@ -567,6 +582,33 @@ struct TeamStatsView: View {
         .accessibilityIdentifier("stats-evidence-\(fact.id)")
     }
 
+    // MARK: Recent form
+
+    /// The defense over its most recent games, only when that window ranks top or bottom
+    /// five.
+    private func recentFormRow(_ form: TeamRecentForm) -> some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            Text(verbatim: form.overline)
+                .font(.caption.bold())
+                .tracking(1.0)
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+            Text(verbatim: form.headline)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(verbatim: form.detail)
+                .font(.caption)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, DesignTokens.Spacing.md)
+        .overlay(alignment: .bottom) { hairline(DesignTokens.Colors.borderSubtle) }
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("stats-recent-form")
+    }
+
     // MARK: Lens rows
 
     /// The reference layer's entry points: one row per lens, each pushing the ledger.
@@ -618,6 +660,10 @@ struct TeamStatsView: View {
                 Text("No games played yet this season")
                     .font(.caption)
                     .foregroundStyle(DesignTokens.Colors.textFaint)
+                if let opener = viewModel.selectedSeasonOpener {
+                    openerLine(opener)
+                        .padding(.top, DesignTokens.Spacing.sm)
+                }
                 Text(verbatim: "\(upcoming) SEASON · NOT YET STARTED")
                     .font(.caption2)
                     .tracking(0.6)

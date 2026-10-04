@@ -32,6 +32,12 @@ final class TeamStatsViewModel {
     /// Last season's schedule per season row, keyed by the season it is compared against,
     /// for the hero's "through N games" pace line. Fetched once per season like leaders.
     private(set) var priorSchedulesBySeason: [Int: TeamSchedule] = [:]
+    /// The team's R2 stat file: defense-allowed ranks for the story and recent form. Kept
+    /// from an earlier load when a refresh can't reach it; without it the story uses the
+    /// page's own metrics and the recent-form row stays hidden.
+    private(set) var statHistory: TeamStatHistory?
+    /// The upcoming season's schedule, for the opener line before any game is played.
+    private(set) var upcomingSchedule: TeamSchedule?
     /// True when a reload failed but an earlier page is still on screen. The page keeps
     /// rendering the cached stats under a retry row instead of an error screen.
     private(set) var refreshFailed = false
@@ -69,7 +75,25 @@ final class TeamStatsViewModel {
     /// fewer than two games to rank.
     var selectedStory: TeamStatsOverviewStory? {
         guard let page, let selectedSeason else { return nil }
-        return TeamSeasonStoryBuilder.overviewStory(page: page, selectedSeason: selectedSeason)
+        return TeamSeasonStoryBuilder.overviewStory(
+            page: page, selectedSeason: selectedSeason, history: statHistory)
+    }
+
+    /// The defense over its last few games, when that window ranks top or bottom five.
+    var selectedRecentForm: TeamRecentForm? {
+        guard let selectedSeason, let season = statHistory?.season(selectedSeason) else {
+            return nil
+        }
+        return TeamRecentFormBuilder.recentForm(season)
+    }
+
+    /// The upcoming season's first game, while that season has none played.
+    var selectedSeasonOpener: TeamSeasonOpener? {
+        guard let selectedSeason, selectedSeason == upcomingSeason,
+            selectedSeasonStats.map({ TeamSeasonStoryBuilder.games($0) == 0 }) ?? true,
+            upcomingSchedule?.season == selectedSeason
+        else { return nil }
+        return TeamSeasonOpener.first(in: upcomingSchedule)
     }
 
     var selectedSeasonPace: TeamSeasonPace? {
@@ -119,8 +143,12 @@ final class TeamStatsViewModel {
 
     func load() async {
         if page == nil { loadState = .loading }
+        // Read alongside the page, not after it, so the story renders once with the
+        // defense metrics already in play instead of changing its headline a beat later.
+        async let history = try? repository.teamStatHistory(teamId: teamId)
         do {
             let page = try await repository.teamStats(teamId: teamId)
+            if let history = await history { statHistory = history }
             self.page = page
             refreshFailed = false
             if selectedSeason == nil {
@@ -139,6 +167,14 @@ final class TeamStatsViewModel {
         await withTaskGroup(of: Void.self) { group in
             group.addTask { await self.loadLeaders() }
             group.addTask { await self.loadPriorSchedules() }
+            group.addTask { await self.loadUpcomingSchedule() }
+        }
+    }
+
+    private func loadUpcomingSchedule() async {
+        guard let upcoming = page?.upcomingSeason else { return }
+        if let schedule = try? await repository.teamSchedule(teamId: teamId, season: upcoming) {
+            upcomingSchedule = schedule
         }
     }
 
