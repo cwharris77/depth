@@ -45,9 +45,27 @@ jobs:
         env:
           PUBLIC_COMMENT_DENYLIST: ${{ secrets.PUBLIC_COMMENT_DENYLIST }}
         run: npm run check:public-comments -- --all
-      - run: npm run format:check
-      - run: npx tsc --noEmit
-      - run: npm test
+      # The public-comments check above also scans Markdown, so it always runs. Format,
+      # typecheck and unit tests are skipped on PRs that only change Markdown files other
+      # than ios-release-compatibility.md (read by the migration-compat code and tests).
+      # The job still reports, so it works as a required status check.
+      - name: Detect code changes
+        id: code
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          files=$([ -n "$BASE_SHA" ] && git diff --name-only "$BASE_SHA" HEAD)
+          if [ -z "$files" ] || grep -Ev '\.md$' <<<"$files" >/dev/null || grep -qx 'ios-release-compatibility.md' <<<"$files"; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.code.outputs.changed == 'true'
+        run: npm run format:check
+      - if: steps.code.outputs.changed == 'true'
+        run: npx tsc --noEmit
+      - if: steps.code.outputs.changed == 'true'
+        run: npm test
 
   ios-compat:
     runs-on: ubuntu-latest
