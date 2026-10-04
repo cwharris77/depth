@@ -26,6 +26,7 @@ struct DepthApp: App {
             // doesn't intercept every other UI test's launch — only
             // UI_TESTING_SHOW_ONBOARDING (below) opts back into seeing it.
             DepthEnvironment.preferences.markOnboardingSeen()
+            DepthEnvironment.preferences.markAllTutorialsSeen()
         }
 
         // UI_TESTING_START_TEAM: an optional test launch arg (`UI_TESTING_START_TEAM=bills`)
@@ -66,6 +67,12 @@ struct DepthApp: App {
         // "seen" default UI_TESTING_RESET_STATE sets above.
         if ProcessInfo.processInfo.arguments.contains("UI_TESTING_SHOW_ONBOARDING") {
             DepthEnvironment.preferences.clearOnboardingSeen()
+            DepthEnvironment.preferences.clearTutorialsSeen()
+        }
+
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_LEGACY_ONBOARDING") {
+            DepthEnvironment.preferences.markOnboardingSeen()
+            DepthEnvironment.preferences.clearTutorialsSeen()
         }
 
         // App Store screenshot capture (task-9d-screenshots-brief.md) needs the same
@@ -86,6 +93,7 @@ struct DepthApp: App {
             // search field the test waits on next never appears. UI_TESTING_RESET_STATE
             // already avoids this (line ~30); this block needs the same call.
             DepthEnvironment.preferences.markOnboardingSeen()
+            DepthEnvironment.preferences.markAllTutorialsSeen()
         }
     }
 

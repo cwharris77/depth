@@ -82,6 +82,9 @@ struct RootTabView: View {
                 }
             }
         }
+        .onChange(of: onboarding.activeTab) { _, tab in
+            if tab == .compare { onboarding.pageDidAppear(.compare) }
+        }
         // Selected-tab tint from the current kit's ring color. DepthChartsTab publishes the
         // active kit's colors into CurrentTeamStore, so the nav title, toolbar icons, and
         // tab bar adopt team color. The ring is used so chrome

@@ -2,12 +2,6 @@ import Foundation
 import Testing
 @testable import Depth
 
-// coverage for OnboardingController's welcome/coachmark state machine and its
-// persistence gate (UserPreferences.hasSeenOnboarding/markOnboardingSeen) — the
-// first-run tutorial's only pure logic; WelcomeView/CoachmarkOverlayView are rendering
-// only. Same isolated-UserDefaults pattern as LocalFirstOverrideWriterTests, so runs
-// never interfere with each other or a real device's persisted "seen" state.
-
 @MainActor
 struct OnboardingControllerTests {
     private func freshPreferences() -> UserPreferences {
@@ -16,111 +10,150 @@ struct OnboardingControllerTests {
         return UserPreferences(defaults: defaults)
     }
 
-    @Test func startIfNeededShowsWelcomeOnFirstLaunch() {
-        let controller = OnboardingController(preferences: freshPreferences())
+    @Test func firstLaunchShowsWelcomeAndSeenLaunchDoesNot() {
+        let firstLaunch = OnboardingController(preferences: freshPreferences())
+        firstLaunch.startIfNeeded()
+        #expect(firstLaunch.phase == .welcome)
+        #expect(firstLaunch.currentStep == nil)
 
-        controller.startIfNeeded()
-
-        #expect(controller.phase == .welcome)
-        #expect(controller.activeTab == .depthCharts)
-    }
-
-    @Test func startIfNeededIsNoOpOnceSeen() {
         let preferences = freshPreferences()
         preferences.markOnboardingSeen()
-        let controller = OnboardingController(preferences: preferences)
-
-        controller.startIfNeeded()
-
-        #expect(controller.phase == .hidden)
+        let laterLaunch = OnboardingController(preferences: preferences)
+        laterLaunch.startIfNeeded()
+        #expect(laterLaunch.phase == .hidden)
+        #expect(laterLaunch.currentStep == nil)
     }
 
-    @Test func skippingWelcomeMarksSeenAndHides() {
+    @Test func completeTourRunsRosterScheduleCompareAndPersistsAllPages() {
         let preferences = freshPreferences()
         let controller = OnboardingController(preferences: preferences)
         controller.startIfNeeded()
-
-        controller.skipWelcome()
-
-        #expect(controller.phase == .hidden)
-        #expect(preferences.hasSeenOnboarding)
-    }
-
-    @Test func beginCoachmarksStartsAtFirstStep() {
-        let controller = OnboardingController(preferences: freshPreferences())
-        controller.startIfNeeded()
-
         controller.beginCoachmarks()
 
-        #expect(controller.phase == .coachmark(0))
+        #expect(controller.activeTutorial == .roster)
         #expect(controller.currentStep?.id == .teamPill)
-        #expect(controller.stepNumber == 1)
-        #expect(controller.isLastStep == false)
-    }
+        for _ in CoachmarkStep.roster.indices { controller.advance() }
 
-    @Test func advanceStepsThroughEveryCoachmarkThenFinishes() {
-        let preferences = freshPreferences()
-        let controller = OnboardingController(preferences: preferences)
-        controller.startIfNeeded()
-        controller.beginCoachmarks()
+        #expect(controller.activeTutorial == .schedule)
+        #expect(controller.activeTab == .depthCharts)
+        for _ in CoachmarkStep.schedule.indices { controller.advance() }
 
-        var seenIDs: [CoachmarkID] = []
-        for _ in CoachmarkStep.all.indices {
-            if let id = controller.currentStep?.id { seenIDs.append(id) }
-            controller.advance()
-        }
+        #expect(controller.activeTutorial == .compare)
+        #expect(controller.activeTab == .compare)
+        for _ in CoachmarkStep.compare.indices { controller.advance() }
 
-        #expect(seenIDs == CoachmarkStep.all.map(\.id))
-        // The final `advance()` (called once per step, including the last) finishes the
-        // whole flow rather than stepping past the end.
         #expect(controller.phase == .hidden)
         #expect(preferences.hasSeenOnboarding)
+        #expect(TutorialID.allCases.allSatisfy { preferences.hasSeenTutorial($0.id) })
     }
 
-    @Test func isLastStepIsTrueOnlyOnTheFinalCoachmark() {
-        let controller = OnboardingController(preferences: freshPreferences())
-        controller.startIfNeeded()
-        controller.beginCoachmarks()
-
-        for index in CoachmarkStep.all.indices {
-            #expect(controller.isLastStep == (index == CoachmarkStep.all.count - 1))
-            controller.advance()
-        }
-    }
-
-    @Test func skipCoachmarksEndsTheFlowImmediately() {
+    @Test func skippingCompleteTourSuppressesEveryPageTutorial() {
         let preferences = freshPreferences()
         let controller = OnboardingController(preferences: preferences)
         controller.startIfNeeded()
         controller.beginCoachmarks()
-        controller.advance()  // now on the second step, not the first or last
-
+        controller.advance()
         controller.skipCoachmarks()
 
+        #expect(TutorialID.allCases.allSatisfy { preferences.hasSeenTutorial($0.id) })
+        controller.pageDidAppear(.schedule)
         #expect(controller.phase == .hidden)
-        #expect(preferences.hasSeenOnboarding)
     }
 
-    @Test func replayShowsWelcomeAgainEvenAfterBeingSeen() {
+    @Test func skippingWelcomeSuppressesEveryPageTutorial() {
+        let preferences = freshPreferences()
+        let controller = OnboardingController(preferences: preferences)
+        controller.startIfNeeded()
+        controller.skipWelcome()
+
+        #expect(TutorialID.allCases.allSatisfy { preferences.hasSeenTutorial($0.id) })
+        controller.pageDidAppear(.compare)
+        #expect(controller.phase == .hidden)
+    }
+
+    @Test func legacyOnboardingUsersCanSeeAndPersistPageTutorials() {
         let preferences = freshPreferences()
         preferences.markOnboardingSeen()
         let controller = OnboardingController(preferences: preferences)
-        // Account is a sheet now, not a tab — "Take the Tour" can be reached
-        // from any tab's Settings sheet, so simulate being on a non-Depth-Charts tab.
-        controller.activeTab = .uniforms
+        controller.startIfNeeded()
+        #expect(preferences.hasSeenTutorial(TutorialID.roster.id))
+        controller.pageDidAppear(.schedule)
 
-        controller.replay()
+        #expect(controller.activeTutorial == .schedule)
+        #expect(controller.currentStep?.id == .scheduleGame)
+        controller.advance()
+        #expect(preferences.hasSeenTutorial(TutorialID.schedule.id))
 
-        #expect(controller.phase == .welcome)
-        #expect(controller.activeTab == .depthCharts)
+        let nextLaunch = OnboardingController(preferences: preferences)
+        nextLaunch.startIfNeeded()
+        nextLaunch.pageDidAppear(.schedule)
+        #expect(nextLaunch.phase == .hidden)
+
+        nextLaunch.pageDidAppear(.compare)
+        #expect(nextLaunch.activeTutorial == .compare)
+        #expect(nextLaunch.stepNumber == 1)
+        #expect(nextLaunch.totalStepCount == 3)
+        #expect(nextLaunch.isLastStep == false)
+        nextLaunch.advance()
+        nextLaunch.advance()
+        #expect(nextLaunch.isLastStep)
     }
 
-    @Test func currentStepIsNilOutsideCoachmarkPhase() {
-        let controller = OnboardingController(preferences: freshPreferences())
-
-        #expect(controller.currentStep == nil)
-
+    @Test func skippingPageTutorialMarksOnlyThatPageSeen() {
+        let preferences = freshPreferences()
+        preferences.markOnboardingSeen()
+        let controller = OnboardingController(preferences: preferences)
         controller.startIfNeeded()
-        #expect(controller.currentStep == nil)  // .welcome, not .coachmark
+        controller.pageDidAppear(.compare)
+        controller.skipCoachmarks()
+
+        #expect(preferences.hasSeenTutorial(TutorialID.compare.id))
+        #expect(!preferences.hasSeenTutorial(TutorialID.schedule.id))
+        #expect(controller.phase == .hidden)
+    }
+
+    @Test func replayStartsTheCompleteTour() {
+        let preferences = freshPreferences()
+        preferences.markOnboardingSeen()
+        let controller = OnboardingController(preferences: preferences)
+        controller.replay()
+        controller.beginCoachmarks()
+
+        #expect(controller.activeTutorial == .roster)
+        #expect(controller.totalStepCount == 8)
+    }
+
+    @Test func replayFromScheduleRequestsRosterPageBeforeShowingTour() {
+        let controller = OnboardingController(preferences: freshPreferences())
+        controller.replay()
+
+        #expect(controller.activeTab == .depthCharts)
+        #expect(controller.requestedTeamPage == .roster)
+        #expect(controller.teamPageRouteToken == 1)
+        #expect(controller.consumeTeamPageRequest() == .roster)
+        #expect(controller.consumeTeamPageRequest() == nil)
+
+        controller.beginCoachmarks()
+        #expect(controller.activeTutorial == .roster)
+        #expect(controller.requestedTeamPage == .roster)
+    }
+
+    @Test func pageAppearanceBeforeLaunchGateDoesNotRaceWelcome() {
+        let controller = OnboardingController(preferences: freshPreferences())
+        controller.pageDidAppear(.compare)
+        #expect(controller.phase == .hidden)
+        controller.startIfNeeded()
+        #expect(controller.phase == .welcome)
+    }
+
+    @Test func legacyPageVisitAfterLaunchGateCanStart() {
+        let preferences = freshPreferences()
+        preferences.markOnboardingSeen()
+        let controller = OnboardingController(preferences: preferences)
+        controller.pageDidAppear(.compare)
+        controller.startIfNeeded()
+        controller.pageDidAppear(.compare)
+
+        #expect(controller.activeTutorial == .compare)
     }
 }

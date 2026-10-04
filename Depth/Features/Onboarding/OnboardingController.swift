@@ -1,16 +1,26 @@
 import Foundation
 import Observation
 
-// First-run tutorial / onboarding walkthrough for the native app: a one-screen welcome
-// followed by in-context coachmarks over the real UI. This controller owns the sequence's
-// state machine (welcome shown ->
-// which coachmark step is active, or none) and which root tab needs to be on screen for
-// the current/pending step, so RootTabView can switch there itself rather than every
-// coachmark target needing to exist on every tab.
-//
-// Persistence is UserPreferences.hasSeenOnboarding/markOnboardingSeen — a one-time flag
-// in UserPreferences. Settings' "Take the tour" row (`replay()`) bypasses that flag
-// entirely; it only gates the automatic first-launch trigger (`startIfNeeded()`).
+enum TutorialID: String, CaseIterable, Identifiable {
+    case roster
+    case schedule
+    case compare
+
+    var id: String { rawValue }
+
+    var rootTab: RootTab {
+        switch self {
+        case .roster, .schedule: .depthCharts
+        case .compare: .compare
+        }
+    }
+}
+
+enum TutorialTeamPage: Equatable {
+    case roster
+    case schedule
+}
+
 @MainActor
 @Observable
 final class OnboardingController {
@@ -21,98 +31,165 @@ final class OnboardingController {
     }
 
     private(set) var phase: Phase = .hidden
-    /// The root tab the active/pending coachmark step needs on screen. RootTabView
-    /// two-way binds its TabView's `selection` to this (via `@Bindable`), so a manual
-    /// tab switch by the user stays in sync here too — this only needs to be forced
-    /// when `startIfNeeded()`/`replay()` kick off a new tour.
+    private(set) var activeTutorial: TutorialID?
+    private(set) var teamPageRouteToken = 0
+    private(set) var requestedTeamPage: TutorialTeamPage?
     var activeTab: RootTab = .depthCharts
 
     private let preferences: UserPreferences
+    private var isCompleteTour = false
+    private var hasEvaluatedLaunch = false
 
     init(preferences: UserPreferences) {
         self.preferences = preferences
     }
 
     var currentStep: CoachmarkStep? {
-        guard case .coachmark(let index) = phase, CoachmarkStep.all.indices.contains(index) else {
-            return nil
-        }
-        return CoachmarkStep.all[index]
+        guard let activeTutorial, case .coachmark(let index) = phase else { return nil }
+        return Self.steps(for: activeTutorial).indices.contains(index)
+            ? Self.steps(for: activeTutorial)[index] : nil
     }
 
     var stepNumber: Int {
-        guard case .coachmark(let index) = phase else { return 0 }
-        return index + 1
+        guard let activeTutorial, case .coachmark(let index) = phase else { return 0 }
+        guard isCompleteTour else { return index + 1 }
+        let prior = TutorialID.allCases.prefix { $0 != activeTutorial }
+            .reduce(0) { $0 + Self.steps(for: $1).count }
+        return prior + index + 1
+    }
+
+    var totalStepCount: Int {
+        if !isCompleteTour, let activeTutorial {
+            return Self.steps(for: activeTutorial).count
+        }
+        return TutorialID.allCases.reduce(0) { $0 + Self.steps(for: $1).count }
     }
 
     var isLastStep: Bool {
-        guard case .coachmark(let index) = phase else { return false }
-        return index == CoachmarkStep.all.count - 1
+        guard let activeTutorial, case .coachmark(let index) = phase else { return false }
+        if isCompleteTour {
+            return activeTutorial == .compare && index == Self.steps(for: .compare).count - 1
+        }
+        return index == Self.steps(for: activeTutorial).count - 1
     }
 
-    /// Called once from ContentView's launch task, after the update gate has cleared —
-    /// starts the welcome screen on a genuinely first launch and is a no-op on every
-    /// later launch (or once the flow has been skipped/finished).
     func startIfNeeded() {
-        guard !preferences.hasSeenOnboarding else { return }
+        hasEvaluatedLaunch = true
+        guard !preferences.hasSeenOnboarding else {
+            preferences.markTutorialSeen(TutorialID.roster.id)
+            return
+        }
+        isCompleteTour = true
         activeTab = .depthCharts
         phase = .welcome
     }
 
-    /// Settings' "Take the tour": replays the whole flow regardless of the persisted
-    /// "seen" flag, and jumps to Depth Charts first since every current coachmark
-    /// target lives there.
     func replay() {
+        hasEvaluatedLaunch = true
+        isCompleteTour = true
         activeTab = .depthCharts
+        requestTeamPage(.roster)
         phase = .welcome
     }
 
-    /// Welcome screen's "Skip" — ends the whole flow without any coachmarks.
     func skipWelcome() {
+        if isCompleteTour { preferences.markAllTutorialsSeen() }
         finish()
     }
 
-    /// Welcome screen's "Take the Tour" — starts the coachmark sequence.
     func beginCoachmarks() {
-        guard !CoachmarkStep.all.isEmpty else {
+        isCompleteTour = true
+        beginTutorial(.roster)
+    }
+
+    func pageDidAppear(_ tutorial: TutorialID) {
+        guard hasEvaluatedLaunch, phase == .hidden, !isCompleteTour,
+            !preferences.hasSeenTutorial(tutorial.id)
+        else { return }
+        beginTutorial(tutorial)
+    }
+
+    func consumeTeamPageRequest() -> TutorialTeamPage? {
+        defer { requestedTeamPage = nil }
+        return requestedTeamPage
+    }
+
+    func advance() {
+        guard let tutorial = activeTutorial, case .coachmark(let index) = phase else { return }
+        let steps = Self.steps(for: tutorial)
+        if index + 1 < steps.count {
+            phase = .coachmark(index + 1)
+            return
+        }
+
+        preferences.markTutorialSeen(tutorial.id)
+        guard isCompleteTour,
+            let next = TutorialID.allCases.drop(while: { $0 != tutorial }).dropFirst().first
+        else {
             finish()
             return
         }
+        beginTutorial(next)
+    }
+
+    func skipCoachmarks() {
+        if isCompleteTour {
+            preferences.markAllTutorialsSeen()
+        } else if let activeTutorial {
+            preferences.markTutorialSeen(activeTutorial.id)
+        }
+        finish()
+    }
+
+    private func beginTutorial(_ tutorial: TutorialID) {
+        guard !Self.steps(for: tutorial).isEmpty else {
+            finish()
+            return
+        }
+        activeTutorial = tutorial
+        activeTab = tutorial.rootTab
+        if tutorial == .roster { requestTeamPage(.roster) }
+        if tutorial == .schedule { requestTeamPage(.schedule) }
         phase = .coachmark(0)
     }
 
-    /// A coachmark bubble's "Next"/"Done" — advances to the next step, or finishes the
-    /// flow on the last one.
-    func advance() {
-        guard case .coachmark(let index) = phase else { return }
-        let next = index + 1
-        if next < CoachmarkStep.all.count {
-            phase = .coachmark(next)
-        } else {
-            finish()
-        }
-    }
-
-    /// A coachmark bubble's "Skip" — ends the whole remaining sequence, matching the
-    /// welcome screen's skip (every step in the tour is skippable, not just the intro).
-    func skipCoachmarks() {
-        finish()
+    private func requestTeamPage(_ page: TutorialTeamPage) {
+        requestedTeamPage = page
+        teamPageRouteToken += 1
     }
 
     private func finish() {
         phase = .hidden
+        activeTutorial = nil
         preferences.markOnboardingSeen()
+        isCompleteTour = false
+    }
+
+    private static func steps(for tutorial: TutorialID) -> [CoachmarkStep] {
+        switch tutorial {
+        case .roster: CoachmarkStep.roster
+        case .schedule: CoachmarkStep.schedule
+        case .compare: CoachmarkStep.compare
+        }
     }
 }
 
-/// One step in the guided coachmark sequence: team pill, a player dot, the overflow menu,
-/// or the bottom tabs.
 struct CoachmarkStep: Identifiable {
     let id: CoachmarkID
     let title: String
     let message: String
+    let fallbackMessage: String?
 
-    static let all: [CoachmarkStep] = [
+    init(
+        id: CoachmarkID, title: String, message: String, fallbackMessage: String? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.message = message
+        self.fallbackMessage = fallbackMessage
+    }
+
+    static let roster: [CoachmarkStep] = [
         CoachmarkStep(
             id: .teamPill,
             title: "Switch teams anytime",
@@ -132,10 +209,36 @@ struct CoachmarkStep: Identifiable {
         CoachmarkStep(
             id: .bottomTabs,
             title: "Explore the app",
-            // Account moved out of the tab bar into a nav-bar icon, so this
-            // step no longer mentions it — the tab bar is Depth Charts/Compare/Uniforms
-            // only now.
             message: "Switch between Depth Charts, Compare, and Uniforms down here."
+        ),
+    ]
+
+    static let schedule: [CoachmarkStep] = [
+        CoachmarkStep(
+            id: .scheduleGame,
+            title: "Compare a matchup",
+            message: "Tap a game to compare these teams.",
+            fallbackMessage:
+                "When a current-season game is available, tap it to compare these teams."
+        )
+    ]
+
+    static let compare: [CoachmarkStep] = [
+        CoachmarkStep(
+            id: .compareTeams,
+            title: "Pick two teams",
+            message: "Tap either slot to choose the teams you want to compare."
+        ),
+        CoachmarkStep(
+            id: .compareSwitcher,
+            title: "Choose a view",
+            message: "By team lines up unit metrics. By position compares depth at each spot."
+        ),
+        CoachmarkStep(
+            id: .compareContent,
+            title: "Read the comparison",
+            message:
+                "Browse offense, defense, and special teams metrics, or switch to a position for the depth chart."
         ),
     ]
 }

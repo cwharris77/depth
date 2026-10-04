@@ -15,6 +15,7 @@ struct UserPreferences: Sendable {
         static let uniformSelections = "preferences.uniformSelections"
         static let depthOverrides = "preferences.depthOverrides"
         static let seenOnboarding = "preferences.seenOnboarding"
+        static let seenTutorials = "preferences.seenTutorials"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -124,6 +125,25 @@ struct UserPreferences: Sendable {
     /// onboarding UI tests start deterministic.
     func clearOnboardingSeen() {
         defaults.removeObject(forKey: Key.seenOnboarding)
+    }
+
+    func hasSeenTutorial(_ id: String) -> Bool {
+        (defaults.stringArray(forKey: Key.seenTutorials) ?? []).contains(id)
+    }
+
+    func markTutorialSeen(_ id: String) {
+        var seen = defaults.stringArray(forKey: Key.seenTutorials) ?? []
+        guard !seen.contains(id) else { return }
+        seen.append(id)
+        defaults.set(seen, forKey: Key.seenTutorials)
+    }
+
+    func markAllTutorialsSeen() {
+        defaults.set(TutorialID.allCases.map(\.id), forKey: Key.seenTutorials)
+    }
+
+    func clearTutorialsSeen() {
+        defaults.removeObject(forKey: Key.seenTutorials)
     }
 
     private func decode(_ raw: [String: [String]]) -> [Position: [String]] {
