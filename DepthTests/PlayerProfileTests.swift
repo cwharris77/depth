@@ -154,6 +154,30 @@ import Testing
     #expect(await viewModel.stats.map(\.season) == [2024])
 }
 
+@Test func profileViewModelLeadsWithARareCareerHigh() async {
+    let highlight = PlayerHighlight(
+        value: 520, season: 2011, week: 17, teamId: "lions", gameId: nil, opponentId: "packers",
+        allTimeRank: 4, playersAtOrAbove: 4, teamRank: nil, teamPlayersAtOrAbove: nil)
+    let repository = PlayerStatsRepositoryFake(
+        results: [.success([PlayerSeasonStats.empty(season: 2024, games: 14)])],
+        highlights: PlayerHighlights(
+            coverage: RecordCoverage(fromSeason: 1999, toSeason: 2026),
+            entries: [.passingYards: [.singleGame: highlight]]))
+    let viewModel = await PlayerProfileViewModel(
+        playerID: "p1", teamID: nil, repository: repository)
+
+    await viewModel.load()
+
+    #expect(
+        await viewModel.knownFor?.headline == "The 4th-most passing yards in a game since 1999.")
+
+    let plain = await PlayerProfileViewModel(
+        playerID: "p1", teamID: nil,
+        repository: PlayerStatsRepositoryFake(results: [.success([])]))
+    await plain.load()
+    #expect(await plain.knownFor == nil)
+}
+
 @Test func profileViewModelShowsEmptyAfterAResolvedNoStatsRead() async {
     let repository = PlayerStatsRepositoryFake(results: [
         .success([PlayerSeasonStats.empty(season: 2025)])
@@ -222,9 +246,17 @@ private struct PlayerStatsRequest: Equatable {
 private actor PlayerStatsRepositoryFake: DepthRepository {
     private var results: [Result<[PlayerSeasonStats], DepthError>]
     private(set) var requests: [PlayerStatsRequest] = []
+    let highlights: PlayerHighlights?
 
-    init(results: [Result<[PlayerSeasonStats], DepthError>]) {
+    init(
+        results: [Result<[PlayerSeasonStats], DepthError>], highlights: PlayerHighlights? = nil
+    ) {
         self.results = results
+        self.highlights = highlights
+    }
+
+    func playerHighlights(playerId: String, teamId: String?) async throws -> PlayerHighlights? {
+        highlights
     }
 
     func teams() async throws -> [Team] { [] }

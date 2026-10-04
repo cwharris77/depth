@@ -1,21 +1,18 @@
 import SwiftUI
 
-// The one "everything about one player" screen: identity, vitals, the position's depth
-// chart,
-// season-by-season stats, bio, and accolades. Pushed from the depth-chart field and from
+// The one "everything about one player" screen: identity, vitals, the career high the
+// player is known for, the position's depth chart, season-by-season stats, and bio. Pushed from the depth-chart field and from
 // Compare's PlayerCell — there is no quick-glance card any more, and reordering lives in
 // the edit-mode PositionReorderSheet. A NavigationStack push, not a sheet, so it composes
 // into whatever stack pushed it rather than owning its own dismiss chrome.
 //
 // Layout: a kit-colored jersey
 // band (surname over the numeral, sleeve stripe beneath), a name row, one hairline vitals
-// strip, then collapsible SEASON STATS (PlayerStatsLedger) and ACCOLADES sections. The
+// strip, the KNOWN FOR claim when one exists, then collapsible sections. The
 // mock's ghosted city wordmark stands in for a club mark — sports-mark imagery isn't
 // cleared for the native app.
 //
-// Draft history is unavailable until its data source ships; accolades also has no
-// confirmed data source and renders as an explicit empty state, kept last
-// so an empty section reads as a coda rather than a gap before more content.
+// Draft history and accolades stay off the screen until their data sources ship.
 
 /// The position's depth chart as the field rendered it, handed in by TeamDetailView. Nil
 /// from Compare, which has no depth chart on screen, so the DEPTH CHART section hides.
@@ -84,7 +81,7 @@ private struct PlayerProfileScreen: View {
     @State private var depthOpen = true
     @State private var statsOpen = true
     @State private var bioOpen = true
-    @State private var accoladesOpen = true
+    @State private var knownForScopeOpen = false
 
     @ScaledMetric(relativeTo: .largeTitle) private var scaledNumberSize: CGFloat = 116
     @ScaledMetric(relativeTo: .title) private var scaledPhotoSize: CGFloat = 52
@@ -151,16 +148,15 @@ private struct PlayerProfileScreen: View {
                         .padding(.top, 14)
                     vitals
                         .padding(.top, 14)
-                    // Merge spec order: the short depth list answers "where does he sit"
-                    // before the long ledger; bio is secondary prose; accolades stays the
-                    // coda. Depth and bio carry their own top padding because each can
-                    // render nothing.
+                    // The claim leads when there is one. Then the short depth list answers
+                    // "where does he sit" before the long ledger, and bio is secondary
+                    // prose. Known-for, depth and bio carry their own top padding because
+                    // each can render nothing.
+                    knownForSection
                     depthSection
                     statsSection
                         .padding(.top, DesignTokens.Spacing.sm)
                     bioSection
-                    accoladesSection
-                        .padding(.top, 10)
                 }
                 .padding(.horizontal, DesignTokens.Spacing.screenMargin)
                 .padding(.bottom, DesignTokens.Spacing.xl)
@@ -608,41 +604,91 @@ private struct PlayerProfileScreen: View {
         }
     }
 
-    // The accolades data source is unavailable, so this stays a visible, explicit empty
-    // state rather than a hidden section. The copy says "coming soon" rather than "not
-    // tracked yet" so the section communicates that the content is not available yet.
-    private var accoladesSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            sectionHeader(
-                PlayerProfileSection.accoladesTitle, meta: "COMING SOON", isOpen: $accoladesOpen,
-                identifier: "player-profile-full-accolades-toggle"
-            )
-            if accoladesOpen {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: DesignTokens.Spacing.sm) {
-                        ForEach(0..<4, id: \.self) { _ in
-                            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
-                                .strokeBorder(
-                                    DesignTokens.Colors.borderInput,
-                                    style: StrokeStyle(lineWidth: 1, dash: [4, 3])
-                                )
-                                .frame(height: 64)
-                                .overlay {
-                                    Image(systemName: "trophy")
-                                        .foregroundStyle(DesignTokens.Colors.textFaintest)
-                                }
-                        }
-                    }
-                    .accessibilityHidden(true)
-                    Text("Player accolades coming soon!")
-                        .font(.caption)
-                        .foregroundStyle(DesignTokens.Colors.textFaint)
+    // MARK: - Known for
+
+    /// One verified career high: the claim, the mark itself, how many players have reached
+    /// it, and the scope it is ranked over. Absent when no mark is rare enough.
+    @ViewBuilder
+    private var knownForSection: some View {
+        if let claim = viewModel.knownFor {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(PlayerProfileSection.knownForTitle)
+                    .font(.caption2.weight(.heavy))
+                    .tracking(1.4)
+                    .foregroundStyle(markColor)
+                Text(claim.headline)
+                    .font(.title3.weight(.heavy))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, DesignTokens.Spacing.sm)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("player-profile-known-for-headline")
+                knownForLockup(claim)
+                    .padding(.top, DesignTokens.Spacing.md)
+                Text(claim.comparator)
+                    .font(.footnote)
+                    .foregroundStyle(DesignTokens.Colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, DesignTokens.Spacing.sm)
+                knownForScopeButton(claim)
+                if knownForScopeOpen {
+                    Text(
+                        "Ranks every player’s best regular-season mark from nflverse play-by-play. Players tied on a mark share its rank."
+                    )
+                    .font(.caption)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, DesignTokens.Spacing.sm)
                 }
-                .padding(.top, 10)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, DesignTokens.Spacing.lg)
+            .padding(.bottom, DesignTokens.Spacing.xs)
+            .overlay(alignment: .bottom) { hairline }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("player-profile-known-for")
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("player-profile-full-accolades")
+    }
+
+    private func knownForLockup(_ claim: PlayerKnownForClaim) -> some View {
+        let layout =
+            dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.xs))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: DesignTokens.Spacing.md))
+        return layout {
+            Text(claim.valueText)
+                .font(.title.weight(.black))
+                .monospacedDigit()
+                .foregroundStyle(markColor)
+            Text(claim.context)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func knownForScopeButton(_ claim: PlayerKnownForClaim) -> some View {
+        Button {
+            withAnimation(reduceMotion ? nil : DesignTokens.Motion.feedback) {
+                knownForScopeOpen.toggle()
+            }
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Image(systemName: "info.circle")
+                Text(claim.scope)
+                    .multilineTextAlignment(.leading)
+            }
+            .font(.caption)
+            .foregroundStyle(DesignTokens.Colors.textFaint)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(
+            knownForScopeOpen ? "Hides how this is measured" : "Shows how this is measured"
+        )
+        .accessibilityIdentifier("player-profile-known-for-scope")
     }
 
     private func sectionHeader(
@@ -712,5 +758,5 @@ enum PlayerProfileSection {
     static let seasonStatsTitle = "SEASON STATS"
     static let depthChartTitle = "DEPTH CHART"
     static let bioTitle = "BIO"
-    static let accoladesTitle = "ACCOLADES"
+    static let knownForTitle = "KNOWN FOR"
 }
