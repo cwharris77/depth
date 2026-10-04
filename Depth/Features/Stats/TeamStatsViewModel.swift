@@ -29,6 +29,12 @@ final class TeamStatsViewModel {
     /// pinning to the roster's newest season) so switching tabs is pure state, no
     /// refetch, same as `selectedSeasonStats`.
     private(set) var leadersBySeason: [Int: RosterLeaders] = [:]
+    /// Last season's schedule per season row, keyed by the season it is compared against,
+    /// for the hero's "through N games" pace line. Fetched once per season like leaders.
+    private(set) var priorSchedulesBySeason: [Int: TeamSchedule] = [:]
+    /// True when a reload failed but an earlier page is still on screen. The page keeps
+    /// rendering the cached stats under a retry row instead of an error screen.
+    private(set) var refreshFailed = false
 
     private let repository: DepthRepository
 
@@ -57,6 +63,18 @@ final class TeamStatsViewModel {
     var selectedSeasonStats: TeamSeasonStats? {
         guard let selectedSeason else { return nil }
         return seasons.first { $0.season == selectedSeason }
+    }
+
+    /// The overview's one story: this season's, or last season's while this one has
+    /// fewer than two games to rank.
+    var selectedStory: TeamStatsOverviewStory? {
+        guard let page, let selectedSeason else { return nil }
+        return TeamSeasonStoryBuilder.overviewStory(page: page, selectedSeason: selectedSeason)
+    }
+
+    var selectedSeasonPace: TeamSeasonPace? {
+        guard let stats = selectedSeasonStats else { return nil }
+        return TeamSeasonPace.compare(stats, priorSchedule: priorSchedulesBySeason[stats.season])
     }
 
     var selectedSeasonLeaders: RosterLeaders? {
@@ -100,22 +118,50 @@ final class TeamStatsViewModel {
     }
 
     func load() async {
-        loadState = .loading
+        if page == nil { loadState = .loading }
         do {
             let page = try await repository.teamStats(teamId: teamId)
             self.page = page
+            refreshFailed = false
             if selectedSeason == nil {
                 selectedSeason = page.seasons.first?.season ?? page.upcomingSeason
             }
             loadState = .loaded
-        } catch let error as DepthError {
-            page = nil
-            loadState = .failed(error)
         } catch {
-            page = nil
-            loadState = .failed(.server("\(error)"))
+            // A failed refresh over a page already on screen keeps that page: cached stats
+            // under a retry row beat an error screen.
+            if page != nil {
+                refreshFailed = true
+            } else {
+                loadState = .failed(error as? DepthError ?? .server("\(error)"))
+            }
         }
-        await loadLeaders()
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.loadLeaders() }
+            group.addTask { await self.loadPriorSchedules() }
+        }
+    }
+
+    /// Last season's schedule for each season row, for the pace line. `try?` per season:
+    /// a missing schedule drops that season's pace line and nothing else.
+    private func loadPriorSchedules() async {
+        guard let page else { return }
+        await withTaskGroup(of: (Int, TeamSchedule?).self) { group in
+            for stats in page.seasons where TeamSeasonStoryBuilder.games(stats) > 0 {
+                group.addTask { [repository, teamId] in
+                    (
+                        stats.season,
+                        try? await repository.teamSchedule(
+                            teamId: teamId, season: stats.season - 1)
+                    )
+                }
+            }
+            var result: [Int: TeamSchedule] = [:]
+            for await (season, schedule) in group {
+                if let schedule { result[season] = schedule }
+            }
+            priorSchedulesBySeason.merge(result) { _, new in new }
+        }
     }
 
     /// One leaders fetch per season row (web parity comment in page.tsx: "seasons is
@@ -137,7 +183,9 @@ final class TeamStatsViewModel {
             for await (season, leaders) in group {
                 if let leaders { result[season] = leaders }
             }
-            leadersBySeason = result
+            // Merge, never replace: a refresh that fails over a page still on screen must
+            // not blank the seasons it already showed.
+            leadersBySeason.merge(result) { _, new in new }
         }
     }
 
