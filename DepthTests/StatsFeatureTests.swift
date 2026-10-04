@@ -149,3 +149,83 @@ private actor StatsRepositoryFake: DepthRepository {
     await viewModel.selectSeason(2023)
     #expect(await viewModel.selectedSeasonLeaders == nil)
 }
+
+/// Serves the stats page until told to fail, and last season's schedule for the pace line.
+private actor FlakyStatsRepositoryFake: DepthRepository {
+    let page: TeamStatsPage
+    let schedules: [Int: TeamSchedule]
+    private var failStats = false
+
+    init(page: TeamStatsPage, schedules: [Int: TeamSchedule] = [:]) {
+        self.page = page
+        self.schedules = schedules
+    }
+
+    func startFailing() { failStats = true }
+
+    func teams() async throws -> [Team] { [] }
+    func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        guard let season, let schedule = schedules[season] else { throw DepthError.notFound }
+        return schedule
+    }
+    func teamStats(teamId: String) async throws -> TeamStatsPage {
+        if failStats { throw DepthError.server("offline") }
+        return page
+    }
+    func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? {
+        if failStats { throw DepthError.offline }
+        return RosterLeaders(
+            season: season,
+            passing: Leader(playerId: "qb", name: "Leader \(season)", line: "1 yds"),
+            rushing: nil, receiving: nil)
+    }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
+}
+
+/// A failed refresh over a page already on screen keeps that page and flags the retry row;
+/// only a first load with nothing to show becomes the error state.
+@Test func failedRefreshKeepsTheCachedPageOnScreen() async {
+    let repository = FlakyStatsRepositoryFake(page: statsPage())
+    let viewModel = await TeamStatsViewModel(teamId: "bills", repository: repository)
+    await viewModel.load()
+    #expect(await viewModel.refreshFailed == false)
+
+    await repository.startFailing()
+    await viewModel.load()
+    #expect(await viewModel.loadState == .loaded)
+    #expect(await viewModel.page != nil)
+    #expect(await viewModel.refreshFailed)
+    // Leaders already shown survive the failed refresh rather than blanking.
+    #expect(await viewModel.selectedSeasonLeaders?.passing?.name == "Leader 2025")
+
+    let cold = await TeamStatsViewModel(teamId: "bills", repository: repository)
+    await cold.load()
+    #expect(await cold.loadState == .failed(.server("offline")))
+}
+
+/// The pace line compares against last season's schedule through the same number of games.
+@Test func loadFetchesLastSeasonsScheduleForThePaceLine() async {
+    let prior = TeamSchedule(
+        season: 2024,
+        games: (1...16).map { week in
+            ScheduleGame(
+                week: week, isBye: false, date: nil, isHome: true, opponent: nil,
+                teamScore: nil, opponentScore: nil, result: week <= 10 ? .win : .loss)
+        }
+    )
+    let repository = FlakyStatsRepositoryFake(page: statsPage(), schedules: [2024: prior])
+    let viewModel = await TeamStatsViewModel(teamId: "bills", repository: repository)
+    await viewModel.load()
+
+    let pace = await viewModel.selectedSeasonPace
+    #expect(pace?.priorSeason == 2024)
+    #expect(pace?.priorRecord == "10-6")
+    #expect(pace?.winDelta == 2)
+}
