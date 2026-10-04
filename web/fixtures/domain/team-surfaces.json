@@ -1790,5 +1790,21 @@
       "numeralFill": "#003594",
       "numeralStroke": "#F0EBE0"
     }
+  },
+  {
+    "id": "texans-h-town-2024",
+    "colors": {
+      "primary": "#03202F",
+      "secondary": "#A71930",
+      "accent": "#0072CE"
+    },
+    "expected": {
+      "fill": "#03202F",
+      "ring": "#A71930",
+      "mark": "#0072CE",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#03202F",
+      "numeralStroke": "#FFFFFF"
+    }
   }
 ]

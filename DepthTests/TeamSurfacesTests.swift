@@ -2,7 +2,7 @@ import Testing
 @testable import Depth
 
 // Parity against web/fixtures/domain/team-surfaces.json, generated from the TS oracle
-// (web/lib/utils/team-surfaces.ts) over all 105 curated kits. Swift must return identical
+// (web/lib/utils/team-surfaces.ts) over every curated kit. Swift must return identical
 // strings for every kit and every surface — this is what keeps the two implementations from
 // drifting once views on both sides ask for surfaces instead of reading a stored hex.
 //
@@ -36,7 +36,7 @@ private struct TeamSurfaceCase: Decodable {
 @Test func teamSurfacesParity() throws {
     let cases = try loadFixture("team-surfaces", as: [TeamSurfaceCase].self)
     // Guards against a truncated or stale fixture silently passing with a handful of rows.
-    #expect(cases.count == 109, "expected every curated kit in the fixture")
+    #expect(cases.count == 113, "expected every curated kit in the fixture")
 
     for c in cases {
         let colors = c.colors.domain
