@@ -194,3 +194,11 @@ Everything in `web/CLAUDE.md` §5's "Any code PR" checklist applies. Additionall
       single-screen UI change gets `/ios-pr-screenshots`; a multi-screen or logic-heavy
       change you verify in the simulator instead gets one sentence justifying the skip.
       Full shipping steps: [`SHIPPING.md`](SHIPPING.md).
+
+## 6. Merging
+
+`main` requires status checks (`test`, `ios-ci`, `ios-compat`, `agents-symlink`, `label`,
+`Vercel`). Once a PR is approved to merge, enable GitHub's native auto-merge —
+`gh pr merge --auto --squash` — and move on. Do not poll CI or wait on a human to click
+merge; GitHub merges when the required checks pass. If a check fails, the CI monitor
+reports it.
