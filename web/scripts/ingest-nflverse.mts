@@ -9,7 +9,8 @@
 //                                                # current + previous season
 //   npm run ingest:nflverse -- --seasons 1999-2025
 //     backfills games/schedules/team_season_stats/player_stats for every season in the
-//     range. player_stats widens its gate for this flag -- a row
+//     range, plus team_coach_seasons for its completed seasons (insert-only).
+//     player_stats widens its gate for this flag -- a row
 //     writes on a crosswalk match alone, not requiring current-roster membership (see
 //     why).
 // Requires SUPABASE_URL + SUPABASE_SECRET_KEY in the environment (secret key
@@ -60,6 +61,7 @@ import {
 } from '@/lib/nflverse/raw-stats';
 import { playerRawTables, playRawTables } from '@/lib/nflverse/raw-tables.generated';
 import { toScheduleAndGameRows, type GameInsert, type ScheduleInsert } from '@/lib/nflverse/games';
+import { toCoachSeasonRows } from '@/lib/nflverse/coach-history';
 import { toTeamStatsRows, type TeamStatsInsert } from '@/lib/nflverse/team-stats';
 import { toTeamRecords, type TeamAlignment, type TeamRecordInsert } from '@/lib/nflverse/records';
 import { FormationAccumulator, type ParticipationRow } from '@/lib/nflverse/participation';
@@ -308,6 +310,21 @@ async function ingestGames(
         const { error } = await db.from('games').upsert(chunk, { onConflict: 'game_id' });
         return { error };
       });
+      // A --seasons backfill also fills completed seasons' head coaches. Insert-only:
+      // an existing row (curated, or the ESPN ingest's current season) always wins.
+      if (minSeason !== undefined) {
+        const coaches = toCoachSeasonRows(csvRows, resolveTeamCode, {
+          fromSeason: minSeason,
+          throughSeason: Number.MAX_SAFE_INTEGER,
+        });
+        await upsertChunked('team_coach_seasons', coaches, async (chunk) => {
+          const { error } = await db
+            .from('team_coach_seasons')
+            .upsert(chunk, { onConflict: 'team_id,season', ignoreDuplicates: true });
+          return { error };
+        });
+        console.log(`team_coach_seasons: offered ${coaches.length} completed-season rows`);
+      }
     }
 
     console.log(
