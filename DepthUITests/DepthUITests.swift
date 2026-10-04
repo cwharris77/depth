@@ -83,6 +83,32 @@ final class DepthUITests: XCTestCase {
             playerSlot.waitForExistence(timeout: 5), "back should return to the depth chart")
     }
 
+    // A punter's profile leads with a PUNTING tab built from the stat-file rows, not a bare
+    // snaps or games line.
+    func testPunterProfileShowsAPuntingLine() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(
+            app.launch(intoTeam: "seahawks"),
+            "the app should launch straight into the Seahawks depth chart")
+
+        let specialTab = app.buttons["unit-tab-special"]
+        XCTAssertTrue(
+            specialTab.waitForExistence(timeout: 10), "the unit tab bar should offer Special Teams")
+        specialTab.tap()
+        let punterSlot = app.buttons["player-slot-seahawks-st-p"]
+        XCTAssertTrue(
+            punterSlot.waitForExistence(timeout: 10), "special teams should expose the punter slot")
+        punterSlot.tap()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["player-profile-full-content"].waitForExistence(
+                timeout: 10),
+            "tapping the punter should push the player profile")
+        XCTAssertTrue(
+            app.buttons["player-profile-full-tab-punting"].waitForExistence(timeout: 10),
+            "a punter's ledger should offer a PUNTING tab")
+    }
+
     // The profile's DEPTH CHART rows swap the screen to another player in
     // place. One back tap must land on the field — a pushed profile per row would need two.
     func testProfileDepthRowSwapsPlayerInPlace() throws {

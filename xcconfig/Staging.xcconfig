@@ -11,3 +11,6 @@ APP_ICON_NAME = AppIconStage
 // "/$()/" breaks up "//" so xcconfig's line-comment parser doesn't truncate the URL.
 SUPABASE_URL = https:/$()/djwrecczgudktgsooxti.supabase.co
 SUPABASE_PUBLISHABLE_KEY = sb_publishable_SnZSUFxGFwdt-sPgpd0FIQ_WPgQemvw
+
+// Per-player stat files on R2 (`npm run stat-files:serve` locally).
+STAT_FILES_BASE_URL = https:/$()/stats-staging.cooper-harris.site/v1

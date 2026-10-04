@@ -95,6 +95,7 @@ targets:
         APP_STORE_ID: $(APP_STORE_ID)
         SUPABASE_URL: $(SUPABASE_URL)
         SUPABASE_PUBLISHABLE_KEY: $(SUPABASE_PUBLISHABLE_KEY)
+        STAT_FILES_BASE_URL: $(STAT_FILES_BASE_URL)
         # App Store export-compliance question: Depth only uses standard HTTPS (Supabase),
         # no custom/proprietary encryption, so it's exempt. Setting this avoids the manual
         # "does your app use encryption" prompt on every App Store Connect upload.

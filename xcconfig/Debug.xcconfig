@@ -13,3 +13,6 @@ APP_ICON_NAME = AppIconDev
 // "/$()/" breaks up "//" so xcconfig's line-comment parser doesn't truncate the URL.
 SUPABASE_URL = http:/$()/127.0.0.1:54321
 SUPABASE_PUBLISHABLE_KEY = sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+
+// Per-player stat files on R2 (`npm run stat-files:serve` locally).
+STAT_FILES_BASE_URL = http:/$()/127.0.0.1:54330/v1

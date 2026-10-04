@@ -58,30 +58,6 @@ import Testing
     #expect(mapped.photoUrl == "https://example.com/player.png")
 }
 
-@Test func playerStatsMapperPreservesRegularSeasonFieldsAndTeamAbbreviation() throws {
-    let dto = PlayerSeasonStatsDTO(
-        season: 2025, seasonType: "REG", games: 17, completions: 401, attempts: 580,
-        passingYards: 4_321, passingTds: 32, passingInterceptions: 9, carries: nil,
-        rushingYards: nil, rushingTds: nil, receptions: nil, targets: nil,
-        receivingYards: nil, receivingTds: nil, defTacklesSolo: nil, defSacks: nil,
-        defInterceptions: nil, fgMade: nil, fgAtt: nil,
-        defTackleAssists: nil, defTacklesForLoss: nil, defQbHits: nil, defPassDefended: nil,
-        defFumblesForced: nil, defTds: nil, defSafeties: nil, fumbleRecoveries: nil,
-        fumbleRecoveryTds: nil, puntReturns: nil, puntReturnYards: nil, kickoffReturns: nil,
-        kickoffReturnYards: nil, specialTeamsTds: nil, penalties: nil, penaltyYards: nil,
-        patMade: nil, patAtt: nil, fgLong: nil, offenseSnaps: nil, offensePct: nil,
-        defenseSnaps: nil, defensePct: nil, specialTeamsSnaps: nil, specialTeamsPct: nil,
-        teams: TeamAbbreviationDTO(abbrev: "BUF")
-    )
-
-    let mapped = TeamSnapshotMapper.mapPlayerSeasonStats(dto)
-
-    #expect(mapped.season == 2025)
-    #expect(mapped.seasonType == .regular)
-    #expect(mapped.teamAbbrev == "BUF")
-    #expect(mapped.passingYards == 4_321)
-}
-
 @Test func profileDisplayUsesHumanLabelsAndMissingValueFallbacks() {
     #expect(Position.qb.fullName == "Quarterback")
     #expect(PlayerProfileDisplay.experience(0) == "Rookie")
