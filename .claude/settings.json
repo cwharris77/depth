@@ -6,10 +6,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd web && npm run typecheck",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/scripts/typecheck-if-web-changed.sh",
             "if": "Bash(git commit*)",
             "timeout": 60,
             "statusMessage": "Typechecking before commit..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|mcp__multi-repo-context__edit_file|mcp__multi-repo-context__write_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/scripts/guard-pbxproj.sh"
           }
         ]
       }
@@ -25,7 +34,19 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|mcp__multi-repo-context__edit_file|mcp__multi-repo-context__write_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/scripts/post-edit-sync.sh",
+            "timeout": 120
+          }
+        ]
+      }
     ]
   },
-  "description": "Runs `npm run typecheck` (in web/) before every git commit so type errors never slip through. `npm run build` is intentionally excluded — it depends on .env.local (Supabase env vars) that fresh worktrees don't have, and would false-block commits; build verification stays part of the manual PR quality-bar checklist / CI. SessionStart runs .claude/scripts/worktree-bootstrap.sh, which gives a fresh git worktree web/node_modules (APFS copy-on-write clone from the main checkout) and a symlinked web/.env.local — without it, npm test/format and that typecheck hook fail in every worktree."
+  "description": "Runs `npm run typecheck` (in web/) before every git commit so type errors never slip through. `npm run build` is intentionally excluded \u2014 it depends on .env.local (Supabase env vars) that fresh worktrees don't have, and would false-block commits; build verification stays part of the manual PR quality-bar checklist / CI. SessionStart runs .claude/scripts/worktree-bootstrap.sh, which gives a fresh git worktree web/node_modules (APFS copy-on-write clone from the main checkout) and a symlinked web/.env.local \u2014 without it, npm test/format and that typecheck hook fail in every worktree. Also: guard-pbxproj.sh blocks hand edits to project.pbxproj; post-edit-sync.sh runs xcodegen on project.yml edits and prints fixture/token reminders; the commit typecheck only runs when web/ is in the commit. Edit hooks also match the multi-repo-context edit_file/write_file tools."
 }
