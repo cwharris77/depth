@@ -61,8 +61,23 @@ struct PlayerSeasonStats: Codable, Hashable, Identifiable {
     let defensePct: Double?
     let specialTeamsSnaps: Int?
     let specialTeamsPct: Double?
+    // Fields only the per-player stat files carry. `var` with a nil default keeps the
+    // memberwise initializer source-compatible and lets a cached payload written before
+    // these existed decode.
+    var punts: Int? = nil
+    var puntYards: Int? = nil
+    var puntNetYards: Int? = nil
+    var puntLong: Int? = nil
+    var puntsInside20: Int? = nil
+    var puntTouchbacks: Int? = nil
+    var missedTackles: Int? = nil
+    var rushingYardsBeforeContactPerCarry: Double? = nil
+    var rushingYardsAfterContactPerCarry: Double? = nil
+    var timeToThrow: Double? = nil
+    var passingCpoe: Double? = nil
 
-    var id: String { "\(season)-\(seasonType.rawValue)" }
+    /// One row per team stint: a traded player has two rows for the same season.
+    var id: String { "\(season)-\(seasonType.rawValue)-\(teamAbbrev ?? "")" }
     var hasPlayedGames: Bool { (games ?? 0) > 0 }
 
     static func empty(season: Int, games: Int? = nil) -> PlayerSeasonStats {
@@ -126,6 +141,9 @@ enum PlayerStatColumn: Hashable, CaseIterable {
     case penalties, penaltyYards, patMade, patAtt, fieldGoalLong
     case offenseSnaps, offenseSnapShare, defenseSnaps, defenseSnapShare
     case specialTeamsSnaps, specialTeamsSnapShare
+    case punts, puntYards, puntAverage, puntNetAverage, puntLong, puntsInside20, puntTouchbacks
+    case missedTackles, yardsBeforeContactPerCarry, yardsAfterContactPerCarry
+    case timeToThrow, passingCpoe
 
     var header: String {
         switch self {
@@ -169,6 +187,18 @@ enum PlayerStatColumn: Hashable, CaseIterable {
         case .defenseSnapShare: "DEF %"
         case .specialTeamsSnaps: "ST"
         case .specialTeamsSnapShare: "ST %"
+        case .punts: "PNT"
+        case .puntYards: "YDS"
+        case .puntAverage: "AVG"
+        case .puntNetAverage: "NET"
+        case .puntLong: "LONG"
+        case .puntsInside20: "IN20"
+        case .puntTouchbacks: "TB"
+        case .missedTackles: "MTKL"
+        case .yardsBeforeContactPerCarry: "YBC/A"
+        case .yardsAfterContactPerCarry: "YAC/A"
+        case .timeToThrow: "TTT"
+        case .passingCpoe: "CPOE"
         }
     }
 
@@ -220,6 +250,18 @@ enum PlayerStatColumn: Hashable, CaseIterable {
         case .defenseSnapShare: percentage(stats.defensePct)
         case .specialTeamsSnaps: grouped(stats.specialTeamsSnaps)
         case .specialTeamsSnapShare: percentage(stats.specialTeamsPct)
+        case .punts: "\(integer(stats.punts))"
+        case .puntYards: grouped(stats.puntYards)
+        case .puntAverage: ratio(stats.puntYards, stats.punts)
+        case .puntNetAverage: ratio(stats.puntNetYards, stats.punts)
+        case .puntLong: "\(integer(stats.puntLong))"
+        case .puntsInside20: "\(integer(stats.puntsInside20))"
+        case .puntTouchbacks: "\(integer(stats.puntTouchbacks))"
+        case .missedTackles: "\(integer(stats.missedTackles))"
+        case .yardsBeforeContactPerCarry: decimal(stats.rushingYardsBeforeContactPerCarry)
+        case .yardsAfterContactPerCarry: decimal(stats.rushingYardsAfterContactPerCarry)
+        case .timeToThrow: decimal(stats.timeToThrow, places: 2)
+        case .passingCpoe: signedDecimal(stats.passingCpoe)
         }
     }
 
@@ -244,6 +286,16 @@ enum PlayerStatColumn: Hashable, CaseIterable {
     private func percentage(_ value: Double?) -> String {
         guard let value else { return "—" }
         return String(format: "%.1f", value * 100)
+    }
+
+    private func decimal(_ value: Double?, places: Int = 1) -> String {
+        guard let value else { return "—" }
+        return String(format: "%.\(places)f", value)
+    }
+
+    private func signedDecimal(_ value: Double?) -> String {
+        guard let value else { return "—" }
+        return String(format: "%+.1f", value)
     }
 
     private func formatSacks(_ value: Double?) -> String {
@@ -315,6 +367,18 @@ extension PlayerStatColumn {
         case .defenseSnapShare: "Defensive snap share"
         case .specialTeamsSnaps: "Special teams snaps"
         case .specialTeamsSnapShare: "Special teams snap share"
+        case .punts: "Punts"
+        case .puntYards: "Punting yards"
+        case .puntAverage: "Yards per punt"
+        case .puntNetAverage: "Net yards per punt"
+        case .puntLong: "Longest punt"
+        case .puntsInside20: "Punts inside the 20"
+        case .puntTouchbacks: "Punt touchbacks"
+        case .missedTackles: "Missed tackles"
+        case .yardsBeforeContactPerCarry: "Yards before contact per carry"
+        case .yardsAfterContactPerCarry: "Yards after contact per carry"
+        case .timeToThrow: "Average time to throw in seconds"
+        case .passingCpoe: "Completion percentage over expected"
         }
     }
 }

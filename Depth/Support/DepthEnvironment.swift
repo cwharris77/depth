@@ -34,6 +34,15 @@ enum DepthEnvironment {
         )
     }()
 
+    /// The per-player stat files on R2; the base URL comes from the active .xcconfig
+    /// (STAT_FILES_BASE_URL), like the Supabase values.
+    static let statFilesClient: StatFilesClient = {
+        guard let client = StatFilesClient.fromBundle() else {
+            fatalError("Missing STAT_FILES_BASE_URL in Info.plist — check the active .xcconfig")
+        }
+        return client
+    }()
+
     /// This cache is disposable — Supabase is always the source of truth — so a
     /// `ModelContainer` that fails to open (an
     /// incompatible on-disk store from an old build, e.g. after this app's own
@@ -78,7 +87,8 @@ enum DepthEnvironment {
             }
         #endif
         return CachingDepthRepository(
-            underlying: SupabaseDepthRepository(client: supabaseClient),
+            underlying: SupabaseDepthRepository(
+                client: supabaseClient, statFiles: statFilesClient),
             store: CachedSnapshotStore(modelContainer: modelContainer)
         )
     }()

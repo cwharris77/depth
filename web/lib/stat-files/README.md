@@ -60,3 +60,7 @@ curl -sD - http://127.0.0.1:54330/v1/manifest.json | gunzip
 ```
 
 The `Content-Encoding: gzip` and `Cache-Control` in the response are the same ones a real bucket returns. `web/.stat-files/` is gitignored.
+
+## Edge caching
+
+The `stats` and `stats-staging` hostnames carry a Cloudflare Cache Rule (eligible for cache, edge TTL from the origin `Cache-Control`) covering `/v1/players/*` and `/v1/manifest.json`, with Tiered Cache enabled. `_build/` and `_raw/` are outside the rule and are never edge-cached. A republished object can therefore stay stale at the edge for up to its TTL (an hour for current-season files, a week for a completed season's game logs); after a correction backfill, purge the hostname under Caching → Configuration → Purge Cache.

@@ -2,3 +2,6 @@
 
 SUPABASE_URL = https:/$()/jiqoaqmzmvtovimnmbzl.supabase.co
 SUPABASE_PUBLISHABLE_KEY = sb_publishable_JPsqvaeJbAGnX1JzkUGBqA_riP7wR9u
+
+// Per-player stat files on R2 (`npm run stat-files:serve` locally).
+STAT_FILES_BASE_URL = https:/$()/stats.cooper-harris.site/v1
