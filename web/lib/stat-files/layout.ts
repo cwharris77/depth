@@ -3,7 +3,7 @@
 // the local server read keys from here so the layout can't drift between them.
 //
 // All served objects are gzip JSON. `_build/` checkpoints are private working state (a WAF
-// blocks that prefix on the public hostname) and are written `no-store`; `players/*` is served
+// blocks that prefix on the public hostname) and are written `no-store`; `players/*` and `teams/*` are served
 // from the edge cache, with the current season's objects revalidating hourly and a completed
 // season's game log weekly (nflverse issues corrections, so not `immutable`).
 
@@ -25,6 +25,16 @@ export function playerSeasonsKey(espnId: string): string {
 /** `v1/players/{espn_id}/games/{season}.json` — one player-season game log. */
 export function playerGamesKey(espnId: string, season: number): string {
   return `${PREFIX}/players/${espnId}/games/${season}.json`;
+}
+
+/** `v1/teams/{team_id}/seasons.json` — one team's per-game lines, allowed rates and ranks. */
+export function teamSeasonsKey(teamId: string): string {
+  return `${PREFIX}/teams/${teamId}/seasons.json`;
+}
+
+/** `v1/_build/team-rows/{season}.json` — the publisher checkpoint of one season's team-games. */
+export function teamCheckpointKey(season: number): string {
+  return `${PREFIX}/_build/team-rows/${season}.json`;
 }
 
 /** `v1/_build/season-rows/{season}.json` — the publisher checkpoint for one season. */

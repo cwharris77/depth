@@ -58,3 +58,12 @@ describe('isPublishedSeason', () => {
     expect(isPublishedSeason('espn_qbr_week', 1999)).toBe(true);
   });
 });
+
+describe('stats_team_week coverage', () => {
+  it('starts at the first season where every game is paired', () => {
+    expect(isPublishedSeason('stats_team_week', 2002)).toBe(false);
+    expect(isPublishedSeason('stats_team_week', 2003)).toBe(true);
+    expect(classifyMissingAsset('stats_team_week', 2002, COMPLETED)).toBe('skip');
+    expect(classifyMissingAsset('stats_team_week', 2024, COMPLETED)).toBe('error');
+  });
+});

@@ -8,11 +8,18 @@ import {
   ShrinkGuardError,
   type SeasonBuild,
 } from './build-run';
-import { manifestKey, playerSeasonsKey, seasonCheckpointKey } from './layout';
+import {
+  manifestKey,
+  playerSeasonsKey,
+  seasonCheckpointKey,
+  teamCheckpointKey,
+  teamSeasonsKey,
+} from './layout';
 import type { PlayerGameRow } from './player-games';
 import type { PlayerSeasonRow } from './player-seasons';
 import type { StatFileHeaders, StatFileTarget } from './publish';
 import { MemoryStatFileTarget } from './targets';
+import type { TeamGameRow } from './team-seasons';
 
 /** A memory target that records every `put`, so a test can assert nothing was uploaded. */
 class RecordingTarget extends MemoryStatFileTarget {
@@ -20,6 +27,14 @@ class RecordingTarget extends MemoryStatFileTarget {
   override async put(key: string, body: Uint8Array, headers: StatFileHeaders): Promise<void> {
     this.puts.push(key);
     await super.put(key, body, headers);
+  }
+}
+
+/** A recording target that can pretend an object was never written. */
+class HidingTarget extends RecordingTarget {
+  hidden = new Set<string>();
+  override async get(key: string): Promise<Uint8Array | null> {
+    return this.hidden.has(key) ? null : super.get(key);
   }
 }
 
@@ -201,5 +216,76 @@ describe('mergeManifestSources', () => {
       a: { min_season: 1999, max_season: 2025, crosswalk_misses: 2 },
       b: { min_season: 2016, max_season: 2024, crosswalk_misses: 1 },
     });
+  });
+});
+
+describe('runStatFileBuild team files', () => {
+  const teamRows = (season: number, games: number): TeamGameRow[] =>
+    Array.from({ length: games }, (_, i) => ({
+      team: 'bills',
+      season,
+      season_type: 'REG' as const,
+      week: i + 1,
+      game_id: `${season}_${i}`,
+      opponent: 'jets',
+      offense: { passing_yards: 200 },
+      allowed: { passing_yards: 150 },
+    }));
+  const teamsOption = (built: number[], games = 4) => ({
+    expectedSeasons: [2023, 2024, 2025],
+    buildSeason: async (season: number) => {
+      built.push(season);
+      return teamRows(season, games);
+    },
+  });
+
+  it('publishes a file per team with checkpoints in the same upload', async () => {
+    const target = new RecordingTarget();
+    const built: number[] = [];
+    const result = await runStatFileBuild(
+      options(target, [2023, 2024, 2025], undefined, { teams: teamsOption(built) })
+    );
+    expect(result.teamFiles).toBe(1);
+    expect(built).toEqual([2023, 2024, 2025]);
+    expect(target.puts).toContain(teamSeasonsKey('bills'));
+    expect(target.puts).toContain(teamCheckpointKey(2024));
+    const file = JSON.parse(await body(target, teamSeasonsKey('bills')));
+    expect(file.seasons.map((s: { season: number }) => s.season)).toEqual([2025, 2024, 2023]);
+  });
+
+  it('writes no team keys unless team files are enabled', async () => {
+    const target = new RecordingTarget();
+    const result = await runStatFileBuild(options(target, [2023, 2024, 2025]));
+    expect(result.teamFiles).toBe(0);
+    expect(
+      target.puts.filter((key) => key.includes('/teams/') || key.includes('team-rows'))
+    ).toEqual([]);
+  });
+
+  it('reads stored team checkpoints outside the window and builds a missing one', async () => {
+    const target = new HidingTarget();
+    await runStatFileBuild(
+      options(target, [2023, 2024, 2025], undefined, { teams: teamsOption([]) })
+    );
+    const built: number[] = [];
+    await runStatFileBuild(options(target, [2025], undefined, { teams: teamsOption(built) }));
+    expect(built).toEqual([2025]);
+
+    target.hidden.add(teamCheckpointKey(2023));
+    const healed: number[] = [];
+    await runStatFileBuild(options(target, [2025], undefined, { teams: teamsOption(healed) }));
+    expect(healed).toEqual([2023, 2025]);
+  });
+
+  it('uploads nothing when a team season shrinks past the guard', async () => {
+    const target = new RecordingTarget();
+    await runStatFileBuild(
+      options(target, [2023, 2024, 2025], undefined, { teams: teamsOption([], 10) })
+    );
+    const before = target.puts.length;
+    await expect(
+      runStatFileBuild(options(target, [2024], undefined, { teams: teamsOption([], 5) }))
+    ).rejects.toBeInstanceOf(ShrinkGuardError);
+    expect(target.puts.length).toBe(before);
   });
 });
