@@ -55,7 +55,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           files=$([ -n "$BASE_SHA" ] && git diff --name-only "$BASE_SHA" HEAD)
-          if [ -z "$files" ] || grep -Eqv '\.md$' <<<"$files" || grep -qx 'ios-release-compatibility.md' <<<"$files"; then
+          if [ -z "$files" ] || grep -Ev '\.md$' <<<"$files" >/dev/null || grep -qx 'ios-release-compatibility.md' <<<"$files"; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
