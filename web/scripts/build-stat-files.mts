@@ -4,6 +4,15 @@
 //
 // Usage (from web/):
 //   npm run stat-files:build -- --seasons 1999-2026 --out .stat-files [--no-games]
+//   npm run stat-files:build -- --target r2 --bucket <name> [--seasons 1999-2026]
+//
+// `--target r2` publishes to the bucket named by `--bucket` (credentials come from the
+// R2_* environment, never arguments). Without `--seasons` the build rebuilds the current
+// window and reads every other season's checkpoint from the target; a missing checkpoint
+// fails the run and names the backfill command. Nothing is uploaded until every season has
+// been built and has passed the shrink guard (`--allow-shrink <season>` overrides one
+// season). Every fetched source file is archived gzipped under `_raw/`; `--from-raw`
+// rebuilds from that archive instead of nflverse.
 //
 // Game logs (`v1/players/{espn_id}/games/{season}.json`) are written from the same weekly
 // parse as the season ledgers, one season at a time so a season's weekly rows are released
@@ -20,9 +29,9 @@
 // is assembled from all checkpoints on disk — so a daily run that rebuilds one season still
 // rewrites complete careers.
 
-import { readdir } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
+import { createClient } from '@supabase/supabase-js';
 import { assetUrl } from '@/lib/nflverse/assets';
 import { parseCsv, parseCsvHeader } from '@/lib/nflverse/csv';
 import { toScheduleAndGameRows } from '@/lib/nflverse/games';
@@ -32,29 +41,29 @@ import { isPublishedSeason } from '@/lib/nflverse/source-coverage';
 import { fetchRawGroup } from '@/lib/nflverse/raw-group-guard';
 import { resolveTeamCode } from '@/lib/nflverse/team-codes';
 import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
-import { nflSeasonState } from '@/lib/utils/team/season-state';
-import {
-  seasonCheckpointKey,
-  STAT_FILES_SCHEMA_VERSION,
-  playerGamesKey,
-  playerSeasonsKey,
-} from '@/lib/stat-files/layout';
+import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
+import type { Database } from '@/lib/database.types';
+
 import {
   buildGameIndex,
-  buildPlayerGamesFiles,
   consolidateGames,
   type GameIndex,
   type PlayerGameRow,
 } from '@/lib/stat-files/player-games';
-import { createPublisher, type StatFilesManifest } from '@/lib/stat-files/publish';
-import { FileSystemStatFileTarget } from '@/lib/stat-files/targets';
 import {
-  buildPlayerSeasonsFile,
+  MissingCheckpointError,
+  runStatFileBuild,
+  ShrinkGuardError,
+  type ManifestSources,
+} from '@/lib/stat-files/build-run';
+import type { StatFileTarget } from '@/lib/stat-files/publish';
+import { createRawArchive, createSourceFetcher } from '@/lib/stat-files/raw-archive';
+import { FileSystemStatFileTarget, r2StatFileTargetFromEnv } from '@/lib/stat-files/targets';
+import {
   consolidateSeason,
   toPlayerWeekRows,
   type PlayerSeasonRow,
   type PlayerWeekRow,
-  type SeasonCheckpoint,
   type WeekRowResult,
 } from '@/lib/stat-files/player-seasons';
 
@@ -102,13 +111,64 @@ async function getText(url: string, attempts = 3): Promise<string> {
   throw lastError;
 }
 
-function parseArgs(argv: string[]): { seasons: number[] | null; out: string; games: boolean } {
-  const outIndex = argv.indexOf('--out');
+interface Args {
+  seasons: number[] | null;
+  out: string;
+  games: boolean;
+  target: 'fs' | 'r2';
+  bucket: string | null;
+  fromRaw: boolean;
+  allowShrink: number[];
+}
+
+function flagValue(argv: string[], flag: string): string | null {
+  const index = argv.indexOf(flag);
+  return index === -1 ? null : (argv[index + 1] ?? null);
+}
+
+function parseArgs(argv: string[]): Args {
+  const target = flagValue(argv, '--target') ?? 'fs';
+  if (target !== 'fs' && target !== 'r2') throw new Error(`--target must be fs or r2: ${target}`);
+  const allowShrink = argv.flatMap((arg, i) =>
+    arg === '--allow-shrink' ? [Number(argv[i + 1])] : []
+  );
+  if (allowShrink.some((season) => !Number.isInteger(season))) {
+    throw new Error('--allow-shrink takes a season, e.g. --allow-shrink 2019');
+  }
   return {
     seasons: parseSeasonsArg(argv),
-    out: outIndex === -1 ? '.stat-files' : argv[outIndex + 1],
+    out: flagValue(argv, '--out') ?? '.stat-files',
     games: !argv.includes('--no-games'),
+    target,
+    bucket: flagValue(argv, '--bucket'),
+    fromRaw: argv.includes('--from-raw'),
+    allowShrink,
   };
+}
+
+/** Every fetch in a run goes through this: live + archived, or the archive alone. */
+let fetchSource: (url: string) => Promise<string> = getText;
+
+const releaseUpdatedAtByTag = new Map<string, string | undefined>();
+
+/** The release's `updated_at`, for the archive meta. Best effort: a miss omits it. */
+async function releaseUpdatedAt(url: string): Promise<string | undefined> {
+  const tag = /\/releases\/download\/([^/]+)\//.exec(url)?.[1];
+  if (!tag) return undefined;
+  if (releaseUpdatedAtByTag.has(tag)) return releaseUpdatedAtByTag.get(tag);
+  let updated: string | undefined;
+  try {
+    const token = process.env.GITHUB_TOKEN;
+    const res = await fetch(
+      `https://api.github.com/repos/nflverse/nflverse-data/releases/tags/${tag}`,
+      { headers: token ? { authorization: `Bearer ${token}` } : {} }
+    );
+    if (res.ok) updated = ((await res.json()) as { updated_at?: string }).updated_at;
+  } catch {
+    // The archive is still valid without the release timestamp.
+  }
+  releaseUpdatedAtByTag.set(tag, updated);
+  return updated;
 }
 
 interface BoxSource {
@@ -131,7 +191,7 @@ async function fetchWeekRows(opts: {
   const guarded = await fetchRawGroup(
     { source: opts.source, table: opts.source, season: opts.season, tasks: [{ url: opts.url }] },
     {
-      fetchCsv: getText,
+      fetchCsv: (url) => fetchSource(url),
       latestCompletedSeason: opts.latestCompletedSeason,
       loggedNewColumns: opts.loggedNewColumnSources,
     }
@@ -174,7 +234,7 @@ async function fetchPartitioned(
   const guarded = await fetchRawGroup(
     { source, table: source, season: opts.season, tasks: files },
     {
-      fetchCsv: getText,
+      fetchCsv: (url) => fetchSource(url),
       latestCompletedSeason: opts.latestCompletedSeason,
       loggedNewColumns: opts.loggedNewColumnSources,
     }
@@ -302,131 +362,42 @@ async function buildSeason(
 
 /** nfldata games.csv → the (season, week, team) → game index game rows join through. */
 async function loadGameIndex(loggedNewColumns: Set<string>): Promise<GameIndex> {
-  const csv = await getText(GAMES_URL);
+  const csv = await fetchSource(GAMES_URL);
   assertHeader(sourceContract('games'), parseCsvHeader(csv), loggedNewColumns);
   const { games } = toScheduleAndGameRows(parseCsv(csv), resolveTeamCode, 1999);
   return buildGameIndex(games);
 }
 
-async function readCheckpoints(
-  target: FileSystemStatFileTarget,
-  outDir: string
-): Promise<PlayerSeasonRow[]> {
-  let files: string[];
-  try {
-    files = await readdir(resolve(outDir, 'v1', '_build', 'season-rows'));
-  } catch {
-    return [];
-  }
-  const rows: PlayerSeasonRow[] = [];
-  for (const file of files.sort()) {
-    const season = Number(file.replace(/\.json$/, ''));
-    if (!Number.isInteger(season)) continue;
-    const raw = await target.get(seasonCheckpointKey(season));
-    if (!raw) continue;
-    const checkpoint = JSON.parse(
-      gunzipSync(Buffer.from(raw)).toString('utf8')
-    ) as SeasonCheckpoint;
-    rows.push(...checkpoint.rows);
-  }
-  return rows;
+function buildTarget(args: Args): StatFileTarget {
+  if (args.target === 'fs') return new FileSystemStatFileTarget(resolve(args.out));
+  if (args.bucket) process.env.R2_BUCKET = args.bucket;
+  return r2StatFileTargetFromEnv();
 }
 
-async function main(): Promise<void> {
-  const { seasons: requested, out, games: writeGames } = parseArgs(process.argv);
-  const { completedSeason } = nflSeasonState();
-  const seasons = requested ?? [completedSeason];
-  const outDir = resolve(out);
-  console.log(
-    `building stat files for ${seasons[0]}-${seasons[seasons.length - 1]} into ${outDir}`
-  );
+/** The run's `ingestion_runs` row, when this process has database credentials. */
+async function recordRun(run: {
+  startedAt: string;
+  status: 'success' | 'partial' | 'failure';
+  uploaded: number;
+  errors: Record<string, unknown>;
+}): Promise<void> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SECRET_KEY;
+  if (!url || !key) return;
+  const supabase = createClient<Database>(url, key, { auth: { persistSession: false } });
+  const { error } = await supabase.from('ingestion_runs').insert({
+    source: 'stat-files',
+    started_at: run.startedAt,
+    finished_at: new Date().toISOString(),
+    status: run.status,
+    teams_written: run.uploaded,
+    errors: run.errors as Database['public']['Tables']['ingestion_runs']['Insert']['errors'],
+  });
+  if (error) console.error(`failed to record ingestion_runs: ${error.message}`);
+}
 
-  const playersCsv = await getText(assetUrl(PLAYERS_TAG, PLAYERS_FILE));
-  const playerRows = parseCsv(playersCsv);
-  const gsis = buildCrosswalk(playerRows);
-  const pfr = buildPfrCrosswalk(playerRows);
-  console.log(`crosswalk: ${gsis.size} gsis, ${pfr.size} pfr ids`);
-
-  const target = new FileSystemStatFileTarget(outDir);
-  const publisher = await createPublisher(target, { currentSeason: completedSeason });
-  const loggedNewColumnSources = new Set<string>();
-
-  const gameIndex = writeGames ? await loadGameIndex(loggedNewColumnSources) : null;
-
-  const qbrText = await getText(assetUrl('espn_data', 'qbr_week_level.csv'));
-  assertHeader(sourceContract('espn_qbr_week'), parseCsvHeader(qbrText), loggedNewColumnSources);
-  let qbrCache: PlayerWeekRow[] | null = null;
-  const qbrRows = async (): Promise<PlayerWeekRow[]> => {
-    if (!qbrCache) {
-      const result = toPlayerWeekRows(parseCsv(qbrText), {
-        idColumn: 'player_id',
-        teamColumn: 'team_abb',
-        seasonTypeColumn: 'season_type',
-        weekColumn: 'game_week',
-        resolveTeam: resolveTeamCode,
-      });
-      // QBR is one whole-history file, so its coverage is the seasons actually present in
-      // it (2006+), not the nominal season the fetch was keyed to. Count the crosswalk
-      // misses once.
-      const qbrSeasons = [...new Set(result.rows.map((row) => row.season))].sort((a, b) => a - b);
-      for (const season of qbrSeasons) recordSource('espn_qbr_week', season, 0);
-      if (qbrSeasons.length === 0) recordSource('espn_qbr_week', seasons[0], 0);
-      const qbrEntry = coverage.get('espn_qbr_week');
-      if (qbrEntry) qbrEntry.unresolved += result.unresolved;
-      qbrCache = result.rows;
-    }
-    return qbrCache;
-  };
-
-  for (const season of seasons) {
-    const { rows, games } = await buildSeason(season, {
-      latestCompletedSeason: completedSeason,
-      gsis,
-      pfr,
-      loggedNewColumnSources,
-      qbrRows,
-      gameIndex,
-    });
-    const checkpoint: SeasonCheckpoint = {
-      schema_version: STAT_FILES_SCHEMA_VERSION,
-      season,
-      rows,
-    };
-    await publisher.put(seasonCheckpointKey(season), checkpoint);
-    let gameFiles = 0;
-    for (const [playerId, file] of buildPlayerGamesFiles(
-      season,
-      games,
-      STAT_FILES_SCHEMA_VERSION
-    )) {
-      await publisher.put(playerGamesKey(playerId, season), file);
-      gameFiles++;
-    }
-    console.log(
-      `${season}: ${rows.length} consolidated player rows` +
-        (writeGames ? `, ${games.length} game rows in ${gameFiles} files` : '')
-    );
-  }
-
-  // Assemble every player's career from all checkpoints on disk (this run's plus any
-  // earlier ones), so a daily run that rebuilt one season still writes full careers.
-  const allRows = await readCheckpoints(target, outDir);
-  const byPlayer = new Map<string, PlayerSeasonRow[]>();
-  for (const row of allRows) {
-    const list = byPlayer.get(row.player_id) ?? [];
-    list.push(row);
-    byPlayer.set(row.player_id, list);
-  }
-  for (const [playerId, playerRowsForFile] of [...byPlayer.entries()].sort(([a], [b]) =>
-    a.localeCompare(b)
-  )) {
-    await publisher.put(
-      playerSeasonsKey(playerId),
-      buildPlayerSeasonsFile(playerId, playerRowsForFile, STAT_FILES_SCHEMA_VERSION)
-    );
-  }
-
-  const sources: StatFilesManifest['sources'] = {};
+function coverageSources(): ManifestSources {
+  const sources: ManifestSources = {};
   for (const [source, counts] of [...coverage.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     sources[source] = {
       min_season: counts.min,
@@ -434,16 +405,128 @@ async function main(): Promise<void> {
       crosswalk_misses: counts.unresolved,
     };
   }
-  await publisher.writeManifest({ generated_at: new Date().toISOString(), sources });
-  await publisher.flush();
+  return sources;
+}
 
+async function main(): Promise<void> {
+  const args = parseArgs(process.argv);
+  const state = nflSeasonState();
+  const { completedSeason } = state;
+  // The daily window: the live (or upcoming) season plus the one just completed, whose
+  // corrections nflverse keeps publishing.
+  const seasons =
+    args.seasons ??
+    [...new Set([completedSeason, currentSeasonOf(state)])].filter((s) => s >= 1999).sort();
+  const expectedSeasons = Array.from({ length: completedSeason - 1999 + 1 }, (_, i) => 1999 + i);
+  const startedAt = new Date().toISOString();
   console.log(
-    `published ${publisher.uploaded} objects, skipped ${publisher.skipped} unchanged, ` +
-      `${byPlayer.size} player files`
+    `building stat files for ${seasons.join(', ')} into ${args.target === 'r2' ? `r2 bucket ${args.bucket ?? process.env.R2_BUCKET}` : resolve(args.out)}` +
+      (args.fromRaw ? ' (from the raw archive)' : '')
   );
+
+  const target = buildTarget(args);
+  fetchSource = createSourceFetcher({
+    archive: createRawArchive(target),
+    fromRaw: args.fromRaw,
+    fetchLive: getText,
+    headerColumns: parseCsvHeader,
+    releaseUpdatedAt,
+  });
+
+  try {
+    const playersCsv = await fetchSource(assetUrl(PLAYERS_TAG, PLAYERS_FILE));
+    const playerRows = parseCsv(playersCsv);
+    const gsis = buildCrosswalk(playerRows);
+    const pfr = buildPfrCrosswalk(playerRows);
+    console.log(`crosswalk: ${gsis.size} gsis, ${pfr.size} pfr ids`);
+
+    const loggedNewColumnSources = new Set<string>();
+    const gameIndex = args.games ? await loadGameIndex(loggedNewColumnSources) : null;
+
+    const qbrText = await fetchSource(assetUrl('espn_data', 'qbr_week_level.csv'));
+    assertHeader(sourceContract('espn_qbr_week'), parseCsvHeader(qbrText), loggedNewColumnSources);
+    let qbrCache: PlayerWeekRow[] | null = null;
+    const qbrRows = async (): Promise<PlayerWeekRow[]> => {
+      if (!qbrCache) {
+        const result = toPlayerWeekRows(parseCsv(qbrText), {
+          idColumn: 'player_id',
+          teamColumn: 'team_abb',
+          seasonTypeColumn: 'season_type',
+          weekColumn: 'game_week',
+          resolveTeam: resolveTeamCode,
+        });
+        // QBR is one whole-history file, so its coverage is the seasons actually present in
+        // it (2006+), not the nominal season the fetch was keyed to. Count the crosswalk
+        // misses once.
+        const qbrSeasons = [...new Set(result.rows.map((row) => row.season))].sort((a, b) => a - b);
+        for (const season of qbrSeasons) recordSource('espn_qbr_week', season, 0);
+        if (qbrSeasons.length === 0) recordSource('espn_qbr_week', seasons[0], 0);
+        const qbrEntry = coverage.get('espn_qbr_week');
+        if (qbrEntry) qbrEntry.unresolved += result.unresolved;
+        qbrCache = result.rows;
+      }
+      return qbrCache;
+    };
+
+    const result = await runStatFileBuild({
+      target,
+      seasons,
+      expectedSeasons,
+      completedSeason,
+      allowShrink: args.allowShrink,
+      sources: coverageSources,
+      buildSeason: async (season) => {
+        const built = await buildSeason(season, {
+          latestCompletedSeason: completedSeason,
+          gsis,
+          pfr,
+          loggedNewColumnSources,
+          qbrRows,
+          gameIndex,
+        });
+        console.log(
+          `${season}: ${built.rows.length} consolidated player rows` +
+            (args.games ? `, ${built.games.length} game rows` : '')
+        );
+        return built;
+      },
+    });
+
+    for (const violation of result.overridden) console.log(`allowed shrink: ${violation.message}`);
+    console.log(
+      `published ${result.uploaded} objects, skipped ${result.skipped} unchanged, ` +
+        `${result.playerFiles} player files, ${result.gameFiles} game files`
+    );
+    await recordRun({
+      startedAt,
+      status: result.overridden.length ? 'partial' : 'success',
+      uploaded: result.uploaded,
+      errors: {
+        seasons,
+        uploaded: result.uploaded,
+        skipped: result.skipped,
+        crosswalk_misses: Object.fromEntries(
+          Object.entries(coverageSources()).map(([source, c]) => [source, c.crosswalk_misses])
+        ),
+        allowed_shrink: result.overridden.map((violation) => violation.message),
+      },
+    });
+  } catch (error) {
+    await recordRun({
+      startedAt,
+      status: 'failure',
+      uploaded: 0,
+      errors: { seasons, failure: (error as Error).message },
+    });
+    throw error;
+  }
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error(
+    error instanceof MissingCheckpointError || error instanceof ShrinkGuardError
+      ? error.message
+      : error
+  );
   process.exit(1);
 });

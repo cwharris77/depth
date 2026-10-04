@@ -49,6 +49,12 @@ export interface PublishCounts {
 export interface Publisher extends PublishCounts {
   /** Serialize + hash + upload unless the body is byte-identical to the last publish. */
   put(key: string, value: unknown): Promise<boolean>;
+  /**
+   * Upload an object already serialized by `put` on another publisher: `body` is the
+   * uncompressed JSON, `gz` its gzip form. Same change detection as `put`, without
+   * re-serializing or re-compressing.
+   */
+  putEncoded(key: string, body: Uint8Array, gz: Uint8Array): Promise<boolean>;
   writeManifest(manifest: Omit<StatFilesManifest, 'schema_version'>): Promise<void>;
   /** Persist the publish index for the next run. Call once, after all puts. */
   flush(): Promise<void>;
@@ -108,12 +114,19 @@ export async function createPublisher(
 
   async function put(key: string, value: unknown): Promise<boolean> {
     const body = Buffer.from(stableStringify(value), 'utf8');
+    if (index.objects[key] === sha256Hex(body)) {
+      counts.skipped++;
+      return false;
+    }
+    return putEncoded(key, body, gzipSync(body, { level: 9 }));
+  }
+
+  async function putEncoded(key: string, body: Uint8Array, gz: Uint8Array): Promise<boolean> {
     const hash = sha256Hex(body);
     if (index.objects[key] === hash) {
       counts.skipped++;
       return false;
     }
-    const gz = gzipSync(body, { level: 9 });
     await target.put(key, gz, {
       contentType: 'application/json',
       contentEncoding: 'gzip',
@@ -132,6 +145,7 @@ export async function createPublisher(
       return counts.skipped;
     },
     put,
+    putEncoded,
     async writeManifest(manifest) {
       await put(manifestKey(), { schema_version: STAT_FILES_SCHEMA_VERSION, ...manifest });
     },

@@ -10,6 +10,12 @@ name: Ingest nflverse data
 # mirror steps that override SUPABASE_URL/SUPABASE_SECRET_KEY — see the staging steps'
 # comment. The staging run needs STAGING_SUPABASE_URL / STAGING_SUPABASE_SECRET_KEY;
 # until those secrets exist the steps fail loudly, while production is unaffected.
+#
+# The `stat-files` job is independent of `ingest`: it builds the per-player stat files
+# from the same nflverse sources and publishes them to R2 (production bucket, then the
+# staging bucket). It shares no steps with the Supabase ingest, so a failure in either
+# never skips or rolls back the other, and each target records its own `ingestion_runs`
+# row (source `stat-files`).
 
 on:
   schedule:
@@ -30,6 +36,15 @@ on:
         type: string
         required: false
         default: ''
+      stat_files:
+        description: 'Which R2 bucket(s) the stat-files job publishes to.'
+        type: choice
+        options: [both, staging, production, skip]
+        default: both
+      stat_files_only:
+        description: 'Skip the Supabase ingest job and run only the stat-files job.'
+        type: boolean
+        default: false
 
 # Never let two ingestions overlap (a slow run + the next schedule, or a manual
 # dispatch during a scheduled one).
@@ -39,6 +54,7 @@ concurrency:
 
 jobs:
   ingest:
+    if: ${{ !inputs.stat_files_only }}
     runs-on: ubuntu-latest
     # Next.js app + shared backend live under web/ now — see ingest-espn.yml.
     defaults:
@@ -128,3 +144,60 @@ jobs:
           SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
           STRICT: '1'
+
+  stat-files:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    # A full 1999-onward backfill fetches ~250 source files and uploads ~63k objects.
+    timeout-minutes: 90
+    env:
+      NODE_OPTIONS: '--max-old-space-size=6144'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      # Empty `seasons` (the scheduled run) rebuilds the current window and reads every
+      # other season's checkpoint from the bucket; a range rebuilds exactly that range.
+      # Nothing is uploaded until every season is built and has passed the shrink guard.
+      - name: Publish stat files (production)
+        if: ${{ inputs.stat_files != 'staging' && inputs.stat_files != 'skip' }}
+        run: |
+          if [ -n "$SEASONS" ]; then
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS"
+          else
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET"
+          fi
+        env:
+          SEASONS: ${{ inputs.seasons }}
+          R2_BUCKET: ${{ vars.R2_BUCKET_PROD }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Staging runs even when the production publish fails, so one target's failure
+      # never hides the other's result.
+      - name: Publish stat files (staging)
+        if: ${{ !cancelled() && inputs.stat_files != 'production' && inputs.stat_files != 'skip' }}
+        run: |
+          if [ -n "$SEASONS" ]; then
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS"
+          else
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET"
+          fi
+        env:
+          SEASONS: ${{ inputs.seasons }}
+          R2_BUCKET: ${{ vars.R2_BUCKET_STAGING }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

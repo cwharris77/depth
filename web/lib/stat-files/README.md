@@ -31,6 +31,21 @@ Every served object is gzip JSON with `Content-Type: application/json` and `Cont
 
 `stat-files:build` also writes `v1/players/{espn_id}/games/{season}.json` from the same weekly parse as the season ledgers (`player-games.ts`). One row per player-week (REG and POST, a traded player's weeks stay on the team played for), each carrying the same `box` / `snaps` / `pfr` / `ngs` / `qbr` sections as a season row; a source with no row that week omits its section. `game_id` and `opponent` come from the nfldata schedule keyed by (season, week, team); a week with no schedule match omits them. Pass `--no-games` to rebuild only the season ledgers. Seasons are processed one at a time, so memory stays bounded by one season's weekly rows.
 
+## Publishing to R2
+
+```
+npm run stat-files:build -- --target r2 --bucket <bucket> --seasons 1999-2026   # backfill
+npm run stat-files:build -- --target r2 --bucket <bucket>                       # daily window
+```
+
+Credentials come from `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`; `--bucket` sets `R2_BUCKET`. The `stat-files` job in `.github/workflows/ingest-nflverse.yml` runs this for the production bucket and then the staging bucket, independently of the Supabase ingest job.
+
+- **Daily window.** With no `--seasons`, the build rebuilds the live season and the one just completed, and reads every other season's checkpoint (`v1/_build/season-rows/{season}.json`) from the bucket, so complete careers are rewritten without refetching 28 seasons of weekly files. A missing checkpoint fails the run with the backfill command; a partial career ledger is never published.
+- **All or nothing.** Every season is built and checked before anything is uploaded. A failed source, a tripped shrink guard or a missing checkpoint uploads zero `v1/` objects and leaves the last good files served. The manifest uploads last.
+- **Shrink guard** (`shrink-guard.ts`). Each rebuilt season is compared with the checkpoint it replaces: a completed season may lose at most 2% of its player rows and 10% of any field's non-null count, and an in-progress season may only grow. `--allow-shrink <season>` overrides one season and is recorded in the run's `errors`.
+- **Raw archive** (`raw-archive.ts`). Every fetched source file is stored gzipped at `_raw/{source}/{season}/{asset}.gz` with a `.meta.json` (URL, fetch time, release `updated_at`, header columns, body hash), and an unchanged re-fetch writes nothing. `--from-raw` rebuilds from the archive without touching nflverse, byte-identical to the build that archived it.
+- **Run record.** When `SUPABASE_URL` and `SUPABASE_SECRET_KEY` are set, each run inserts an `ingestion_runs` row with source `stat-files`: `uploaded`/`skipped` counts and per-source crosswalk misses in `errors`.
+
 ## Serving locally
 
 ```
