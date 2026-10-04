@@ -226,6 +226,14 @@ actor CachingDepthRepository: DepthRepository {
         try await underlying.teamStatHistory(teamId: teamId)
     }
 
+    func playerHighlights(playerId: String, teamId: String?) async throws -> PlayerHighlights? {
+        try await underlying.playerHighlights(playerId: playerId, teamId: teamId)
+    }
+
+    func leagueRecords(stat: RecordStat) async throws -> LeagueRecords? {
+        try await underlying.leagueRecords(stat: stat)
+    }
+
     /// The database query is already season-bounded, and Compare needs the newest
     /// ingest window. Delegate directly without adding SwiftData, TTL, or dedup state.
     func recentParticipation(teamId: String) async throws -> RecentParticipation? {

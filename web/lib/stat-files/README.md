@@ -11,9 +11,12 @@ The writer for the stat-history objects served from Cloudflare R2. It knows noth
 | `v1/manifest.json` | schema version, `generated_at`, per-source coverage, crosswalk misses | `public, max-age=3600` |
 | `v1/players/{espn_id}/seasons.json` | one player's career ledger | `public, max-age=3600` |
 | `v1/players/{espn_id}/games/{season}.json` | one player-season game log | current season `max-age=3600`, completed `max-age=604800` |
+| `v1/players/{espn_id}/highlights.json` | one player's regular-season career highs with their league ranks | `public, max-age=3600` |
+| `v1/records/{stat}.json` | league-wide single-game and single-season records for one stat | `public, max-age=3600` |
 | `v1/teams/{team_id}/seasons.json` | one team's per-game lines, defense-allowed rates and ranks | `public, max-age=3600` |
 | `v1/_build/season-rows/{season}.json` | publisher checkpoint (private) | `no-store` |
 | `v1/_build/team-rows/{season}.json` | team-game checkpoint (private) | `no-store` |
+| `v1/_build/record-rows/{season}.json` | record-row checkpoint (private) | `no-store` |
 | `v1/_build/publish-index.json` | key → sha256 of the last uploaded body (private) | `no-store` |
 
 Every served object is gzip JSON with `Content-Type: application/json` and `Content-Encoding: gzip`. `_build/*` is working state and is never cached. `cacheControlFor(key, currentSeason)` derives the header; `currentSeason` is the canonical `nflSeasonState()` value, never a source's own label. A breaking shape change bumps `STAT_FILES_SCHEMA_VERSION` and writes a new `v2/` prefix.
@@ -42,6 +45,17 @@ Every served object is gzip JSON with `Content-Type: application/json` and `Cont
 - **`ranks`** put 1 on the team that allowed the least (rank 4 of 32 is the fourth-best defense, rank 29 the fourth-worst); ties share a rank. A team needs at least two games to be ranked, and `ranked_teams` is the denominator. `derived.recent` repeats the rates and ranks over the team's last three regular-season games (`recent_window` in the file), with `through_week` marking where the window ends.
 - **Coverage.** `stats_team_week` has every game paired and all 32 teams from 2003; 1999-2002 have blank team cells, unpaired games or a missing franchise, so the floor is 2003 and the manifest records the seasons actually built.
 - **Checkpoints and guard.** Each season's team-games are stored at `v1/_build/team-rows/{season}.json` and run through the same shrink guard as player seasons. A season with no stored team checkpoint is built from source instead of failing the run, since the source is one small file per season.
+
+## Record and highlight files
+
+`stat-files:build -- --records` also writes `v1/records/{stat}.json` for six stats (`passing_tds`, `passing_yards`, `receiving_tds`, `receiving_yards`, `rushing_tds`, `rushing_yards`) and `v1/players/{espn_id}/highlights.json` (`records.ts`), computed from nflverse `stats_player_week`. The flag is off by default, and the scheduled workflow does not pass it; a manual dispatch with `record_files` set does. These are derived values, kept apart from the source-faithful career and game-log files, and every file states its `scope`, `source` and `coverage` (`from_season`, `to_season`).
+
+- **Scope.** Regular season only. Playoff games are never ranked, and a stat a game lacks is absent, never zero. `coverage.from_season` is the first season of the weekly source (1999), so a rank means "since that season", never all time.
+- **Performances.** A single game is one player-team-week. A single season is one player-team-season total, so a traded player has one season mark per team (the career ledger's one-row-per-team rule) and a season mark never adds games played for two clubs together.
+- **Ranks.** 1 is the best value and ties share a rank. `players_at_or_above` counts distinct players whose best performance reaches the value, which is what "only N players have done it" needs. In a highlight, `all_time_rank` compares each player's best across players, and `team_rank` compares each player's best with that team (omitted when the team is unknown).
+- **League files.** Each stat file holds `single_game` and `single_season` sections: `top` lists performances through rank 25 (ties at the cutoff included), and `thresholds` counts performances and distinct players at fixed milestones (`RECORD_THRESHOLDS` in `records.ts`).
+- **Highlights.** One file per player with at least one positive mark, keyed by stat then kind, carrying the value, season, week and opponent for a game, and both ranks.
+- **Checkpoints and guard.** Each season's record rows are stored at `v1/_build/record-rows/{season}.json` and run through the shrink guard. Ranks need every season, so a season with no stored record checkpoint is built from source (one weekly file per season) instead of failing the run; the first dispatch backfills every season on its own.
 
 ## Publishing to R2
 
@@ -75,4 +89,4 @@ The `Content-Encoding: gzip` and `Cache-Control` in the response are the same on
 
 ## Edge caching
 
-The `stats` and `stats-staging` hostnames carry a Cloudflare Cache Rule (eligible for cache, edge TTL from the origin `Cache-Control`) covering `/v1/players/*`, `/v1/teams/*` and `/v1/manifest.json`, with Tiered Cache enabled. `_build/` and `_raw/` are outside the rule and are never edge-cached. A republished object can therefore stay stale at the edge for up to its TTL (an hour for current-season files and team files, a week for a completed season's game logs); after a correction backfill, purge the hostname under Caching → Configuration → Purge Cache.
+The `stats` and `stats-staging` hostnames carry a Cloudflare Cache Rule (eligible for cache, edge TTL from the origin `Cache-Control`) covering `/v1/players/*`, `/v1/teams/*`, `/v1/records/*` and `/v1/manifest.json`, with Tiered Cache enabled. `_build/` and `_raw/` are outside the rule and are never edge-cached. A republished object can therefore stay stale at the edge for up to its TTL (an hour for current-season files and team files, a week for a completed season's game logs); after a correction backfill, purge the hostname under Caching → Configuration → Purge Cache.

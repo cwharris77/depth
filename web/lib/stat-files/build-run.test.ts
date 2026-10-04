@@ -10,13 +10,17 @@ import {
 } from './build-run';
 import {
   manifestKey,
+  playerHighlightsKey,
   playerSeasonsKey,
+  recordCheckpointKey,
+  recordsKey,
   seasonCheckpointKey,
   teamCheckpointKey,
   teamSeasonsKey,
 } from './layout';
 import type { PlayerGameRow } from './player-games';
 import type { PlayerSeasonRow } from './player-seasons';
+import type { RecordGameRow } from './records';
 import type { StatFileHeaders, StatFileTarget } from './publish';
 import { MemoryStatFileTarget } from './targets';
 import type { TeamGameRow } from './team-seasons';
@@ -285,6 +289,77 @@ describe('runStatFileBuild team files', () => {
     const before = target.puts.length;
     await expect(
       runStatFileBuild(options(target, [2024], undefined, { teams: teamsOption([], 5) }))
+    ).rejects.toBeInstanceOf(ShrinkGuardError);
+    expect(target.puts.length).toBe(before);
+  });
+});
+
+describe('record files', () => {
+  const recordRows = (season: number, rows = 4): RecordGameRow[] =>
+    Array.from({ length: rows }, (_, i) => ({
+      player_id: `p${i}`,
+      season,
+      week: 1,
+      team: 'bills',
+      stats: { rushing_yards: 50 + i * 10 + (season - 2022) },
+    }));
+  const recordsOption = (built: number[], rows = 4) => ({
+    expectedSeasons: [2023, 2024, 2025],
+    buildSeason: async (season: number) => {
+      built.push(season);
+      return recordRows(season, rows);
+    },
+  });
+
+  it('publishes a file per stat and a highlights file per player, with checkpoints', async () => {
+    const target = new RecordingTarget();
+    const built: number[] = [];
+    const result = await runStatFileBuild(
+      options(target, [2023, 2024, 2025], undefined, { records: recordsOption(built) })
+    );
+    expect(result.recordFiles).toBe(6);
+    expect(result.highlightFiles).toBe(4);
+    expect(built).toEqual([2023, 2024, 2025]);
+    expect(target.puts).toContain(recordsKey('rushing_yards'));
+    expect(target.puts).toContain(playerHighlightsKey('p3'));
+    expect(target.puts).toContain(recordCheckpointKey(2024));
+    const file = JSON.parse(await body(target, recordsKey('rushing_yards')));
+    expect(file.coverage).toEqual({ from_season: 2023, to_season: 2025 });
+    expect(file.scope).toBe('REG');
+  });
+
+  it('writes no record keys unless record files are enabled', async () => {
+    const target = new RecordingTarget();
+    const result = await runStatFileBuild(options(target, [2023, 2024, 2025]));
+    expect(result.recordFiles).toBe(0);
+    expect(
+      target.puts.filter((key) => key.includes('/records/') || key.includes('record-rows'))
+    ).toEqual([]);
+  });
+
+  it('reads stored record checkpoints outside the window and builds a missing one', async () => {
+    const target = new HidingTarget();
+    await runStatFileBuild(
+      options(target, [2023, 2024, 2025], undefined, { records: recordsOption([]) })
+    );
+    const built: number[] = [];
+    await runStatFileBuild(options(target, [2025], undefined, { records: recordsOption(built) }));
+    expect(built).toEqual([2025]);
+
+    target.hidden.add(recordCheckpointKey(2023));
+    const healed: number[] = [];
+    await runStatFileBuild(options(target, [2025], undefined, { records: recordsOption(healed) }));
+    expect(healed).toEqual([2023, 2025]);
+  });
+
+  it('uploads nothing when a record season shrinks past the guard', async () => {
+    const target = new RecordingTarget();
+    await runStatFileBuild(
+      options(target, [2023, 2024, 2025], undefined, { records: recordsOption([], 10) })
+    );
+    const before = target.puts.length;
+    await expect(
+      runStatFileBuild(options(target, [2024], undefined, { records: recordsOption([], 5) }))
     ).rejects.toBeInstanceOf(ShrinkGuardError);
     expect(target.puts.length).toBe(before);
   });

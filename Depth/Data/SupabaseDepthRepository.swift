@@ -422,36 +422,66 @@ actor SupabaseDepthRepository: DepthRepository {
     }
 
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
-        do {
-            let resolvedId: String
-            switch playerStatsLookup(for: playerId, teamId: teamId) {
-            case .current(let playerId):
-                resolvedId = playerId
-            case .historical(let reference, let teamId):
-                struct HistoricalStatsPlayerDTO: Decodable {
-                    let espnId: String?
-
-                    enum CodingKeys: String, CodingKey { case espnId = "espn_id" }
-                }
-                let row: HistoricalStatsPlayerDTO? =
-                    try await client
-                    .from("roster_history")
-                    .select("espn_id")
-                    .eq("gsis_id", value: reference.gsisId)
-                    .eq("season", value: reference.season)
-                    .eq("team_id", value: teamId)
-                    .maybeSingle()
-                    .execute()
-                    .value
-                guard let espnId = row?.espnId, !espnId.isEmpty else { return [] }
-                resolvedId = espnId
-            case .invalidHistorical:
-                return []
-            }
+        try await mappingStatFileErrors {
+            guard let resolvedId = try await resolveStatFilesPlayerId(playerId, teamId: teamId)
+            else { return [] }
             async let file = statFiles.playerSeasons(espnId: resolvedId)
             async let abbrevs = teamAbbrevLookup()
             guard let file = try await file else { return [] }
             return StatFilesMapper.map(file, teamAbbrevs: try await abbrevs)
+        }
+    }
+
+    func playerHighlights(playerId: String, teamId: String?) async throws -> PlayerHighlights? {
+        try await mappingStatFileErrors {
+            guard let resolvedId = try await resolveStatFilesPlayerId(playerId, teamId: teamId),
+                let file = try await statFiles.playerHighlights(espnId: resolvedId)
+            else { return nil }
+            return RecordStatFilesMapper.map(file)
+        }
+    }
+
+    func leagueRecords(stat: RecordStat) async throws -> LeagueRecords? {
+        guard let file = try await statFiles.leagueRecords(stat: stat) else { return nil }
+        return RecordStatFilesMapper.map(file)
+    }
+
+    /// The ESPN id naming the player's stat files, or nil when a historical id cannot be
+    /// resolved. A historical roster entry resolves through `roster_history`.
+    private func resolveStatFilesPlayerId(_ playerId: String, teamId: String?) async throws
+        -> String?
+    {
+        switch playerStatsLookup(for: playerId, teamId: teamId) {
+        case .current(let playerId):
+            return playerId
+        case .historical(let reference, let teamId):
+            struct HistoricalStatsPlayerDTO: Decodable {
+                let espnId: String?
+
+                enum CodingKeys: String, CodingKey { case espnId = "espn_id" }
+            }
+            let row: HistoricalStatsPlayerDTO? =
+                try await client
+                .from("roster_history")
+                .select("espn_id")
+                .eq("gsis_id", value: reference.gsisId)
+                .eq("season", value: reference.season)
+                .eq("team_id", value: teamId)
+                .maybeSingle()
+                .execute()
+                .value
+            guard let espnId = row?.espnId, !espnId.isEmpty else { return nil }
+            return espnId
+        case .invalidHistorical:
+            return nil
+        }
+    }
+
+    private func mappingStatFileErrors<Value>(_ body: () async throws -> Value) async throws
+        -> Value
+    {
+        do {
+            return try await body()
         } catch let error as DepthError {
             throw error
         } catch let error as PostgrestError {

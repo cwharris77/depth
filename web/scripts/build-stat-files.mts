@@ -18,6 +18,11 @@
 // lines, defense-allowed rates and league ranks from `stats_team_week`, published in the same
 // all-or-nothing upload. A season with no stored team checkpoint is built from source.
 //
+// Record files (`v1/records/{stat}.json`) and per-player highlights
+// (`v1/players/{espn_id}/highlights.json`) are opt-in with `--records`: regular-season career
+// highs and league records computed from the weekly box score, published in the same
+// all-or-nothing upload. A season with no stored record checkpoint is built from source.
+//
 // Game logs (`v1/players/{espn_id}/games/{season}.json`) are written from the same weekly
 // parse as the season ledgers, one season at a time so a season's weekly rows are released
 // before the next is fetched. `--no-games` rebuilds only the season ledgers.
@@ -63,6 +68,7 @@ import {
 import type { StatFileTarget } from '@/lib/stat-files/publish';
 import { createRawArchive, createSourceFetcher } from '@/lib/stat-files/raw-archive';
 import { FileSystemStatFileTarget, r2StatFileTargetFromEnv } from '@/lib/stat-files/targets';
+import { toRecordRows, type RecordGameRow } from '@/lib/stat-files/records';
 import { toTeamGameRows, type TeamGameRow } from '@/lib/stat-files/team-seasons';
 import {
   consolidateSeason,
@@ -126,6 +132,7 @@ interface Args {
   fromRaw: boolean;
   allowShrink: number[];
   teams: boolean;
+  records: boolean;
 }
 
 function flagValue(argv: string[], flag: string): string | null {
@@ -151,6 +158,7 @@ function parseArgs(argv: string[]): Args {
     fromRaw: argv.includes('--from-raw'),
     allowShrink,
     teams: argv.includes('--teams'),
+    records: argv.includes('--records'),
   };
 }
 
@@ -368,6 +376,33 @@ async function buildSeason(
   };
 }
 
+/** One season of the weekly box score as record rows; an unpublished season has none. */
+async function buildRecordSeason(
+  season: number,
+  ctx: {
+    latestCompletedSeason: number;
+    gsis: ReadonlyMap<string, string>;
+    gameIndex: GameIndex | null;
+    loggedNewColumnSources: Set<string>;
+  }
+): Promise<RecordGameRow[]> {
+  const box = await fetchWeekRows({
+    url: assetUrl(STATS_TAG, `stats_player_week_${season}.csv`),
+    source: 'stats_player_week',
+    season,
+    latestCompletedSeason: ctx.latestCompletedSeason,
+    idColumn: 'player_id',
+    crosswalk: ctx.gsis,
+    teamColumn: 'team',
+    seasonTypeColumn: 'season_type',
+    weekColumn: 'week',
+    loggedNewColumnSources: ctx.loggedNewColumnSources,
+  });
+  const rows = toRecordRows(season, box.rows, ctx.gameIndex);
+  console.log(`${season}: ${rows.length} record rows`);
+  return rows;
+}
+
 /** One season of stats_team_week as team-games; an unpublished season has none. */
 async function buildTeamSeason(
   season: number,
@@ -475,7 +510,8 @@ async function main(): Promise<void> {
     console.log(`crosswalk: ${gsis.size} gsis, ${pfr.size} pfr ids`);
 
     const loggedNewColumnSources = new Set<string>();
-    const gameIndex = args.games ? await loadGameIndex(loggedNewColumnSources) : null;
+    const gameIndex =
+      args.games || args.records ? await loadGameIndex(loggedNewColumnSources) : null;
 
     const qbrText = await fetchSource(assetUrl('espn_data', 'qbr_week_level.csv'));
     assertHeader(sourceContract('espn_qbr_week'), parseCsvHeader(qbrText), loggedNewColumnSources);
@@ -522,6 +558,20 @@ async function main(): Promise<void> {
               }),
           }
         : undefined,
+      records: args.records
+        ? {
+            expectedSeasons: [...new Set([...expectedSeasons, ...seasons])]
+              .filter((season) => isPublishedSeason('stats_player_week', season))
+              .sort((a, b) => a - b),
+            buildSeason: (season) =>
+              buildRecordSeason(season, {
+                latestCompletedSeason: completedSeason,
+                gsis,
+                gameIndex,
+                loggedNewColumnSources,
+              }),
+          }
+        : undefined,
       buildSeason: async (season) => {
         const built = await buildSeason(season, {
           latestCompletedSeason: completedSeason,
@@ -529,7 +579,7 @@ async function main(): Promise<void> {
           pfr,
           loggedNewColumnSources,
           qbrRows,
-          gameIndex,
+          gameIndex: args.games ? gameIndex : null,
         });
         console.log(
           `${season}: ${built.rows.length} consolidated player rows` +
@@ -542,7 +592,8 @@ async function main(): Promise<void> {
     for (const violation of result.overridden) console.log(`allowed shrink: ${violation.message}`);
     console.log(
       `published ${result.uploaded} objects, skipped ${result.skipped} unchanged, ` +
-        `${result.playerFiles} player files, ${result.gameFiles} game files, ${result.teamFiles} team files`
+        `${result.playerFiles} player files, ${result.gameFiles} game files, ${result.teamFiles} team files, ` +
+        `${result.recordFiles} record files, ${result.highlightFiles} highlight files`
     );
     await recordRun({
       startedAt,

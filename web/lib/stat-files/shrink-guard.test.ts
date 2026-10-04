@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { PlayerSeasonRow } from './player-seasons';
 import {
+  checkRecordSeasonShrink,
   checkSeasonShrink,
   checkTeamSeasonShrink,
   fieldCounts,
   SHRINK_THRESHOLDS,
 } from './shrink-guard';
+import type { RecordGameRow } from './records';
 import type { TeamGameRow } from './team-seasons';
 
 function rows(count: number, withPfr = count): PlayerSeasonRow[] {
@@ -102,5 +104,40 @@ describe('checkTeamSeasonShrink', () => {
   it('lets an in-progress season only grow', () => {
     expect(guard(teamRows(10), teamRows(9), true)).not.toEqual([]);
     expect(guard(teamRows(10), teamRows(12), true)).toEqual([]);
+  });
+});
+
+describe('checkRecordSeasonShrink', () => {
+  const recordRows = (count: number, withTds = count): RecordGameRow[] =>
+    Array.from({ length: count }, (_, i) => ({
+      player_id: `p${i}`,
+      season: 2024,
+      week: 1,
+      team: 'bills',
+      stats: { rushing_yards: 100, ...(i < withTds ? { rushing_tds: 1 } : {}) },
+    }));
+  const guardRecords = (
+    previous: RecordGameRow[] | null,
+    next: RecordGameRow[],
+    inProgress = false
+  ) => checkRecordSeasonShrink({ season: 2024, previous, next, inProgress });
+
+  it('passes a first build and a stable rebuild', () => {
+    expect(guardRecords(null, recordRows(10))).toEqual([]);
+    expect(guardRecords(recordRows(100), recordRows(100))).toEqual([]);
+  });
+
+  it('trips when rows or a stat disappear', () => {
+    expect(guardRecords(recordRows(100), recordRows(90)).map((v) => v.subject)).toContain(
+      'record_rows'
+    );
+    expect(guardRecords(recordRows(100), recordRows(100, 50)).map((v) => v.subject)).toEqual([
+      'stats.rushing_tds',
+    ]);
+  });
+
+  it('lets an in-progress season only grow', () => {
+    expect(guardRecords(recordRows(100), recordRows(120), true)).toEqual([]);
+    expect(guardRecords(recordRows(100), recordRows(99), true)).not.toEqual([]);
   });
 });

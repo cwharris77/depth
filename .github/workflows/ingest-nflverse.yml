@@ -45,6 +45,10 @@ on:
         description: 'Also build and publish the per-team stat files (v1/teams/). Off for scheduled runs.'
         type: boolean
         default: false
+      record_files:
+        description: 'Also build and publish the league record and player highlight stat files (v1/records/, v1/players/*/highlights.json). Off for scheduled runs.'
+        type: boolean
+        default: false
       stat_files_only:
         description: 'Skip the Supabase ingest job and run only the stat-files job.'
         type: boolean
@@ -172,16 +176,18 @@ jobs:
       - name: Publish stat files (production)
         if: ${{ inputs.stat_files != 'staging' && inputs.stat_files != 'skip' }}
         run: |
-          TEAMS=""
-          if [ "$TEAM_FILES" = "true" ]; then TEAMS="--teams"; fi
+          FLAGS=""
+          if [ "$TEAM_FILES" = "true" ]; then FLAGS="--teams"; fi
+          if [ "$RECORD_FILES" = "true" ]; then FLAGS="$FLAGS --records"; fi
           if [ -n "$SEASONS" ]; then
-            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" $TEAMS
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" $FLAGS
           else
-            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" $TEAMS
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" $FLAGS
           fi
         env:
           SEASONS: ${{ inputs.seasons }}
           TEAM_FILES: ${{ inputs.team_files }}
+          RECORD_FILES: ${{ inputs.record_files }}
           R2_BUCKET: ${{ vars.R2_BUCKET_PROD }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -194,16 +200,18 @@ jobs:
       - name: Publish stat files (staging)
         if: ${{ !cancelled() && inputs.stat_files != 'production' && inputs.stat_files != 'skip' }}
         run: |
-          TEAMS=""
-          if [ "$TEAM_FILES" = "true" ]; then TEAMS="--teams"; fi
+          FLAGS=""
+          if [ "$TEAM_FILES" = "true" ]; then FLAGS="--teams"; fi
+          if [ "$RECORD_FILES" = "true" ]; then FLAGS="$FLAGS --records"; fi
           if [ -n "$SEASONS" ]; then
-            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" $TEAMS
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" $FLAGS
           else
-            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" $TEAMS
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" $FLAGS
           fi
         env:
           SEASONS: ${{ inputs.seasons }}
           TEAM_FILES: ${{ inputs.team_files }}
+          RECORD_FILES: ${{ inputs.record_files }}
           R2_BUCKET: ${{ vars.R2_BUCKET_STAGING }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
