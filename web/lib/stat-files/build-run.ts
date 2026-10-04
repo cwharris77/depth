@@ -13,7 +13,10 @@ import { gunzipSync } from 'node:zlib';
 import {
   manifestKey,
   playerGamesKey,
+  playerHighlightsKey,
   playerSeasonsKey,
+  recordCheckpointKey,
+  recordsKey,
   seasonCheckpointKey,
   STAT_FILES_SCHEMA_VERSION,
   teamCheckpointKey,
@@ -26,7 +29,13 @@ import {
   type SeasonCheckpoint,
 } from './player-seasons';
 import { createPublisher, type StatFileTarget, type StatFilesManifest } from './publish';
-import { checkSeasonShrink, checkTeamSeasonShrink, type ShrinkViolation } from './shrink-guard';
+import { buildRecordFiles, type RecordGameRow, type RecordSeasonCheckpoint } from './records';
+import {
+  checkRecordSeasonShrink,
+  checkSeasonShrink,
+  checkTeamSeasonShrink,
+  type ShrinkViolation,
+} from './shrink-guard';
 import { MemoryStatFileTarget } from './targets';
 import { buildTeamFiles, type TeamGameRow, type TeamSeasonCheckpoint } from './team-seasons';
 
@@ -112,6 +121,12 @@ export interface TeamBuildOptions {
   buildSeason: (season: number) => Promise<TeamGameRow[]>;
 }
 
+export interface RecordBuildOptions {
+  /** Every season the box source publishes up to the completed one. */
+  expectedSeasons: number[];
+  buildSeason: (season: number) => Promise<RecordGameRow[]>;
+}
+
 export interface BuildRunOptions {
   target: StatFileTarget;
   /** Seasons to rebuild from source. */
@@ -131,6 +146,12 @@ export interface BuildRunOptions {
    * failing the run, since the team source is one small file per season.
    */
   teams?: TeamBuildOptions;
+  /**
+   * League record and player highlight files. Ranks need every season, so a season with no
+   * stored record checkpoint is built from source (the box source is one file per season),
+   * the same way team files are.
+   */
+  records?: RecordBuildOptions;
   now?: () => Date;
 }
 
@@ -140,6 +161,8 @@ export interface BuildRunResult {
   playerFiles: number;
   gameFiles: number;
   teamFiles: number;
+  recordFiles: number;
+  highlightFiles: number;
   /** Violations an `--allow-shrink` override let through. */
   overridden: ShrinkViolation[];
 }
@@ -228,6 +251,47 @@ export async function runStatFileBuild(opts: BuildRunOptions): Promise<BuildRunR
       teamFiles++;
     }
   }
+
+  let recordFiles = 0;
+  let highlightFiles = 0;
+  if (opts.records) {
+    const { expectedSeasons, buildSeason } = opts.records;
+    const rowsBySeason = new Map<number, RecordGameRow[]>();
+    const toBuild: number[] = [];
+    for (const season of expectedSeasons) {
+      const checkpoint = rebuilt.has(season)
+        ? null
+        : await readJson<RecordSeasonCheckpoint>(target, recordCheckpointKey(season));
+      if (checkpoint) rowsBySeason.set(season, checkpoint.rows);
+      else toBuild.push(season);
+    }
+    for (const season of toBuild) {
+      const rows = await buildSeason(season);
+      const previous = await readJson<RecordSeasonCheckpoint>(target, recordCheckpointKey(season));
+      const violations = checkRecordSeasonShrink({
+        season,
+        previous: previous?.rows ?? null,
+        next: rows,
+        inProgress: season > completedSeason,
+      });
+      (allowed.has(season) ? overridden : blocking).push(...violations);
+      rowsBySeason.set(season, rows);
+      await stager.put(recordCheckpointKey(season), {
+        schema_version: STAT_FILES_SCHEMA_VERSION,
+        season,
+        rows,
+      } satisfies RecordSeasonCheckpoint);
+    }
+    const built = buildRecordFiles(rowsBySeason, STAT_FILES_SCHEMA_VERSION);
+    for (const [stat, file] of built.records) {
+      await stager.put(recordsKey(stat), file);
+      recordFiles++;
+    }
+    for (const [playerId, file] of [...built.highlights].sort(([a], [b]) => a.localeCompare(b))) {
+      await stager.put(playerHighlightsKey(playerId), file);
+      highlightFiles++;
+    }
+  }
   if (blocking.length) throw new ShrinkGuardError(blocking);
 
   const byPlayer = new Map<string, PlayerSeasonRow[]>();
@@ -275,6 +339,8 @@ export async function runStatFileBuild(opts: BuildRunOptions): Promise<BuildRunR
     playerFiles: byPlayer.size,
     gameFiles,
     teamFiles,
+    recordFiles,
+    highlightFiles,
     overridden,
   };
 }

@@ -5,6 +5,7 @@
 // do with the violations.
 
 import type { PlayerSeasonRow, StatLine } from './player-seasons';
+import type { RecordGameRow } from './records';
 import type { TeamGameRow } from './team-seasons';
 
 /** Every threshold in one place. Both are fractions of the previous checkpoint's count. */
@@ -136,6 +137,38 @@ export function checkTeamSeasonShrink(opts: {
     nextRows: next.length,
     previousFields: teamFieldCounts(previous),
     nextFields: teamFieldCounts(next),
+    inProgress,
+  });
+}
+
+/** Record rows that carry each stat. */
+export function recordFieldCounts(rows: readonly RecordGameRow[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    for (const field of Object.keys(row.stats)) {
+      const key = `stats.${field}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
+/** The same guard over a season's record rows: row count, and each stat's non-null count. */
+export function checkRecordSeasonShrink(opts: {
+  season: number;
+  previous: readonly RecordGameRow[] | null;
+  next: readonly RecordGameRow[];
+  inProgress: boolean;
+}): ShrinkViolation[] {
+  const { season, previous, next, inProgress } = opts;
+  if (!previous) return [];
+  return compareCounts({
+    season,
+    rowLabel: 'record_rows',
+    previousRows: previous.length,
+    nextRows: next.length,
+    previousFields: recordFieldCounts(previous),
+    nextFields: recordFieldCounts(next),
     inProgress,
   });
 }

@@ -32,6 +32,21 @@ export function teamSeasonsKey(teamId: string): string {
   return `${PREFIX}/teams/${teamId}/seasons.json`;
 }
 
+/** `v1/players/{espn_id}/highlights.json` — one player's career highs and their league ranks. */
+export function playerHighlightsKey(espnId: string): string {
+  return `${PREFIX}/players/${espnId}/highlights.json`;
+}
+
+/** `v1/records/{stat}.json` — league-wide single-game and single-season records for one stat. */
+export function recordsKey(stat: string): string {
+  return `${PREFIX}/records/${stat}.json`;
+}
+
+/** `v1/_build/record-rows/{season}.json` — the checkpoint of one season's record rows. */
+export function recordCheckpointKey(season: number): string {
+  return `${PREFIX}/_build/record-rows/${season}.json`;
+}
+
 /** `v1/_build/team-rows/{season}.json` — the publisher checkpoint of one season's team-games. */
 export function teamCheckpointKey(season: number): string {
   return `${PREFIX}/_build/team-rows/${season}.json`;

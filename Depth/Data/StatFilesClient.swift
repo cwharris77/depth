@@ -29,9 +29,7 @@ struct StatFilesClient: Sendable {
 
     /// The player's career ledger, or nil when no file exists for that id (a 404).
     func playerSeasons(espnId: String) async throws -> PlayerSeasonsFileDTO? {
-        // An ESPN athlete id is numeric; anything else could not name a file and must not be
-        // spliced into a path.
-        guard !espnId.isEmpty, espnId.allSatisfy({ $0.isASCII && $0.isNumber }) else { return nil }
+        guard isESPNId(espnId) else { return nil }
         return try await fetch(
             baseURL.appending(path: "players").appending(path: espnId)
                 .appending(path: "seasons.json"))
@@ -48,6 +46,27 @@ struct StatFilesClient: Sendable {
         return try await fetch(
             baseURL.appending(path: "teams").appending(path: teamId)
                 .appending(path: "seasons.json"))
+    }
+
+    /// A player's career highs and their league ranks, or nil when no file exists for that
+    /// id (a 404).
+    func playerHighlights(espnId: String) async throws -> PlayerHighlightsFileDTO? {
+        guard isESPNId(espnId) else { return nil }
+        return try await fetch(
+            baseURL.appending(path: "players").appending(path: espnId)
+                .appending(path: "highlights.json"))
+    }
+
+    /// The league-wide record file for one stat, or nil on a 404.
+    func leagueRecords(stat: RecordStat) async throws -> LeagueRecordsFileDTO? {
+        try await fetch(
+            baseURL.appending(path: "records").appending(path: "\(stat.rawValue).json"))
+    }
+
+    /// An ESPN athlete id is numeric; anything else could not name a file and must not be
+    /// spliced into a path.
+    private func isESPNId(_ id: String) -> Bool {
+        !id.isEmpty && id.allSatisfy { $0.isASCII && $0.isNumber }
     }
 
     private func fetch<File: Decodable>(_ url: URL) async throws -> File? {

@@ -43,6 +43,12 @@ protocol DepthRepository: Sendable {
     /// Read-only and independent of Supabase, so a default nil keeps test doubles
     /// source-compatible.
     func teamStatHistory(teamId: String) async throws -> TeamStatHistory?
+    /// The player's career highs and their league ranks from the R2 highlight file. Nil when
+    /// no file exists, which callers render as absent, never zero. Resolves historical ids the
+    /// same way `playerStats` does.
+    func playerHighlights(playerId: String, teamId: String?) async throws -> PlayerHighlights?
+    /// League-wide records for one stat from the R2 record file, or nil when none exists.
+    func leagueRecords(stat: RecordStat) async throws -> LeagueRecords?
     /// All 32 teams' kits as flat listings for the uniform archive (mirrors web's
     /// `listUniforms`). One query joins uniform rows with team conference/division in
     /// code — kit metadata only, no player/depth-chart embeds, so the payload stays
@@ -60,4 +66,8 @@ extension DepthRepository {
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { nil }
     func listUniforms() async throws -> [UniformListing] { [] }
     func teamStatHistory(teamId: String) async throws -> TeamStatHistory? { nil }
+    func playerHighlights(playerId: String, teamId: String?) async throws -> PlayerHighlights? {
+        nil
+    }
+    func leagueRecords(stat: RecordStat) async throws -> LeagueRecords? { nil }
 }
