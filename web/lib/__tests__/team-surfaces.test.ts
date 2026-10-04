@@ -159,7 +159,7 @@ describe('team surfaces — player-card numeral', () => {
     expect({ strokeSecondary, swapped, whiteFallback }).toEqual({
       strokeSecondary: 58,
       swapped: 41,
-      whiteFallback: 13,
+      whiteFallback: 14,
     });
   });
 

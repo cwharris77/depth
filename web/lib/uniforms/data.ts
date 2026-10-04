@@ -224,4 +224,5 @@ export const UNIFORMS: UniformSeed[] = [
   // Cardinals black alternate (2023+). Black base, cardinal-red trim.
   catalogRow(CARDINALS_CATALOG, 'black-alt'),
   catalogRow(RAMS_CATALOG, 'bone'),
+  catalogRow(TEXANS_CATALOG, 'h-town'),
 ];

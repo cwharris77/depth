@@ -59,5 +59,17 @@ export const TEXANS_CATALOG: TeamCatalog = {
         { key: 'standard', label: 'Standard', helmet: 'red-horn', pants: 'red', socks: 'red' },
       ],
     },
+    {
+      slug: 'h-town',
+      name: 'H-Town Blue',
+      kind: 'alternate',
+      jersey: 'h-town',
+      colors: { primary: '#03202F', secondary: '#A71930', accent: '#0072CE' },
+      legacyAccent: { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
+      periods: [{ from: 2024 }],
+      combinations: [
+        { key: 'standard', label: 'Standard', helmet: 'navy-h', pants: 'h-town', socks: 'navy' },
+      ],
+    },
   ],
 };
