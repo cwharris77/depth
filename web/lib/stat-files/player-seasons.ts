@@ -434,7 +434,7 @@ function emptySnapAccumulator(): SnapAccumulator {
  * correction `lib/nflverse/season-snaps.ts` uses, but per (player, team) and for REG and
  * POST separately. A unit with no snaps is omitted, not written as 0.
  */
-function foldSnaps(rows: PlayerWeekRow[]): StatLine {
+export function foldSnaps(rows: PlayerWeekRow[]): StatLine {
   const units: Record<'offense' | 'defense' | 'specialTeams', SnapAccumulator> = {
     offense: emptySnapAccumulator(),
     defense: emptySnapAccumulator(),

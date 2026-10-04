@@ -27,6 +27,10 @@ Every served object is gzip JSON with `Content-Type: application/json` and `Cont
 
 `publish.ts`'s `createPublisher(target, { currentSeason })` is the writer every stat file goes through. `put(key, value)` serializes deterministically, hashes the uncompressed body, skips the upload when the hash matches the last publish (`v1/_build/publish-index.json`), and otherwise gzips and writes with the right headers. `writeManifest(...)` writes `v1/manifest.json`; `flush()` persists the index and must be called once after all puts. The returned `uploaded` / `skipped` counts are what keeps a daily run far below R2's Class-A operation budget — an unchanged second publish uploads zero objects.
 
+## Game logs
+
+`stat-files:build` also writes `v1/players/{espn_id}/games/{season}.json` from the same weekly parse as the season ledgers (`player-games.ts`). One row per player-week (REG and POST, a traded player's weeks stay on the team played for), each carrying the same `box` / `snaps` / `pfr` / `ngs` / `qbr` sections as a season row; a source with no row that week omits its section. `game_id` and `opponent` come from the nfldata schedule keyed by (season, week, team); a week with no schedule match omits them. Pass `--no-games` to rebuild only the season ledgers. Seasons are processed one at a time, so memory stays bounded by one season's weekly rows.
+
 ## Serving locally
 
 ```

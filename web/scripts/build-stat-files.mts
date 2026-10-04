@@ -3,7 +3,11 @@
 // publish workflow.
 //
 // Usage (from web/):
-//   npm run stat-files:build -- --seasons 1999-2026 --out .stat-files
+//   npm run stat-files:build -- --seasons 1999-2026 --out .stat-files [--no-games]
+//
+// Game logs (`v1/players/{espn_id}/games/{season}.json`) are written from the same weekly
+// parse as the season ledgers, one season at a time so a season's weekly rows are released
+// before the next is fetched. `--no-games` rebuilds only the season ledgers.
 //
 // I/O glue only: fetching, header-contract checks, and the publisher live here; the
 // consolidation is pure (`lib/stat-files/player-seasons.ts`). Identity resolves through the
@@ -21,6 +25,7 @@ import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { assetUrl } from '@/lib/nflverse/assets';
 import { parseCsv, parseCsvHeader } from '@/lib/nflverse/csv';
+import { toScheduleAndGameRows } from '@/lib/nflverse/games';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
 import { assertHeader, sourceContract, type SourceId } from '@/lib/nflverse/source-contract';
 import { isPublishedSeason } from '@/lib/nflverse/source-coverage';
@@ -31,8 +36,16 @@ import { nflSeasonState } from '@/lib/utils/team/season-state';
 import {
   seasonCheckpointKey,
   STAT_FILES_SCHEMA_VERSION,
+  playerGamesKey,
   playerSeasonsKey,
 } from '@/lib/stat-files/layout';
+import {
+  buildGameIndex,
+  buildPlayerGamesFiles,
+  consolidateGames,
+  type GameIndex,
+  type PlayerGameRow,
+} from '@/lib/stat-files/player-games';
 import { createPublisher, type StatFilesManifest } from '@/lib/stat-files/publish';
 import { FileSystemStatFileTarget } from '@/lib/stat-files/targets';
 import {
@@ -51,6 +64,7 @@ const STATS_TAG = 'stats_player';
 const SNAP_COUNTS_TAG = 'snap_counts';
 const NGS_TAG = 'nextgen_stats';
 const PFR_TAG = 'pfr_advstats';
+const GAMES_URL = 'https://github.com/nflverse/nfldata/raw/master/data/games.csv';
 
 interface SourceCounts {
   min: number | null;
@@ -88,11 +102,12 @@ async function getText(url: string, attempts = 3): Promise<string> {
   throw lastError;
 }
 
-function parseArgs(argv: string[]): { seasons: number[] | null; out: string } {
+function parseArgs(argv: string[]): { seasons: number[] | null; out: string; games: boolean } {
   const outIndex = argv.indexOf('--out');
   return {
     seasons: parseSeasonsArg(argv),
     out: outIndex === -1 ? '.stat-files' : argv[outIndex + 1],
+    games: !argv.includes('--no-games'),
   };
 }
 
@@ -197,8 +212,9 @@ async function buildSeason(
     pfr: ReadonlyMap<string, string>;
     loggedNewColumnSources: Set<string>;
     qbrRows: () => Promise<PlayerWeekRow[]>;
+    gameIndex: GameIndex | null;
   }
-): Promise<PlayerSeasonRow[]> {
+): Promise<{ rows: PlayerSeasonRow[]; games: PlayerGameRow[] }> {
   const box = await fetchWeekRows({
     url: assetUrl(STATS_TAG, `stats_player_week_${season}.csv`),
     source: 'stats_player_week',
@@ -277,13 +293,19 @@ async function buildSeason(
   // QBR is one whole-history file per grain, so it is fetched once and filtered per season.
   const qbr = (await ctx.qbrRows()).filter((row) => row.season === season);
 
-  return consolidateSeason(season, {
-    box: box.rows,
-    snaps,
-    pfr,
-    ngs,
-    qbr,
-  });
+  const sections = { box: box.rows, snaps, pfr, ngs, qbr };
+  return {
+    rows: consolidateSeason(season, sections),
+    games: ctx.gameIndex ? consolidateGames(season, sections, ctx.gameIndex) : [],
+  };
+}
+
+/** nfldata games.csv → the (season, week, team) → game index game rows join through. */
+async function loadGameIndex(loggedNewColumns: Set<string>): Promise<GameIndex> {
+  const csv = await getText(GAMES_URL);
+  assertHeader(sourceContract('games'), parseCsvHeader(csv), loggedNewColumns);
+  const { games } = toScheduleAndGameRows(parseCsv(csv), resolveTeamCode, 1999);
+  return buildGameIndex(games);
 }
 
 async function readCheckpoints(
@@ -311,7 +333,7 @@ async function readCheckpoints(
 }
 
 async function main(): Promise<void> {
-  const { seasons: requested, out } = parseArgs(process.argv);
+  const { seasons: requested, out, games: writeGames } = parseArgs(process.argv);
   const { completedSeason } = nflSeasonState();
   const seasons = requested ?? [completedSeason];
   const outDir = resolve(out);
@@ -328,6 +350,8 @@ async function main(): Promise<void> {
   const target = new FileSystemStatFileTarget(outDir);
   const publisher = await createPublisher(target, { currentSeason: completedSeason });
   const loggedNewColumnSources = new Set<string>();
+
+  const gameIndex = writeGames ? await loadGameIndex(loggedNewColumnSources) : null;
 
   const qbrText = await getText(assetUrl('espn_data', 'qbr_week_level.csv'));
   assertHeader(sourceContract('espn_qbr_week'), parseCsvHeader(qbrText), loggedNewColumnSources);
@@ -355,12 +379,13 @@ async function main(): Promise<void> {
   };
 
   for (const season of seasons) {
-    const rows = await buildSeason(season, {
+    const { rows, games } = await buildSeason(season, {
       latestCompletedSeason: completedSeason,
       gsis,
       pfr,
       loggedNewColumnSources,
       qbrRows,
+      gameIndex,
     });
     const checkpoint: SeasonCheckpoint = {
       schema_version: STAT_FILES_SCHEMA_VERSION,
@@ -368,7 +393,19 @@ async function main(): Promise<void> {
       rows,
     };
     await publisher.put(seasonCheckpointKey(season), checkpoint);
-    console.log(`${season}: ${rows.length} consolidated player rows`);
+    let gameFiles = 0;
+    for (const [playerId, file] of buildPlayerGamesFiles(
+      season,
+      games,
+      STAT_FILES_SCHEMA_VERSION
+    )) {
+      await publisher.put(playerGamesKey(playerId, season), file);
+      gameFiles++;
+    }
+    console.log(
+      `${season}: ${rows.length} consolidated player rows` +
+        (writeGames ? `, ${games.length} game rows in ${gameFiles} files` : '')
+    );
   }
 
   // Assemble every player's career from all checkpoints on disk (this run's plus any
