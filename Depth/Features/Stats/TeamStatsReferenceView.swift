@@ -33,9 +33,13 @@ struct TeamStatsReferenceView: View {
     /// The season's defense-allowed window from the team's stat file, when it loaded.
     let allowed: TeamAllowedWindow?
     let leaders: RosterLeaders?
+    /// Resolves a leader row to the player its profile opens. A leader missing here shows
+    /// without a link.
+    let rosterPlayersById: [String: Player]
     /// Rows the overview's story cites, marked so the ledger stays tied to the claim.
     let storyMetricIds: Set<String>
     let accent: Color
+    let onSelectPlayer: (Player) -> Void
 
     init(
         lens: TeamStatsLens,
@@ -43,16 +47,20 @@ struct TeamStatsReferenceView: View {
         ranks: TeamStatsRanks?,
         allowed: TeamAllowedWindow?,
         leaders: RosterLeaders?,
+        rosterPlayersById: [String: Player],
         storyMetricIds: Set<String>,
-        accent: Color
+        accent: Color,
+        onSelectPlayer: @escaping (Player) -> Void
     ) {
         _lens = State(initialValue: lens)
         self.stats = stats
         self.ranks = ranks
         self.allowed = allowed
         self.leaders = leaders
+        self.rosterPlayersById = rosterPlayersById
         self.storyMetricIds = storyMetricIds
         self.accent = accent
+        self.onSelectPlayer = onSelectPlayer
     }
 
     private let leagueSize = TeamSeasonStoryBuilder.leagueSize
@@ -448,26 +456,57 @@ struct TeamStatsReferenceView: View {
         .accessibilityIdentifier("stats-row-\(row.id)")
     }
 
+    /// A leader on the current roster opens that player's profile; anyone else is a plain
+    /// row.
+    @ViewBuilder
     private func leaderRow(label: String, leader: Leader) -> some View {
+        if let player = rosterPlayersById[leader.playerId] {
+            Button {
+                onSelectPlayer(player)
+            } label: {
+                leaderRowContent(label: label, leader: leader, linked: true)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens the player profile")
+            .accessibilityIdentifier("stats-leader-\(leader.playerId)")
+        } else {
+            leaderRowContent(label: label, leader: leader, linked: false)
+        }
+    }
+
+    private func leaderRowContent(label: String, leader: Leader, linked: Bool) -> some View {
         let layout =
             dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.xs))
             : AnyLayout(HStackLayout(alignment: .center, spacing: DesignTokens.Spacing.md))
-        return layout {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: label)
-                    .font(.caption2.weight(.bold))
-                    .tracking(0.6)
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
-                Text(verbatim: leader.name)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+        return HStack(spacing: DesignTokens.Spacing.sm) {
+            layout {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: label)
+                        .font(.caption2.weight(.bold))
+                        .tracking(0.6)
+                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                    Text(verbatim: leader.name)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                }
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Spacer(minLength: DesignTokens.Spacing.sm)
+                }
+                Text(verbatim: leader.line)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .multilineTextAlignment(
+                        dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
             }
-            if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: DesignTokens.Spacing.sm) }
-            Text(verbatim: leader.line)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(DesignTokens.Colors.textMuted)
-                .multilineTextAlignment(dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            if linked {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textFaint)
+                    .accessibilityHidden(true)
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 60, alignment: .leading)
         .padding(.vertical, DesignTokens.Spacing.sm)

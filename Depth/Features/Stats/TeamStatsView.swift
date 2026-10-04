@@ -13,6 +13,8 @@ struct TeamStatsView: View {
     @State private var evidenceExpanded = false
     @State private var scopeExpanded = false
     @State private var openLens: TeamStatsLens?
+    @State private var profilePlayer: Player?
+    private let repository: DepthRepository
     /// Stats fetches no uniform data of its own (lightweight read,
     /// invariant 5), so it reads the kit-resolved accent TeamDetailView publishes here
     /// instead — same store the tab tint and Schedule read.
@@ -20,6 +22,7 @@ struct TeamStatsView: View {
 
     init(teamId: String, repository: DepthRepository, currentTeamStore: CurrentTeamStore) {
         _viewModel = State(initialValue: TeamStatsViewModel(teamId: teamId, repository: repository))
+        self.repository = repository
         self.currentTeamStore = currentTeamStore
     }
 
@@ -52,10 +55,20 @@ struct TeamStatsView: View {
                         ranks: ranks(for: stats),
                         allowed: viewModel.statHistory?.season(stats.season)?.allowed,
                         leaders: viewModel.selectedSeasonLeaders,
+                        rosterPlayersById: viewModel.rosterPlayersById,
                         storyMetricIds: storyMetricIds,
-                        accent: teamAccent
+                        accent: teamAccent,
+                        onSelectPlayer: { profilePlayer = $0 }
                     )
                 }
+            }
+            .navigationDestination(item: $profilePlayer) { player in
+                PlayerProfileView(
+                    player: player,
+                    team: viewModel.page?.team,
+                    kitColors: currentTeamStore.colors,
+                    repository: repository
+                )
             }
     }
 
