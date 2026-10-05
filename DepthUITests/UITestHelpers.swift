@@ -78,13 +78,10 @@ extension XCUIApplication {
         searchField.typeTextAfterFocusing(query, in: self)
 
         let teamRow = buttons["team-row-\(teamId)"]
-        // The switcher fetches the 32-team list from production on a fresh launch (no
-        // cache with UI_TESTING_RESET_STATE), so the row can lag well past the other
-        // waits on a cold run. A 20s budget can be too short for the production fetch plus
-        // 32-row render. 60s keeps this a real assertion while covering a slow cold fetch; the
-        // assert still fails if the row never renders.
+        // `typeTextAfterFocusing` has confirmed the field holds the full query, and every
+        // caller runs on the fixture backend, so the filtered row is a local render.
         XCTAssertTrue(
-            teamRow.waitForExistence(timeout: 60),
+            teamRow.waitForExistence(timeout: 15),
             "searching \"\(query)\" should surface the \(teamId) row", file: file, line: line)
         teamRow.tap()
 
@@ -140,10 +137,14 @@ extension XCUIElement {
     /// point of the loop's shape. Using one deadline for the loop would let a slow tap consume
     /// the timeout before the keyboard is polled, so the helper could type into a still-unfocused
     /// field. The deadline is created immediately after each tap and the field is checked before
-    /// typing.
-    /// failure it was written to prevent. A timeout that a slow tap can spend is not a timeout.
-    /// When focus never lands, fail with this message rather than typing blindly into whatever
-    /// has focus instead.
+    /// typing. When focus never lands, fail with this message rather than typing blindly into
+    /// whatever has focus instead.
+    ///
+    /// Focus alone does not prove the text arrived. On a starved runner `typeText` can deliver
+    /// the first keystroke and drop the rest without reporting an error: the switcher then
+    /// filters on "S" (every team matches) and a wait for one team's row can never succeed.
+    /// So the field's own text is the completion signal, and whatever did not land is
+    /// re-entered.
     func typeTextAfterFocusing(
         _ text: String, in app: XCUIApplication, attempts: Int = 3, timeout: TimeInterval = 15,
         file: StaticString = #filePath, line: UInt = #line
@@ -153,7 +154,9 @@ extension XCUIElement {
             let deadline = Date().addingTimeInterval(timeout)
             repeat {
                 if app.keyboards.element.exists {
+                    let expected = fieldText + text
                     typeText(text)
+                    ensureFieldText(expected, attempts: attempts, file: file, line: line)
                     return
                 }
                 RunLoop.current.run(until: Date().addingTimeInterval(0.1))
@@ -161,6 +164,44 @@ extension XCUIElement {
         }
         XCTFail(
             "the field never took keyboard focus, so \"\(text)\" could not be typed",
+            file: file, line: line
+        )
+    }
+
+    /// A text field's typed contents. An empty field reports its placeholder as its `value`,
+    /// which is read here as no text.
+    private var fieldText: String {
+        let current = value as? String ?? ""
+        return current == placeholderValue ? "" : current
+    }
+
+    /// Waits for the focused field to hold exactly `expected`, retyping when it settles on
+    /// anything else: the missing suffix when only a prefix landed, otherwise a full clear and
+    /// re-entry. Each check waits from after the preceding `typeText` returns, for the same
+    /// reason `typeTextAfterFocusing` measures its budget after the tap.
+    private func ensureFieldText(
+        _ expected: String, attempts: Int, settle: TimeInterval = 5,
+        file: StaticString, line: UInt
+    ) {
+        for retype in 0...attempts {
+            let deadline = Date().addingTimeInterval(settle)
+            repeat {
+                if fieldText == expected { return }
+                RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+            } while Date() < deadline
+            guard retype < attempts else { break }
+            let current = fieldText
+            if current == expected { return }
+            if expected.hasPrefix(current) {
+                typeText(String(expected.dropFirst(current.count)))
+            } else {
+                typeText(
+                    String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count)
+                        + expected)
+            }
+        }
+        XCTFail(
+            "the field holds \"\(fieldText)\" after retyping, expected \"\(expected)\"",
             file: file, line: line
         )
     }
