@@ -20,15 +20,17 @@ struct PlayerKnownForClaim: Equatable {
     /// "520"
     var valueText: String { PlayerKnownForBuilder.integer(highlight.value) }
 
-    /// "passing yards · Week 17, 2011 · Lions vs. Packers"
-    var context: String {
-        let when =
-            highlight.week.map { "Week \($0), \(highlight.season)" } ?? "\(highlight.season) season"
-        var parts = [stat.noun, when]
-        if let team = highlight.teamId.map(Self.teamName) {
-            parts.append(highlight.opponentId.map { "\(team) vs. \(Self.teamName($0))" } ?? team)
+    /// When the mark was set: "Week 17, 2011", or "2011 season" for a season total. The stat
+    /// itself is already in the headline, so it isn't repeated here.
+    var when: String {
+        highlight.week.map { "Week \($0), \(highlight.season)" } ?? "\(highlight.season) season"
+    }
+
+    /// Who it was set for: "Lions vs. Packers", or just "Lions" for a season total.
+    var matchup: String? {
+        highlight.teamId.map(Self.teamName).map { team in
+            highlight.opponentId.map { "\(team) vs. \(Self.teamName($0))" } ?? team
         }
-        return parts.joined(separator: " · ")
     }
 
     /// "3 other players have reached 520 passing yards in a game since 1999."

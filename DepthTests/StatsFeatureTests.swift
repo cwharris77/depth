@@ -155,24 +155,22 @@ private actor FlakyStatsRepositoryFake: DepthRepository {
     let page: TeamStatsPage
     let schedules: [Int: TeamSchedule]
     let history: TeamStatHistory?
-    let roster: [Player]
     private var failStats = false
 
     init(
         page: TeamStatsPage, schedules: [Int: TeamSchedule] = [:],
-        history: TeamStatHistory? = nil, roster: [Player] = []
+        history: TeamStatHistory? = nil
     ) {
         self.page = page
         self.schedules = schedules
         self.history = history
-        self.roster = roster
     }
 
     func startFailing() { failStats = true }
 
     func teams() async throws -> [Team] { [] }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
-        TeamSnapshot(team: page.team, players: roster, specialTeams: [], uniforms: [])
+        throw DepthError.notFound
     }
     func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
         throw DepthError.notFound
@@ -283,16 +281,4 @@ private actor FlakyStatsRepositoryFake: DepthRepository {
     await repository.startFailing()
     await viewModel.load()
     #expect(await viewModel.statHistory != nil)
-}
-
-/// Leader rows resolve against the current roster so they can open the player profile.
-@Test func loadResolvesLeadersToRosterPlayers() async {
-    let qb = Player(id: "qb", name: "Josh Allen", position: .qb, depthRank: 1, number: 17)
-    let repository = FlakyStatsRepositoryFake(page: statsPage(), roster: [qb])
-    let viewModel = await TeamStatsViewModel(teamId: "bills", repository: repository)
-    await viewModel.load()
-
-    let leader = await viewModel.selectedSeasonLeaders?.passing
-    #expect(leader?.playerId == "qb")
-    #expect(await viewModel.rosterPlayersById[leader?.playerId ?? ""] == qb)
 }

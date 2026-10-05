@@ -55,20 +55,21 @@ struct TeamStatsView: View {
                         ranks: ranks(for: stats),
                         allowed: viewModel.statHistory?.season(stats.season)?.allowed,
                         leaders: viewModel.selectedSeasonLeaders,
-                        rosterPlayersById: viewModel.rosterPlayersById,
                         storyMetricIds: storyMetricIds,
                         accent: teamAccent,
                         onSelectPlayer: { profilePlayer = $0 }
                     )
+                    // Declared on the pushed lens, not the overview, so the profile stacks on
+                    // top of it and Back returns to the lens rather than replacing it.
+                    .navigationDestination(item: $profilePlayer) { player in
+                        PlayerProfileView(
+                            player: player,
+                            team: viewModel.page?.team,
+                            kitColors: currentTeamStore.colors,
+                            repository: repository
+                        )
+                    }
                 }
-            }
-            .navigationDestination(item: $profilePlayer) { player in
-                PlayerProfileView(
-                    player: player,
-                    team: viewModel.page?.team,
-                    kitColors: currentTeamStore.colors,
-                    repository: repository
-                )
             }
     }
 

@@ -1,13 +1,10 @@
 import Foundation
 
 // Projection rows for the roster-leaders read (mirrors web's getRosterLeaders in
-// web/lib/roster-source.db.ts): the team's current players (id -> name) and their REG
-// player_stats rows for one season, merged in memory by RosterLeadersMapper — never a
-// user-input-built PostgREST filter (invariant 8).
-struct RosterLeaderPlayerDTO: Decodable {
-    let id: String
-    let name: String
-}
+// web/lib/roster-source.db.ts): the team's current players (decoded as `PlayerDTO`, the
+// same columns the team snapshot reads) and their REG player_stats rows for one season,
+// merged in memory by RosterLeadersMapper — never a user-input-built PostgREST filter
+// (invariant 8).
 
 struct RosterLeaderStatsDTO: Decodable {
     let playerId: String
