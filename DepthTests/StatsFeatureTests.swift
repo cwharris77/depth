@@ -154,11 +154,15 @@ private actor StatsRepositoryFake: DepthRepository {
 private actor FlakyStatsRepositoryFake: DepthRepository {
     let page: TeamStatsPage
     let schedules: [Int: TeamSchedule]
+    let history: TeamStatHistory?
     private var failStats = false
 
-    init(page: TeamStatsPage, schedules: [Int: TeamSchedule] = [:]) {
+    init(
+        page: TeamStatsPage, schedules: [Int: TeamSchedule] = [:], history: TeamStatHistory? = nil
+    ) {
         self.page = page
         self.schedules = schedules
+        self.history = history
     }
 
     func startFailing() { failStats = true }
@@ -182,6 +186,10 @@ private actor FlakyStatsRepositoryFake: DepthRepository {
             season: season,
             passing: Leader(playerId: "qb", name: "Leader \(season)", line: "1 yds"),
             rushing: nil, receiving: nil)
+    }
+    func teamStatHistory(teamId: String) async throws -> TeamStatHistory? {
+        if failStats { throw DepthError.offline }
+        return history
     }
     func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
     func appConfig() async throws -> AppConfig {
@@ -228,4 +236,46 @@ private actor FlakyStatsRepositoryFake: DepthRepository {
     #expect(pace?.priorSeason == 2024)
     #expect(pace?.priorRecord == "10-6")
     #expect(pace?.winDelta == 2)
+}
+
+/// The team's stat file feeds recent form, and the upcoming schedule feeds the opener line.
+@Test func loadReadsTheTeamFileAndTheUpcomingOpener() async {
+    func window(games: Int, through: Int?, rushRank: Int) -> TeamAllowedWindow {
+        TeamAllowedWindow(
+            games: games, throughWeek: through,
+            rates: TeamAllowedRates(rushingYards: 151),
+            ranks: TeamAllowedRanks(
+                passingYards: 16, rushingYards: rushRank, totalYards: 16),
+            rankedTeams: 32)
+    }
+    let history = TeamStatHistory(seasons: [
+        TeamSeasonHistory(
+            season: 2025, allowed: window(games: 17, through: nil, rushRank: 20),
+            recent: window(games: 4, through: 18, rushRank: 31), games: [])
+    ])
+    let opener = TeamSchedule(
+        season: 2026,
+        games: [
+            ScheduleGame(
+                week: 1, isBye: false, date: "2026-09-13", isHome: true, opponent: statsTeam(),
+                teamScore: nil, opponentScore: nil, result: nil)
+        ])
+    let repository = FlakyStatsRepositoryFake(
+        page: statsPage(upcomingSeason: 2026), schedules: [2026: opener], history: history)
+    let viewModel = await TeamStatsViewModel(teamId: "bills", repository: repository)
+    await viewModel.load()
+
+    #expect(await viewModel.selectedSeason == 2025)
+    #expect(
+        await viewModel.selectedRecentForm?.headline
+            == "Allowed the 2nd-most rushing yards in the NFL")
+    #expect(await viewModel.selectedSeasonOpener == nil)
+
+    await viewModel.selectSeason(2026)
+    #expect(await viewModel.selectedSeasonOpener?.summary == "Opens Sep 13 vs. Bills")
+
+    // A refresh that can't reach the file keeps what it already showed.
+    await repository.startFailing()
+    await viewModel.load()
+    #expect(await viewModel.statHistory != nil)
 }

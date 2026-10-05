@@ -30,6 +30,8 @@ struct TeamStatsReferenceView: View {
     @State private var lens: TeamStatsLens
     let stats: TeamSeasonStats
     let ranks: TeamStatsRanks?
+    /// The season's defense-allowed window from the team's stat file, when it loaded.
+    let allowed: TeamAllowedWindow?
     let leaders: RosterLeaders?
     /// Rows the overview's story cites, marked so the ledger stays tied to the claim.
     let storyMetricIds: Set<String>
@@ -39,6 +41,7 @@ struct TeamStatsReferenceView: View {
         lens: TeamStatsLens,
         stats: TeamSeasonStats,
         ranks: TeamStatsRanks?,
+        allowed: TeamAllowedWindow?,
         leaders: RosterLeaders?,
         storyMetricIds: Set<String>,
         accent: Color
@@ -46,6 +49,7 @@ struct TeamStatsReferenceView: View {
         _lens = State(initialValue: lens)
         self.stats = stats
         self.ranks = ranks
+        self.allowed = allowed
         self.leaders = leaders
         self.storyMetricIds = storyMetricIds
         self.accent = accent
@@ -135,6 +139,7 @@ struct TeamStatsReferenceView: View {
             yardsGroup
             catalogGroups(["offense"])
         case .defense:
+            allowedGroup
             catalogGroups(["defense"])
         case .specialTeams:
             catalogGroups(["special"])
@@ -174,7 +179,8 @@ struct TeamStatsReferenceView: View {
         case .offense:
             !storyMetricIds.isDisjoint(
                 with: Set(["pass-yds", "rush-yds"]).union(catalogIds(["offense"])))
-        case .defense: !storyMetricIds.isDisjoint(with: catalogIds(["defense"]))
+        case .defense:
+            !storyMetricIds.isDisjoint(with: catalogIds(["defense"]).union(allowedRowIds))
         case .specialTeams: !storyMetricIds.isDisjoint(with: catalogIds(["special"]))
         case .line: !storyMetricIds.isDisjoint(with: TeamLineMetricCatalog.metrics.map(\.id))
         case .leaders: false
@@ -245,6 +251,58 @@ struct TeamStatsReferenceView: View {
         ].compactMap { $0 }
         if !rows.isEmpty {
             group("YARDS", rows: rows)
+        }
+    }
+
+    private let allowedRowIds: Set<String> = [
+        "rush-yds-allowed", "pass-yds-allowed", "total-yds-allowed", "rush-epa-allowed",
+        "pass-epa-allowed",
+    ]
+
+    /// Yards and EPA the defense allowed, per game or per play.
+    @ViewBuilder
+    private var allowedGroup: some View {
+        let rows = allowedRows
+        if !rows.isEmpty {
+            group("ALLOWED", rows: rows)
+        }
+    }
+
+    /// Ranks count from the fewest allowed, among the teams the file ranked.
+    private var allowedRows: [LedgerRow] {
+        guard let allowed else { return [] }
+        let rates = allowed.rates
+        let ranks = allowed.ranks
+        let specs: [(String, String, Double?, (Double) -> String, Int?)] = [
+            (
+                "rush-yds-allowed", "RUSH YDS / GM", rates.rushingYards,
+                TeamStatsMetricFormat.integer, ranks?.rushingYards
+            ),
+            (
+                "pass-yds-allowed", "PASS YDS / GM", rates.passingYards,
+                TeamStatsMetricFormat.integer, ranks?.passingYards
+            ),
+            (
+                "total-yds-allowed", "TOTAL YDS / GM", rates.totalYards,
+                TeamStatsMetricFormat.integer, ranks?.totalYards
+            ),
+            (
+                "rush-epa-allowed", "RUSH EPA / CARRY", rates.rushingEpaPerCarry,
+                TeamStatsMetricFormat.signed(2), ranks?.rushingEpaPerCarry
+            ),
+            (
+                "pass-epa-allowed", "PASS EPA / DROPBACK", rates.passingEpaPerDropback,
+                TeamStatsMetricFormat.signed(2), ranks?.passingEpaPerDropback
+            ),
+        ]
+        let last = allowed.rankedTeams ?? leagueSize
+        return specs.compactMap { id, label, value, format, rank in
+            value.map {
+                LedgerRow(
+                    id, label, format($0),
+                    rank: showRanks
+                        ? teamStatsRankLabel(rank, lastRank: last, qualifier: .least) : nil)
+            }
         }
     }
 
