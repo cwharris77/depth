@@ -33,9 +33,6 @@ struct TeamStatsReferenceView: View {
     /// The season's defense-allowed window from the team's stat file, when it loaded.
     let allowed: TeamAllowedWindow?
     let leaders: RosterLeaders?
-    /// Resolves a leader row to the player its profile opens. A leader missing here shows
-    /// without a link.
-    let rosterPlayersById: [String: Player]
     /// Rows the overview's story cites, marked so the ledger stays tied to the claim.
     let storyMetricIds: Set<String>
     let accent: Color
@@ -47,7 +44,6 @@ struct TeamStatsReferenceView: View {
         ranks: TeamStatsRanks?,
         allowed: TeamAllowedWindow?,
         leaders: RosterLeaders?,
-        rosterPlayersById: [String: Player],
         storyMetricIds: Set<String>,
         accent: Color,
         onSelectPlayer: @escaping (Player) -> Void
@@ -57,7 +53,6 @@ struct TeamStatsReferenceView: View {
         self.ranks = ranks
         self.allowed = allowed
         self.leaders = leaders
-        self.rosterPlayersById = rosterPlayersById
         self.storyMetricIds = storyMetricIds
         self.accent = accent
         self.onSelectPlayer = onSelectPlayer
@@ -456,11 +451,11 @@ struct TeamStatsReferenceView: View {
         .accessibilityIdentifier("stats-row-\(row.id)")
     }
 
-    /// A leader on the current roster opens that player's profile; anyone else is a plain
-    /// row.
+    /// A leader whose player row decoded opens that player's profile; anyone else is a
+    /// plain row.
     @ViewBuilder
     private func leaderRow(label: String, leader: Leader) -> some View {
-        if let player = rosterPlayersById[leader.playerId] {
+        if let player = leader.player {
             Button {
                 onSelectPlayer(player)
             } label: {

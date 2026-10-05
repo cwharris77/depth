@@ -4,17 +4,25 @@ import Foundation
 // LeaderEntry list the pure `rosterLeaders` (Domain/RosterLeaders.swift) selects from.
 // Mirrors web's getRosterLeaders: player_stats rows carry only a player_id, so names are
 // resolved from the separate players read via an in-memory map, never a joined filter.
+// Each entry also carries the decoded Player so a leader row can open the profile. The
+// leaders read has no depth-chart seat, so the player is mapped at rank 3, the same
+// fallback the snapshot gives a special-teams-only player.
 enum RosterLeadersMapper {
     static func map(
-        players: [RosterLeaderPlayerDTO],
+        players: [PlayerDTO],
         stats: [RosterLeaderStatsDTO]
     ) -> [LeaderEntry] {
-        let nameById = Dictionary(
-            players.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        let playerById = Dictionary(
+            players.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var dropped: [TeamSnapshotMapper.DroppedRow] = []
         return stats.map { row in
-            LeaderEntry(
+            let dto = playerById[row.playerId]
+            return LeaderEntry(
                 playerId: row.playerId,
-                name: nameById[row.playerId] ?? "",
+                name: dto?.name ?? "",
+                player: dto.flatMap {
+                    TeamSnapshotMapper.mapPlayer($0, depthRank: 3, dropped: &dropped)
+                },
                 stats: PlayerSeasonStats(
                     season: row.season, seasonType: .regular, teamAbbrev: nil, games: nil,
                     completions: row.completions, attempts: row.attempts,

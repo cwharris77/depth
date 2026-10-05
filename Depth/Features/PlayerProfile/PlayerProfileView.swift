@@ -660,10 +660,19 @@ private struct PlayerProfileScreen: View {
                 .font(.title.weight(.black))
                 .monospacedDigit()
                 .foregroundStyle(markColor)
-            Text(claim.context)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(DesignTokens.Colors.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            // Two short lines instead of one joined string, so a wrap never strands a
+            // separator at the start of a line.
+            VStack(alignment: .leading, spacing: 2) {
+                Text(claim.when)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textSecondary)
+                if let matchup = claim.matchup {
+                    Text(matchup)
+                        .font(.subheadline)
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+                }
+            }
+            .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
     }

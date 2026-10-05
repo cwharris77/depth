@@ -38,9 +38,6 @@ final class TeamStatsViewModel {
     private(set) var statHistory: TeamStatHistory?
     /// The upcoming season's schedule, for the opener line before any game is played.
     private(set) var upcomingSchedule: TeamSchedule?
-    /// The team's current roster by player id. Leaders come from the same `players` rows,
-    /// so this resolves a leader row to the full player its profile needs.
-    private(set) var rosterPlayersById: [String: Player] = [:]
     /// True when a reload failed but an earlier page is still on screen. The page keeps
     /// rendering the cached stats under a retry row instead of an error screen.
     private(set) var refreshFailed = false
@@ -171,15 +168,7 @@ final class TeamStatsViewModel {
             group.addTask { await self.loadLeaders() }
             group.addTask { await self.loadPriorSchedules() }
             group.addTask { await self.loadUpcomingSchedule() }
-            group.addTask { await self.loadRoster() }
         }
-    }
-
-    /// `try?`: without the roster the leader rows still show, just without a profile link.
-    private func loadRoster() async {
-        guard let snapshot = try? await repository.teamSnapshot(teamId: teamId) else { return }
-        rosterPlayersById = Dictionary(
-            snapshot.players.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
     private func loadUpcomingSchedule() async {

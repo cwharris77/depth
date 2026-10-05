@@ -38,7 +38,8 @@ private func highlights(
     #expect(claim.kind == .singleGame)
     #expect(claim.headline == "The 4th-most passing yards in a game since 1999.")
     #expect(claim.valueText == "520")
-    #expect(claim.context == "passing yards · Week 17, 2011 · Lions vs. Packers")
+    #expect(claim.when == "Week 17, 2011")
+    #expect(claim.matchup == "Lions vs. Packers")
     #expect(
         claim.comparator == "3 other players have reached 520 passing yards in a game since 1999.")
     #expect(claim.scope == "Regular season, 1999–2026 · each player’s best")
@@ -50,7 +51,8 @@ private func highlights(
             highlights([.passingTds: [.singleSeason: mark(46, rank: 5, atOrAbove: 6, team: "rams")]]
             )))
     #expect(claim.headline == "Tied for the 5th-most passing touchdowns in a season since 1999.")
-    #expect(claim.context == "passing touchdowns · 2011 season · Rams")
+    #expect(claim.when == "2011 season")
+    #expect(claim.matchup == "Rams")
     #expect(
         claim.comparator
             == "5 other players have reached 46 passing touchdowns in a season since 1999.")
@@ -64,7 +66,8 @@ private func highlights(
             ])))
     #expect(claim.headline == "The most receiving yards in a season since 1999.")
     #expect(claim.valueText == "1,964")
-    #expect(claim.context == "receiving yards · 2011 season · 49ers")
+    #expect(claim.when == "2011 season")
+    #expect(claim.matchup == "49ers")
     #expect(
         claim.comparator
             == "No other player has reached 1,964 receiving yards in a season since 1999.")

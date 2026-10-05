@@ -16,6 +16,16 @@ struct Leader: Equatable, Codable, Sendable {
     let playerId: String
     let name: String
     let line: String
+    /// The roster player behind the row, so it can open the profile. Optional so a cached
+    /// payload written before this field existed still decodes.
+    let player: Player?
+
+    init(playerId: String, name: String, line: String, player: Player? = nil) {
+        self.playerId = playerId
+        self.name = name
+        self.line = line
+        self.player = player
+    }
 }
 
 struct RosterLeaders: Equatable, Codable, Sendable {
@@ -28,6 +38,7 @@ struct RosterLeaders: Equatable, Codable, Sendable {
 struct LeaderEntry {
     let playerId: String
     let name: String
+    var player: Player? = nil
     let stats: PlayerSeasonStats
 }
 
@@ -64,7 +75,8 @@ private func topBy(
         }
     }
     guard let best else { return nil }
-    return Leader(playerId: best.playerId, name: best.name, line: line(best.stats))
+    return Leader(
+        playerId: best.playerId, name: best.name, line: line(best.stats), player: best.player)
 }
 
 // Named distinctly from web's `rosterLeaders` (not just `rosterLeaders`) to avoid

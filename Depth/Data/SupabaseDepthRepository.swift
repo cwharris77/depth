@@ -92,7 +92,10 @@ actor SupabaseDepthRepository: DepthRepository {
     private static let scheduleSelect = "team_id, season"
     private static let gameSelect =
         "game_id, season, game_type, week, gameday, home_team_id, away_team_id, home_score, away_score, location, away_moneyline, home_moneyline, spread_line, away_spread_odds, home_spread_odds, total_line, under_odds, over_odds, market_updated_at"
-    private static let rosterLeaderPlayersSelect = "id, name"
+    // The full player row, not just the name: a leader can be off the depth chart (injured,
+    // inactive) and so absent from the team snapshot, yet still opens the player profile.
+    private static let rosterLeaderPlayersSelect =
+        "id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url"
     private static let rosterLeaderStatsSelect =
         "player_id, season, completions, attempts, passing_yards, passing_tds, carries, rushing_yards, rushing_tds, receptions, receiving_yards, receiving_tds"
     private static let historicalRosterSelect =
@@ -526,7 +529,7 @@ actor SupabaseDepthRepository: DepthRepository {
     /// throw — the page renders without the card, same posture as teamStats' try/catch).
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? {
         do {
-            let players: [RosterLeaderPlayerDTO] =
+            let players: [PlayerDTO] =
                 try await client
                 .from("players")
                 .select(Self.rosterLeaderPlayersSelect)
