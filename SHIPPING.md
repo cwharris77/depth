@@ -37,6 +37,8 @@ Stacked PRs use `gh stack` (see the global workflow) — do not retarget by hand
 
 ## After merge (skill step 8)
 
+- **App-touching PR** (`Depth/`, `project.yml`): when you set the ticket to `Done`, also set `release:` to the open train (the release note whose `status` is `planning`). Quote the version (`release: "1.2"`) so `1.10` never reads as `1.1`. Backend-only and web-only PRs don't ride a train and get no `release:`.
+
 - If uncommitted work has to survive `git checkout main && git pull`, never pair an unconditional `git stash` with an unconditional `git stash pop`: the stash is a shared, session-spanning stack, and a no-op push (nothing was dirty) followed by a blind pop can resurrect an unrelated older stash. Check `git status --porcelain` first and skip the pair on a clean tree; otherwise capture the stash's identity (`git stash list` before and after, or `git stash create`) and pop only that ref. A pop that conflicts in a file you never touched means you popped the wrong stash — stop and inspect, don't resolve through it.
 
 ## Red flags specific to this repo
