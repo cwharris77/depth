@@ -1,6 +1,6 @@
 ---
 name: release-ios
-description: Use when an iOS build is going out — you archived a build and are uploading to App Store Connect / TestFlight, you submitted a build for review, a build went LIVE in the App Store, or you are about to arm the forced-update gate ahead of a breaking backend change. Covers recording the release in ios-release-compatibility.md, when the gate may (and may not) be armed, and the ordering that keeps installed builds decodable (web/CLAUDE.md invariant 11).
+description: Use when an iOS build is going out — cutting a release train, archiving and uploading to App Store Connect / TestFlight, submitting for review, a build going LIVE in the App Store, or arming the forced-update gate ahead of a breaking backend change. Covers the biweekly release train, recording the release in ios-release-compatibility.md, when the gate may (and may not) be armed, and the ordering that keeps installed builds decodable (web/CLAUDE.md invariant 11).
 ---
 
 # iOS release & compatibility manifest protocol
@@ -32,6 +32,20 @@ vault's `postmortems/2026-08-24-teams-couldnt-load-testflight.md`).
 number", "Do not arm before the listing is public"). `.claude/skills/db-migration` for
 the migration-side contract (destructive migrations need the `-- IOS-COMPATIBILITY:`
 annotation).
+
+## The release train
+
+iOS ships on a fixed two-week train: **cut Tuesday, submit Wednesday**, every other week (1.1 cuts 2026-10-13). Whatever is merged to `main` at the cut ships; unfinished work stays behind a feature flag (`SHIPPING.md` → Feature flags). Cadence, scope rules and the board fields are in the vault's `Reference/ios-release-train.md`; each train has a note at `Projects/depth/Releases/<version>.md` whose checklist mirrors the steps below.
+
+1. **Cut (Tuesday).** From a clean, current `main`, bump `CFBundleShortVersionString` in `project.yml` to the train's version (minor per train, patch per hotfix), run `xcodegen generate`, and land it as `chore(release): cut ios <version>`.
+2. Archive that merge commit (Release config) and upload. The build number is `git rev-list --count <sha>`; record it as `build:` on the release note.
+3. Tag it: `git tag -a ios-v<version> <sha> -m "iOS <version> (build <n>)"` and push the tag.
+4. `scripts/ios-release-notes.sh` lists the app commits since the previous `ios-v*` tag; turn that into the App Store "What's New" copy on the release note.
+5. Moment ① below, and set the release note's `status: testflight`.
+6. **Submit (Wednesday).** Install the current App Store build, upgrade to the TestFlight build, smoke-test, then submit with phased release on. `status: review`.
+7. **LIVE.** Moment ② below; set `live:` and `status: live`. Arm the gate only if a breaking backend change is waiting on this build.
+
+At most one risky change (backend contract, navigation, new data source) rides each train; the ticket carries `risky: true`. A hotfix (`<version>.1`) is out of band, carries only the fix, and does not move the next cut.
 
 ## The two moments
 
@@ -102,21 +116,15 @@ migration must name the **live** build (step 1) in "Safe after App Store build <
 LIVE." — never the build that's merely submitted or on TestFlight. Passing the CI
 guard is not approval to ship; the build must be LIVE and the gate armed first.
 
-## Current state (keep updated as releases happen)
+## Current state
 
-- **Current App Store build:** 587 — submitted for review, **not yet LIVE** (as of
-  2026-09-08)
-- **Minimum supported build:** 1 — gate **not armed**
-- **Gateable floor:** build 321 (T5, #355). Any build ≥ 321 contains the forced-update
-  gate; 587 qualifies, so it becomes armable the moment it is LIVE.
-
-> These live in `ios-release-compatibility.md` — this block is a snapshot for quick
-> reference, not a second source of truth. Prefer reading the manifest.
+Read it from `ios-release-compatibility.md` ("Current contract"): the live build, the armed minimum, and the gateable floor. This skill deliberately keeps no copy, because a second copy goes stale.
 
 ## Quick reference
 
 | When | What changes | Gate? |
 |---|---|---|
+| Train cut (Tuesday) | Version bump PR, archive, `ios-v<version>` tag, release note `build:` | No |
 | Build submitted | Manifest: "submitted, not yet LIVE" | No |
 | Build **LIVE** | Manifest: "**LIVE** as of <date>"; history row only if contract changed | No |
 | Breaking change pending + fixed build LIVE | Migration raising minimum + manifest "Minimum supported build" | **Yes — in this order** |
