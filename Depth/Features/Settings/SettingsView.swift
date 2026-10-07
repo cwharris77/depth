@@ -53,6 +53,9 @@ struct SettingsView: View {
     @State private var showAuth = false
     @State private var showDeletion = false
     @State private var signOutError: DepthAuthError?
+    #if INTERNAL_BUILD
+        @State private var showFeatureFlags = false
+    #endif
     // Account is presented in a sheet rather than a full tab, so it needs an explicit
     // close affordance — a tab never had this problem (switching tabs was
     // the exit), a modal sheet does.
@@ -116,6 +119,11 @@ struct SettingsView: View {
             // `.presentationBackground(bg)` at nesting call sites.
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
         }
+        #if INTERNAL_BUILD
+            .sheet(isPresented: $showFeatureFlags) {
+                FeatureFlagsSheet(store: DepthEnvironment.featureFlags)
+            }
+        #endif
         .sheet(isPresented: $showDeletion) {
             if let email = sessionStore.user?.email {
                 AccountDeletionSheet(
@@ -416,6 +424,15 @@ struct SettingsView: View {
                 }
                 .accessibilityIdentifier("settings-take-the-tour")
                 Divider().overlay(DesignTokens.Colors.borderSubtle)
+                #if INTERNAL_BUILD
+                    Button {
+                        showFeatureFlags = true
+                    } label: {
+                        aboutRow("Feature Flags", icon: "flag.fill")
+                    }
+                    .accessibilityIdentifier("settings-feature-flags")
+                    Divider().overlay(DesignTokens.Colors.borderSubtle)
+                #endif
                 LabeledContent("Version", value: AppBuildInfo.version)
                     .padding(.horizontal, DesignTokens.Spacing.md)
                     .frame(minHeight: 44)

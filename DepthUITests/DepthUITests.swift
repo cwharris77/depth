@@ -748,6 +748,24 @@ final class DepthUITests: XCTestCase {
         )
     }
 
+    /// Debug and Staging builds expose the feature-flag screen from Settings → About.
+    func testSettingsOpensTheFeatureFlagsScreen() throws {
+        let app = XCUIApplication()
+        app.launchArguments = XCUIApplication.hermeticLaunchArguments
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart())
+
+        let accountButton = app.buttons["account-button"]
+        XCTAssertTrue(accountButton.waitForExistence(timeout: 10))
+        let flagsRow = app.buttons["settings-feature-flags"]
+        XCTAssertTrue(
+            accountButton.tapUntil { flagsRow.exists }, "Settings should list Feature Flags")
+        XCTAssertTrue(
+            flagsRow.tapUntil { app.navigationBars["Feature Flags"].exists },
+            "Feature Flags row should open its sheet"
+        )
+    }
+
     /// The last-viewed team is restored on the next launch
     /// is the launch destination on the next launch, with no list-then-push transition.
     func testRelaunchRestoresTheLastViewedTeamAsTheLaunchDestination() throws {
