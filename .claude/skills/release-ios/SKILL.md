@@ -1,6 +1,6 @@
 ---
 name: release-ios
-description: Use when an iOS build is going out — cutting a release train, archiving and uploading to App Store Connect / TestFlight, submitting for review, a build going LIVE in the App Store, or arming the forced-update gate ahead of a breaking backend change. Covers the biweekly release train, recording the release in ios-release-compatibility.md, when the gate may (and may not) be armed, and the ordering that keeps installed builds decodable (web/CLAUDE.md invariant 11).
+description: Use when an iOS build is going out — cutting a release train, running the scheduled release agent, archiving and uploading to App Store Connect / TestFlight, submitting for review, a build going LIVE in the App Store, or arming the forced-update gate ahead of a breaking backend change. Covers the biweekly release train, recording the release in ios-release-compatibility.md, when the gate may (and may not) be armed, and the ordering that keeps installed builds decodable (web/CLAUDE.md invariant 11).
 ---
 
 # iOS release & compatibility manifest protocol
@@ -46,6 +46,44 @@ iOS ships on a fixed two-week train: **cut Tuesday, submit Wednesday**, every ot
 7. **LIVE.** Moment ② below; set `live:` and `status: live`. Arm the gate only if a breaking backend change is waiting on this build.
 
 At most one risky change (backend contract, navigation, new data source) rides each train; the ticket carries `risky: true`. A hotfix (`<version>.1`) is out of band, carries only the fix, and does not move the next cut.
+
+A skipped train keeps its version: "Skip train" on the Releases board moves the release and every later planned train two weeks out and adds the missed cut day to the release note's `skipped:` list. Always read the train's dates from its note; never assume the 14-day grid.
+
+## Running the train as an agent
+
+A scheduled agent runs this twice a day. Everything below is the agent's job; **archiving, uploading and submitting stay with the release owner**, and the agent never touches App Store Connect beyond reading it. Each run is one pass: find the active train, check where it actually is, do the work for that step, notify only when something changed or the release owner is needed, and stop.
+
+**Read state, don't remember it.** `scripts/ios-release-status.mjs <version>` prints the train's real `stage` (`none` → `processing` → `testflight` → `review` → `live`, or `rejected`). It reads App Store Connect with the API key in `~/.config/depth/app-store-connect.json`. Without a key it can only see `live`. In that case, say in the notification that the step needs the key or the release owner's word.
+
+0. **Sync.** `git pull` both the depth repo and the vault. The active train is the lowest-version note in `Projects/depth/Releases/` whose `status` is not `live`. If every note is live, create the next one with the board's shape: next minor version, cut 14 days after the last train's cut, submit the day after. Copy the checklist from the newest note.
+1. **Before the cut day** (`status: planning`, today < `cut`): do nothing. On the day before the cut, send one heads-up listing the train's tickets that are not `Done`; they will roll.
+2. **Cut** (`status: planning`, today ≥ `cut`):
+   - Check that `main`'s latest CI run is green. If it is red, notify and stop.
+   - Move every ticket whose `release:` is this version but whose status is not `Done` to the next train. Create the next train's note if needed.
+   - Count `risky: true` tickets. More than one is a warning in the notification and the note's Notes, not a reason to stop.
+   - Land `chore(release): cut ios <version>`: a branch from `main`, `CFBundleShortVersionString` bumped in `project.yml`, `xcodegen generate`, a PR with auto-merge (`ship-pr` conventions).
+   - Set `status: cut` and tick the first checklist item.
+   - Notify: "iOS <version> cut: archive `main` once #<PR> merges."
+3. **Uploaded** (`status: cut`, stage `testflight`):
+   - Take the newest `VALID` build number `N`. The archived commit is the `N`th commit on `main` (`git rev-list --reverse origin/main | sed -n "${N}p"`). Confirm `git rev-list --count <sha>` equals `N`. A mismatch means the build was not archived from `main`; notify and stop.
+   - Record `build: N` on the note.
+   - Tag and push: `git tag -a ios-v<version> <sha> -m "iOS <version> (build N)"`.
+   - Draft "What's New" on the note from `scripts/ios-release-notes.sh`. Write user-facing copy: what a fan notices, no internal chores.
+   - Moment ① below, as a `docs:` PR with auto-merge.
+   - Set `status: testflight` and tick those items.
+   - Notify: "Build N of <version> is on TestFlight: upgrade-test from the App Store build, then submit with phased release." If today is past `submit` and the stage is still `none`, send one reminder to archive, noted on the release note so it is sent only once.
+4. **Submitted** (`status: testflight`, stage `review`):
+   - Set `status: review` and tick "Submitted".
+   - If App Store Connect shows no phased release, warn.
+   - On stage `rejected`, notify at once with the state. Do not resubmit.
+5. **Live** (stage `live`):
+   - Moment ② below as a `docs:` PR with auto-merge.
+   - Set `live:` to today and `status: live`, and tick the items.
+   - Make sure the next train's note exists.
+   - If a ticket is waiting on this build (e.g. a contract change blocked until it is LIVE), say so in the notification. **Do not arm the gate**: that stays the release owner's decision, via the section below.
+   - Notify: "<version> is live."
+
+The agent never: archives, uploads or submits a build; changes anything in App Store Connect; arms the gate; merges anything but its own cut and manifest PRs; or moves a train's dates. Rescheduling and skipping are the release owner's, on the board.
 
 ## The two moments
 
