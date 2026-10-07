@@ -11,6 +11,15 @@ Depth-specific rules layered on the global `ship-pr` skill (its step 0 reads thi
 - **UI-visible change:** run it (simulator for iOS; dev server for web — `next-dev` in `.claude/launch.json`, port 3050 is the sanctioned alternate), exercise the actual flow, and write one concrete sentence of what you saw, e.g. "on Seahawks the arrows point at Saints ← → Steelers; clicking Next lands on the Steelers page". It goes in the PR body verbatim as `Verified live: …`.
 - **False-positive test failures:** before treating a failure as real, confirm the failing file paths are inside the working tree. `.worktrees/` and `.claude/worktrees/` sibling checkouts hold their own copy of the suite and deps; a stale copy failing there says nothing about your change. If every failure traces to one of those paths, the run is a false positive — and if `vitest.config.*`'s `exclude` doesn't already cover the sibling worktree directory in play, fix the config rather than working around it per run.
 
+## Feature flags
+
+`main` ships at every release cut, so unfinished user-facing iOS work merges behind a flag:
+
+- **Add:** a case in `FeatureFlag` (`Depth/Support/FeatureFlags.swift`) with `added:` set to today and `launched: false`; gate the UI on `DepthEnvironment.featureFlags.isEnabled(.<flag>)`. Never gate a feature on `#if DEBUG` or a build condition directly. Set the ticket's `flag:` frontmatter to the case name.
+- **Exercise it:** Debug and Staging builds default every flag on; Settings → Feature Flags flips one at runtime, and UI tests can pass `-featureFlag.<key> NO` as a launch argument.
+- **Launch:** a PR that sets `launched: true`, merged before the cut of the release it ships in.
+- **Remove:** in the next release, delete the case and the dead code path. `everyFeatureFlagIsWithinItsLifetime()` fails eight weeks after `added`, so a stale flag blocks CI until it is gone.
+
 ## Commit (skill step 5)
 
 Scope comes from the list in `CLAUDE.md` §3; a new scope only if the area is genuinely new (no `feat(misc):`).

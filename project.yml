@@ -35,10 +35,13 @@ settings:
     # compile there too — a plain `#if DEBUG` would silently vanish in CI. A dedicated
     # condition on Debug + Staging (and absent from Release) is the accurate gate:
     # fixtures ship in neither the App Store binary nor a production-config build.
+    # INTERNAL_BUILD has the same Debug + Staging scope for internal-only behavior:
+    # feature flags default on and accept overrides (FeatureFlagStore), and Settings
+    # shows the flag screen. Release builds read only each flag's `launched` value.
     Debug:
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG UITEST_FIXTURES
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG UITEST_FIXTURES INTERNAL_BUILD
     Staging:
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: UITEST_FIXTURES
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: UITEST_FIXTURES INTERNAL_BUILD
 
 packages:
   # Exact pin, not `from:` — an up-to-next-major range could silently select a

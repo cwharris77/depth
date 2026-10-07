@@ -140,4 +140,6 @@ enum DepthEnvironment {
     /// Live reachability, shared app-wide so the stale-data banner can tell "offline" apart
     /// from "online but just hasn't refreshed yet" (see NetworkMonitor's header comment).
     @MainActor static let networkMonitor = NetworkMonitor()
+    /// Compiled-in feature flags plus internal-build overrides (see FeatureFlag).
+    @MainActor static let featureFlags = FeatureFlagStore()
 }
