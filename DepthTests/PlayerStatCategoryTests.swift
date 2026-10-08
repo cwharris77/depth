@@ -213,6 +213,18 @@ private func season(
         ])
 }
 
+// Historical rows carry no experience; their placeholder 0 must not read as ROOKIE.
+@Test func historicalProfileLeavesExperienceOutOfVitals() {
+    #expect(PlayerProfileDisplay.shownExperience(0, isHistorical: true) == nil)
+    #expect(PlayerProfileDisplay.shownExperience(0, isHistorical: false) == 0)
+    #expect(PlayerProfileDisplay.shownExperience(6, isHistorical: false) == 6)
+    let historical = PlayerProfileDisplay.vitals(
+        age: 0, experience: PlayerProfileDisplay.shownExperience(0, isHistorical: true),
+        height: "6' 2\"", weight: 212
+    )
+    #expect(historical.map(\.text) == ["6' 2\"", "212 LB"])
+}
+
 @Test func profileDisplayVitalsAppendCollegeLast() {
     let parts = PlayerProfileDisplay.vitals(
         age: 27, experience: 5, height: "6' 4\"", weight: 218, college: "Alabama"

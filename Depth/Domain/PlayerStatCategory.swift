@@ -443,6 +443,12 @@ extension PlayerProfileDisplay {
         return "\(first)\(last)".uppercased()
     }
 
+    /// The experience the vitals strip shows. Historical roster rows carry no experience, so
+    /// the 0 the mapper fills in is a placeholder, not a rookie season, and is left out.
+    static func shownExperience(_ value: Int, isHistorical: Bool) -> Int? {
+        isHistorical ? nil : value
+    }
+
     /// The single-line vitals strip ("AGE 27 · EXP 5 YRS · 6'4\" · 218 LB · ALABAMA").
     /// Absent values are left out rather than rendered as "AGE —". College rides last: the
     /// rather than adding a labeled block to the profile.

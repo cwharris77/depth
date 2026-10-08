@@ -404,7 +404,10 @@ private struct PlayerProfileScreen: View {
     @ViewBuilder
     private var vitals: some View {
         let parts = PlayerProfileDisplay.vitals(
-            age: player.age, experience: player.experience, height: player.height,
+            age: player.age,
+            experience: PlayerProfileDisplay.shownExperience(
+                player.experience, isHistorical: isHistorical),
+            height: player.height,
             weight: player.weight, college: player.college
         )
         if !parts.isEmpty {
