@@ -538,3 +538,80 @@ struct FieldNameModePreferenceTests {
     #expect(model.error == .rateLimited(retryAfterSeconds: 19))
     #expect(model.resendAvailableAt == Date(timeIntervalSince1970: 219))
 }
+
+// Back from "Use a different email" returns to the code already sent, with the typed
+// digits intact, and sends nothing new.
+@Test @MainActor func backFromDifferentEmailRestoresThePendingCode() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    let clock = TestClock(Date(timeIntervalSince1970: 100))
+    let model = AuthFlowViewModel(
+        service: service, sessionStore: store, now: { clock.now })
+    #expect(model.canReturnToCode == false)
+
+    model.email = "owner@example.com"
+    await model.sendCode()
+    model.code = "123"
+    model.editEmail()
+    model.email = "owner+1@example.com"
+    clock.set(Date(timeIntervalSince1970: 130))
+
+    #expect(model.canReturnToCode)
+    model.returnToCode()
+
+    #expect(model.step == .code)
+    #expect(model.email == "owner@example.com")
+    #expect(model.code == "123")
+    #expect(model.error == nil)
+    #expect(model.resendAvailableAt == Date(timeIntervalSince1970: 160))
+    #expect(await service.sendCallCount() == 1)
+}
+
+// Re-entering the address the pending code went to, inside the cooldown, continues to
+// that code instead of reporting a wait or implying a new send.
+@Test @MainActor func reenteringThePendingEmailDuringCooldownContinuesToItsCode() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    let clock = TestClock(Date(timeIntervalSince1970: 100))
+    let model = AuthFlowViewModel(
+        service: service, sessionStore: store, now: { clock.now })
+    model.email = "owner@example.com"
+    await model.sendCode()
+    model.editEmail()
+
+    model.email = " Owner@Example.com "
+    clock.set(Date(timeIntervalSince1970: 130))
+    #expect(model.hasPendingCode)
+    await model.sendCode()
+
+    #expect(model.step == .code)
+    #expect(model.error == nil)
+    #expect(model.resendAvailableAt == Date(timeIntervalSince1970: 160))
+    #expect(await service.sendCallCount() == 1)
+}
+
+// A new send replaces the previous code, so digits typed for the old one are cleared.
+@Test @MainActor func newCodeSendClearsDigitsTypedForTheOldOne() async {
+    let service = FakeAuthService()
+    let store = AuthSessionStore(service: service)
+    let clock = TestClock(Date(timeIntervalSince1970: 100))
+    let model = AuthFlowViewModel(
+        service: service, sessionStore: store, now: { clock.now })
+    model.email = "owner@example.com"
+    await model.sendCode()
+    model.code = "123"
+    model.editEmail()
+
+    model.email = "owner+1@example.com"
+    clock.set(Date(timeIntervalSince1970: 160))
+    await model.sendCode()
+
+    #expect(model.step == .code)
+    #expect(model.code == "")
+}
+
+@Test func otpErrorCopyDoesNotClaimTheCodeExpired() {
+    #expect(
+        DepthAuthError.expiredCode.message
+            == "This code is incorrect or expired. Request a new one.")
+}
