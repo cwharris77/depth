@@ -608,3 +608,25 @@ private actor DelayedScheduleRepository: DepthRepository {
     #expect(result.preseason.map(\.weekTitle) == ["Hall of Fame", "Week 1"])
     #expect(result.games.isEmpty)
 }
+
+// The team page re-runs `load()` each time Schedule reappears after a page switch. The
+// chosen past season and phase must survive that rather than resetting to the defaults.
+@Test func reloadAfterPageSwitchKeepsSelectedSeasonAndPhase() async {
+    let current = testSchedule(season: 2025)
+    let past = testSchedule(season: 2024)
+    let repository = ScheduleRepositoryFake(
+        schedules: [nil: .success(current), 2024: .success(past)]
+    )
+    let viewModel = await ScheduleViewModel(teamId: "bills", repository: repository)
+    #expect(await viewModel.phase == .regular)
+
+    await viewModel.load()
+    await viewModel.selectSeason(2024)
+    await MainActor.run { viewModel.phase = .playoffs }
+
+    await viewModel.load()
+
+    #expect(await viewModel.selectedSeason == 2024)
+    #expect(await viewModel.schedule?.season == 2024)
+    #expect(await viewModel.phase == .playoffs)
+}

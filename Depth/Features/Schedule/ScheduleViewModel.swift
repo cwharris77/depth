@@ -19,6 +19,9 @@ final class ScheduleViewModel {
     private(set) var schedule: TeamSchedule?
     private(set) var selectedSeason: Int?
     private(set) var defaultSeason: Int?
+    /// The PRESEASON/REGULAR/PLAYOFFS tab. Held here, not in the view, so it survives the
+    /// view being rebuilt by a page switch.
+    var phase: SchedulePhase = .regular
 
     private let repository: DepthRepository
     private var latestRequestID = 0
