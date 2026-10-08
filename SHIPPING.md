@@ -13,7 +13,18 @@ Depth-specific rules layered on the global `ship-pr` skill (its step 0 reads thi
 
 ## Feature flags
 
-`main` ships at every release cut, so unfinished user-facing iOS work merges behind a flag:
+`main` ships at every release cut, so anything merged reaches the App Store at the next cut.
+
+**When to flag.** Gate the work when any of these hold; otherwise ship it unflagged:
+
+- It is user-visible and will not be finished and verified within this PR (a multi-PR feature, or one likely to miss the next cut).
+- It is the train's risky change: a backend contract, navigation/IA, or a new data source (`risky: true` on the ticket).
+- It touches sign-in, account state or user data.
+- It needs time on real devices before users see it.
+
+Bug fixes, copy changes and small self-contained changes finished in one PR are not flagged. Decide when the work starts (record it as the ticket's `flag:`), not when it ships.
+
+**Testing a flagged feature.** TestFlight builds use the Release configuration, so a flag that isn't launched is off there. Exercise unlaunched work on Debug or Staging builds (simulator, or a device run from Xcode). Its first TestFlight exposure is the train whose cut includes the launch PR; that train's upgrade test is the release-config check before submission.
 
 - **Add:** a case in `FeatureFlag` (`Depth/Support/FeatureFlags.swift`) with `added:` set to today and `launched: false`; gate the UI on `DepthEnvironment.featureFlags.isEnabled(.<flag>)`. Never gate a feature on `#if DEBUG` or a build condition directly. Set the ticket's `flag:` frontmatter to the case name.
 - **Exercise it:** Debug and Staging builds default every flag on; Settings → Feature Flags flips one at runtime, and UI tests can pass `-featureFlag.<key> NO` as a launch argument.
@@ -38,6 +49,7 @@ Stacked PRs use `gh stack` (see the global workflow) — do not retarget by hand
 ## After merge (skill step 8)
 
 - **App-touching PR** (`Depth/`, `project.yml`): when you set the ticket to `Done`, also set `release:` to the open train (the lowest-version release note whose `status` is `planning`). Quote the version (`release: "1.2"`) so `1.10` never reads as `1.1`. Backend-only and web-only PRs don't ride a train and get no `release:`.
+- **Flagged work** stays out of `Done` until its launch PR merges: dark merges are progress, not delivery. The ticket's `release:` is the train that carries the launch, because that is when users see it.
 
 - If uncommitted work has to survive `git checkout main && git pull`, never pair an unconditional `git stash` with an unconditional `git stash pop`: the stash is a shared, session-spanning stack, and a no-op push (nothing was dirty) followed by a blind pop can resurrect an unrelated older stash. Check `git status --porcelain` first and skip the pair on a clean tree; otherwise capture the stash's identity (`git stash list` before and after, or `git stash create`) and pop only that ref. A pop that conflicts in a file you never touched means you popped the wrong stash — stop and inspect, don't resolve through it.
 
