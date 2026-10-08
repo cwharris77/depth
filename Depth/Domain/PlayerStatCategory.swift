@@ -404,6 +404,17 @@ enum PlayerStatLedger {
         )
     }
 
+    /// Whether a ledger row gets the highlight. With a season open, every row for that year
+    /// does (a mid-season trade has one row per team) and none otherwise, so a player whose
+    /// career runs past the open season never highlights a later year. Without one, the
+    /// newest row does.
+    static func isHighlighted(
+        _ row: PlayerSeasonStats, index: Int, highlightedSeason: Int?
+    ) -> Bool {
+        guard let highlightedSeason else { return index == 0 }
+        return row.season == highlightedSeason
+    }
+
     static func seasonCountLabel(_ count: Int) -> String {
         count == 1 ? "REG · 1 SEASON" : "REG · \(count) SEASONS"
     }

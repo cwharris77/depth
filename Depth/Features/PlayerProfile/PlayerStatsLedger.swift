@@ -12,6 +12,8 @@ struct PlayerStatsLedger: View {
     /// The team the profile was opened from. Seasons played for it get the team-tinted bar;
     /// seasons elsewhere stay neutral, so a trade reads at a glance.
     let currentTeamAbbrev: String?
+    /// The season to highlight; nil highlights the newest row.
+    let highlightedSeason: Int?
     let mark: Color
 
     @State private var selection: PlayerStatCategory?
@@ -79,7 +81,8 @@ struct PlayerStatsLedger: View {
         let key = "\(category.rawValue)-\(season.id)"
         let isOpen = expanded.contains(key)
         let details = category.details(season)
-        let isNewest = index == 0
+        let isHighlighted = PlayerStatLedger.isHighlighted(
+            season, index: index, highlightedSeason: highlightedSeason)
         let isCurrentTeam = currentTeamAbbrev != nil && season.teamAbbrev == currentTeamAbbrev
 
         return VStack(alignment: .leading, spacing: 0) {
@@ -90,12 +93,12 @@ struct PlayerStatsLedger: View {
             } label: {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
                     rowFigures(
-                        season: season, category: category, isNewest: isNewest,
+                        season: season, category: category, isHighlighted: isHighlighted,
                         isCurrentTeam: isCurrentTeam, chevron: details.isEmpty ? nil : isOpen
                     )
                     bar(
                         fraction: category.barFraction(season, among: stats),
-                        color: isNewest
+                        color: isHighlighted
                             ? mark : isCurrentTeam ? mark.opacity(0.5) : Color.white.opacity(0.22)
                     )
                 }
@@ -122,12 +125,12 @@ struct PlayerStatsLedger: View {
 
     @ViewBuilder
     private func rowFigures(
-        season: PlayerSeasonStats, category: PlayerStatCategory, isNewest: Bool,
+        season: PlayerSeasonStats, category: PlayerStatCategory, isHighlighted: Bool,
         isCurrentTeam: Bool, chevron isOpen: Bool?
     ) -> some View {
         let year = Text(String(season.season))
-            .font(.footnote.weight(isNewest ? .heavy : .bold))
-            .foregroundStyle(isNewest ? mark : DesignTokens.Colors.textPrimary)
+            .font(.footnote.weight(isHighlighted ? .heavy : .bold))
+            .foregroundStyle(isHighlighted ? mark : DesignTokens.Colors.textPrimary)
         let team = Text(season.teamAbbrev ?? "—")
             .font(.caption)
             .foregroundStyle(
