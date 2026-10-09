@@ -344,7 +344,7 @@ struct PlayerStatsLedger: View {
         // The row already leads with career GP, so a summary that is itself GP (single-metric
         // defensive categories) would print it twice.
         let summary = category.summary(career).filter { $0.short != "GP" }
-        return HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
+        let label = HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
             Text("CAREER")
                 .font(.caption2.weight(.heavy))
                 .tracking(0.9)
@@ -355,12 +355,30 @@ struct PlayerStatsLedger: View {
             Text("\(games) GP")
                 .font(.caption)
                 .foregroundStyle(DesignTokens.Colors.textFaint)
-            Spacer(minLength: 10)
+        }
+        .fixedSize()
+        let totals = HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
             Text(category.headline(career).value)
                 .font(.footnote.weight(.heavy))
                 .foregroundStyle(mark)
             summaryText(summary)
+            // Holds the chevron column the season rows reserve, so the figures align.
             Color.clear.frame(width: 14)
+        }
+        .lineLimit(1)
+        .fixedSize()
+        // One line when it fits; otherwise the totals move under the label, still
+        // right-aligned, rather than wrapping the summary mid-figure.
+        return ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
+                label
+                Spacer(minLength: 10)
+                totals
+            }
+            VStack(alignment: .trailing, spacing: DesignTokens.Spacing.xs) {
+                label.frame(maxWidth: .infinity, alignment: .leading)
+                totals
+            }
         }
         .padding(.top, 11)
         .padding(.bottom, 2)
