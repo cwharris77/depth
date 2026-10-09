@@ -143,6 +143,7 @@
 		9909E89DE38E775D5969B145 /* UniformFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5797D0C01507D900A35C148 /* UniformFilterSheet.swift */; };
 		99A4BF210E0151BF2D94DAC4 /* DepthSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C829A959B4ABCC6DBF5B46 /* DepthSheet.swift */; };
 		9A155E8F403FC9209B4C2996 /* PlayerProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0940346D744B5E70E1EC5E5 /* PlayerProfileView.swift */; };
+		9B27688FFEDF9DA5C0A7A8A4 /* ZoomNavigationTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85EFBD4D7C9B37DDD6D33EA /* ZoomNavigationTransition.swift */; };
 		9BABC7039CA491D54D4B1F7F /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211666973EE0946E8D40C189 /* Card.swift */; };
 		9F5DD2824BF5CEC938507C4F /* CompareRouteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A225239F5ABFB9311A50B3 /* CompareRouteStoreTests.swift */; };
 		9F60A5FF883ED001520157AC /* SettingsAboutAndTimestampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B86BB6DD9B066ECA8E654F /* SettingsAboutAndTimestampTests.swift */; };
@@ -427,6 +428,7 @@
 		C62ABB8FA352722CEF133910 /* FormationsParityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationsParityTests.swift; sourceTree = "<group>"; };
 		C6D7230B41B621CE969EEB0C /* TrueScaleFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrueScaleFieldView.swift; sourceTree = "<group>"; };
 		C73AF9C348A6717B3BCD620A /* CoachmarkOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachmarkOverlayView.swift; sourceTree = "<group>"; };
+		C85EFBD4D7C9B37DDD6D33EA /* ZoomNavigationTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomNavigationTransition.swift; sourceTree = "<group>"; };
 		C97FD1B3B972D4063D8A72A2 /* DepthAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthAuthService.swift; sourceTree = "<group>"; };
 		CA629F12F994F6278119BF12 /* FixtureDepthRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureDepthRepositoryTests.swift; sourceTree = "<group>"; };
 		CD96534B7946BF3DA420CEE9 /* TeamStatsMetricCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsMetricCatalog.swift; sourceTree = "<group>"; };
@@ -819,6 +821,7 @@
 				C10E7D3B04967C0DFBDBEED5 /* TeamListPickerSheet.swift */,
 				9149D725F0D8E31CEA618D40 /* TeamLogoCache.swift */,
 				C55F5110D99F3D93E1168F2B /* TeamRouteStore.swift */,
+				C85EFBD4D7C9B37DDD6D33EA /* ZoomNavigationTransition.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -1305,6 +1308,7 @@
 				52CBE1ED8E42C956813481B2 /* UserSettingsService.swift in Sources */,
 				54B9A496FAD1F437EEF7D242 /* UserSettingsStore.swift in Sources */,
 				90BAD720563D74324F883067 /* WelcomeView.swift in Sources */,
+				9B27688FFEDF9DA5C0A7A8A4 /* ZoomNavigationTransition.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

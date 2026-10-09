@@ -19,6 +19,7 @@ struct UniformsTab: View {
     @State private var showFilterSheet = false
     @State private var selectedKit: UniformListing?
     @State private var path: [String] = []
+    @Namespace private var teamZoom
 
     /// Jumps to a team's depth chart on the Depth Charts tab — the kit sheet's primary
     /// action. Supplied by RootTabView, which owns both the tab selection and the route
@@ -48,6 +49,7 @@ struct UniformsTab: View {
                 .navigationDestination(for: String.self) { teamId in
                     if let team = viewModel.team(id: teamId) {
                         UniformTeamDetailView(team: team) { selectedKit = $0 }
+                            .zoomNavigationTransition(from: teamId, in: teamZoom)
                     } else {
                         // The team's last kit was filtered out from under the pushed
                         // screen — degrade to an explanation, never an empty screen.
@@ -324,6 +326,9 @@ struct UniformsTab: View {
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                     .strokeBorder(DesignTokens.Colors.borderSubtle, lineWidth: 1)
             }
+            .zoomTransitionSource(
+                id: team.teamId, in: teamZoom, cornerRadius: DesignTokens.Radius.md
+            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
