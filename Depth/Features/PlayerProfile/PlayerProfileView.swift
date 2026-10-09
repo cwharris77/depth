@@ -478,6 +478,7 @@ private struct PlayerProfileScreen: View {
                         stats: viewModel.stats,
                         position: player.position,
                         currentTeamAbbrev: team?.abbrev,
+                        inProgressSeason: viewModel.inProgressSeason,
                         mark: markColor
                     )
                 case .empty:

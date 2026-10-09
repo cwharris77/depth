@@ -178,6 +178,27 @@ import Testing
     #expect(await plain.knownFor == nil)
 }
 
+@Test func profileViewModelTakesTheInProgressSeasonFromTheTeamSchedule() async {
+    let unplayed = ScheduleGame(
+        week: 6, isBye: false, date: nil, isHome: true, opponent: nil, teamScore: nil,
+        opponentScore: nil, result: nil)
+    let schedule = TeamSchedule(season: 2026, games: [unplayed])
+    let stats: [PlayerSeasonStats] = [.empty(season: 2026, games: 5)]
+    let viewModel = await PlayerProfileViewModel(
+        playerID: "p1", teamID: "seahawks",
+        repository: PlayerStatsRepositoryFake(results: [.success(stats)], schedule: schedule))
+    await viewModel.load()
+    #expect(await viewModel.inProgressSeason == 2026)
+
+    // Without a team there is no schedule to read, so no season is marked live.
+    let teamless = await PlayerProfileViewModel(
+        playerID: "p1", teamID: nil,
+        repository: PlayerStatsRepositoryFake(results: [.success(stats)], schedule: schedule))
+    await teamless.load()
+    #expect(await teamless.inProgressSeason == nil)
+    #expect(await teamless.statsState == .loaded)
+}
+
 @Test func profileViewModelShowsEmptyAfterAResolvedNoStatsRead() async {
     let repository = PlayerStatsRepositoryFake(results: [
         .success([PlayerSeasonStats.empty(season: 2025)])
@@ -247,12 +268,15 @@ private actor PlayerStatsRepositoryFake: DepthRepository {
     private var results: [Result<[PlayerSeasonStats], DepthError>]
     private(set) var requests: [PlayerStatsRequest] = []
     let highlights: PlayerHighlights?
+    let schedule: TeamSchedule?
 
     init(
-        results: [Result<[PlayerSeasonStats], DepthError>], highlights: PlayerHighlights? = nil
+        results: [Result<[PlayerSeasonStats], DepthError>], highlights: PlayerHighlights? = nil,
+        schedule: TeamSchedule? = nil
     ) {
         self.results = results
         self.highlights = highlights
+        self.schedule = schedule
     }
 
     func playerHighlights(playerId: String, teamId: String?) async throws -> PlayerHighlights? {
@@ -265,7 +289,8 @@ private actor PlayerStatsRepositoryFake: DepthRepository {
         throw DepthError.notFound
     }
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
-        throw DepthError.notFound
+        guard let schedule else { throw DepthError.notFound }
+        return schedule
     }
     func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
     func appConfig() async throws -> AppConfig {
