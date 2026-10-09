@@ -5,6 +5,7 @@ export const COMMANDERS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'burgundy',
@@ -23,6 +24,7 @@ export const COMMANDERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'burgundy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -41,6 +43,7 @@ export const COMMANDERS_CATALOG: TeamCatalog = {
     },
     {
       slug: '70s-burgundy',
+      sleeveNike: 'white',
       name: '70s Burgundy',
       kind: 'throwback',
       jersey: 'burgundy',

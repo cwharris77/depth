@@ -5,6 +5,7 @@ export const LIONS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'blue',
@@ -40,6 +41,7 @@ export const LIONS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'blue',
       name: 'Away',
       kind: 'away',
       jersey: 'white',

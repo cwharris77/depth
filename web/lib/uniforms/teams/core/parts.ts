@@ -1,5 +1,6 @@
 import { pantsLogos } from './pants-logos';
-import { NFL_SHIELD_PAINTS } from './nfl-shield';
+import { NFL_SHIELD_PAINTS, nflShield } from './nfl-shield';
+import { sleeveNike } from './sleeve-logos';
 // Composable uniform parts: an AUTHORING layer over TeamUniformDefinition, not a new
 // runtime. A team declares a named palette plus independent helmet/jersey/pants parts, and
 // `compileParts` assembles a kit's three references into the existing flat runtime definition
@@ -72,6 +73,8 @@ export type PartNumberStyle = Omit<NumberStyle, 'fill' | 'outline'> & {
 };
 
 export interface KitRef {
+  sleeveNike?: PaletteRef;
+  collarShield?: boolean | 'rounded';
   // Omitted for constructions without modern pants branding.
   pantsNike?: PaletteRef;
   helmet: string;
@@ -174,7 +177,34 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
       removeLayerIds: GENERIC_LAYER_IDS,
       layers: [
         ...compileLayers(helmet, palette, teamId),
-        ...compileLayers(jersey, palette, teamId),
+        ...compileLayers(
+          ref.collarShield === false
+            ? {
+                ...jersey,
+                layers: jersey.layers.filter((layer) => !layer.id.includes('nfl-shield')),
+              }
+            : jersey,
+          palette,
+          teamId
+        ),
+        ...compileLayers(
+          {
+            base: jersey.base,
+            layers: [
+              ...(ref.sleeveNike === undefined || jersey.layers.some((l) => l.id.includes('nike'))
+                ? []
+                : sleeveNike(`${teamId}-jersey-${ref.jersey}`, ref.sleeveNike)),
+              ...(!ref.collarShield || jersey.layers.some((l) => l.id.includes('nfl-shield'))
+                ? []
+                : nflShield(
+                    `${teamId}-jersey-${ref.jersey}`,
+                    ref.collarShield === 'rounded' ? 'rounded-collar' : undefined
+                  )),
+            ],
+          },
+          palette,
+          teamId
+        ),
         ...compileLayers(pants, palette, teamId),
         ...(ref.pantsNike === undefined
           ? []

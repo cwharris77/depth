@@ -5,6 +5,7 @@ export const JAGUARS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'teal',
@@ -32,6 +33,7 @@ export const JAGUARS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'black',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -67,6 +69,7 @@ export const JAGUARS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'teal-throwback',
+      sleeveNike: 'white',
       name: 'Prowler Throwback',
       kind: 'throwback',
       jersey: 'throwback',
@@ -86,6 +89,8 @@ export const JAGUARS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'black-alt',
+      sleeveNike: 'white',
+      collarShield: true,
       name: 'Black Alternate',
       kind: 'alternate',
       jersey: 'black-alt',

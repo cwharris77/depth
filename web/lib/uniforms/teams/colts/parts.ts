@@ -5,7 +5,12 @@ import { COLTS_HORSESHOE_DECAL } from './marks/construction';
 import { COLTS_JERSEY_NAVY } from './jerseys/navy';
 import { COLTS_JERSEY_WHITE } from './jerseys/white';
 
-export const COLTS_PALETTE = { navy: '#002C5F', white: '#FFFFFF', speedwayGrey: '#A2AAAD' };
+export const COLTS_PALETTE = {
+  navy: '#002C5F',
+  white: '#FFFFFF',
+  speedwayGrey: '#A2AAAD',
+  black: '#000000',
+};
 
 export const COLTS_SPEC: TeamSpec = {
   helmets: {

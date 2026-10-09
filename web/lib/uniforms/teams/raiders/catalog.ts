@@ -6,6 +6,7 @@ export const RAIDERS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'silver',
       name: 'Home',
       kind: 'home',
       jersey: 'black',
@@ -25,6 +26,7 @@ export const RAIDERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'black',
       name: 'Away',
       kind: 'away',
       jersey: 'white',

@@ -7,6 +7,7 @@ export const BILLS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'blue',
@@ -34,6 +35,7 @@ export const BILLS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'navy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -61,6 +63,7 @@ export const BILLS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'rivalries-2025',
+      sleeveNike: 'rivalriesNumber',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',

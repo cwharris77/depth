@@ -5,6 +5,8 @@ export const CARDINALS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
+      collarShield: true,
       name: 'Home',
       kind: 'home',
       jersey: 'red',
@@ -24,6 +26,8 @@ export const CARDINALS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'cardinal',
+      collarShield: true,
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -43,6 +47,8 @@ export const CARDINALS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'rivalries-2025',
+      sleeveNike: 'rivalRed',
+      collarShield: true,
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',
@@ -62,6 +68,8 @@ export const CARDINALS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'black-alt',
+      sleeveNike: 'white',
+      collarShield: true,
       name: 'Black Alternate',
       kind: 'alternate',
       jersey: 'black',

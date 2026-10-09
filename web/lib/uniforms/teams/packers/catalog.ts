@@ -43,6 +43,7 @@ export const PACKERS_CATALOG: TeamCatalog = {
     },
     {
       slug: '1923-throwback',
+      collarShield: false,
       name: '1923 Throwback',
       kind: 'throwback',
       jersey: 'navy',
