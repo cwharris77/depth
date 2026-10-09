@@ -877,6 +877,7 @@ private struct TeamHeaderCell: View {
 /// columns are always narrow. Each cell is centered within its half of the table.
 private struct PlayerCell: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Namespace private var profileZoom
     let player: Player?
     let team: Team
     let repository: DepthRepository
@@ -888,6 +889,7 @@ private struct PlayerCell: View {
                 // depth context because no depth chart is visible on this screen.
                 NavigationLink {
                     PlayerProfileView(player: player, team: team, repository: repository)
+                        .zoomNavigationTransition(from: player.id, in: profileZoom)
                 } label: {
                     Text("#\(player.number) \(formatLastName(player.name))")
                         .font(.caption.weight(.bold))
@@ -903,6 +905,8 @@ private struct PlayerCell: View {
         }
         .padding(.horizontal, DesignTokens.Spacing.sm + 2)
         .frame(maxWidth: .infinity, minHeight: 40)
+        .zoomTransitionSource(
+            id: player?.id, in: profileZoom, cornerRadius: DesignTokens.Radius.sm)
     }
 }
 
