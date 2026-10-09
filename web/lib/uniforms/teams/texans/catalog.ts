@@ -5,6 +5,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
@@ -32,6 +33,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'navy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -59,6 +61,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'battle-red',
+      sleeveNike: 'white',
       name: 'Battle Red',
       kind: 'alternate',
       jersey: 'red',
@@ -78,6 +81,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'h-town',
+      sleeveNike: 'hTownBlue',
       name: 'H-Town Blue',
       kind: 'alternate',
       jersey: 'h-town',

@@ -5,6 +5,7 @@ export const EAGLES_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'green',
@@ -31,12 +32,11 @@ export const EAGLES_CATALOG: TeamCatalog = {
       colors: { primary: '#046A38', secondary: '#A5ACAF', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
       periods: [{ from: 1987 }],
-      combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'kelly', pants: 'kelly', pantsNike: 'white' },
-      ],
+      combinations: [{ key: 'standard', label: 'Standard', helmet: 'kelly', pants: 'kelly' }],
     },
     {
       slug: 'kelly-green-modern',
+      sleeveNike: 'white',
       name: 'Kelly Green (Modern)',
       kind: 'throwback',
       jersey: 'kelly-modern',
@@ -56,6 +56,7 @@ export const EAGLES_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'green',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -91,6 +92,7 @@ export const EAGLES_CATALOG: TeamCatalog = {
     },
     {
       slug: 'black-alt',
+      sleeveNike: 'white',
       name: 'Black Alternate',
       kind: 'alternate',
       jersey: 'black',

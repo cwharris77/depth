@@ -23,7 +23,12 @@ import { expandTeamSpec, findCoordinateLiterals, findUnresolvedColors } from '..
 const pairings = (catalog: Parameters<typeof catalogKits>[0]) =>
   Object.fromEntries(
     Object.entries(catalogKits(catalog)).map(([key, ref]) => {
-      const { pantsNike: _pantsNike, ...pairing } = ref;
+      const {
+        pantsNike: _pantsNike,
+        sleeveNike: _sleeveNike,
+        collarShield: _collarShield,
+        ...pairing
+      } = ref;
       return [key, pairing];
     })
   );
@@ -67,10 +72,56 @@ describe('no leftover hand-written accents for a converted team', () => {
 });
 
 describe('pants branding in catalog combinations', () => {
+  it('provides one sleeve mark per side on every present-day combination', () => {
+    for (const { catalog } of getAllTeamCatalogs()) {
+      for (const design of catalog.designs) {
+        if (
+          design.periods.at(-1)?.to !== undefined ||
+          design.slug === '1923-throwback' ||
+          (catalog.teamId === 'eagles' && design.slug === 'kelly-green')
+        )
+          continue;
+        const definition = getTeamUniformDefinition(catalog.teamId);
+        for (const [index, combination] of design.combinations.entries()) {
+          const key =
+            index === 0
+              ? (design.constructionKey ?? design.slug)
+              : combinationKitKey(design, combination);
+          const layers = definition?.kits[key].layers ?? [];
+          for (const side of ['sleeve-left', 'sleeve-right']) {
+            expect(
+              layers.filter((layer) => layer.surface === side && layer.id.includes('nike')),
+              `${catalog.teamId}/${key}/${side}`
+            ).toHaveLength(1);
+          }
+          expect(
+            layers.filter(
+              (layer) => layer.surface === 'collar' && layer.id.endsWith('nfl-shield-0')
+            ),
+            `${catalog.teamId}/${key}/collar`
+          ).toHaveLength(1);
+        }
+      }
+    }
+  });
+  it('keeps original historical constructions free of modern equipment marks', () => {
+    for (const [team, key] of [
+      ['packers', '1923-throwback'],
+      ['eagles', 'kelly-green-original'],
+    ]) {
+      const layers = getTeamUniformDefinition(team)?.kits[key].layers ?? [];
+      expect(layers.filter((layer) => /nike|nfl-shield/.test(layer.id))).toEqual([]);
+    }
+  });
   it('brands every current pants combination except the leather construction', () => {
     for (const { catalog } of getAllTeamCatalogs()) {
       for (const design of catalog.designs) {
-        if (design.periods.at(-1)?.to !== undefined || design.slug === '1923-throwback') continue;
+        if (
+          design.periods.at(-1)?.to !== undefined ||
+          design.slug === '1923-throwback' ||
+          (catalog.teamId === 'eagles' && design.slug === 'kelly-green')
+        )
+          continue;
         for (const combination of design.combinations) {
           expect(
             combination.pantsNike,

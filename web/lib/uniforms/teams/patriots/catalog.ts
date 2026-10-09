@@ -6,6 +6,7 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
@@ -33,6 +34,7 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'navy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -60,6 +62,7 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'rivalries-2025',
+      sleeveNike: 'white',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',
@@ -79,6 +82,7 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'pat-patriot',
+      sleeveNike: 'white',
       name: 'Pat Patriot',
       kind: 'throwback',
       jersey: 'pat',

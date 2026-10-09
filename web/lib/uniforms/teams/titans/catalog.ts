@@ -92,6 +92,8 @@ export const TITANS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'home-2026',
+      sleeveNike: 'navy',
+      collarShield: 'rounded',
       name: 'Home',
       kind: 'home',
       jersey: 'blue-2026',
@@ -111,6 +113,8 @@ export const TITANS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away-2026',
+      sleeveNike: 'navy',
+      collarShield: 'rounded',
       name: 'Away',
       kind: 'away',
       jersey: 'white-2026',
@@ -123,7 +127,7 @@ export const TITANS_CATALOG: TeamCatalog = {
           label: 'Titans Blue pants',
           helmet: 'white-2026',
           pants: 'blue-2026',
-          pantsNike: 'white',
+          pantsNike: 'navy',
           socks: 'white',
         },
         {

@@ -7,6 +7,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'purple',
@@ -34,6 +35,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'purple',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -73,6 +75,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'winter-warrior',
+      sleeveNike: 'purple',
       name: 'Winter Warrior',
       kind: 'alternate',
       jersey: 'winter-white',

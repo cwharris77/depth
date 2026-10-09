@@ -23,6 +23,35 @@ const base: TeamPartsDefinition = {
 };
 
 describe('compileParts', () => {
+  it('positions a rounded collar shield at the neckline instead of the V point', () => {
+    const def = structuredClone(base);
+    Object.assign(def.kits.home, { collarShield: 'rounded' });
+    const layer = compileParts(def).kits.home.layers?.find((l) => l.id.endsWith('-nfl-shield-0'));
+    expect(layer).toBeDefined();
+    const box = boundsOf(layer?.d ?? '');
+    expect(box[1]).toBeGreaterThan(413);
+    expect(box[3]).toBeLessThan(441);
+  });
+  it('adds clipped sleeve marks and one collar shield only to opted-in constructions', () => {
+    const def = structuredClone(base);
+    Object.assign(def.kits.home, { sleeveNike: 'navy', collarShield: true });
+    def.kits.archive = { helmet: 'plain', jersey: 'plain', pants: 'plain' };
+    const kits = compileParts(def).kits;
+    const layers = kits.home.layers ?? [];
+    const nike = layers.filter((layer) => layer.id.includes('-sleeve-nike-'));
+    expect(nike).toHaveLength(2);
+    expect(nike.map((layer) => layer.surface)).toEqual(['sleeve-left', 'sleeve-right']);
+    for (const layer of nike) expect(layer).toMatchObject({ fill: '#001122', clip: true });
+    expect(layers.filter((layer) => layer.id.endsWith('-nfl-shield-0'))).toHaveLength(1);
+    expect(kits.archive.layers).toEqual([]);
+    def.jerseys.plain.layers = layers.map((layer) =>
+      layer.kind === 'fill' ? { ...layer, fill: 'navy' } : { ...layer, stroke: 'navy' }
+    );
+    const repeated = compileParts(def).kits.home.layers ?? [];
+    expect(repeated.filter((layer) => layer.id.includes('-sleeve-nike-'))).toHaveLength(2);
+    expect(repeated.filter((layer) => layer.id.endsWith('-nfl-shield-0'))).toHaveLength(1);
+  });
+
   it('places fixed NFL colors and a palette-colored Nike mark on branded pants only', () => {
     const def = structuredClone(base);
     def.kits.home.pantsNike = 'white';

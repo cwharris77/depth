@@ -7,6 +7,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'brown',
@@ -42,6 +43,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'brown',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -69,6 +71,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
     },
     {
       slug: '1946-throwback',
+      sleeveNike: 'brown',
       name: '1946 Throwback',
       kind: 'throwback',
       jersey: 'white',

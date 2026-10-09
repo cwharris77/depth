@@ -253,6 +253,16 @@ extension XCUIElement {
         }
         return !exists
     }
+
+    /// Polls until this element is hittable — after a pop, the source it returns to exists
+    /// throughout but only accepts taps once the transition settles.
+    func waitForHittable(timeout: TimeInterval = 10) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !(exists && isHittable) && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        return exists && isHittable
+    }
 }
 
 extension XCUIElementQuery {

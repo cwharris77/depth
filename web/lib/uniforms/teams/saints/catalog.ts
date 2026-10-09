@@ -5,6 +5,7 @@ export const SAINTS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'gold',
       name: 'Home',
       kind: 'home',
       jersey: 'black',
@@ -24,6 +25,7 @@ export const SAINTS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'black',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -43,6 +45,7 @@ export const SAINTS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'color-rush',
+      sleeveNike: 'gold',
       name: 'Color Rush',
       kind: 'color-rush',
       jersey: 'black',
