@@ -64,7 +64,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
       name: 'H-Town Blue',
       kind: 'alternate',
       jersey: 'h-town',
-      colors: { primary: '#03202F', secondary: '#A71930', accent: '#0072CE' },
+      colors: { primary: '#03202F', secondary: '#0072CE', accent: '#A71930' },
       legacyAccent: { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
