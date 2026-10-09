@@ -494,6 +494,10 @@ private struct PositionDepthSection: View {
 private struct RoomPositionPicker: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Bumped only when a room or role tap changes the position. Unit switches tick in
+    /// `DepthUnitTabBar` and collapsing a room is a silent disclosure, so neither may fire
+    /// this one too.
+    @State private var positionPicks = 0
 
     let viewModel: CompareViewModel
 
@@ -531,7 +535,9 @@ private struct RoomPositionPicker: View {
         // overrode those, leaving every lens unreachable by id.
         .animation(
             DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion),
-            value: viewModel.expandedRoomID)
+            value: viewModel.expandedRoomID
+        )
+        .sensoryFeedback(.selection, trigger: positionPicks)
     }
 
     // MARK: Unit lens
@@ -565,13 +571,19 @@ private struct RoomPositionPicker: View {
         }
     }
 
+    private func pickPosition(_ select: () -> Void) {
+        let before = viewModel.position
+        select()
+        if viewModel.position != before { positionPicks += 1 }
+    }
+
     private func roomTile(_ room: CompareRoom) -> some View {
         let isActive = room == viewModel.activeRoom
         return Button {
             withAnimation(
                 DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)
             ) {
-                viewModel.selectRoom(room)
+                pickPosition { viewModel.selectRoom(room) }
             }
         } label: {
             HStack(spacing: DesignTokens.Spacing.sm) {
@@ -645,7 +657,7 @@ private struct RoomPositionPicker: View {
     private func roleTile(_ pos: Position) -> some View {
         let isSelected = pos == viewModel.position
         return Button {
-            viewModel.selectPosition(pos)
+            pickPosition { viewModel.selectPosition(pos) }
         } label: {
             HStack(spacing: DesignTokens.Spacing.xs) {
                 Text(pos.rawValue)

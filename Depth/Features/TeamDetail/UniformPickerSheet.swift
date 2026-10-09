@@ -131,7 +131,10 @@ struct UniformPickerSheet: View {
             }
         }
         .animation(
-            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion), value: currentIndex)
+            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion), value: currentIndex
+        )
+        // Swipes and dot taps both land on `currentIndex`, so each page change ticks once.
+        .sensoryFeedback(.selection, trigger: currentIndex)
     }
 }
 

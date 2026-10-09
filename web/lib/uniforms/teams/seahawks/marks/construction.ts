@@ -2,8 +2,6 @@
 // collar and the pants art the stripe spec cannot draw. Each export is a placed mark, emitted
 // exactly as written.
 import {
-  SEAHAWKS_NECK_OPENING,
-  SEAHAWKS_COLLAR_BAND,
   SEAHAWKS_COLLAR_FEATHERS_LEFT,
   SEAHAWKS_COLLAR_FEATHERS_RIGHT,
   SEAHAWKS_NECK_TWELVE,
@@ -20,7 +18,7 @@ import {
   SEAHAWKS_HELMET_HAWK_PATH,
 } from './paths';
 import { SEAHAWKS_THROWBACK_HAWK } from './throwback-hawk';
-import { HELMET_CROWN_STRIPE_PATH } from '../../core/shared';
+import { HELMET_CROWN_STRIPE_PATH, modernInsetVCollar } from '../../core/shared';
 import type { PartLayer } from '../../core/parts';
 import type { UniformSurface } from '../../core/types';
 import { placeMark, placed, type PlacedMark } from '../../core/marks';
@@ -50,7 +48,12 @@ export const SEAHAWKS_NAVY_HAWK_DECAL = placed([
   ...hawk('green'),
 ]);
 
-export const SEAHAWKS_TEAL_HAWK_DECAL = placed(hawk('rivalriesPine'));
+export const SEAHAWKS_TEAL_HAWK_DECAL = placed(
+  hawk('rivalriesTeal').map((layer) => ({
+    ...layer,
+    ...(layer.kind === 'fill' && layer.fill !== 'rivalriesTeal' ? { fill: 'chrome' } : {}),
+  }))
+);
 
 export const SEAHAWKS_THROWBACK_HAWK_DECAL = placed(
   placeMark('seahawks-throwback-hawk', SEAHAWKS_THROWBACK_HAWK, 'helmet-side', {
@@ -64,14 +67,29 @@ export const SEAHAWKS_THROWBACK_HAWK_DECAL = placed(
 // The body-color collar frames a shaded opening and back-neck tab; its chevrons stop before the V
 // point. The modern jerseys share geometry with different feather colors.
 export function seahawksModernCollar(body: string, neck: string, feathers: string): PlacedMark {
+  const collar = modernInsetVCollar({
+    idPrefix: 'seahawks',
+    colors: { interior: neck, edge: body, inset: body, placket: body },
+    outline: true,
+  }).map((layer) => ({
+    ...layer,
+    id: layer.id === 'seahawks-collar-edge' ? 'seahawks-collar-band' : layer.id,
+  }));
   return placed([
-    fill('seahawks-neck-opening', 'collar', SEAHAWKS_NECK_OPENING, neck),
-    fill('seahawks-collar-band', 'collar', SEAHAWKS_COLLAR_BAND, body),
+    ...collar,
     fill('seahawks-collar-feathers-left', 'collar', SEAHAWKS_COLLAR_FEATHERS_LEFT, feathers),
     fill('seahawks-collar-feathers-right', 'collar', SEAHAWKS_COLLAR_FEATHERS_RIGHT, feathers),
-    fill('seahawks-neck-tab-border', 'collar', 'M279,389 H309 V417 H279 Z', 'green'),
-    fill('seahawks-neck-tab', 'collar', 'M281,391 H307 V415 H281 Z', 'navy'),
-    fill('seahawks-neck-twelve', 'collar', SEAHAWKS_NECK_TWELVE, 'wolfGrey'),
+    fill('seahawks-neck-tab-border', 'collar', 'M279,385 H309 V405 H279 Z', 'green'),
+    fill('seahawks-neck-tab', 'collar', 'M281,387 H307 V403 H281 Z', 'navy'),
+    fill(
+      'seahawks-neck-twelve',
+      'collar',
+      SEAHAWKS_NECK_TWELVE.replace(/(\d+(?:\.\d+)?)/g, (n) => {
+        const value = Number(n);
+        return value > 380 ? String(387 + (value - 394) * 0.85) : n;
+      }),
+      'wolfGrey'
+    ),
   ]);
 }
 
