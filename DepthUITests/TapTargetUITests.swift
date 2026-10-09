@@ -143,6 +143,53 @@ final class TapTargetUITests: XCTestCase {
         }
     }
 
+    /// A Compare by-position cell opens the profile from the padding at opposite corners,
+    /// not only from its name and stat glyphs, and carries the stat line as its value.
+    func testComparePlayerCellPaddingOpensProfile() {
+        for (dx, dy) in [(0.03, 0.12), (0.97, 0.88)] {
+            let app = XCUIApplication()
+            let cell = openComparePositionCell(app)
+            capture("compare-cell-\(dx)-before-tap")
+            cell.coordinate(withNormalizedOffset: CGVector(dx: dx, dy: dy)).tap()
+            XCTAssertTrue(
+                app.descendants(matching: .any)["player-profile-full-content"]
+                    .waitForExistence(timeout: 5),
+                "a tap in the cell's padding should open the profile")
+            app.terminate()
+        }
+    }
+
+    private func openComparePositionCell(
+        _ app: XCUIApplication, extraArguments: [String] = []
+    ) -> XCUIElement {
+        app.launchArguments =
+            XCUIApplication.hermeticLaunchArguments + extraArguments
+            + ["\(XCUIApplication.uiTestingStartTeamArgPrefix)bills"]
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart(timeout: 15))
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        XCTAssertTrue(scheduleTab.tapUntil { app.otherElements["schedule-content"].exists })
+        let cards = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'"))
+        XCTAssertTrue(cards.firstMatch.waitForExistence(timeout: 15))
+        var index = 0
+        while index < cards.count && !cards.element(boundBy: index).isHittable { index += 1 }
+        let compareTab = app.tabBars.firstMatch.buttons["Compare"]
+        XCTAssertTrue(
+            cards.element(boundBy: index).tapUntil { compareTab.exists && compareTab.isSelected })
+        let positionTab = app.buttons["compare-tab-position"]
+        XCTAssertTrue(positionTab.waitForExistence(timeout: 20))
+        positionTab.tap()
+        // The Bills' starter has a fixture stat file, so the line loads.
+        let cell = app.buttons["compare-player-cell-3918298"]
+        XCTAssertTrue(cell.waitForExistence(timeout: 15))
+        // The value is the spoken season line; it lands once the stat read resolves.
+        let predicate = NSPredicate(format: "value CONTAINS 'season'")
+        let loaded = expectation(for: predicate, evaluatedWith: cell)
+        wait(for: [loaded], timeout: 10)
+        return cell
+    }
+
     private func selectAtEdge(_ button: XCUIElement, right: Bool = false) {
         XCTAssertTrue(button.waitForExistence(timeout: 20))
         button.coordinate(

@@ -88,15 +88,19 @@ private actor CompareRepositoryFake: DepthRepository {
     let teams: [Team]
     let snapshots: [String: TeamSnapshot]
     let stats: [String: TeamStatsPage]
+    let playerSeasons: [String: [PlayerSeasonStats]]
+    private(set) var playerStatsReads: [String] = []
 
     init(
         teams: [Team],
         snapshots: [String: TeamSnapshot],
-        stats: [String: TeamStatsPage]
+        stats: [String: TeamStatsPage],
+        playerSeasons: [String: [PlayerSeasonStats]] = [:]
     ) {
         self.teams = teams
         self.snapshots = snapshots
         self.stats = stats
+        self.playerSeasons = playerSeasons
     }
 
     func teams() async throws -> [Team] { teams }
@@ -114,7 +118,11 @@ private actor CompareRepositoryFake: DepthRepository {
     func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
         throw DepthError.notFound
     }
-    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] {
+        playerStatsReads.append(playerId)
+        guard let seasons = playerSeasons[playerId] else { throw DepthError.notFound }
+        return seasons
+    }
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
     }
@@ -1110,4 +1118,56 @@ private actor SuspendingTeamsRepository: DepthRepository {
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
     }
+}
+
+@Test func positionRowsReadEachPlayersSeasonLineOnceAtTheComparedSeason() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
+    let repo = CompareRepositoryFake(
+        teams: [hawks, niners],
+        snapshots: [
+            hawks.id: compareSnapshot(team: hawks, qbCount: 1),
+            niners.id: compareSnapshot(team: niners, qbCount: 2),
+        ],
+        stats: [
+            hawks.id: statsPage(team: hawks, wins: 12),
+            niners.id: statsPage(team: niners, wins: 9),
+        ],
+        // SF's backup QB has no stat file (a read failure), and the starter has no 2025 row.
+        playerSeasons: [
+            "seahawks-qb-0": [.empty(season: 2025, games: 17)],
+            "49ers-qb-0": [.empty(season: 2024, games: 15)],
+        ]
+    )
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam(hawks.id, into: .a)
+    await viewModel.pickTeam(niners.id, into: .b)
+
+    let hawksQB = await viewModel.positionGroupA[0]
+    let ninersQBs = await viewModel.positionGroupB
+    #expect(await viewModel.statLine(for: hawksQB, team: hawks) == nil)
+
+    await viewModel.loadPlayerStats(for: [hawksQB], team: hawks)
+    await viewModel.loadPlayerStats(for: ninersQBs, team: niners)
+
+    #expect(await viewModel.resolvedSeason == 2025)
+    #expect(
+        await viewModel.statLine(for: hawksQB, team: hawks)?.figures.map(\.value) == ["17"])
+    #expect(await viewModel.statLine(for: ninersQBs[0], team: niners) == nil)
+    #expect(await viewModel.statLine(for: ninersQBs[1], team: niners) == nil)
+
+    // The season picker re-reads the cached seasons; it never refetches.
+    await viewModel.selectSeason(2024)
+    #expect(
+        await viewModel.statLine(for: ninersQBs[0], team: niners)?.figures.map(\.value) == ["15"])
+    #expect(await viewModel.statLine(for: hawksQB, team: hawks) == nil)
+
+    // A loaded player is not refetched; a failed read is retried on the next pass.
+    await viewModel.loadPlayerStats(for: [hawksQB], team: hawks)
+    await viewModel.loadPlayerStats(for: ninersQBs, team: niners)
+    let reads = await repo.playerStatsReads
+    #expect(reads.filter { $0 == "seahawks-qb-0" }.count == 1)
+    #expect(reads.filter { $0 == "49ers-qb-0" }.count == 1)
+    #expect(reads.filter { $0 == "49ers-qb-1" }.count == 2)
 }

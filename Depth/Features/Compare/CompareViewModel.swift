@@ -123,6 +123,11 @@ final class CompareViewModel {
     private var statsPages: [String: TeamStatsPage] = [:]
     private var snapshots: [String: TeamSnapshot] = [:]
     private var resolvingTeamIds: Set<String> = []
+    /// Per-player season rows for the by-position stat lines, keyed by player id. Read on
+    /// demand as rows appear and kept for the page's lifetime, so changing season or
+    /// position re-derives lines without refetching.
+    private var playerSeasons: [String: [PlayerSeasonStats]] = [:]
+    private var requestedPlayerIds: Set<String> = []
 
     init(repository: DepthRepository, preselectedTeamIds: (a: String, b: String)? = nil) {
         self.repository = repository
@@ -360,6 +365,41 @@ final class CompareViewModel {
         } else {
             snapshots.removeValue(forKey: teamId)
         }
+    }
+
+    /// Reads season rows for the players a depth table shows, skipping any already loaded or
+    /// in flight. A failed read leaves that player without a line and is retried on the
+    /// next pass instead of being cached as empty.
+    func loadPlayerStats(for players: [Player], team: Team) async {
+        let pending = players.map(\.id).filter { requestedPlayerIds.insert($0).inserted }
+        guard !pending.isEmpty else { return }
+        let repository = repository
+        let teamId = team.id
+        await withTaskGroup(of: (String, [PlayerSeasonStats]?).self) { group in
+            for playerId in pending {
+                group.addTask {
+                    (
+                        playerId,
+                        try? await repository.playerStats(playerId: playerId, teamId: teamId)
+                    )
+                }
+            }
+            for await (playerId, seasons) in group {
+                if let seasons {
+                    playerSeasons[playerId] = seasons
+                } else {
+                    requestedPlayerIds.remove(playerId)
+                }
+            }
+        }
+    }
+
+    /// The player's compact line at the page's resolved season and selected position, or nil
+    /// before their rows load or when they have no played row for that season.
+    func statLine(for player: Player, team: Team) -> PlayerCompactStatLine? {
+        guard let seasons = playerSeasons[player.id] else { return nil }
+        return PlayerStatLedger.compactLine(
+            for: seasons, position: position, season: resolvedSeason, teamAbbrev: team.abbrev)
     }
 
     func beginPicking(_ slot: Slot) {

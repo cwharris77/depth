@@ -452,6 +452,38 @@ enum PlayerStatLedger {
     }
 }
 
+/// One season's ledger line in compact form: the lead category's headline, then its summary.
+struct PlayerCompactStatLine: Equatable {
+    let figures: [PlayerStatFigure]
+    let accessibilityLabel: String
+}
+
+extension PlayerStatLedger {
+    /// The ledger's row for one season, reduced to the player's lead category, for surfaces
+    /// too narrow for the full ledger. `season` nil reads the newest played season; a pinned
+    /// season the player has no played row for is nil rather than a neighbouring year's line.
+    /// A traded player's stint with `teamAbbrev` wins over their other stints that season.
+    static func compactLine(
+        for seasons: [PlayerSeasonStats], position: Position, season: Int?, teamAbbrev: String?
+    ) -> PlayerCompactStatLine? {
+        let played = seasons.filter(\.hasPlayedGames)
+        guard let year = season ?? played.map(\.season).max() else { return nil }
+        let stints = played.filter { $0.season == year }
+        guard let row = stints.first(where: { $0.teamAbbrev == teamAbbrev }) ?? stints.first,
+            let category = PlayerStatCategory.categories(for: [row], position: position).first
+        else { return nil }
+
+        let headline = category.headline(row)
+        // `.games` names the same games-played figure as its headline and its summary.
+        let summary = category == .games ? [] : category.summary(row)
+        let spoken =
+            ["\(year) season", "\(headline.spoken) \(headline.value)"]
+            + summary.map { "\($0.value) \($0.spoken)" }
+        return PlayerCompactStatLine(
+            figures: [headline] + summary, accessibilityLabel: spoken.joined(separator: ", "))
+    }
+}
+
 extension PlayerProfileDisplay {
     private static let nameSuffixes: Set<String> = [
         "jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v",
