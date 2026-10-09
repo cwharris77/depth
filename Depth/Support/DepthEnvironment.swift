@@ -113,7 +113,16 @@ enum DepthEnvironment {
         SupabaseDepthAuthService(client: supabaseClient)
     static let overrideService: any DepthOverrideServicing =
         SupabaseDepthOverrideService(client: supabaseClient)
-    static let appEvents: any AppEventsRecording = SupabaseAppEventsRecorder(client: supabaseClient)
+    static let appEvents: any AppEventsRecording = {
+        #if UITEST_FIXTURES
+            // A fixture run has no backend, so its launches and screen loads must not be
+            // inserted into the configured project's app_events table.
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
+                return NoOpAppEventsRecorder()
+            }
+        #endif
+        return SupabaseAppEventsRecorder(client: supabaseClient)
+    }()
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)
     /// Shared favorite/start-on-favorite state. Backed by the user_settings row
     /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale

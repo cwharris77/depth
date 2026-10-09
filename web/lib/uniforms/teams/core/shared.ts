@@ -139,13 +139,17 @@ function backBarKeyline(): string {
   return `M${left},${bottom} H${right}`;
 }
 
-// A narrower, deeper V than the inset V: one band runs down both sides to a point and across the
-// back of the neck, with a centre trim that follows it all the way round. The opening is a V
-// from (246,409) to the point at (294,476); the outer edge reaches (294,507).
+// A narrower, deeper V than the inset V. The band's two sides run down to a point; a separate
+// back band spans the neck between them, keylined off from each side. The opening is a V from
+// (246,409) to the point at (294,476); the outer edge reaches (294,507).
 const NARROW_V_OUTER = 'M211,383 C211,450 248,492 294,507 C340,492 377,450 377,383';
 const NARROW_V_OPENING = 'M246,409 C248,435 271,463 294,476 C317,463 340,435 342,409 Z';
-// The band's centre line: down the left side to the point, up the right, across the back bar.
-const NARROW_V_TRIM = 'M228,396 C229,440 265,482 294,491.5 C323,482 359,440 360,396 Z';
+// The side trim's centre line, open at both ends: up to the shoulder line on each side.
+const NARROW_V_TRIM = 'M228,383 C229,440 265,482 294,491.5 C323,482 359,440 360,383';
+// The back band's trim runs straight across between the keylines, which rise from the opening's
+// top corners to the shoulder line.
+const NARROW_V_BACK_TRIM = 'M246,396 H342';
+const NARROW_V_BACK_KEYLINES = 'M246,383 V409 M342,383 V409';
 const NARROW_V_TRIM_WIDTH = 7;
 // The figure's own outline weight: heavier than the inset V's keylines, so the band reads slimmer.
 const NARROW_V_OUTLINE_WIDTH = 4;
@@ -180,7 +184,13 @@ export function narrowVCollar({
     fill: color,
     d,
   });
-  const stroke = (id: string, color: string, width: number, d: string): PartLayer => ({
+  const stroke = (
+    id: string,
+    color: string,
+    width: number,
+    d: string,
+    lineCap?: 'butt'
+  ): PartLayer => ({
     id: `${idPrefix}-${id}`,
     surface: 'collar',
     kind: 'stroke',
@@ -188,12 +198,16 @@ export function narrowVCollar({
     stroke: color,
     strokeWidth: width,
     d,
+    ...(lineCap && { lineCap }),
   });
+  // The figure's stroke group rounds caps; the open trims stop square at the keylines.
+  const trimStroke = (id: string, color: string, width: number, d: string) =>
+    stroke(id, color, width, d, 'butt');
   return [
     fill('collar-band', colors.band, `${NARROW_V_OUTER} Z`),
     ...(trim && trimEdge
       ? [
-          stroke(
+          trimStroke(
             'collar-trim-edge',
             trimEdge,
             NARROW_V_TRIM_WIDTH + 2 * NARROW_V_PIPING,
@@ -201,12 +215,31 @@ export function narrowVCollar({
           ),
         ]
       : []),
-    ...(trim ? [stroke('collar-trim', trim, NARROW_V_TRIM_WIDTH, NARROW_V_TRIM)] : []),
+    ...(trim ? [trimStroke('collar-trim', trim, NARROW_V_TRIM_WIDTH, NARROW_V_TRIM)] : []),
+    ...(trim && trimEdge
+      ? [
+          trimStroke(
+            'collar-back-trim-edge',
+            trimEdge,
+            NARROW_V_TRIM_WIDTH + 2 * NARROW_V_PIPING,
+            NARROW_V_BACK_TRIM
+          ),
+        ]
+      : []),
+    ...(trim
+      ? [trimStroke('collar-back-trim', trim, NARROW_V_TRIM_WIDTH, NARROW_V_BACK_TRIM)]
+      : []),
     fill('neck-opening', colors.interior, NARROW_V_OPENING),
     ...(outline
       ? [
           stroke('collar-outline-outer', OUTLINE_PAINT, NARROW_V_OUTLINE_WIDTH, NARROW_V_OUTER),
           stroke('collar-outline-inner', OUTLINE_PAINT, NARROW_V_OUTLINE_WIDTH, NARROW_V_OPENING),
+          stroke(
+            'collar-back-keylines',
+            OUTLINE_PAINT,
+            NARROW_V_OUTLINE_WIDTH,
+            NARROW_V_BACK_KEYLINES
+          ),
         ]
       : []),
     ...nflShield(idPrefix, 'collar-narrow-v'),

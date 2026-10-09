@@ -30,11 +30,11 @@ Anything the spec cannot describe is appended as ordinary layers after `spec.lay
 | Field | Meaning |
 |---|---|
 | `body` | Torso colour. |
-| `collar.style` | `inset-v` (modern V with a band down to a point), `narrow-v` (a narrower, deeper V whose one band runs down both sides and across the back of the neck, with the trim following it all the way round), `shallow-v`, `rounded` (period crew neck), `none`. |
-| `collar.color` / `trim` | Collar band and, for `inset-v`, its centre inset; for `narrow-v`, the trim that follows the band all the way round. |
+| `collar.style` | `inset-v` (modern V with a band down to a point), `narrow-v` (a narrower, deeper V whose sides run down to a point, with a separate back band across the neck between them), `shallow-v`, `rounded` (period crew neck), `none`. |
+| `collar.color` / `trim` | Collar band and, for `inset-v`, its centre inset; for `narrow-v`, the trim down each side and straight across the back band. |
 | `collar.inside` | Fill inside the V (defaults to the body). Use a darker shade of the body (a `<colour>Neck` palette key) when the reference shows one, or when a body-coloured collar disappears without it. |
 | `collar.trimEdge` | `narrow-v` only: hairlines of this colour along both edges of the trim (often the body showing between the trim and the band); `'none'` when there is no trim. |
-| `collar.lining` / `backBar` / `outline` | `inset-v` only (`outline` on `narrow-v` too): a band on the inner half of the collar; the bar across the back of the neck (always drawn, in the collar colour unless `backBar` sets another); grey keylines on both collar edges and under the back bar. |
+| `collar.lining` / `backBar` / `outline` | `inset-v` only (`outline` on `narrow-v` too): a band on the inner half of the collar; the bar across the back of the neck (always drawn, in the collar colour unless `backBar` sets another); grey keylines on both collar edges and under the back bar (on `narrow-v`, between the back band and each side). |
 | `shoulderPanel.bands` | Colour blocks from the top of the sleeve down. The first is the cap, filling to the shoulder seam with a curved inner edge; every edge slopes down toward the body. |
 | `shoulderStripes` | Canted stripes running down the sleeve from the shoulder line, listed from the collar outward, each leaning its lower end toward the body. Same `gap` steps as `sleeveStripes`. |
 | `shoulderNumber` | The numeral lying along the top of each shoulder, in `fill` with an optional thin `outline`. On a reference sheet it often reads as a short bar. See the orientation rule below. |

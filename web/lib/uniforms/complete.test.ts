@@ -142,7 +142,7 @@ describe('complete specs convert to the expander specs', () => {
       trimEdge: 'none',
       inside: 'body',
       outline: false,
-      // @ts-expect-error -- the narrow V carries its band round the back; it has no back bar
+      // @ts-expect-error -- the narrow V draws its own back band; it has no back bar
       backBar: 'gold',
     };
     expect(narrow.style).toBe('narrow-v');
