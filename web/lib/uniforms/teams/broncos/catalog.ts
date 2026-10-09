@@ -5,6 +5,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'orange',
@@ -32,6 +33,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'navy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -84,6 +86,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
     // Orange base, navy trim: the home jersey over white pants.
     {
       slug: 'orange-alt',
+      sleeveNike: 'white',
       name: 'Orange Alternate',
       kind: 'alternate',
       jersey: 'orange',

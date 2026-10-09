@@ -16,6 +16,8 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
+      collarShield: true,
       name: 'Home',
       kind: 'home',
       jersey: 'red',
@@ -29,6 +31,8 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'red',
+      collarShield: true,
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -42,6 +46,8 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'creamsicle',
+      sleeveNike: 'white',
+      collarShield: true,
       name: 'Creamsicle',
       kind: 'throwback',
       jersey: 'creamsicle',

@@ -5,6 +5,7 @@ export const GIANTS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'royal',
@@ -24,6 +25,7 @@ export const GIANTS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'red',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -43,6 +45,7 @@ export const GIANTS_CATALOG: TeamCatalog = {
     },
     {
       slug: '1980s-throwback',
+      sleeveNike: 'white',
       name: '1980s Throwback',
       kind: 'throwback',
       jersey: 'throwback',

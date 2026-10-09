@@ -133,8 +133,19 @@ const SHIELD_PATHS = [
 
 export function nflShield(
   prefix: string,
-  anchor?: 'pants-shield' | 'collar-narrow-v'
+  anchor?: 'pants-shield' | 'rounded-collar' | 'collar-narrow-v'
 ): PartLayer[] {
+  if (anchor === 'rounded-collar') {
+    return nflShield(prefix).map((layer) => {
+      let coordinate = 0;
+      return {
+        ...layer,
+        d: layer.d.replace(/-?\d+(?:\.\d+)?/g, (value) =>
+          coordinate++ % 2 ? (Number(value) - 46).toFixed(3) : value
+        ),
+      };
+    });
+  }
   if (anchor) {
     return SHIELD_PATHS.map((layer, index) => {
       const color = layer.kind === 'fill' ? layer.fill : layer.stroke;

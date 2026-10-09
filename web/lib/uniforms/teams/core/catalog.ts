@@ -30,6 +30,9 @@ export interface Combination {
 }
 
 export interface CatalogDesign {
+  // Explicit equipment treatment, independent of the design's original season.
+  sleeveNike?: string;
+  collarShield?: boolean | 'rounded';
   slug: string;
   // Kit key the canonical combination registers as. Defaults to the slug.
   constructionKey?: string;
@@ -115,6 +118,8 @@ function kitRef(design: CatalogDesign, combination: Combination): KitRef {
     pants: combination.pants,
   };
   if (combination.pantsNike !== undefined) ref.pantsNike = combination.pantsNike;
+  if (design.sleeveNike !== undefined) ref.sleeveNike = design.sleeveNike;
+  if (design.collarShield !== undefined) ref.collarShield = design.collarShield;
   if (combination.socks !== undefined) ref.socks = combination.socks;
   return ref;
 }

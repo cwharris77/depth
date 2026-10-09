@@ -5,6 +5,7 @@ export const RAVENS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'purple',
@@ -23,6 +24,7 @@ export const RAVENS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'purple',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -41,6 +43,7 @@ export const RAVENS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'black-alt',
+      sleeveNike: 'white',
       name: 'Black Alternate',
       kind: 'alternate',
       jersey: 'black',

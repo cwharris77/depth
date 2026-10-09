@@ -5,6 +5,7 @@ export const BEARS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
@@ -32,6 +33,7 @@ export const BEARS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'navy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -53,6 +55,7 @@ export const BEARS_CATALOG: TeamCatalog = {
     // uiAccent reuses the team's brightened orange.
     {
       slug: 'orange-alternate',
+      sleeveNike: 'white',
       name: 'Orange Alternate',
       kind: 'alternate',
       jersey: 'orange',

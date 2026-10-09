@@ -5,6 +5,7 @@ export const NINERS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'red',
@@ -24,6 +25,7 @@ export const NINERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'red',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -43,6 +45,7 @@ export const NINERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'rivalries-2025',
+      sleeveNike: 'red',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'black',

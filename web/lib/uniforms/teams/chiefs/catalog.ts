@@ -5,6 +5,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'red',
@@ -24,6 +25,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'red',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
