@@ -475,7 +475,9 @@ struct TeamStatsView: View {
 
     private func scopeButton(_ story: TeamSeasonStory) -> some View {
         Button {
-            withAnimation(DesignTokens.Motion.feedback) { scopeExpanded.toggle() }
+            withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
+                scopeExpanded.toggle()
+            }
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Image(systemName: "info.circle")

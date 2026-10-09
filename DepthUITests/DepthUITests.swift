@@ -556,6 +556,39 @@ final class DepthUITests: XCTestCase {
         )
     }
 
+    /// A lens row pushes the reference ledger on that lens, and the lens strip then
+    /// switches the ledger in place with exactly one tab marked selected.
+    func testStatsReferenceLensStripSwitchesLens() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"))
+
+        let statsTab = app.buttons["page-switcher-stats"]
+        XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
+        XCTAssertTrue(statsTab.tapUntil(timeout: 30) { app.scrollViews["stats-content"].exists })
+
+        let recordRow = app.buttons["stats-lens-row-record"]
+        let content = app.scrollViews["stats-content"]
+        for _ in 0..<4 where !recordRow.isHittable { content.swipeUp() }
+        XCTAssertTrue(recordRow.waitForExistence(timeout: 10))
+        recordRow.tap()
+        XCTAssertTrue(app.scrollViews["stats-reference-record"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["stats-lens-record"].isSelected)
+
+        app.buttons["stats-lens-offense"].tap()
+        XCTAssertTrue(
+            app.scrollViews["stats-reference-offense"].waitForExistence(timeout: 5),
+            "tapping a lens tab should swap the ledger to that lens")
+        let selected = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'stats-lens-' AND selected == true"))
+        XCTAssertEqual(selected.count, 1)
+        XCTAssertTrue(app.buttons["stats-lens-offense"].isSelected)
+
+        let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        attachment.name = "stats-reference-offense-lens"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     /// The same trigger + SeasonPickerSheet conversion as Stats is applied
     /// to Schedule — replacing the flat chip row originally promoted out of
     /// Stats. "Back to current" moved out of the sheet's toolbar to
