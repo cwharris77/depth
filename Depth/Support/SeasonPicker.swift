@@ -105,6 +105,9 @@ struct SeasonPickerSheet: View {
     let accent: Color
     let identifierPrefix: String
     let onSelect: (Int) -> Void
+    /// The season tapped in this sheet, so a pick ticks before the caller dismisses it.
+    /// Re-tapping the selected season changes nothing and stays silent.
+    @State private var pickedSeason: Int?
 
     var body: some View {
         DepthSheet(
@@ -114,6 +117,7 @@ struct SeasonPickerSheet: View {
         ) {
             List(Array(items.enumerated()), id: \.element.id) { index, item in
                 Button {
+                    if item.season != selectedSeason { pickedSeason = item.season }
                     onSelect(item.season)
                 } label: {
                     HStack {
@@ -177,5 +181,6 @@ struct SeasonPickerSheet: View {
             // Tapping the current row provides the same escape hatch. The X in the corner
             // comes from `DepthSheet`.
         }
+        .sensoryFeedback(.selection, trigger: pickedSeason)
     }
 }

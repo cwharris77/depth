@@ -28,6 +28,7 @@ enum TeamStatsLens: String, CaseIterable, Identifiable, Hashable {
 struct TeamStatsReferenceView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var lensNamespace
     @State private var lens: TeamStatsLens
     let stats: TeamSeasonStats
     let ranks: TeamStatsRanks?
@@ -98,11 +99,16 @@ struct TeamStatsReferenceView: View {
                     }
                 }
                 .padding(.horizontal, DesignTokens.Spacing.md)
+                // Scoped to the strip so the underline slides while the ledger below swaps
+                // without animating.
+                .animation(
+                    DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion), value: lens)
             }
             // The lens a row pushed may sit past the screen edge (Line, Leaders).
             .onAppear { proxy.scrollTo(lens, anchor: .center) }
         }
         .scrollIndicators(.hidden)
+        .sensoryFeedback(.selection, trigger: lens)
         // A horizontal ScrollView accepts all the height a VStack offers it; pin it to the
         // tab row's own height so the ledger below gets the rest of the screen.
         .fixedSize(horizontal: false, vertical: true)
@@ -122,9 +128,17 @@ struct TeamStatsReferenceView: View {
                         isActive ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textMuted
                     )
                     .padding(.bottom, 10)
-                Capsule()
-                    .fill(isActive ? accent : .clear)
-                    .frame(height: 2)
+                ZStack {
+                    if isActive {
+                        if reduceMotion {
+                            lensIndicator.transition(.opacity)
+                        } else {
+                            lensIndicator
+                                .matchedGeometryEffect(id: "lens-selection", in: lensNamespace)
+                        }
+                    }
+                }
+                .frame(height: 2)
             }
             .frame(minHeight: 44)
             .contentShape(Rectangle())
@@ -132,6 +146,10 @@ struct TeamStatsReferenceView: View {
         .buttonStyle(.plain)
         .accessibilityAddTraits(isActive ? .isSelected : [])
         .accessibilityIdentifier("stats-lens-\(item.rawValue)")
+    }
+
+    private var lensIndicator: some View {
+        Capsule().fill(accent).frame(height: 2)
     }
 
     // MARK: Lens content
