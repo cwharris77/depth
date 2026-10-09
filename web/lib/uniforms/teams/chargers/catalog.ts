@@ -26,6 +26,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     {
       slug: 'home',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Home',
       kind: 'home',
       jersey: 'powder',
@@ -37,6 +38,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     {
       slug: 'away',
       sleeveNike: 'powderBlue',
+      sleeveNikePlacement: 'lower',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -52,6 +54,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     {
       slug: 'powder-blue',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Powder Blue',
       kind: 'alternate',
       jersey: 'powder',
@@ -63,6 +66,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     {
       slug: 'charger-power',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Charger Power',
       kind: 'alternate',
       jersey: 'gold',
@@ -74,6 +78,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     {
       slug: 'super-chargers',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Super Chargers',
       kind: 'alternate',
       jersey: 'navy',

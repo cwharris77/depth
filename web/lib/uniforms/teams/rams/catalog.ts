@@ -7,6 +7,7 @@ export const RAMS_CATALOG: TeamCatalog = {
     {
       slug: 'home',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Home',
       kind: 'home',
       jersey: 'royal',
@@ -35,6 +36,7 @@ export const RAMS_CATALOG: TeamCatalog = {
     {
       slug: 'away',
       sleeveNike: 'royal',
+      sleeveNikePlacement: 'lower',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -63,6 +65,7 @@ export const RAMS_CATALOG: TeamCatalog = {
     {
       slug: 'rivalries-2025',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',
