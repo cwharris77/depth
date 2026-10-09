@@ -2,15 +2,14 @@
 // emitted exactly as written.
 import { BUCCANEERS_CREAMSICLE_DECAL_PATHS, BUCCANEERS_FLAG_DECAL_PATHS } from './decal';
 import {
-  BUCCANEERS_COLLAR_PATH,
-  BUCCANEERS_COLLAR_WIDTH,
   BUCCANEERS_CREAM_BOUNDS,
   BUCCANEERS_CUFF_LEFT,
   BUCCANEERS_CUFF_RIGHT,
   BUCCANEERS_SLEEVE_X_LEFT,
   BUCCANEERS_SLEEVE_X_RIGHT,
 } from './paths';
-import { placed, type PlacedMark } from '../../core/marks';
+import { BUCCANEERS_SHIP } from './ship';
+import { placed, type Mark, type PlacedMark } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
 import type { UniformSurface } from '../../core/types';
 
@@ -23,12 +22,16 @@ const sleeveFill = (id: string, surface: UniformSurface, d: string, color: strin
   fill: color,
 });
 
-// The pewter shell's flag, painted in source order with every foreground colour kept.
+// The flag fills the side panel; the source canvas includes padding around the artwork.
 export const BUCCANEERS_FLAG_DECAL: PlacedMark = placed(
   BUCCANEERS_FLAG_DECAL_PATHS.map(({ d, fill }, index) => ({
     id: `buccaneers-flag-svg-${String(index + 1).padStart(3, '0')}`,
     surface: 'helmet',
-    d,
+    d: d.replace(
+      /[ML]([\d.]+),([\d.]+)/g,
+      (point, x, y) =>
+        `${point[0]}${(460 + (Number(x) - 388) * 1.9).toFixed(3)},${(275 + (Number(y) - 236) * 1.9).toFixed(3)}`
+    ),
     clip: true,
     kind: 'fill',
     fill,
@@ -79,17 +82,13 @@ export function buccaneersCreamCuff(band: string, line: string): PlacedMark {
   return placed(layers);
 }
 
-// The thin keyline along the collar's V.
-export function buccaneersCollarKeyline(color: string): PlacedMark {
-  return placed([
-    {
-      id: 'buccaneers-collar',
-      surface: 'collar',
-      d: BUCCANEERS_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: color,
-      strokeWidth: BUCCANEERS_COLLAR_WIDTH,
-    },
-  ]);
-}
+// Offset the side-facing ship around the sleeve; the front silhouette clips its outer half.
+export const BUCCANEERS_SLEEVE_SHIP: Mark = {
+  ...BUCCANEERS_SHIP,
+  box: [
+    BUCCANEERS_SHIP.box[0] - 280,
+    BUCCANEERS_SHIP.box[1],
+    BUCCANEERS_SHIP.box[2] - 280,
+    BUCCANEERS_SHIP.box[3],
+  ],
+};
