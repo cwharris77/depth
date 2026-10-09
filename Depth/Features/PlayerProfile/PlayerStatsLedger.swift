@@ -2,7 +2,8 @@ import SwiftUI
 
 // PlayerProfileView's season ledger: category
 // tabs generated from the player's own data, one hairline row per season with a bar scaled
-// to the career best, a tap-to-open detail strip, and a CAREER totals line. The vocabulary
+// to the career best (the dashed mark every row shares), a tap-to-open detail strip, and a
+// CAREER totals line. Bars sit on no track so they read as amounts, not progress. The vocabulary
 // (which metric, which figures) is PlayerStatCategory's -- this view only lays it out.
 // The only season-stats rendering on the profile now — the old compact table was deleted
 // with the player card (2026-09-11 merge spec).
@@ -12,6 +13,9 @@ struct PlayerStatsLedger: View {
     /// The team the profile was opened from. Seasons played for it get the team-tinted bar;
     /// seasons elsewhere stay neutral, so a trade reads at a glance.
     let currentTeamAbbrev: String?
+    /// The season still being played (`PlayerStatLedger.inProgressSeason`); its row gets the
+    /// striped bar and IN PROGRESS tag.
+    let inProgressSeason: Int?
     let mark: Color
 
     @State private var selection: PlayerStatCategory?
@@ -51,10 +55,11 @@ struct PlayerStatsLedger: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .overlay(alignment: .bottom) { hairline(DesignTokens.Colors.borderDefault) }
 
-                caption(category)
+                let best = category.careerBest(among: stats)
+                caption(category, best: best)
 
                 ForEach(Array(stats.enumerated()), id: \.element.id) { index, season in
-                    row(season, index: index, category: category)
+                    row(season, index: index, category: category, best: best)
                 }
 
                 careerRow(category)
@@ -63,24 +68,56 @@ struct PlayerStatsLedger: View {
         }
     }
 
-    private func caption(_ category: PlayerStatCategory) -> some View {
-        Text("\(category.barMetricName) VS BEST")
-            .font(.caption2.weight(.bold))
-            .tracking(0.9)
-            .foregroundStyle(DesignTokens.Colors.textFaintest)
-            .padding(.top, 10)
-            .padding(.bottom, 4)
-            .accessibilityHidden(true)
+    // The trailing figure names what the dashed mark at the end of every bar stands for, so
+    // it sits flush with that mark. Narrow widths and large type drop "CAREER", then stack.
+    private func caption(_ category: PlayerStatCategory, best: PlayerSeasonStats?) -> some View {
+        let title = "\(category.barMetricName) BY SEASON"
+        let bestFigure = best.map { "\(category.headline($0).value) · \(String($0.season))" }
+        return ViewThatFits(in: .horizontal) {
+            captionLine(title, best: bestFigure.map { "CAREER BEST \($0)" })
+            captionLine(title, best: bestFigure.map { "BEST \($0)" })
+            VStack(alignment: .leading, spacing: 2) {
+                captionText(title, color: DesignTokens.Colors.textFaintest)
+                if let bestFigure {
+                    captionText("CAREER BEST \(bestFigure)", color: DesignTokens.Colors.textFaint)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.top, 10)
+        .padding(.bottom, 4)
+        .accessibilityHidden(true)
     }
 
-    private func row(_ season: PlayerSeasonStats, index: Int, category: PlayerStatCategory)
-        -> some View
-    {
+    private func captionLine(_ title: String, best: String?) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
+            captionText(title, color: DesignTokens.Colors.textFaintest)
+            Spacer(minLength: 0)
+            if let best { captionText(best, color: DesignTokens.Colors.textFaint) }
+        }
+    }
+
+    private func captionText(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.caption2.weight(.bold))
+            .tracking(0.9)
+            .foregroundStyle(color)
+            .fixedSize()
+    }
+
+    private func row(
+        _ season: PlayerSeasonStats, index: Int, category: PlayerStatCategory,
+        best: PlayerSeasonStats?
+    ) -> some View {
         let key = "\(category.rawValue)-\(season.id)"
         let isOpen = expanded.contains(key)
         let details = category.details(season)
         let isNewest = index == 0
         let isCurrentTeam = currentTeamAbbrev != nil && season.teamAbbrev == currentTeamAbbrev
+        let isCareerBest = best?.id == season.id
+        let isInProgress = isNewest && season.season == inProgressSeason
+        let barColor =
+            isNewest ? mark : isCurrentTeam ? mark.opacity(0.5) : Color.white.opacity(0.22)
 
         return VStack(alignment: .leading, spacing: 0) {
             Button {
@@ -91,12 +128,13 @@ struct PlayerStatsLedger: View {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
                     rowFigures(
                         season: season, category: category, isNewest: isNewest,
-                        isCurrentTeam: isCurrentTeam, chevron: details.isEmpty ? nil : isOpen
+                        isCurrentTeam: isCurrentTeam,
+                        status: isInProgress ? .inProgress : isCareerBest ? .careerBest : nil,
+                        chevron: details.isEmpty ? nil : isOpen
                     )
                     bar(
                         fraction: category.barFraction(season, among: stats),
-                        color: isNewest
-                            ? mark : isCurrentTeam ? mark.opacity(0.5) : Color.white.opacity(0.22)
+                        color: barColor, isInProgress: isInProgress, showsBestMark: best != nil
                     )
                 }
                 .padding(.vertical, 10)
@@ -106,7 +144,11 @@ struct PlayerStatsLedger: View {
             .buttonStyle(.plain)
             .disabled(details.isEmpty)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(PlayerStatLedger.rowLabel(for: season, category: category))
+            .accessibilityLabel(
+                PlayerStatLedger.rowLabel(
+                    for: season, category: category, isCareerBest: isCareerBest,
+                    isInProgress: isInProgress)
+            )
             .accessibilityValue(details.isEmpty ? "" : isOpen ? "Expanded" : "Collapsed")
             .accessibilityHint(details.isEmpty ? "" : "Shows more stats for this season")
             .accessibilityIdentifier("player-profile-full-season-\(season.season)")
@@ -123,7 +165,7 @@ struct PlayerStatsLedger: View {
     @ViewBuilder
     private func rowFigures(
         season: PlayerSeasonStats, category: PlayerStatCategory, isNewest: Bool,
-        isCurrentTeam: Bool, chevron isOpen: Bool?
+        isCurrentTeam: Bool, status: SeasonStatus?, chevron isOpen: Bool?
     ) -> some View {
         let year = Text(String(season.season))
             .font(.footnote.weight(isNewest ? .heavy : .bold))
@@ -144,6 +186,7 @@ struct PlayerStatsLedger: View {
                 HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
                     year
                     team
+                    statusTag(status)
                     Spacer(minLength: 0)
                     chevronIcon(isOpen)
                 }
@@ -151,13 +194,25 @@ struct PlayerStatsLedger: View {
                 summary
             }
         } else {
-            HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
-                year.frame(width: yearWidth, alignment: .leading)
-                team.frame(width: teamWidth, alignment: .leading)
-                Spacer(minLength: 10)
-                headline
-                summary.lineLimit(1).fixedSize()
-                chevronIcon(isOpen)
+            // The status tag rides inline when the figures leave room for it, otherwise it
+            // drops to its own line rather than squeezing the headline figure into a wrap.
+            let figures = { (tag: SeasonStatus?) in
+                HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.sm) {
+                    year.frame(width: yearWidth, alignment: .leading)
+                    team.frame(width: teamWidth, alignment: .leading)
+                    statusTag(tag)
+                    Spacer(minLength: 10)
+                    headline.lineLimit(1).fixedSize()
+                    summary.lineLimit(1).fixedSize()
+                    chevronIcon(isOpen)
+                }
+            }
+            ViewThatFits(in: .horizontal) {
+                figures(status)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                    figures(nil)
+                    statusTag(status)
+                }
             }
         }
     }
@@ -182,18 +237,63 @@ struct PlayerStatsLedger: View {
         .frame(width: 14, alignment: .trailing)
     }
 
-    private func bar(fraction: Double, color: Color) -> some View {
-        Capsule()
-            .fill(DesignTokens.Colors.borderSubtle)
-            .frame(height: 6)
-            .overlay(alignment: .leading) {
-                GeometryReader { proxy in
-                    Capsule()
-                        .fill(color)
-                        .frame(width: proxy.size.width * fraction)
+    private enum SeasonStatus {
+        case inProgress
+        case careerBest
+    }
+
+    // An in-progress season outranks the best tag: the caption already names the best
+    // season's year, but nothing else says this season's total is still growing.
+    @ViewBuilder
+    private func statusTag(_ status: SeasonStatus?) -> some View {
+        switch status {
+        case .inProgress:
+            Text("IN PROGRESS")
+                .font(.caption2.weight(.bold))
+                .tracking(0.6)
+                .foregroundStyle(mark)
+                .fixedSize()
+        case .careerBest:
+            Text("BEST")
+                .font(.caption2.weight(.bold))
+                .tracking(0.6)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+                .padding(.horizontal, 5)
+                .padding(.vertical, 1)
+                .background(DesignTokens.Colors.surfaceChip, in: Capsule())
+                .fixedSize()
+        case nil:
+            EmptyView()
+        }
+    }
+
+    // No background track: a filled track reads as a gauge filling up as games are played.
+    // The full width is the career best, marked by a dashed tick that lines up row to row.
+    private func bar(fraction: Double, color: Color, isInProgress: Bool, showsBestMark: Bool)
+        -> some View
+    {
+        GeometryReader { proxy in
+            Group {
+                if isInProgress {
+                    InProgressBarFill(color: color)
+                } else {
+                    Capsule().fill(color)
                 }
             }
-            .accessibilityHidden(true)
+            .frame(width: proxy.size.width * fraction)
+        }
+        .frame(height: 6)
+        .overlay(alignment: .trailing) {
+            if showsBestMark {
+                CareerBestMark()
+                    .stroke(
+                        DesignTokens.Colors.textFaint,
+                        style: StrokeStyle(lineWidth: 1.5, dash: [3, 2])
+                    )
+                    .frame(width: 2, height: 18)
+            }
+        }
+        .accessibilityHidden(true)
     }
 
     // A hairline grid: cells sit on the app ground over a white-alpha backing, so the 1pt
@@ -279,6 +379,37 @@ struct PlayerStatsLedger: View {
 
     private func hairline(_ color: Color) -> some View {
         Rectangle().fill(color).frame(height: 1)
+    }
+}
+
+// A vertical line down the middle of its frame: the career-best tick at the end of each bar.
+private struct CareerBestMark: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { path in
+            path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+        }
+    }
+}
+
+// Diagonal stripes for a season still being played, so its bar reads as unfinished
+// without implying how much is left.
+private struct InProgressBarFill: View {
+    let color: Color
+
+    var body: some View {
+        Canvas { context, size in
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(color.opacity(0.4)))
+            var stripes = Path()
+            var x = -size.height
+            while x < size.width {
+                stripes.move(to: CGPoint(x: x, y: size.height))
+                stripes.addLine(to: CGPoint(x: x + size.height, y: 0))
+                x += 5
+            }
+            context.stroke(stripes, with: .color(color), lineWidth: 2.5)
+        }
+        .clipShape(Capsule())
     }
 }
 
