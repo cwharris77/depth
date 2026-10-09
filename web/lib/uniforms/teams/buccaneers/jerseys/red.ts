@@ -1,5 +1,4 @@
 import { anchoredMark } from '../../core/jersey-spec';
-import { NIKE_MARK } from '../../core/pants-logos';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { BUCCANEERS_SHIP_COLORS } from '../marks/ship';
 import { buccaneersCuff, BUCCANEERS_SLEEVE_SHIP } from '../marks/construction';
@@ -23,13 +22,6 @@ export const BUCCANEERS_JERSEY_RED: CompleteJerseySpec = {
   sleeveNumber: 'none',
   number: { fill: 'white', outline: 'orange', outlineWeight: 'regular', texture: 'mesh' },
   marks: [
-    anchoredMark({
-      paint: 'over',
-      mark: NIKE_MARK,
-      anchor: 'sleeve-tops',
-      slots: { nike: 'white' },
-      id: 'swoosh',
-    }),
     anchoredMark({
       paint: 'over',
       mark: BUCCANEERS_SLEEVE_SHIP,

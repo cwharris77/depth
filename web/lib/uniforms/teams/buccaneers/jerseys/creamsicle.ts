@@ -1,5 +1,3 @@
-import { anchoredMark } from '../../core/jersey-spec';
-import { NIKE_MARK } from '../../core/pants-logos';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { buccaneersCreamCuff } from '../marks/construction';
 
@@ -21,14 +19,5 @@ export const BUCCANEERS_JERSEY_CREAMSICLE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: { fill: 'white', outline: 'crimson', outlineWeight: 'regular', texture: 'mesh' },
-  marks: [
-    anchoredMark({
-      paint: 'over',
-      mark: NIKE_MARK,
-      anchor: 'sleeve-tops',
-      slots: { nike: 'white' },
-      id: 'swoosh',
-    }),
-    { paint: 'over', mark: buccaneersCreamCuff('crimson', 'white') },
-  ],
+  marks: [{ paint: 'over', mark: buccaneersCreamCuff('crimson', 'white') }],
 };
