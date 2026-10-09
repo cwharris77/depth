@@ -139,7 +139,16 @@ struct TrueScaleFieldView: View {
 
     private func move(to target: CGPoint, feedback: Bool = true) {
         if feedback { jumpFeedbackCount += 1 }
-        withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
+        // Under Reduce Motion the jump cuts instead of animating: a pan slides the whole
+        // field, and even the short `feedback` curve would still move it. The haptic and
+        // the recentred field remain the cue.
+        guard !reduceMotion else {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { pan = target }
+            return
+        }
+        withAnimation(DesignTokens.Motion.selection) {
             pan = target
         }
     }
