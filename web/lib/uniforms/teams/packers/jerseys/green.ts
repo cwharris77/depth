@@ -4,7 +4,7 @@ import { NIKE_MARK } from '../../core/pants-logos';
 
 // Green body with a narrow V collar, an even gold, white and gold band carried round the back of the
 // neck, and a gold, white, gold sleeve set; both trims are split from the gold by hairlines of
-// green. Shoulder and chest numerals are white, with a white swoosh on each sleeve top.
+// green. Shoulder and chest numerals are plain white, with a white swoosh on each sleeve top.
 export const PACKERS_JERSEY_GREEN: CompleteJerseySpec = {
   body: 'green',
   collar: {
@@ -29,7 +29,7 @@ export const PACKERS_JERSEY_GREEN: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'white', outlineWeight: 'x-heavy', texture: 'mesh' },
+  number: { fill: 'white', outline: 'white', outlineWeight: 'none', texture: 'mesh' },
   marks: [
     anchoredMark({
       paint: 'over',

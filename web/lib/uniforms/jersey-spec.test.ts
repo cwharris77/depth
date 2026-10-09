@@ -4,6 +4,7 @@ import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { compileParts, type PartLayer } from '@/lib/uniforms/teams/core/parts';
 import { FIGURE_OUTLINE } from '@/lib/uniforms/teams/core/shared';
 import { boundsOf, placed, type Mark } from '@/lib/uniforms/teams/core/marks';
+import { NIKE_MARK } from '@/lib/uniforms/teams/core/pants-logos';
 
 const numbers = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
 
@@ -535,6 +536,20 @@ describe('jersey marks', () => {
     // The triangle's right angle is at its box's top-right corner; mirrored, it sits top-left.
     const [left, right] = part.layers.map((l) => boundsOf(l.d));
     expect(left[0] + right[2]).toBeCloseTo(588, 0);
+  });
+
+  it('checks the shared swoosh slot at compile time', () => {
+    const swoosh = (slots: { nike: string }) =>
+      anchoredMark({ paint: 'over', mark: NIKE_MARK, anchor: 'sleeve-tops', slots, id: 'swoosh' });
+    expect(swoosh({ nike: 'white' }).slots).toEqual({ nike: 'white' });
+    anchoredMark({
+      paint: 'over',
+      mark: NIKE_MARK,
+      anchor: 'sleeve-tops',
+      // @ts-expect-error -- 'nikee' is not a slot of NIKE_MARK
+      slots: { nikee: 'white' },
+      id: 'swoosh',
+    });
   });
 
   it('rejects an anchored mark whose slot map misses or adds a slot', () => {

@@ -122,6 +122,18 @@ describe('complete specs convert to the expander specs', () => {
     });
   });
 
+  it('rejects narrow-v piping without a trim to pipe', () => {
+    const piped: CompleteCollar = {
+      style: 'narrow-v',
+      color: 'gold',
+      trim: 'none',
+      trimEdge: 'green',
+      inside: 'body',
+      outline: true,
+    };
+    expect(() => jerseySpecOf({ ...JERSEY, collar: piped })).toThrow(/trimEdge needs a trim/);
+  });
+
   it('rejects a narrow-v collar carrying an inset-v-only field', () => {
     const narrow: CompleteCollar = {
       style: 'narrow-v',

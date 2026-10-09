@@ -1,16 +1,15 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 
-// The 1923 throwback's navy body: a navy collar with grey keylines, three thin bronze stripes on
-// each sleeve and bronze numerals.
+// The 1923 throwback's navy body: a navy narrow V collar with grey keylines, three thin bronze
+// stripes on each sleeve and plain bronze numerals.
 export const PACKERS_JERSEY_NAVY: CompleteJerseySpec = {
   body: 'navy',
   collar: {
-    style: 'inset-v',
+    style: 'narrow-v',
     color: 'navy',
     trim: 'none',
+    trimEdge: 'none',
     inside: 'body',
-    lining: 'none',
-    backBar: 'none',
     outline: true,
   },
   shoulderPanel: 'none',
@@ -27,6 +26,6 @@ export const PACKERS_JERSEY_NAVY: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'bronze', outline: 'bronze', outlineWeight: 'x-heavy', texture: 'mesh' },
+  number: { fill: 'bronze', outline: 'bronze', outlineWeight: 'none', texture: 'mesh' },
   marks: [],
 };

@@ -36,7 +36,7 @@ export type CompleteCollar =
       style: 'narrow-v';
       color: string;
       trim: string | None;
-      // Hairlines along both edges of the trim.
+      // Hairlines along both edges of the trim; 'none' when there is no trim.
       trimEdge: string | None;
       inside: string | 'body';
       outline: boolean;
@@ -98,7 +98,11 @@ export function jerseySpecOf(c: CompleteJerseySpec): JerseySpec {
   }
   if (collar.style === 'narrow-v') {
     if (collar.inside !== 'body') collarOut.inside = collar.inside;
-    if (collar.trimEdge !== 'none') collarOut.trimEdge = collar.trimEdge;
+    if (collar.trimEdge !== 'none') {
+      // Piping with nothing to pipe would be dropped silently by the expander.
+      if (collar.trim === 'none') throw new Error('narrow-v collar: trimEdge needs a trim');
+      collarOut.trimEdge = collar.trimEdge;
+    }
     collarOut.outline = collar.outline;
   }
   const { texture, ...number } = c.number;
