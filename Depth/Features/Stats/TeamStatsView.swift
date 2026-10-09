@@ -286,6 +286,7 @@ struct TeamStatsView: View {
                 layout {
                     Text(verbatim: record(stats))
                         .font(.largeTitle.weight(.black))
+                        .rollingValue(record(stats))
                         .accessibilityIdentifier("stats-record")
                     if !dynamicTypeSize.isAccessibilitySize {
                         Spacer(minLength: DesignTokens.Spacing.md)
@@ -457,6 +458,7 @@ struct TeamStatsView: View {
             Text(verbatim: ordinal(story.lead.rank))
                 .font(.title.weight(.black))
                 .monospacedDigit()
+                .rollingValue(story.lead.rank)
                 .foregroundStyle(teamAccent)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: story.lockupLabel)
