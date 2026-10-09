@@ -56,7 +56,7 @@ A scheduled agent runs this twice a day. Everything below is the agent's job; **
 **Read state, don't remember it.** `scripts/ios-release-status.mjs <version>` prints the train's real `stage` (`none` → `processing` → `testflight` → `review` → `live`, or `rejected`). It reads App Store Connect with the API key in `~/.config/depth/app-store-connect.json`. Without a key it can only see `live`. In that case, say in the notification that the step needs the key or the release owner's word.
 
 0. **Sync.** `git pull` both the depth repo and the vault. The active train is the lowest-version note in `Projects/depth/Releases/` whose `status` is not `live`. If every note is live, create the next one with the board's shape: next minor version, cut 14 days after the last train's cut, submit the day after. Copy the checklist from the newest note.
-1. **Before the cut day** (`status: planning`, today < `cut`): do nothing. On the day before the cut, send one heads-up listing the train's tickets that are not `Done`; they will roll.
+1. **Before the cut day** (`status: planning`, today < `cut`): do nothing. On the day before the cut, send one heads-up listing the train's tickets that are not `Done`; they will roll. In the same heads-up, list any unflagged half-done feature: an epic (`theme:`) with open tickets whose merged app code (`Depth/` outside tests, since the last `ios-v*` tag) a user could see. Name the epic and the commits so the release owner can gate them before the cut.
 2. **Cut** (`status: planning`, today ≥ `cut`):
    - Check that `main`'s latest CI run is green. If it is red, notify and stop.
    - Move every ticket whose `release:` is this version but whose status is not `Done` to the next train. Create the next train's note if needed.

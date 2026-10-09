@@ -1,7 +1,11 @@
+import {
+  seahawksSleeveNike,
+  SEAHAWKS_THROWBACK_SLEEVE_HAWKS,
+  SEAHAWKS_THROWBACK_SLEEVE_TAILS,
+} from '../marks/equipment';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { anchoredMark } from '../../core/jersey-spec';
 import { SEAHAWKS_SHOULDER } from '../marks/shoulder';
-import { SEAHAWKS_THROWBACK_HAWK } from '../marks/throwback-hawk';
 
 // Royal body with white numerals, white shoulder numbers, the original hawk on each sleeve and a
 // white-green-white V collar: the inset V's white edge with a green inset.
@@ -32,13 +36,8 @@ export const SEAHAWKS_JERSEY_THROWBACK: CompleteJerseySpec = {
       slots: { number: 'white', band: null, cap: null },
       id: 'shoulder',
     }),
-    // The royal body disappears into the royal sleeve, so only the head, block and eye are drawn.
-    anchoredMark({
-      paint: 'over',
-      mark: SEAHAWKS_THROWBACK_HAWK,
-      anchor: 'sleeves',
-      slots: { royal: null, white: 'white', block: 'throwbackGreen', eye: 'throwbackGreen' },
-      id: 'sleeve-hawk',
-    }),
+    { paint: 'over', mark: SEAHAWKS_THROWBACK_SLEEVE_HAWKS },
+    { paint: 'over', mark: SEAHAWKS_THROWBACK_SLEEVE_TAILS },
+    { paint: 'over', mark: seahawksSleeveNike('white') },
   ],
 };

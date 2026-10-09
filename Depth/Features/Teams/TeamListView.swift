@@ -79,8 +79,12 @@ struct TeamListView: View {
         !viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    @ViewBuilder
     private var content: some View {
+        contentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var contentStates: some View {
         switch viewModel.loadState {
         case .loading:
             // The skeleton mirrors the loaded state's structure — conference

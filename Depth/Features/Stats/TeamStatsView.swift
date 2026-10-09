@@ -8,6 +8,7 @@ import SwiftUI
 // feature-local `TeamStatsViewModel` and loads lazily on first visit.
 struct TeamStatsView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: TeamStatsViewModel
     @State private var showSeasonPicker = false
     @State private var evidenceExpanded = false
@@ -20,8 +21,13 @@ struct TeamStatsView: View {
     /// instead — same store the tab tint and Schedule read.
     private let currentTeamStore: CurrentTeamStore
 
-    init(teamId: String, repository: DepthRepository, currentTeamStore: CurrentTeamStore) {
-        _viewModel = State(initialValue: TeamStatsViewModel(teamId: teamId, repository: repository))
+    /// Takes its view model rather than building one so the embedding team page can keep
+    /// the selected season alive across page switches.
+    init(
+        viewModel: TeamStatsViewModel, repository: DepthRepository,
+        currentTeamStore: CurrentTeamStore
+    ) {
+        _viewModel = State(initialValue: viewModel)
         self.repository = repository
         self.currentTeamStore = currentTeamStore
     }
@@ -95,8 +101,12 @@ struct TeamStatsView: View {
         return Color(hex: TeamSurfaces.mark(page.team.colors.jersey))
     }
 
-    @ViewBuilder
     private var content: some View {
+        contentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var contentStates: some View {
         switch viewModel.loadState {
         case .loading:
             TeamStatsSkeleton()
@@ -276,6 +286,7 @@ struct TeamStatsView: View {
                 layout {
                     Text(verbatim: record(stats))
                         .font(.largeTitle.weight(.black))
+                        .rollingValue(record(stats))
                         .accessibilityIdentifier("stats-record")
                     if !dynamicTypeSize.isAccessibilitySize {
                         Spacer(minLength: DesignTokens.Spacing.md)
@@ -447,6 +458,7 @@ struct TeamStatsView: View {
             Text(verbatim: ordinal(story.lead.rank))
                 .font(.title.weight(.black))
                 .monospacedDigit()
+                .rollingValue(story.lead.rank)
                 .foregroundStyle(teamAccent)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: story.lockupLabel)
@@ -465,7 +477,9 @@ struct TeamStatsView: View {
 
     private func scopeButton(_ story: TeamSeasonStory) -> some View {
         Button {
-            withAnimation(DesignTokens.Motion.feedback) { scopeExpanded.toggle() }
+            withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
+                scopeExpanded.toggle()
+            }
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Image(systemName: "info.circle")
@@ -491,7 +505,9 @@ struct TeamStatsView: View {
     private func evidenceSection(_ story: TeamSeasonStory) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
-                withAnimation(DesignTokens.Motion.selection) { evidenceExpanded.toggle() }
+                withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
+                    evidenceExpanded.toggle()
+                }
             } label: {
                 HStack(spacing: DesignTokens.Spacing.sm) {
                     Text("Behind the story")

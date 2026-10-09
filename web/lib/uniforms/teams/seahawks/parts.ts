@@ -1,3 +1,4 @@
+import { seahawksPantsFeathers, SEAHAWKS_RIVALRIES_PANTS_PRINT } from './marks/equipment';
 // Seattle as a complete team spec: every helmet, jersey and pants part, with its own art drawn by
 // the marks in ./marks.
 import type { TeamSpec } from '../core/team-spec';
@@ -31,6 +32,11 @@ export const SEAHAWKS_PALETTE = {
   // The helmet's crown wedge: the composite's tonal step above the shell, re-based onto the brighter
   // live navy so it still reads as a lighter stripe.
   crownWedge: '#2B507C',
+  chrome: '#C2CDD0',
+  jerseyNavy: '#24293C',
+  pantsNavy: '#24293C',
+  pantsGrey: '#E4DFDC',
+  pantsRivalries: '#C6D3DC',
   // A fourth color with no kit token, and it can never have one: it fails AA on the dark UI
   // (1.57), so it could never be uiAccent. Sampled from the 2025 composite.
   rivalriesTeal: '#023A4D',
@@ -59,9 +65,9 @@ const edgeBand = (color: string) => ({
   edge: 'none' as const,
 });
 
-// A single 16-unit stripe on the leg's seam line.
+// A narrow band that follows the outer leg seam.
 const seamStripe = (color: string) => ({
-  position: 'center' as const,
+  position: 'leg-edge' as const,
   bands: [{ color, size: 'm' as const }],
   gap: 'none' as const,
   edge: 'none' as const,
@@ -79,7 +85,7 @@ export const SEAHAWKS_SPEC: TeamSpec = {
     },
     'teal-hawk': {
       shell: 'rivalriesTeal',
-      facemask: 'neutral',
+      facemask: 'rivalriesTeal',
       decal: SEAHAWKS_TEAL_HAWK_DECAL,
       number: 'none',
     },
@@ -99,12 +105,29 @@ export const SEAHAWKS_SPEC: TeamSpec = {
     'rivalries-silver': SEAHAWKS_JERSEY_RIVALRIES,
   },
   pants: {
-    // A green stripe on the seam line that stops at the hem, so the socks stay navy.
-    navy: { body: 'navy', stripes: seamStripe('green'), marks: [] },
+    // Twelve green feathers in the navy side-seam band, stopping at the pant hem.
+    navy: {
+      body: 'pantsNavy',
+      stripes: seamStripe('navy'),
+      marks: [{ paint: 'over', mark: seahawksPantsFeathers('green') }],
+    },
+    grey: {
+      body: 'pantsGrey',
+      stripes: seamStripe('navy'),
+      marks: [{ paint: 'over', mark: seahawksPantsFeathers('pantsGrey') }],
+    },
     // A single navy stripe on the leg edge that stops at the hem, so the socks stay green.
-    'action-green': { body: 'actionGreen', stripes: edgeBand('navy'), marks: [] },
-    // The away reference's white pants carry no stripe at all.
-    'white-plain': { body: 'white', stripes: 'none', marks: [] },
+    'action-green': {
+      body: 'actionGreen',
+      stripes: seamStripe('navy'),
+      marks: [{ paint: 'over', mark: seahawksPantsFeathers('actionGreen') }],
+    },
+    // White pants carry a navy stripe with white feathers.
+    'white-plain': {
+      body: 'white',
+      stripes: seamStripe('navy'),
+      marks: [{ paint: 'over', mark: seahawksPantsFeathers('white') }],
+    },
     // Green, royal, green with white keylines, stopping at the hem; the royal socks are drawn on the
     // legs below it.
     throwback: {
@@ -115,9 +138,15 @@ export const SEAHAWKS_SPEC: TeamSpec = {
         { paint: 'over', mark: SEAHAWKS_THROWBACK_PANTS_CENTRE_AND_SOCKS },
       ],
     },
-    'rivalries-silver': { body: 'rivalriesJerseyGrey', stripes: seamStripe('navy'), marks: [] },
+    'rivalries-silver': {
+      body: 'pantsRivalries',
+      stripes: { ...edgeBand('rivalriesJerseyGrey'), edge: 'rivalriesJerseyNavy' },
+      marks: [{ paint: 'over', mark: SEAHAWKS_RIVALRIES_PANTS_PRINT }],
+    },
   },
   socks: {
-    navy: { color: 'navy', stripes: 'none' },
+    navy: { color: 'pantsNavy', stripes: 'none' },
+    white: { color: 'white', stripes: 'none' },
+    green: { color: 'actionGreen', stripes: 'none' },
   },
 };

@@ -43,6 +43,7 @@ on:
       - 'scripts/**'
       - '.swiftlint.yml'
       - '.github/workflows/ios-ci.yml'
+      - '.github/actions/run-ios-suite/**'
   # Full DepthUITests suite, once a day — see the header comment above for why this
   # isn't on every push. Path filters don't apply to schedule triggers, so this always
   # runs regardless of whether the iOS sources changed that day; harmless, it's one run.
@@ -76,7 +77,7 @@ jobs:
             exit 0
           fi
           files=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate --jq '.[].filename')
-          if grep -Eq '^(Depth/|DepthTests/|DepthUITests/|xcconfig/|scripts/|project\.yml$|\.swiftlint\.yml$|\.github/workflows/ios-ci\.yml$)' <<<"$files"; then
+          if grep -Eq '^(Depth/|DepthTests/|DepthUITests/|xcconfig/|scripts/|project\.yml$|\.swiftlint\.yml$|\.github/workflows/ios-ci\.yml$|\.github/actions/run-ios-suite/)' <<<"$files"; then
             echo "ios=true" >> "$GITHUB_OUTPUT"
           else
             echo "ios=false" >> "$GITHUB_OUTPUT"
@@ -244,14 +245,14 @@ jobs:
   test:
     needs: [resolve-devices, build-for-testing]
     runs-on: macos-latest
-    # This PR/push job only runs the fast smoke set (unit + 4 UI classes), which finishes
-    # in ~11m — 15 flat leaves headroom for slow-runner noise and lets a hung run fail
-    # fast instead of eating 30 minutes. The slow full DepthUITests suite is not run here
-    # at all: it previously blew this exact 15-min budget mid-PerformanceUITests
-    # (confirmed on a push-triggered full-suite run), which is precisely why the full
-    # suite now lives in the nightly `test-full-suite` job below, fanned out across
-    # parallel simulator legs with its own 25-minute allowance.
-    timeout-minutes: 15
+    # This PR/push job only runs the fast smoke set (unit + 4 UI classes). The real time
+    # budget is per test (run-ios-suite's execution-time allowance), so a slow or hung
+    # test fails under its own name. This job limit is only a backstop for a hang outside
+    # any test (simulator boot, artifact download), sized well above a normal run so it
+    # doesn't need raising as the smoke set grows. The slow full DepthUITests suite runs
+    # in the nightly `test-full-suite` job below, fanned out across parallel simulator
+    # legs.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -298,8 +299,8 @@ jobs:
   # dominant wall-time lever (the header comment applies it between unit/UI; this job
   # applies the same idea *within* the UI suite): the ~15 slow production-backed
   # journeys that are deliberately excluded from PR smoke runs each relaunch the app
-  # and re-fetch snapshots, so serialized they previously pushed one 15-min flat budget
-  # past its limit mid-PerformanceUITests (see the `test` job's comment). Splitting
+  # and re-fetch snapshots, so serialized they previously ran a single job past its
+  # limit mid-PerformanceUITests. Splitting
   # DepthUITests across the `slices` below, each on its own matrix job/VM running
   # `test-without-building` against the single prebuilt product set, caps wall time at
   # the slowest slice instead of the sum. GitHub-hosted macOS runners boot a handful of
@@ -319,7 +320,8 @@ jobs:
     # every PR/push — the exact waste the header comment says it avoids.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
-    timeout-minutes: 25
+    # Backstop only; see the `test` job. Each test is bounded by run-ios-suite's allowance.
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:

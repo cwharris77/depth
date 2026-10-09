@@ -127,7 +127,9 @@ struct DepthReorderList: View {
                         draggedPlayerID = p.id
                         frozenCenters = players.map { rowCenters[$0.id] ?? 0 }
                         pickupFeedbackCount += 1
-                        withAnimation(reduceMotion ? nil : .snappy(duration: 0.15)) {
+                        withAnimation(
+                            DesignTokens.Motion.track.respectingReduceMotion(reduceMotion)
+                        ) {
                             liftRow = true
                         }
                     case .second(true, let drag?):
@@ -205,7 +207,7 @@ struct DepthReorderList: View {
     }
 
     private func moveDragged(from: Int, to: Int) {
-        withAnimation(reduceMotion ? nil : .snappy(duration: 0.15)) {
+        withAnimation(DesignTokens.Motion.track.respectingReduceMotion(reduceMotion)) {
             players.move(
                 fromOffsets: IndexSet(integer: from),
                 toOffset: to > from ? to + 1 : to

@@ -5,6 +5,8 @@ export const CARDINALS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
+      collarShield: true,
       name: 'Home',
       kind: 'home',
       jersey: 'red',
@@ -12,11 +14,20 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
       periods: [{ from: 2023 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'white', pants: 'red', socks: 'red' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'white',
+          pants: 'red',
+          pantsNike: 'white',
+          socks: 'red',
+        },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'cardinal',
+      collarShield: true,
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -24,11 +35,20 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
       periods: [{ from: 2023 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'white', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'white',
+          pants: 'white',
+          pantsNike: 'cardinal',
+          socks: 'white',
+        },
       ],
     },
     {
       slug: 'rivalries-2025',
+      sleeveNike: 'rivalRed',
+      collarShield: true,
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',
@@ -36,11 +56,20 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'cream', pants: 'cream', socks: 'rivalries' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'cream',
+          pants: 'cream',
+          pantsNike: 'rivalRed',
+          socks: 'rivalries',
+        },
       ],
     },
     {
       slug: 'black-alt',
+      sleeveNike: 'white',
+      collarShield: true,
       name: 'Black Alternate',
       kind: 'alternate',
       jersey: 'black',
@@ -48,7 +77,14 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
       periods: [{ from: 2023 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'black', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'black',
+          pantsNike: 'white',
+          socks: 'black',
+        },
       ],
     },
   ],

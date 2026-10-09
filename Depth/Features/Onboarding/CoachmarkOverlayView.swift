@@ -73,7 +73,7 @@ struct CoachmarkOverlayView: View {
             .ignoresSafeArea()
             .transition(.opacity)
             .animation(
-                reduceMotion ? DesignTokens.Motion.feedback : .easeInOut(duration: 0.2),
+                DesignTokens.Motion.reveal.respectingReduceMotion(reduceMotion),
                 value: controller.phase
             )
         }

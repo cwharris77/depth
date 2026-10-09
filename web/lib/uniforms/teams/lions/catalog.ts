@@ -5,6 +5,7 @@ export const LIONS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'blue',
@@ -12,12 +13,20 @@ export const LIONS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'silver-lion', pants: 'blue', socks: 'blue' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'silver-lion',
+          pants: 'blue',
+          pantsNike: 'blue',
+          socks: 'blue',
+        },
         {
           key: 'silver-pants',
           label: 'Silver pants',
           helmet: 'silver-lion',
           pants: 'silver',
+          pantsNike: 'blue',
           socks: 'blue',
         },
         {
@@ -25,12 +34,14 @@ export const LIONS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'silver-lion',
           pants: 'white',
+          pantsNike: 'blue',
           socks: 'blue',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'blue',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -43,6 +54,7 @@ export const LIONS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'silver-lion',
           pants: 'silver',
+          pantsNike: 'blue',
           socks: 'white',
         },
         {
@@ -50,6 +62,7 @@ export const LIONS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'silver-lion',
           pants: 'white',
+          pantsNike: 'blue',
           socks: 'white',
         },
         {
@@ -57,6 +70,7 @@ export const LIONS_CATALOG: TeamCatalog = {
           label: 'Blue pants',
           helmet: 'silver-lion',
           pants: 'blue',
+          pantsNike: 'blue',
           socks: 'blue',
         },
       ],

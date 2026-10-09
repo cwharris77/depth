@@ -5,6 +5,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'red',
@@ -17,12 +18,14 @@ export const CHIEFS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'red-arrowhead',
           pants: 'white',
+          pantsNike: 'red',
           socks: 'red',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'red',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -35,6 +38,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'red-arrowhead',
           pants: 'white',
+          pantsNike: 'red',
           socks: 'white',
         },
         {
@@ -42,6 +46,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
           label: 'Red pants',
           helmet: 'red-arrowhead',
           pants: 'red',
+          pantsNike: 'white',
           socks: 'white',
         },
       ],

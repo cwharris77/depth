@@ -7,6 +7,7 @@ export const BILLS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'blue',
@@ -14,18 +15,27 @@ export const BILLS_CATALOG: TeamCatalog = {
       legacyAccent,
       periods: [{ from: 2011 }],
       combinations: [
-        { key: 'standard', label: 'Royal pants', helmet: 'white', pants: 'blue', socks: 'navy' },
+        {
+          key: 'standard',
+          label: 'Royal pants',
+          helmet: 'white',
+          pants: 'blue',
+          pantsNike: 'white',
+          socks: 'navy',
+        },
         {
           key: 'white-pants',
           label: 'White pants',
           helmet: 'white',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'navy',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'navy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -33,12 +43,27 @@ export const BILLS_CATALOG: TeamCatalog = {
       legacyAccent,
       periods: [{ from: 2011 }],
       combinations: [
-        { key: 'standard', label: 'White pants', helmet: 'white', pants: 'white', socks: 'navy' },
-        { key: 'royal-pants', label: 'Royal pants', helmet: 'white', pants: 'blue', socks: 'navy' },
+        {
+          key: 'standard',
+          label: 'White pants',
+          helmet: 'white',
+          pants: 'white',
+          pantsNike: 'navy',
+          socks: 'navy',
+        },
+        {
+          key: 'royal-pants',
+          label: 'Royal pants',
+          helmet: 'white',
+          pants: 'blue',
+          pantsNike: 'white',
+          socks: 'navy',
+        },
       ],
     },
     {
       slug: 'rivalries-2025',
+      sleeveNike: 'rivalriesNumber',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',
@@ -46,7 +71,14 @@ export const BILLS_CATALOG: TeamCatalog = {
       legacyAccent,
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'ice', pants: 'rivalries', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'ice',
+          pants: 'rivalries',
+          pantsNike: 'navy',
+          socks: 'white',
+        },
       ],
     },
   ],

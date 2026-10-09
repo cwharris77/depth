@@ -19,6 +19,9 @@ final class ScheduleViewModel {
     private(set) var schedule: TeamSchedule?
     private(set) var selectedSeason: Int?
     private(set) var defaultSeason: Int?
+    /// The PRESEASON/REGULAR/PLAYOFFS tab. Held here, not in the view, so it survives the
+    /// view being rebuilt by a page switch.
+    var phase: SchedulePhase = .regular
 
     private let repository: DepthRepository
     private var latestRequestID = 0
@@ -74,8 +77,12 @@ final class ScheduleViewModel {
     private func fetch(season: Int?) async {
         latestRequestID += 1
         let requestID = latestRequestID
-        schedule = nil
-        loadState = .loading
+        // Re-fetching the season already on screen (pull-to-refresh) keeps it visible until
+        // the reload resolves; a different season clears to the loading state.
+        if !(loadState == .loaded && schedule?.season == season) {
+            schedule = nil
+            loadState = .loading
+        }
         do {
             let result = try await repository.teamSchedule(teamId: teamId, season: season)
             guard requestID == latestRequestID else { return }

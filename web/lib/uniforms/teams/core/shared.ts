@@ -1,4 +1,5 @@
 import type { PartLayer } from './parts';
+import { nflShield } from './nfl-shield';
 
 // Construction geometry that is genuinely shared between team modules — not a grab-bag. Anything
 // here must be a fact about the mannequin rather than about a team, so that a second team adopting
@@ -52,26 +53,30 @@ export interface ModernInsetVCollarOptions {
   outline?: boolean;
 }
 
-// The opening's edge as two cubic sides meeting at the point (294,464).
+// The band centre guides the optional lining between the independent collar contours.
 type Point = [number, number];
 const COLLAR_SIDES: [Point, Point, Point, Point][] = [
   [
     [220, 383],
-    [224, 415],
-    [255, 442],
-    [294, 464],
+    [212, 417],
+    [258, 451],
+    [294, 477],
   ],
   [
-    [294, 464],
-    [333, 442],
-    [364, 415],
+    [294, 477],
+    [330, 451],
+    [376, 417],
     [368, 383],
   ],
 ];
+const COLLAR_OUTER =
+  'M204,383 C198,410 204,427 224,444 L288,491 Q294,497 300,491 L364,444 C384,427 390,410 384,383';
+const COLLAR_INNER =
+  'M228,383 L228,405 C230,420 245,428 258,439 L290,456 Q294,458 298,456 L330,439 C343,428 358,420 360,405 L360,383';
 const COLLAR_AXIS = 294;
-const COLLAR_BAND_HALF = 10;
+const COLLAR_BAND_HALF = 14;
 const COLLAR_LINING_REACH = 0.72; // fraction of each side, from the top, that the lining covers
-const COLLAR_BACK_BAR_DEPTH = 14;
+const COLLAR_BACK_BAR_DEPTH = 22;
 const COLLAR_OUTLINE_WIDTH = 3;
 
 function cubic(side: [Point, Point, Point, Point], t: number): { p: Point; n: Point } {
@@ -121,19 +126,7 @@ const polyline = (pts: Point[]) =>
   pts.map(([x, y], i) => `${i ? 'L' : 'M'}${round(x)},${round(y)}`).join(' ');
 
 function backBarSpan(): { left: number; right: number; bottom: number } {
-  const bottom = 383 + COLLAR_BACK_BAR_DEPTH;
-  const [edge] = collarOffset(COLLAR_BAND_HALF);
-  const xAt = (pts: Point[]) => {
-    for (let k = 1; k < pts.length; k++) {
-      const [[x0, y0], [x1, y1]] = [pts[k - 1], pts[k]];
-      if ((y0 - bottom) * (y1 - bottom) <= 0) return x0 + ((bottom - y0) / (y1 - y0)) * (x1 - x0);
-    }
-    return pts[0][0];
-  };
-  const mid = Math.floor(edge.length / 2);
-  const left = xAt(edge.slice(0, mid + 1));
-  const right = xAt(edge.slice(mid).reverse());
-  return { left: round(left), right: round(right), bottom };
+  return { left: 228, right: 360, bottom: 383 + COLLAR_BACK_BAR_DEPTH };
 }
 
 function backBarPath(): string {
@@ -144,6 +137,113 @@ function backBarPath(): string {
 function backBarKeyline(): string {
   const { left, right, bottom } = backBarSpan();
   return `M${left},${bottom} H${right}`;
+}
+
+// A narrower, deeper V than the inset V. The band's two sides run down to a point; a separate
+// back band spans the neck between them, keylined off from each side. The opening is a V from
+// (246,409) to the point at (294,476); the outer edge reaches (294,507).
+const NARROW_V_OUTER = 'M211,383 C211,450 248,492 294,507 C340,492 377,450 377,383';
+const NARROW_V_OPENING = 'M246,409 C248,435 271,463 294,476 C317,463 340,435 342,409 Z';
+// The side trim's centre line, open at both ends: up to the shoulder line on each side.
+const NARROW_V_TRIM = 'M228,383 C229,440 265,482 294,491.5 C323,482 359,440 360,383';
+// The back band's trim runs straight across between the keylines, which rise from the opening's
+// top corners to the shoulder line.
+const NARROW_V_BACK_TRIM = 'M246,396 H342';
+const NARROW_V_BACK_KEYLINES = 'M246,383 V409 M342,383 V409';
+const NARROW_V_TRIM_WIDTH = 7;
+// The figure's own outline weight: heavier than the inset V's keylines, so the band reads slimmer.
+const NARROW_V_OUTLINE_WIDTH = 4;
+// Each hairline of trim piping shows this much of its colour on either side of the trim.
+const NARROW_V_PIPING = 1.5;
+
+export interface NarrowVCollarOptions {
+  idPrefix: string;
+  colors: {
+    // Fill inside the V opening.
+    interior: string;
+    band: string;
+    trim?: string;
+    // Hairlines along both edges of the trim.
+    trimEdge?: string;
+  };
+  // Thin FIGURE_OUTLINE keylines along the band's outer edge and round the opening.
+  outline?: boolean;
+}
+
+export function narrowVCollar({
+  idPrefix,
+  colors,
+  outline = false,
+}: NarrowVCollarOptions): PartLayer[] {
+  const { trim, trimEdge } = colors;
+  const fill = (id: string, color: string, d: string): PartLayer => ({
+    id: `${idPrefix}-${id}`,
+    surface: 'collar',
+    kind: 'fill',
+    clip: true,
+    fill: color,
+    d,
+  });
+  const stroke = (
+    id: string,
+    color: string,
+    width: number,
+    d: string,
+    lineCap?: 'butt'
+  ): PartLayer => ({
+    id: `${idPrefix}-${id}`,
+    surface: 'collar',
+    kind: 'stroke',
+    clip: true,
+    stroke: color,
+    strokeWidth: width,
+    d,
+    ...(lineCap && { lineCap }),
+  });
+  // The figure's stroke group rounds caps; the open trims stop square at the keylines.
+  const trimStroke = (id: string, color: string, width: number, d: string) =>
+    stroke(id, color, width, d, 'butt');
+  return [
+    fill('collar-band', colors.band, `${NARROW_V_OUTER} Z`),
+    ...(trim && trimEdge
+      ? [
+          trimStroke(
+            'collar-trim-edge',
+            trimEdge,
+            NARROW_V_TRIM_WIDTH + 2 * NARROW_V_PIPING,
+            NARROW_V_TRIM
+          ),
+        ]
+      : []),
+    ...(trim ? [trimStroke('collar-trim', trim, NARROW_V_TRIM_WIDTH, NARROW_V_TRIM)] : []),
+    ...(trim && trimEdge
+      ? [
+          trimStroke(
+            'collar-back-trim-edge',
+            trimEdge,
+            NARROW_V_TRIM_WIDTH + 2 * NARROW_V_PIPING,
+            NARROW_V_BACK_TRIM
+          ),
+        ]
+      : []),
+    ...(trim
+      ? [trimStroke('collar-back-trim', trim, NARROW_V_TRIM_WIDTH, NARROW_V_BACK_TRIM)]
+      : []),
+    fill('neck-opening', colors.interior, NARROW_V_OPENING),
+    ...(outline
+      ? [
+          stroke('collar-outline-outer', OUTLINE_PAINT, NARROW_V_OUTLINE_WIDTH, NARROW_V_OUTER),
+          stroke('collar-outline-inner', OUTLINE_PAINT, NARROW_V_OUTLINE_WIDTH, NARROW_V_OPENING),
+          stroke(
+            'collar-back-keylines',
+            OUTLINE_PAINT,
+            NARROW_V_OUTLINE_WIDTH,
+            NARROW_V_BACK_KEYLINES
+          ),
+        ]
+      : []),
+    ...nflShield(idPrefix, 'collar-narrow-v'),
+  ];
 }
 
 export function modernInsetVCollar({
@@ -169,16 +269,15 @@ export function modernInsetVCollar({
       kind: 'fill',
       clip: true,
       fill: colors.interior,
-      d: 'M220,383 H368 C364,415 333,442 294,464 C255,442 224,415 220,383 Z',
+      d: `${COLLAR_OUTER} Z`,
     },
     {
       id: `${idPrefix}-collar-edge`,
       surface: 'collar',
-      kind: 'stroke',
+      kind: 'fill',
       clip: true,
-      stroke: colors.edge,
-      strokeWidth: 20,
-      d: 'M220,383 C224,415 255,442 294,464 C333,442 364,415 368,383',
+      fill: colors.edge,
+      d: `${COLLAR_OUTER} L360,383 L360,405 C358,420 343,428 330,439 L298,456 Q294,458 290,456 L258,439 C245,428 230,420 228,405 L228,383 Z`,
     },
     {
       id: insetId,
@@ -187,7 +286,7 @@ export function modernInsetVCollar({
       clip: true,
       stroke: colors.inset,
       strokeWidth: 8,
-      d: 'M220,383 C224,415 255,442 291,462 M297,462 C333,442 364,415 368,383',
+      d: 'M216,383 C210,414 219,429 243,447 L290,477 M298,477 L345,447 C369,429 378,414 372,383',
     },
     {
       id: `${idPrefix}-collar-placket`,
@@ -195,7 +294,7 @@ export function modernInsetVCollar({
       kind: 'fill',
       clip: true,
       fill: colors.placket,
-      d: 'M281,452 L294,459 L307,452 L302,479 L286,479 Z',
+      d: 'M268,451 L294,463 L320,451 L294,492 Z',
     },
     {
       id: `${idPrefix}-collar-back`,
@@ -211,18 +310,25 @@ export function modernInsetVCollar({
         )
       : []),
     ...(outline
-      ? [-COLLAR_BAND_HALF, COLLAR_BAND_HALF]
-          .map((inset, i) =>
+      ? [COLLAR_OUTER, COLLAR_INNER]
+          .map((contour, i) =>
             stroke(
               `collar-outline-${i ? 'inner' : 'outer'}`,
               OUTLINE_PAINT,
               COLLAR_OUTLINE_WIDTH,
-              polyline(collarOffset(inset)[0])
+              contour
             )
           )
           .concat(
             stroke('collar-outline-back', OUTLINE_PAINT, COLLAR_OUTLINE_WIDTH, backBarKeyline())
           )
       : []),
+    ...[
+      'M268,448 C265,461 271,475 283,487 L283,466 Z',
+      'M320,448 C323,461 317,475 305,487 L305,466 Z',
+      'M271,453 C270,463 274,475 280,480 M275,458 C275,466 278,476 283,480',
+      'M317,453 C318,463 314,475 308,480 M313,458 C313,466 310,476 305,480',
+    ].map((d, i) => stroke(`collar-rib-${i}`, OUTLINE_PAINT, 1.3, d)),
+    ...nflShield(idPrefix),
   ];
 }

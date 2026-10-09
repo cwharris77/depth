@@ -41,6 +41,12 @@ final class AuthFlowViewModel {
         email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
+    /// A code already went out, so the email step can step back to it.
+    var canReturnToCode: Bool { lastSentEmail != nil }
+
+    /// The typed address is the one the pending code was sent to.
+    var hasPendingCode: Bool { lastSentEmail == normalizedEmail }
+
     func canResend(at date: Date) -> Bool {
         resendWait(at: date) == nil
     }
@@ -63,6 +69,12 @@ final class AuthFlowViewModel {
         // make "Email me a code" read as a dead button. The cooldown is email-wide and
         // server-owned, so it still blocks; this state change makes that visible.
         if let wait = resendWait(at: now()) {
+            // Re-entering the address the pending code went to returns to that code rather
+            // than claiming a new send.
+            if step == .email && hasPendingCode {
+                returnToCode()
+                return
+            }
             // The code step already renders the countdown in place of its resend button,
             // so only the email step needs the refusal spelled out.
             if step == .email { error = .rateLimited(retryAfterSeconds: wait) }
@@ -75,6 +87,8 @@ final class AuthFlowViewModel {
         do {
             try await service.sendEmailOtp(to: normalizedEmail, shouldCreateUser: shouldCreateUser)
             step = .code
+            // A new code replaces the previous one, so a digit typed for it is stale.
+            code = ""
             lastSentEmail = normalizedEmail
             resendAvailableAt = now().addingTimeInterval(60)
             events.record(.authStarted)
@@ -130,9 +144,18 @@ final class AuthFlowViewModel {
         }
     }
 
+    /// Keeps the typed code so Back can return to it; a successful send clears it.
     func editEmail() {
         step = .email
-        code = ""
+        error = nil
+    }
+
+    /// Back from the email step: restores the address the pending code was sent to without
+    /// sending another, so that code can still be entered.
+    func returnToCode() {
+        guard let lastSentEmail else { return }
+        email = lastSentEmail
+        step = .code
         error = nil
     }
 

@@ -5,6 +5,7 @@ export const COLTS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
@@ -17,12 +18,14 @@ export const COLTS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'white-horseshoe',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'navy',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'black',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -35,6 +38,7 @@ export const COLTS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'white-horseshoe',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'navy',
         },
       ],

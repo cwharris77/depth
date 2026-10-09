@@ -170,6 +170,35 @@ private func season(
     #expect(PlayerStatCategory.passing.barFraction(seasons[0], among: seasons) == 0)
 }
 
+@Test func ledgerCareerBestIsTheNewestSeasonHoldingTheTopMark() {
+    let seasons = [
+        season(2025, rushingYards: 404), season(2024, rushingYards: 404),
+        season(2023, rushingYards: 120),
+    ]
+    #expect(PlayerStatCategory.rushing.careerBest(among: seasons)?.season == 2025)
+    // A category nobody recorded a positive mark in has no best to scale against.
+    #expect(PlayerStatCategory.passing.careerBest(among: seasons) == nil)
+    #expect(PlayerStatCategory.rushing.careerBest(among: []) == nil)
+}
+
+@Test func ledgerSeasonIsInProgressUntilItsScheduleIsPlayedOut() {
+    func game(_ week: Int, bye: Bool = false, result: ScheduleResult?) -> ScheduleGame {
+        ScheduleGame(
+            week: week, isBye: bye, date: nil, isHome: true, opponent: nil, teamScore: nil,
+            opponentScore: nil, result: result)
+    }
+    let midSeason = TeamSchedule(
+        season: 2026, games: [game(1, result: .win), game(2, result: nil)])
+    #expect(PlayerStatLedger.inProgressSeason(midSeason) == 2026)
+    // A remaining bye is not a game left to play.
+    let finished = TeamSchedule(
+        season: 2026,
+        games: [game(1, result: .win), game(2, result: .loss), game(3, bye: true, result: nil)])
+    #expect(PlayerStatLedger.inProgressSeason(finished) == nil)
+    #expect(PlayerStatLedger.inProgressSeason(TeamSchedule(season: 2026, games: [])) == nil)
+    #expect(PlayerStatLedger.inProgressSeason(nil) == nil)
+}
+
 @Test func careerTotalsSumSeasonsAndKeepUnrecordedColumnsNil() {
     let career = PlayerStatLedger.careerTotals([
         season(
@@ -208,6 +237,18 @@ private func season(
     #expect(
         PlayerStatLedger.rowLabel(for: row, category: .passing)
             == "2025 season, SEA, Passing yards 4,118, 31 touchdowns, 9 interceptions")
+    // Season status rides in the first segment so every later segment stays a stat.
+    #expect(
+        PlayerStatLedger.rowLabel(for: row, category: .passing, isCareerBest: true)
+            .hasPrefix("2025 career-best season, SEA, "))
+    #expect(
+        PlayerStatLedger.rowLabel(for: row, category: .passing, isInProgress: true)
+            .hasPrefix("2025 season in progress, SEA, "))
+    #expect(
+        PlayerStatLedger.rowLabel(
+            for: row, category: .passing, isCareerBest: true, isInProgress: true
+        )
+        .hasPrefix("2025 career-best season in progress, SEA, "))
 }
 
 @Test func profileDisplayJerseyNameInitialsAndVitals() {
@@ -227,6 +268,18 @@ private func season(
         PlayerProfileDisplay.vitals(age: 0, experience: 0, height: "", weight: 0).map(\.text) == [
             "ROOKIE"
         ])
+}
+
+// Historical rows carry no experience; their placeholder 0 must not read as ROOKIE.
+@Test func historicalProfileLeavesExperienceOutOfVitals() {
+    #expect(PlayerProfileDisplay.shownExperience(0, isHistorical: true) == nil)
+    #expect(PlayerProfileDisplay.shownExperience(0, isHistorical: false) == 0)
+    #expect(PlayerProfileDisplay.shownExperience(6, isHistorical: false) == 6)
+    let historical = PlayerProfileDisplay.vitals(
+        age: 0, experience: PlayerProfileDisplay.shownExperience(0, isHistorical: true),
+        height: "6' 2\"", weight: 212
+    )
+    #expect(historical.map(\.text) == ["6' 2\"", "212 LB"])
 }
 
 @Test func profileDisplayVitalsAppendCollegeLast() {

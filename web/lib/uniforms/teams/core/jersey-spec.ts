@@ -1,14 +1,19 @@
 // A declarative jersey description: named construction primitives and palette tokens, no
 // coordinates. expandJersey() owns all geometry, fitted once to the shared mannequin, and emits
 // ordinary UniformPart layers.
-import { placeMark, placeMarkOnPair, type Mark, type PlacedMark } from './marks';
+import { placeMark, placeMarkOnPair, type AnchorPair, type Mark, type PlacedMark } from './marks';
 import type { PaletteRef, PartLayer, UniformPart } from './parts';
 import { JERSEY_NUMBER_THREE } from '../../jersey-art';
-import { GENERIC_COLLAR_PATH, LEGACY_ROUNDED_COLLAR_PATH, modernInsetVCollar } from './shared';
+import {
+  GENERIC_COLLAR_PATH,
+  LEGACY_ROUNDED_COLLAR_PATH,
+  modernInsetVCollar,
+  narrowVCollar,
+} from './shared';
 
 export type JerseySize = 's' | 'm' | 'l';
 export type JerseyBand = { color: string; size: JerseySize };
-export type JerseyGap = 'none' | 'narrow' | 'wide' | 'broad';
+export type JerseyGap = 'none' | 'hairline' | 'narrow' | 'wide' | 'broad';
 
 declare const anchored: unique symbol;
 
@@ -18,7 +23,13 @@ export interface AnchoredJerseyMark {
   paint: 'under' | 'over';
   mark: Mark;
   anchor:
-    'sleeves' | 'sleeve-left' | 'sleeve-right' | 'shoulders' | 'shoulder-left' | 'shoulder-right';
+    | AnchorPair
+    | 'sleeve-left'
+    | 'sleeve-right'
+    | 'shoulder-left'
+    | 'shoulder-right'
+    | 'sleeve-top-left'
+    | 'sleeve-top-right';
   slots: Readonly<Record<string, PaletteRef | null>>;
   // Layer id stem, prefixed with the jersey's prefix.
   id: string;
@@ -50,7 +61,7 @@ export interface JerseyNumber {
 export interface JerseySpec {
   body: string;
   collar: {
-    style: 'shallow-v' | 'inset-v' | 'rounded' | 'none';
+    style: 'shallow-v' | 'inset-v' | 'narrow-v' | 'rounded' | 'none';
     color?: string;
     trim?: string;
     // Fill for the neck opening inside the V. Defaults to the body color; a darker shade of the
@@ -59,7 +70,10 @@ export interface JerseySpec {
     // inset-v only: see modernInsetVCollar.
     lining?: string;
     backBar?: string;
+    // inset-v and narrow-v.
     outline?: boolean;
+    // narrow-v only: hairlines of this colour along both edges of the trim.
+    trimEdge?: string;
   };
   // Color blocks stacked down from the top of each sleeve. The first band is the cap: it fills up
   // to the shoulder seam with a curved inner edge. Every band edge slopes down toward the body.
@@ -83,7 +97,7 @@ export interface JerseySpec {
 }
 
 const SIZE_PX: Record<JerseySize, number> = { s: 11, m: 16, l: 28 };
-const GAP_PX: Record<JerseyGap, number> = { none: 0, narrow: 6, wide: 12, broad: 18 };
+const GAP_PX: Record<JerseyGap, number> = { none: 0, hairline: 3, narrow: 6, wide: 12, broad: 18 };
 const OUTLINE_PX = { none: 0, thin: 8, regular: 14, heavy: 20, 'x-heavy': 26 };
 
 type Sleeve = { outer: number; inner: number };
@@ -189,7 +203,7 @@ function bothSleeves(id: string, color: string, shape: (side: Sleeve) => string)
 }
 
 function collarLayers(prefix: string, spec: JerseySpec): PartLayer[] {
-  const { style, color, trim, inside, lining, backBar, outline } = spec.collar;
+  const { style, color, trim, inside, lining, backBar, outline, trimEdge } = spec.collar;
   if (style === 'none' || !color) return [];
   const stroke = (id: string, d: string, width: number, c: string): PartLayer => ({
     id: `${prefix}-${id}`,
@@ -218,20 +232,29 @@ function collarLayers(prefix: string, spec: JerseySpec): PartLayer[] {
           interior: inside ?? spec.body,
           edge: color,
           inset: trim ?? color,
-          placket: spec.body,
+          placket: color,
           lining,
           backBar,
         },
         outline,
       });
+    case 'narrow-v':
+      return narrowVCollar({
+        idPrefix: prefix,
+        colors: { interior: inside ?? spec.body, band: color, trim, trimEdge },
+        outline,
+      });
   }
 }
+
+const isPair = (anchor: AnchoredJerseyMark['anchor']): anchor is AnchorPair =>
+  anchor === 'sleeves' || anchor === 'shoulders' || anchor === 'sleeve-tops';
 
 // Layers for one mark use: a placed mark's own layers copied as-is, or a mark placed by anchor.
 function markLayers(prefix: string, use: JerseyMarkUse): PartLayer[] {
   if (!('anchor' in use)) return use.mark.layers.map((l) => ({ ...l }));
   const id = `${prefix}-${use.id}`;
-  return use.anchor === 'sleeves' || use.anchor === 'shoulders'
+  return isPair(use.anchor)
     ? placeMarkOnPair(id, use.mark, use.anchor, use.slots)
     : placeMark(id, use.mark, use.anchor, use.slots);
 }

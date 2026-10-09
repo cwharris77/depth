@@ -4,8 +4,18 @@ import { PACKERS_HELMET_STRIPE_INNER_PATH, PACKERS_HELMET_STRIPE_PATH } from './
 import { placed } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
 
-// The green/white/green crown stripe over the supplied three-colour G. The G's source colours are
-// palette keys of their own so the three foreground paints stay distinct from the kit colours.
+const G_MARK: PartLayer[] = PACKERS_G_MARK_LAYERS.map((layer): PartLayer => ({
+  ...layer,
+  surface: 'helmet',
+  clip: true,
+  kind: 'fill',
+}));
+
+// The supplied three-colour G alone on the shell. Its source colours are palette keys of their own
+// so the three foreground paints stay distinct from the kit colours.
+export const PACKERS_HELMET_G = placed(G_MARK);
+
+// The green/white/green crown stripe under the same G.
 export const PACKERS_HELMET_DECAL = placed([
   {
     id: 'packers-helmet-stripe',
@@ -23,10 +33,5 @@ export const PACKERS_HELMET_DECAL = placed([
     kind: 'fill',
     fill: 'white',
   },
-  ...PACKERS_G_MARK_LAYERS.map((layer): PartLayer => ({
-    ...layer,
-    surface: 'helmet',
-    clip: true,
-    kind: 'fill',
-  })),
+  ...G_MARK,
 ]);

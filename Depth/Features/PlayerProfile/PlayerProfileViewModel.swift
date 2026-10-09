@@ -21,6 +21,9 @@ final class PlayerProfileViewModel {
     /// The profile's lead claim, from the player's highlight file. Nil while loading, when
     /// the file is missing, or when no career high is rare enough to claim.
     private(set) var knownFor: PlayerKnownForClaim?
+    /// The season still being played, from the profile team's schedule. Nil without a team,
+    /// when the schedule read fails, or once the regular season is played out.
+    private(set) var inProgressSeason: Int?
 
     private let repository: DepthRepository
     private var latestRequestID = 0
@@ -37,11 +40,14 @@ final class PlayerProfileViewModel {
         statsState = .loading
         async let highlights = try? repository.playerHighlights(
             playerId: playerID, teamId: teamID)
+        async let schedule = scheduleForInProgressSeason()
         do {
             let response = try await repository.playerStats(playerId: playerID, teamId: teamID)
             let claim = PlayerKnownForBuilder.claim(await highlights)
+            let liveSeason = PlayerStatLedger.inProgressSeason(await schedule)
             guard requestID == latestRequestID else { return }
             knownFor = claim
+            inProgressSeason = liveSeason
             let played = response.filter(\.hasPlayedGames)
             stats = played
             statsState = played.isEmpty ? .empty : .loaded
@@ -52,6 +58,13 @@ final class PlayerProfileViewModel {
             guard requestID == latestRequestID else { return }
             statsState = .failed(.server("\(error)"))
         }
+    }
+
+    // The team's current schedule decides whether its newest season is still running. A
+    // failed read only drops the in-progress treatment, so it never fails the stats load.
+    private func scheduleForInProgressSeason() async -> TeamSchedule? {
+        guard let teamID else { return nil }
+        return try? await repository.teamSchedule(teamId: teamID, season: nil)
     }
 
     func retry() async {

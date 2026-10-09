@@ -5,6 +5,7 @@ export const JETS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'green',
@@ -12,18 +13,27 @@ export const JETS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
-        { key: 'standard', label: 'Green pants', helmet: 'green', pants: 'green', socks: 'green' },
+        {
+          key: 'standard',
+          label: 'Green pants',
+          helmet: 'green',
+          pants: 'green',
+          pantsNike: 'white',
+          socks: 'green',
+        },
         {
           key: 'white-pants',
           label: 'White pants',
           helmet: 'green',
           pants: 'white',
+          pantsNike: 'green',
           socks: 'green',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'green',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -31,12 +41,20 @@ export const JETS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
-        { key: 'standard', label: 'White pants', helmet: 'green', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'White pants',
+          helmet: 'green',
+          pants: 'white',
+          pantsNike: 'green',
+          socks: 'white',
+        },
         {
           key: 'green-socks',
           label: 'Green socks',
           helmet: 'green',
           pants: 'white',
+          pantsNike: 'green',
           socks: 'green',
         },
         {
@@ -44,6 +62,7 @@ export const JETS_CATALOG: TeamCatalog = {
           label: 'Green pants',
           helmet: 'green',
           pants: 'green',
+          pantsNike: 'white',
           socks: 'white',
         },
         {
@@ -51,12 +70,14 @@ export const JETS_CATALOG: TeamCatalog = {
           label: 'Green pants, green socks',
           helmet: 'green',
           pants: 'green',
+          pantsNike: 'white',
           socks: 'green',
         },
       ],
     },
     {
       slug: 'rivalries-2025',
+      sleeveNike: 'white',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'riv',
@@ -64,11 +85,19 @@ export const JETS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'riv-green', pants: 'riv', socks: 'riv' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'riv-green',
+          pants: 'riv',
+          pantsNike: 'white',
+          socks: 'riv',
+        },
       ],
     },
     {
       slug: 'black-alt',
+      sleeveNike: 'white',
       name: 'Black Alternate',
       kind: 'alternate',
       jersey: 'black',
@@ -76,7 +105,14 @@ export const JETS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'black', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'black',
+          pantsNike: 'white',
+          socks: 'black',
+        },
       ],
     },
   ],

@@ -5,6 +5,7 @@ export const BEARS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
@@ -12,18 +13,27 @@ export const BEARS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
       periods: [{ from: 2012 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-c',
+          pants: 'navy',
+          pantsNike: 'white',
+          socks: 'white',
+        },
         {
           key: 'white-pants',
           label: 'White pants',
           helmet: 'navy-c',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'navy',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'navy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -31,20 +41,30 @@ export const BEARS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
       periods: [{ from: 2012 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-c',
+          pants: 'navy',
+          pantsNike: 'white',
+          socks: 'white',
+        },
       ],
     },
     // Bears orange alternate (modern alt, no throwback era). Hexes: orange #C83803, navy #0B162A.
     // uiAccent reuses the team's brightened orange.
     {
       slug: 'orange-alternate',
+      sleeveNike: 'white',
       name: 'Orange Alternate',
       kind: 'alternate',
       jersey: 'orange',
       colors: { primary: '#C83803', secondary: '#0B162A', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
       periods: [{ from: 2005 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy' }],
+      combinations: [
+        { key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy', pantsNike: 'white' },
+      ],
     },
   ],
 };

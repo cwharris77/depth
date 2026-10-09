@@ -286,6 +286,70 @@ final class DepthUITests: XCTestCase {
         )
     }
 
+    /// Profile and kit pushes pop back with an interactive edge swipe, whether they zoom
+    /// (Compare cell → profile, uniform team card → kits) or slide (field dot → profile),
+    /// and a double tap pushes only once.
+    func testProfilePushesPopBackToTheirSource() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"))
+
+        // Field dot → profile (default push), popped by an interactive edge swipe.
+        let quarterback = app.buttons["player-slot-off-qb-0"]
+        let profile = app.descendants(matching: .any)["player-profile-full-content"]
+        XCTAssertTrue(quarterback.waitForExistence(timeout: 10))
+        XCTAssertTrue(quarterback.tapUntil { profile.exists })
+        edgeSwipeBack(app)
+        XCTAssertTrue(profile.waitForAbsence(timeout: 5), "an edge swipe should pop the profile")
+        XCTAssertTrue(quarterback.waitForHittable(timeout: 5))
+
+        // A double tap pushes once: one Back returns to the field.
+        quarterback.doubleTap()
+        XCTAssertTrue(profile.waitForExistence(timeout: 5))
+        app.navigationBars.buttons["BackButton"].tap()
+        XCTAssertTrue(profile.waitForAbsence(timeout: 5))
+        XCTAssertTrue(quarterback.waitForHittable(timeout: 5), "a double tap should push once")
+
+        // Compare cell → profile.
+        let scheduleTab = app.buttons["page-switcher-schedule"]
+        XCTAssertTrue(scheduleTab.tapUntil { app.otherElements["schedule-content"].exists })
+        let cards = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'schedule-week-'"))
+        XCTAssertTrue(cards.firstMatch.waitForExistence(timeout: 15))
+        var index = 0
+        while index < cards.count && !cards.element(boundBy: index).isHittable { index += 1 }
+        let compareTab = app.tabBars.firstMatch.buttons["Compare"]
+        XCTAssertTrue(
+            cards.element(boundBy: index).tapUntil { compareTab.exists && compareTab.isSelected })
+        let positionTab = app.buttons["compare-tab-position"]
+        XCTAssertTrue(positionTab.waitForExistence(timeout: 20))
+        positionTab.tap()
+        let cell = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'compare-player-cell-'")
+        ).firstMatch
+        XCTAssertTrue(cell.waitForExistence(timeout: 15))
+        XCTAssertTrue(cell.tapUntil { profile.exists })
+        edgeSwipeBack(app)
+        XCTAssertTrue(profile.waitForAbsence(timeout: 5))
+        XCTAssertTrue(cell.waitForHittable(timeout: 5))
+
+        // Uniform team card → that team's kits.
+        app.tabBars.firstMatch.buttons["Uniforms"].tap()
+        let card = app.buttons["uniforms-team-bills"]
+        let detail = app.descendants(matching: .any)["uniform-team-detail"]
+        XCTAssertTrue(card.waitForExistence(timeout: 20))
+        XCTAssertTrue(card.tapUntil { detail.exists })
+        edgeSwipeBack(app)
+        XCTAssertTrue(detail.waitForAbsence(timeout: 5))
+        XCTAssertTrue(card.waitForHittable(timeout: 5))
+    }
+
+    private func edgeSwipeBack(_ app: XCUIApplication) {
+        let edge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
+        edge.press(
+            forDuration: 0.05,
+            thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)))
+    }
+
     /// The ROSTER/SCHEDULE/STATS page switcher reaches all three
     /// pages, each rendering its own content — the roster chart, the Stats record, and
     /// the embedded schedule. Uses the Bills, a team with real ingested stats.
@@ -554,6 +618,39 @@ final class DepthUITests: XCTestCase {
             app.buttons["stats-season-trigger-back-to-current"].waitForExistence(timeout: 2),
             "Back to current should hide once on the current season"
         )
+    }
+
+    /// A lens row pushes the reference ledger on that lens, and the lens strip then
+    /// switches the ledger in place with exactly one tab marked selected.
+    func testStatsReferenceLensStripSwitchesLens() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"))
+
+        let statsTab = app.buttons["page-switcher-stats"]
+        XCTAssertTrue(statsTab.waitForExistence(timeout: 10))
+        XCTAssertTrue(statsTab.tapUntil(timeout: 30) { app.scrollViews["stats-content"].exists })
+
+        let recordRow = app.buttons["stats-lens-row-record"]
+        let content = app.scrollViews["stats-content"]
+        for _ in 0..<4 where !recordRow.isHittable { content.swipeUp() }
+        XCTAssertTrue(recordRow.waitForExistence(timeout: 10))
+        recordRow.tap()
+        XCTAssertTrue(app.scrollViews["stats-reference-record"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["stats-lens-record"].isSelected)
+
+        app.buttons["stats-lens-offense"].tap()
+        XCTAssertTrue(
+            app.scrollViews["stats-reference-offense"].waitForExistence(timeout: 5),
+            "tapping a lens tab should swap the ledger to that lens")
+        let selected = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'stats-lens-' AND selected == true"))
+        XCTAssertEqual(selected.count, 1)
+        XCTAssertTrue(app.buttons["stats-lens-offense"].isSelected)
+
+        let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        attachment.name = "stats-reference-offense-lens"
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     /// The same trigger + SeasonPickerSheet conversion as Stats is applied

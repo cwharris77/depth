@@ -41,7 +41,8 @@ final class UniformArchiveViewModel {
     }
 
     func load() async {
-        loadState = .loading
+        // A refresh over loaded content keeps it on screen until the reload resolves.
+        if loadState != .loaded { loadState = .loading }
         do {
             listings = try await repository.listUniforms()
             loadState = .loaded

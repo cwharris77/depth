@@ -7,6 +7,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'purple',
@@ -19,6 +20,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
           label: 'Purple pants',
           helmet: 'purple',
           pants: 'purpleWhite',
+          pantsNike: 'white',
           socks: 'purple',
         },
         {
@@ -26,12 +28,14 @@ export const VIKINGS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'purple',
           pants: 'white',
+          pantsNike: 'purple',
           socks: 'purple',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'purple',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -44,6 +48,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
           label: 'Purple pants',
           helmet: 'purple',
           pants: 'purpleGold',
+          pantsNike: 'white',
           socks: 'white',
         },
         {
@@ -51,6 +56,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'purple',
           pants: 'white',
+          pantsNike: 'purple',
           socks: 'white',
         },
       ],
@@ -69,6 +75,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'winter-warrior',
+      sleeveNike: 'purple',
       name: 'Winter Warrior',
       kind: 'alternate',
       jersey: 'winter-white',
@@ -81,6 +88,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'white',
           pants: 'winterWhite',
+          pantsNike: 'purple',
           socks: 'white',
         },
       ],

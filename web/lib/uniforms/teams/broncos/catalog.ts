@@ -5,6 +5,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'orange',
@@ -17,6 +18,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'navy-horse',
           pants: 'orange',
+          pantsNike: 'navy',
           socks: 'white',
         },
         {
@@ -24,12 +26,14 @@ export const BRONCOS_CATALOG: TeamCatalog = {
           label: 'Navy socks',
           helmet: 'navy-horse',
           pants: 'orange',
+          pantsNike: 'navy',
           socks: 'navy',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'navy',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -42,6 +46,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'navy-horse',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'white',
         },
         {
@@ -49,6 +54,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
           label: 'Navy socks',
           helmet: 'navy-horse',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'navy',
         },
         {
@@ -56,6 +62,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
           label: 'Navy pants',
           helmet: 'navy-horse',
           pants: 'navy',
+          pantsNike: 'white',
           socks: 'navy',
         },
         {
@@ -63,6 +70,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
           label: 'Navy pants, white socks',
           helmet: 'navy-horse',
           pants: 'navy',
+          pantsNike: 'white',
           socks: 'white',
         },
         {
@@ -70,6 +78,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
           label: 'Orange pants',
           helmet: 'navy-horse',
           pants: 'orange',
+          pantsNike: 'navy',
           socks: 'white',
         },
       ],
@@ -77,6 +86,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
     // Orange base, navy trim: the home jersey over white pants.
     {
       slug: 'orange-alt',
+      sleeveNike: 'white',
       name: 'Orange Alternate',
       kind: 'alternate',
       jersey: 'orange',
@@ -84,12 +94,20 @@ export const BRONCOS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'navy-horse', pants: 'white', socks: 'navy' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-horse',
+          pants: 'white',
+          pantsNike: 'navy',
+          socks: 'navy',
+        },
         {
           key: 'orange-socks',
           label: 'Orange socks',
           helmet: 'navy-horse',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'orange',
         },
         {
@@ -97,6 +115,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
           label: 'White socks',
           helmet: 'navy-horse',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'white',
         },
       ],

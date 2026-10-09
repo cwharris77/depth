@@ -9,7 +9,6 @@ struct ScheduleView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: ScheduleViewModel
     @State private var showSeasonPicker = false
-    @State private var phase: SchedulePhase = .regular
     private let isEmbedded: Bool
     /// Schedule fetches no team/uniform data of its own (lightweight read), so it reads the
     /// kit-resolved accent TeamDetailView publishes here instead — same store the tab tint and
@@ -21,14 +20,15 @@ struct ScheduleView: View {
     /// callback optional rather than forcing every call site to supply one).
     private let onSelectOpponent: ((Team) -> Void)?
 
+    /// Takes its view model rather than building one so the embedding team page can keep
+    /// the selected season and phase alive across page switches.
     init(
-        teamId: String,
-        repository: DepthRepository,
+        viewModel: ScheduleViewModel,
         currentTeamStore: CurrentTeamStore,
         isEmbedded: Bool = false,
         onSelectOpponent: ((Team) -> Void)? = nil
     ) {
-        _viewModel = State(initialValue: ScheduleViewModel(teamId: teamId, repository: repository))
+        _viewModel = State(initialValue: viewModel)
         self.currentTeamStore = currentTeamStore
         self.isEmbedded = isEmbedded
         self.onSelectOpponent = onSelectOpponent
@@ -74,8 +74,12 @@ struct ScheduleView: View {
         }
     }
 
-    @ViewBuilder
     private var content: some View {
+        contentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var contentStates: some View {
         switch viewModel.loadState {
         case .loading:
             ProgressView("Loading schedule…")
@@ -127,8 +131,8 @@ struct ScheduleView: View {
                         DepthSegmentedOption(
                             value: $0, label: $0.title, identifier: "schedule-phase-\($0.rawValue)")
                     },
-                    selection: phase,
-                    onChange: { phase = $0 },
+                    selection: viewModel.phase,
+                    onChange: { viewModel.phase = $0 },
                     activeColor: teamAccent
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -136,7 +140,7 @@ struct ScheduleView: View {
                     Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
                 }
 
-                switch phase {
+                switch viewModel.phase {
                 case .preseason:
                     gameGrid(
                         schedule.preseason,
@@ -236,7 +240,7 @@ struct ScheduleView: View {
     }
 }
 
-private enum SchedulePhase: String, CaseIterable {
+enum SchedulePhase: String, CaseIterable {
     case preseason
     case regular
     case playoffs

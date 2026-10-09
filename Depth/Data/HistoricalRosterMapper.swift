@@ -20,6 +20,15 @@ import OSLog
 // Dropping every row is a real failure, not an empty roster: a season that decoded to
 // nothing would render as a blank field rather than an error the user can act on.
 enum HistoricalRosterMapper {
+    /// nflverse stores height as total inches ("74"); live rosters carry ESPN's formatted
+    /// `6' 2"`. Converts the inch count to that format and passes anything else through.
+    static func displayHeight(_ raw: String?) -> String {
+        guard let raw else { return "" }
+        let trimmed = raw.trimmingCharacters(in: .whitespaces)
+        guard let inches = Int(trimmed), inches > 0 else { return trimmed }
+        return "\(inches / 12)' \(inches % 12)\""
+    }
+
     /// Why a historical row could not become a player. Carries the identifying key so a
     /// drop is actionable rather than a bare count, matching the ingest-side conservation
     /// rule used wherever the client performs the same kind of work.
@@ -74,7 +83,7 @@ enum HistoricalRosterMapper {
                     depthRank: row.depthRank, number: row.number ?? 0, order: row.playerOrder,
                     status: row.depthRank == 1 ? .starter : .backup, age: 0,
                     college: row.college ?? "",
-                    experience: 0, height: row.height ?? "", weight: row.weight ?? 0,
+                    experience: 0, height: displayHeight(row.height), weight: row.weight ?? 0,
                     bio: "\(row.season) · \(team.city) \(team.name)", photoUrl: nil
                 )
             )

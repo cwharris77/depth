@@ -24,6 +24,14 @@ inputs:
     description: Space-separated -only-testing slice (may be empty string).
     required: false
     default: ''
+  # Per-test limit in seconds. A test that runs past it fails by name (XCTest captures a
+  # spindump) and the run moves on to the next test, instead of the whole job hitting its
+  # timeout with no indication of which test stalled. XCTest rounds it up to a whole
+  # minute. Sized above the slowest nightly test (~4.5 min at accessibility sizes).
+  test-time-allowance:
+    description: Seconds each test may run before XCTest fails it.
+    required: false
+    default: '300'
 runs:
   using: composite
   steps:
@@ -56,6 +64,7 @@ runs:
       env:
         DEVICE_ID: ${{ steps.sim.outputs.device_id }}
         TESTS: ${{ inputs.tests }}
+        ALLOWANCE: ${{ inputs.test-time-allowance }}
       run: |
         set -o pipefail
         XCTESTRUN=$(find DerivedData/Build/Products -maxdepth 1 -name '*.xctestrun' | head -n1)
@@ -68,5 +77,8 @@ runs:
         xcodebuild \
           -xctestrun "$XCTESTRUN" \
           -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+          -test-timeouts-enabled YES \
+          -default-test-execution-time-allowance "$ALLOWANCE" \
+          -maximum-test-execution-time-allowance "$ALLOWANCE" \
           test-without-building $TESTS
       shell: bash

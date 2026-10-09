@@ -48,6 +48,21 @@ struct AuthSheet: View {
 
     private var emailCard: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            // Back steps within the sheet; the X still dismisses it.
+            if viewModel.canReturnToCode {
+                Button {
+                    viewModel.returnToCode()
+                } label: {
+                    Label("Back", systemImage: "chevron.left")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+                .accessibilityLabel("Back to code entry")
+                .accessibilityIdentifier("auth-back-to-code")
+            }
+
             Text("Sign in")
                 .font(.title2.bold())
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
@@ -111,7 +126,7 @@ struct AuthSheet: View {
                 .buttonStyle(.borderedProminent)
                 .tint(DesignTokens.Colors.accent)
                 .foregroundStyle(DesignTokens.Colors.onAccent)
-                .disabled(viewModel.isSubmitting || wait != nil)
+                .disabled(viewModel.isSubmitting || (wait != nil && !viewModel.hasPendingCode))
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("auth-send-code")
             }
@@ -218,8 +233,10 @@ struct AuthSheet: View {
 
     private func sendCodeLabel(wait: Int?) -> String {
         if viewModel.isSubmitting { return "Sending…" }
-        if let wait { return "Email me a code in \(wait)s" }
-        return "Email me a code"
+        guard let wait else { return "Email me a code" }
+        // The pending code is still usable; continuing returns to it without a new send.
+        if viewModel.hasPendingCode { return "Enter the code we sent" }
+        return "Email me a code in \(wait)s"
     }
 
     private func errorCard(_ error: DepthAuthError) -> some View {

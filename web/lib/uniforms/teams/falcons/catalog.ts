@@ -5,6 +5,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'black',
@@ -17,6 +18,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'black-falcon',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
         {
@@ -24,12 +26,14 @@ export const FALCONS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'black-falcon',
           pants: 'white',
+          pantsNike: 'black',
           socks: 'black',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'black',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -42,6 +46,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'black-falcon',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
         {
@@ -49,6 +54,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'black-falcon',
           pants: 'white',
+          pantsNike: 'black',
           socks: 'white',
         },
       ],

@@ -5,6 +5,7 @@ export const EAGLES_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'green',
@@ -12,7 +13,14 @@ export const EAGLES_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
       periods: [{ from: 1996 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'green', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'green',
+          pants: 'white',
+          pantsNike: 'green',
+          socks: 'white',
+        },
       ],
     },
     {
@@ -28,6 +36,7 @@ export const EAGLES_CATALOG: TeamCatalog = {
     },
     {
       slug: 'kelly-green-modern',
+      sleeveNike: 'white',
       name: 'Kelly Green (Modern)',
       kind: 'throwback',
       jersey: 'kelly-modern',
@@ -40,12 +49,14 @@ export const EAGLES_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'kelly',
           pants: 'silver',
+          pantsNike: 'green',
           socks: 'kelly-hoops',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'green',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -53,12 +64,20 @@ export const EAGLES_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
       periods: [{ from: 1996 }],
       combinations: [
-        { key: 'standard', label: 'White pants', helmet: 'green', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'White pants',
+          helmet: 'green',
+          pants: 'white',
+          pantsNike: 'green',
+          socks: 'white',
+        },
         {
           key: 'green-pants',
           label: 'Green pants',
           helmet: 'green',
           pants: 'green',
+          pantsNike: 'white',
           socks: 'white',
         },
         {
@@ -66,19 +85,23 @@ export const EAGLES_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'green',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'white',
         },
       ],
     },
     {
       slug: 'black-alt',
+      sleeveNike: 'white',
       name: 'Black Alternate',
       kind: 'alternate',
       jersey: 'black',
       colors: { primary: '#000000', secondary: '#004C54', accent: '#A5ACAF' },
       legacyAccent: { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
       periods: [{ from: 2003 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'black', pants: 'black' }],
+      combinations: [
+        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'black', pantsNike: 'white' },
+      ],
     },
   ],
 };

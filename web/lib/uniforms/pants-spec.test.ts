@@ -52,6 +52,23 @@ describe('expandPants', () => {
     expect(part.layers[0]).not.toBe(under);
   });
 
+  it('spaces a stack a hairline apart', () => {
+    const part = expandPants('t', {
+      body: 'gold',
+      stripes: {
+        position: 'center',
+        bands: [
+          { color: 'green', size: 's' },
+          { color: 'white', size: 's' },
+        ],
+        gap: 'hairline',
+      },
+    });
+    // M x0,WAIST H x1 ...: the second band starts 2 units past the first band's far edge.
+    const xs = (i: number) => (part.layers[i].d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+    expect(xs(2)[0] - xs(0)[2]).toBe(2);
+  });
+
   it('centres a straight stack on the seam line and stops it at the hem', () => {
     const part = expandPants('t', {
       body: 'navy',

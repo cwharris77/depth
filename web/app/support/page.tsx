@@ -45,6 +45,11 @@ export default function SupportPage() {
                 The Sticks uses a one-time code sent to your email — no password to remember. If a
                 code doesn&apos;t arrive, check your spam folder or email us and we&apos;ll help.
               </p>
+              <p className="m-0 mt-3">
+                On iPhone, the keyboard suggests your email above the email field when it&apos;s on
+                your own contact card. To set it up, open Contacts, tap My Card at the top, and add
+                your email address.
+              </p>
             </ProseSection>
             <ProseSection title="Deleting your account">
               <p className="m-0">

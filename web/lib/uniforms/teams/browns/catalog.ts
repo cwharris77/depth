@@ -7,6 +7,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'brown',
@@ -14,12 +15,20 @@ export const BROWNS_CATALOG: TeamCatalog = {
       legacyAccent,
       periods: [{ from: 2020 }],
       combinations: [
-        { key: 'standard', label: 'White pants', helmet: 'orange', pants: 'white', socks: 'brown' },
+        {
+          key: 'standard',
+          label: 'White pants',
+          helmet: 'orange',
+          pants: 'white',
+          pantsNike: 'brown',
+          socks: 'brown',
+        },
         {
           key: 'orange-pants',
           label: 'Orange pants',
           helmet: 'orange',
           pants: 'orange',
+          pantsNike: 'brown',
           socks: 'brown',
         },
         {
@@ -27,12 +36,14 @@ export const BROWNS_CATALOG: TeamCatalog = {
           label: 'Brown pants',
           helmet: 'orange',
           pants: 'brown',
+          pantsNike: 'white',
           socks: 'brown',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'brown',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -40,18 +51,27 @@ export const BROWNS_CATALOG: TeamCatalog = {
       legacyAccent,
       periods: [{ from: 2020 }],
       combinations: [
-        { key: 'standard', label: 'White pants', helmet: 'orange', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'White pants',
+          helmet: 'orange',
+          pants: 'white',
+          pantsNike: 'brown',
+          socks: 'white',
+        },
         {
           key: 'orange-pants',
           label: 'Orange pants',
           helmet: 'orange',
           pants: 'orange',
+          pantsNike: 'brown',
           socks: 'white',
         },
       ],
     },
     {
       slug: '1946-throwback',
+      sleeveNike: 'brown',
       name: '1946 Throwback',
       kind: 'throwback',
       jersey: 'white',
@@ -64,6 +84,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'brown',
           pants: '1946-white',
+          pantsNike: 'brown',
           socks: '1946-white',
         },
       ],

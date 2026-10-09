@@ -413,7 +413,10 @@ private struct PlayerProfileScreen: View {
     @ViewBuilder
     private var vitals: some View {
         let parts = PlayerProfileDisplay.vitals(
-            age: player.age, experience: player.experience, height: player.height,
+            age: player.age,
+            experience: PlayerProfileDisplay.shownExperience(
+                player.experience, isHistorical: isHistorical),
+            height: player.height,
             weight: player.weight, college: player.college
         )
         if !parts.isEmpty {
@@ -485,6 +488,7 @@ private struct PlayerProfileScreen: View {
                         position: player.position,
                         currentTeamAbbrev: team?.abbrev,
                         highlightedSeason: highlightedSeason,
+                        inProgressSeason: viewModel.inProgressSeason,
                         mark: markColor
                     )
                 case .empty:
@@ -502,6 +506,7 @@ private struct PlayerProfileScreen: View {
                 }
             }
         }
+        .loadStateTransition(viewModel.statsState)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("player-profile-full-stats")
     }
@@ -689,7 +694,7 @@ private struct PlayerProfileScreen: View {
 
     private func knownForScopeButton(_ claim: PlayerKnownForClaim) -> some View {
         Button {
-            withAnimation(reduceMotion ? nil : DesignTokens.Motion.feedback) {
+            withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
                 knownForScopeOpen.toggle()
             }
         } label: {
@@ -714,7 +719,7 @@ private struct PlayerProfileScreen: View {
         _ title: String, meta: String?, isOpen: Binding<Bool>, identifier: String
     ) -> some View {
         Button {
-            withAnimation(reduceMotion ? nil : DesignTokens.Motion.selection) {
+            withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
                 isOpen.wrappedValue.toggle()
             }
         } label: {

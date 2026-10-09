@@ -3,7 +3,8 @@ import { anchoredMark, expandJersey, type JerseySpec } from '@/lib/uniforms/team
 import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { compileParts, type PartLayer } from '@/lib/uniforms/teams/core/parts';
 import { FIGURE_OUTLINE } from '@/lib/uniforms/teams/core/shared';
-import { placed, type Mark } from '@/lib/uniforms/teams/core/marks';
+import { boundsOf, placed, type Mark } from '@/lib/uniforms/teams/core/marks';
+import { NIKE_MARK } from '@/lib/uniforms/teams/core/pants-logos';
 
 const numbers = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
 
@@ -203,6 +204,112 @@ describe('expandJersey', () => {
     expect(span('t-stripe-1-edge-left')[0] - edgeBottom).toBe(12);
   });
 
+  it('spaces sleeve stripes a hairline apart', () => {
+    const layers = expandJersey('t', {
+      body: 'green',
+      collar: { style: 'none' },
+      sleeveStripes: {
+        bands: [
+          { color: 'gold', size: 'm' },
+          { color: 'white', size: 's' },
+        ],
+        gap: 'hairline',
+      },
+      number: { fill: 'white', outline: 'white', outlineWeight: 'none' },
+    }).layers;
+    // M outer,top L inner,top L inner,bottom L outer,bottom Z
+    const span = (id: string) => {
+      const n = numbers(layers.find((l) => l.id === id)?.d ?? '');
+      return [n[1], n[5]];
+    };
+    expect(span('t-stripe-1-left')[0] - span('t-stripe-0-left')[1]).toBe(3);
+  });
+
+  it("draws the narrow V's sides and back band, adding trim, piping and outlines only when asked", () => {
+    type Collar = Parameters<typeof expandJersey>[1]['collar'];
+    const layers = (collar: Omit<Collar, 'style'> = {}) =>
+      expandJersey('t', {
+        body: 'green',
+        collar: { style: 'narrow-v', color: 'gold', ...collar },
+        number: { fill: 'white', outline: 'white', outlineWeight: 'thin' },
+      }).layers;
+    const ids = (collar?: Omit<Collar, 'style'>) =>
+      layers(collar)
+        .map((l) => l.id)
+        .filter((id) => !id.includes('-nfl-shield-'));
+    expect(ids()).toEqual(['t-collar-band', 't-neck-opening']);
+    // Piping needs a trim to pipe.
+    expect(ids({ trimEdge: 'green' })).toEqual(['t-collar-band', 't-neck-opening']);
+    // A trim alone draws no piping, on the sides or the back.
+    expect(ids({ trim: 'white' })).toEqual([
+      't-collar-band',
+      't-collar-trim',
+      't-collar-back-trim',
+      't-neck-opening',
+    ]);
+    const full = layers({ trim: 'white', trimEdge: 'green', inside: 'navy', outline: true });
+    expect(full.map((l) => l.id).filter((id) => !id.includes('-nfl-shield-'))).toEqual([
+      't-collar-band',
+      't-collar-trim-edge',
+      't-collar-trim',
+      't-collar-back-trim-edge',
+      't-collar-back-trim',
+      't-neck-opening',
+      't-collar-outline-outer',
+      't-collar-outline-inner',
+      't-collar-back-keylines',
+    ]);
+    const byId = (id: string) => full.find((l) => l.id === id);
+    expect(byId('t-collar-band')).toMatchObject({ kind: 'fill', fill: 'gold', surface: 'collar' });
+    expect(byId('t-neck-opening')).toMatchObject({ kind: 'fill', fill: 'navy' });
+    expect(layers().find((l) => l.id === 't-neck-opening')).toMatchObject({ fill: 'green' });
+    const trim = byId('t-collar-trim');
+    const piping = byId('t-collar-trim-edge');
+    expect(trim).toMatchObject({ kind: 'stroke', stroke: 'white' });
+    expect(piping).toMatchObject({ kind: 'stroke', stroke: 'green', d: trim?.d });
+    // The piping shows 1.5 units of its colour on each side of the trim.
+    const width = (l?: PartLayer) => (l?.kind === 'stroke' ? l.strokeWidth : 0);
+    expect(width(piping) - width(trim)).toBe(3);
+    expect(byId('t-collar-outline-outer')).toMatchObject({ stroke: 'outline', strokeWidth: 4 });
+    // The side trim is open at the shoulder line; the back band carries its own trim.
+    expect(trim?.d).not.toMatch(/Z$/);
+    expect(byId('t-collar-back-trim')).toMatchObject({
+      stroke: 'white',
+      strokeWidth: width(trim),
+      lineCap: 'butt',
+    });
+    expect(byId('t-collar-back-trim-edge')).toMatchObject({
+      stroke: 'green',
+      strokeWidth: width(piping),
+    });
+  });
+
+  it("holds the shield within the narrow V's point, at the shared shield size", () => {
+    const layers = expandJersey('t', {
+      body: 'green',
+      collar: { style: 'narrow-v', color: 'gold', outline: true },
+      number: { fill: 'white', outline: 'white', outlineWeight: 'thin' },
+    }).layers;
+    const shield = layers.filter((layer) => layer.id.includes('-nfl-shield-'));
+    expect(shield.length).toBeGreaterThan(3);
+    expect(layers.slice(-shield.length)).toEqual(shield);
+    const opening = boundsOf(layers.find((l) => l.id === 't-collar-outline-inner')?.d ?? '');
+    const outer = boundsOf(`${layers.find((l) => l.id === 't-collar-outline-outer')?.d} Z`);
+    const boxes = shield.map((layer) => boundsOf(layer.d));
+    const [x0, y0, x1, y1] = [
+      Math.min(...boxes.map((b) => b[0])),
+      Math.min(...boxes.map((b) => b[1])),
+      Math.max(...boxes.map((b) => b[2])),
+      Math.max(...boxes.map((b) => b[3])),
+    ];
+    expect(y0).toBeGreaterThan(opening[3]);
+    expect(y1).toBeLessThan(outer[3]);
+    expect((x0 + x1) / 2).toBeCloseTo(294, 0);
+    expect(x1 - x0).toBeCloseTo(19, 0);
+    // The shield's keyline keeps its drawn weight at the collar's own size.
+    expect(shield[0]).toMatchObject({ kind: 'stroke', strokeWidth: 1.1 });
+  });
+
   it('fills the inset-V neck opening with the inside color when given', () => {
     const layers = (inside?: string) =>
       expandJersey('t', {
@@ -215,6 +322,39 @@ describe('expandJersey', () => {
     expect(opening(layers('orangeNeck'))).toMatchObject({ fill: 'orangeNeck' });
   });
 
+  it('places the NFL shield above the inset collar outlines', () => {
+    const jersey = expandJersey('t', {
+      body: 'orange',
+      collar: { style: 'inset-v', color: 'orange', outline: true },
+      number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
+    });
+    const shield = jersey.layers.filter((layer) => layer.id.includes('-nfl-shield-'));
+    expect(shield.length).toBeGreaterThan(3);
+    expect(jersey.layers.slice(-shield.length)).toEqual(shield);
+  });
+
+  it('holds the shield within the pointed collar panel', () => {
+    const layers = expandJersey('t', {
+      body: 'white',
+      collar: { style: 'inset-v', color: 'navy', outline: true },
+      number: { fill: 'navy', outline: 'white', outlineWeight: 'thin' },
+    }).layers;
+    const edge = layers.find((layer) => layer.id === 't-collar-edge');
+    expect(edge).toMatchObject({ kind: 'fill', fill: 'navy' });
+    expect(layers.find((layer) => layer.id === 't-collar-placket')).toMatchObject({ fill: 'navy' });
+    const inner = boundsOf(
+      (layers.find((layer) => layer.id === 't-collar-outline-inner')?.d ?? '') + ' Z'
+    );
+    const outer = boundsOf(
+      (layers.find((layer) => layer.id === 't-collar-outline-outer')?.d ?? '') + ' Z'
+    );
+    const shield = layers
+      .filter((layer) => layer.id.includes('-nfl-shield-'))
+      .map((layer) => boundsOf(layer.d));
+    expect(Math.min(...shield.map((box) => box[1]))).toBeGreaterThan(inner[3]);
+    expect(Math.max(...shield.map((box) => box[3]))).toBeLessThan(outer[3]);
+  });
+
   it('always draws the back bar and adds lining and outline layers only when asked', () => {
     const layers = (extra: { lining?: string; backBar?: string; outline?: boolean } = {}) =>
       expandJersey('t', {
@@ -222,7 +362,10 @@ describe('expandJersey', () => {
         collar: { style: 'inset-v', color: 'orange', ...extra },
         number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
       }).layers;
-    const ids = (extra?: Parameters<typeof layers>[0]) => layers(extra).map((l) => l.id);
+    const ids = (extra?: Parameters<typeof layers>[0]) =>
+      layers(extra)
+        .filter((l) => !l.id.includes('-nfl-shield-') && !l.id.includes('-collar-rib-'))
+        .map((l) => l.id);
     expect(ids()).toEqual([
       't-neck-opening',
       't-collar-edge',
@@ -290,6 +433,10 @@ describe('expandJersey', () => {
       kits: { home: { helmet: 'h', jersey: 'j', pants: 'p' } },
     });
     expect(JSON.stringify(def)).toContain(FIGURE_OUTLINE);
+    const shield = def.kits.home.layers?.filter((layer) => layer.id.includes('-nfl-shield-'));
+    expect(shield?.[0]).toMatchObject({ stroke: '#ffffff' });
+    expect(shield?.[1]).toMatchObject({ fill: '#05366B' });
+    expect(shield?.some((layer) => layer.kind === 'fill' && layer.fill === '#D50D0D')).toBe(true);
   });
 
   it('draws no collar layers for style none', () => {
@@ -388,6 +535,42 @@ describe('jersey marks', () => {
       collar: { style: 'shallow-v', color: 'navy' },
     }).layers;
     expect(part.layers.map((l) => l.id)).toEqual(['t-logo-body-right', ...plain.map((l) => l.id)]);
+  });
+
+  it('places a mark on both sleeve tops, the left one mirrored', () => {
+    const part = expandJersey('t', {
+      ...base,
+      marks: [
+        anchoredMark({
+          paint: 'over',
+          mark: TRIANGLE,
+          anchor: 'sleeve-tops',
+          slots: { body: 'white' },
+          id: 'swoosh',
+        }),
+      ],
+    });
+    expect(part.layers.map((l) => [l.id, l.surface])).toEqual([
+      ['t-swoosh-body-left', 'sleeve-left'],
+      ['t-swoosh-body-right', 'sleeve-right'],
+    ]);
+    // The triangle's right angle is at its box's top-right corner; mirrored, it sits top-left.
+    const [left, right] = part.layers.map((l) => boundsOf(l.d));
+    expect(left[0] + right[2]).toBeCloseTo(588, 0);
+  });
+
+  it('checks the shared swoosh slot at compile time', () => {
+    const swoosh = (slots: { nike: string }) =>
+      anchoredMark({ paint: 'over', mark: NIKE_MARK, anchor: 'sleeve-tops', slots, id: 'swoosh' });
+    expect(swoosh({ nike: 'white' }).slots).toEqual({ nike: 'white' });
+    anchoredMark({
+      paint: 'over',
+      mark: NIKE_MARK,
+      anchor: 'sleeve-tops',
+      // @ts-expect-error -- 'nikee' is not a slot of NIKE_MARK
+      slots: { nikee: 'white' },
+      id: 'swoosh',
+    });
   });
 
   it('rejects an anchored mark whose slot map misses or adds a slot', () => {

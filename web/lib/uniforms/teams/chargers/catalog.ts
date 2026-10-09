@@ -8,6 +8,7 @@ const white = (key: string, label: string, pants: string, socks: string): Combin
   label,
   helmet: 'white',
   pants,
+  pantsNike: pants === 'powder' ? 'white' : 'powderBlue',
   socks,
 });
 
@@ -24,6 +25,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'powder',
@@ -34,6 +36,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'away',
+      sleeveNike: 'powderBlue',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -48,6 +51,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     // The AFL powder blue, worn as a current alternate: the home jersey's construction.
     {
       slug: 'powder-blue',
+      sleeveNike: 'white',
       name: 'Powder Blue',
       kind: 'alternate',
       jersey: 'powder',
@@ -58,6 +62,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'charger-power',
+      sleeveNike: 'white',
       name: 'Charger Power',
       kind: 'alternate',
       jersey: 'gold',
@@ -68,6 +73,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     },
     {
       slug: 'super-chargers',
+      sleeveNike: 'white',
       name: 'Super Chargers',
       kind: 'alternate',
       jersey: 'navy',
@@ -75,7 +81,14 @@ export const CHARGERS_CATALOG: TeamCatalog = {
       legacyAccent: GOLD_ACCENT,
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Navy pants', helmet: 'navy', pants: 'navy', socks: 'navy' },
+        {
+          key: 'standard',
+          label: 'Navy pants',
+          helmet: 'navy',
+          pants: 'navy',
+          pantsNike: 'gold',
+          socks: 'navy',
+        },
       ],
     },
   ],

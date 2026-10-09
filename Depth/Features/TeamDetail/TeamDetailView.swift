@@ -90,6 +90,11 @@ struct TeamDetailView: View {
     /// opponent id, matching web's `?a=<teamId>&b=<opponentId>` compare-link params.
     private let onOpenCompare: (String, String) -> Void
     @State private var historyViewModel: HistoryViewModel
+    /// Owned here rather than by the pages, which `.id(page)` rebuilds on every switch, so
+    /// Schedule's season and phase and Stats' season survive a trip to another page. A team
+    /// switch rebuilds this view (DepthChartsTab's `.id(teamId)`), resetting them.
+    @State private var scheduleViewModel: ScheduleViewModel
+    @State private var statsViewModel: TeamStatsViewModel
     /// Refined with the resolved kit color (`resolvedUiAccentHex`)
     /// whenever it changes, so Stats/Schedule (which read this same store) follow a
     /// picked kit the way the roster field and tab tint already do.
@@ -124,6 +129,10 @@ struct TeamDetailView: View {
             initialValue: preferences.uniformSelection(for: viewModel.teamId))
         _historyViewModel = State(
             initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
+        _scheduleViewModel = State(
+            initialValue: ScheduleViewModel(teamId: viewModel.teamId, repository: repository))
+        _statsViewModel = State(
+            initialValue: TeamStatsViewModel(teamId: viewModel.teamId, repository: repository))
     }
 
     private var navigationTitleText: String {
@@ -716,12 +725,12 @@ struct TeamDetailView: View {
             }
         case .stats:
             TeamStatsView(
-                teamId: viewModel.teamId, repository: repository, currentTeamStore: currentTeamStore
+                viewModel: statsViewModel, repository: repository,
+                currentTeamStore: currentTeamStore
             )
         case .schedule:
             ScheduleView(
-                teamId: viewModel.teamId,
-                repository: repository,
+                viewModel: scheduleViewModel,
                 currentTeamStore: currentTeamStore,
                 isEmbedded: true,
                 onSelectOpponent: { opponent in
@@ -751,8 +760,12 @@ struct TeamDetailView: View {
         activeJerseyColors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
     }
 
-    @ViewBuilder
     private var historicalContent: some View {
+        historicalContentStates.loadStateTransition(historyViewModel.state)
+    }
+
+    @ViewBuilder
+    private var historicalContentStates: some View {
         switch historyViewModel.state {
         case .loading:
             VStack {
@@ -782,8 +795,12 @@ struct TeamDetailView: View {
         }
     }
 
-    @ViewBuilder
     private var currentContent: some View {
+        currentContentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var currentContentStates: some View {
         if let snapshot = displayedSnapshot {
             rosterContent(snapshot: snapshot, historical: false)
         } else {
@@ -1061,7 +1078,7 @@ struct TeamDetailView: View {
     /// The sheet delegates its state change here to keep the main SwiftUI body small
     /// enough for the compiler while preserving the field's formation-settle animation.
     private func selectFormation(_ formation: TeamFormation) {
-        withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation) {
+        withAnimation(DesignTokens.Motion.formation.respectingReduceMotion(reduceMotion)) {
             selectedFormations[unit] = formation
         }
         showFormations = false

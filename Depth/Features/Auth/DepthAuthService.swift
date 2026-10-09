@@ -36,7 +36,9 @@ enum DepthAuthError: Error, Equatable, Sendable {
         switch self {
         case .invalidEmail: "Enter a valid email address."
         case .invalidCode: "That code isn't valid. Check the email and try again."
-        case .expiredCode: "That code expired. Request a new one."
+        // GoTrue answers a mistyped code and an expired one with the same error, so the
+        // copy can't claim which it was.
+        case .expiredCode: "This code is incorrect or expired. Request a new one."
         case .rateLimited: "Too many attempts. Wait a moment before trying again."
         case .offline: "You're offline. Reconnect and try again."
         case .unauthenticated: "Your session expired. Sign in again to continue."

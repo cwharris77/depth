@@ -307,6 +307,13 @@ enum PlayerStatCategory: String, CaseIterable, Hashable {
         return min(max(primaryValue(stats) / best, 0), 1)
     }
 
+    /// The season the bars scale against: the top mark in this category, the newest season
+    /// on a tie (seasons arrive newest first). Nil when no season recorded a positive mark.
+    func careerBest(among seasons: [PlayerSeasonStats]) -> PlayerSeasonStats? {
+        guard let top = seasons.map(primaryValue).max(), top > 0 else { return nil }
+        return seasons.first { primaryValue($0) == top }
+    }
+
     /// Tabs in position-relevance order, filtered to categories with data in any season.
     /// `.games` is the fallback for players whose position records nothing else -- a
     /// participation-only position before snap data exists, or a player who only has a
@@ -419,9 +426,24 @@ enum PlayerStatLedger {
         count == 1 ? "REG · 1 SEASON" : "REG · \(count) SEASONS"
     }
 
-    /// One spoken sentence per ledger row: season, team, headline, then the summary.
-    static func rowLabel(for stats: PlayerSeasonStats, category: PlayerStatCategory) -> String {
-        var parts = ["\(stats.season) season"]
+    /// The season whose regular-season totals can still grow: the schedule's season while
+    /// any of its regular-season games is unplayed. Nil once the last game has a result, or
+    /// when no schedule is available.
+    static func inProgressSeason(_ schedule: TeamSchedule?) -> Int? {
+        guard let schedule,
+            schedule.games.contains(where: { !$0.isBye && $0.result == nil })
+        else { return nil }
+        return schedule.season
+    }
+
+    /// One spoken sentence per ledger row: season, team, headline, then the summary. The
+    /// season's status stays in the first segment, so every later segment is a stat.
+    static func rowLabel(
+        for stats: PlayerSeasonStats, category: PlayerStatCategory,
+        isCareerBest: Bool = false, isInProgress: Bool = false
+    ) -> String {
+        let seasonPhrase = isCareerBest ? "career-best season" : "season"
+        var parts = ["\(stats.season) \(seasonPhrase)\(isInProgress ? " in progress" : "")"]
         if let team = stats.teamAbbrev, !team.isEmpty { parts.append(team) }
         let headline = category.headline(stats)
         parts.append("\(headline.spoken) \(headline.value)")
@@ -452,6 +474,12 @@ extension PlayerProfileDisplay {
             return String(first).uppercased()
         }
         return "\(first)\(last)".uppercased()
+    }
+
+    /// The experience the vitals strip shows. Historical roster rows carry no experience, so
+    /// the 0 the mapper fills in is a placeholder, not a rookie season, and is left out.
+    static func shownExperience(_ value: Int, isHistorical: Bool) -> Int? {
+        isHistorical ? nil : value
     }
 
     /// The single-line vitals strip ("AGE 27 · EXP 5 YRS · 6'4\" · 218 LB · ALABAMA").

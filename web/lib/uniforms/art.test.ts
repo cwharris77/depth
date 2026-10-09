@@ -74,7 +74,7 @@ describe('renderUniformThumbSVG', () => {
       'seahawks-rivalries-2025',
       getTeamUniformDefinition('seahawks')
     );
-    expect(svg).toContain('fill="#AFB3B5"');
+    expect(svg).toContain('fill="#C6D3DC"');
   });
 
   it('renders the approved Rivalries soundwaves, collar, cuffs, and outlined wordmark', () => {

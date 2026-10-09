@@ -144,8 +144,12 @@ struct CompareView: View {
         }
     }
 
-    @ViewBuilder
     private var content: some View {
+        contentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var contentStates: some View {
         switch viewModel.loadState {
         case .loading:
             ProgressView("Loading teams…")
@@ -187,7 +191,7 @@ struct CompareView: View {
                     .coachmarkAnchor(.compareContent)
                     .transition(.opacity)
                     .animation(
-                        reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection,
+                        DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion),
                         value: viewModel.tab
                     )
             }
@@ -490,6 +494,10 @@ private struct PositionDepthSection: View {
 private struct RoomPositionPicker: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Bumped only when a room or role tap changes the position. Unit switches tick in
+    /// `DepthUnitTabBar` and collapsing a room is a silent disclosure, so neither may fire
+    /// this one too.
+    @State private var positionPicks = 0
 
     let viewModel: CompareViewModel
 
@@ -526,7 +534,10 @@ private struct RoomPositionPicker: View {
         // carry their own `unit-tab-*` ids, and a container-level identifier on the VStack
         // overrode those, leaving every lens unreachable by id.
         .animation(
-            reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.expandedRoomID)
+            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion),
+            value: viewModel.expandedRoomID
+        )
+        .sensoryFeedback(.selection, trigger: positionPicks)
     }
 
     // MARK: Unit lens
@@ -560,13 +571,19 @@ private struct RoomPositionPicker: View {
         }
     }
 
+    private func pickPosition(_ select: () -> Void) {
+        let before = viewModel.position
+        select()
+        if viewModel.position != before { positionPicks += 1 }
+    }
+
     private func roomTile(_ room: CompareRoom) -> some View {
         let isActive = room == viewModel.activeRoom
         return Button {
             withAnimation(
-                reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection
+                DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)
             ) {
-                viewModel.selectRoom(room)
+                pickPosition { viewModel.selectRoom(room) }
             }
         } label: {
             HStack(spacing: DesignTokens.Spacing.sm) {
@@ -632,13 +649,15 @@ private struct RoomPositionPicker: View {
             }
             if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
         }
-        .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.position)
+        .animation(
+            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion),
+            value: viewModel.position)
     }
 
     private func roleTile(_ pos: Position) -> some View {
         let isSelected = pos == viewModel.position
         return Button {
-            viewModel.selectPosition(pos)
+            pickPosition { viewModel.selectPosition(pos) }
         } label: {
             HStack(spacing: DesignTokens.Spacing.xs) {
                 Text(pos.rawValue)
@@ -870,6 +889,7 @@ private struct TeamHeaderCell: View {
 /// columns are always narrow. Each cell is centered within its half of the table.
 private struct PlayerCell: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Namespace private var profileZoom
     let player: Player?
     let team: Team
     let repository: DepthRepository
@@ -881,6 +901,7 @@ private struct PlayerCell: View {
                 // depth context because no depth chart is visible on this screen.
                 NavigationLink {
                     PlayerProfileView(player: player, team: team, repository: repository)
+                        .zoomNavigationTransition(from: player.id, in: profileZoom)
                 } label: {
                     Text("#\(player.number) \(formatLastName(player.name))")
                         .font(.caption.weight(.bold))
@@ -896,6 +917,8 @@ private struct PlayerCell: View {
         }
         .padding(.horizontal, DesignTokens.Spacing.sm + 2)
         .frame(maxWidth: .infinity, minHeight: 40)
+        .zoomTransitionSource(
+            id: player?.id, in: profileZoom, cornerRadius: DesignTokens.Radius.sm)
     }
 }
 

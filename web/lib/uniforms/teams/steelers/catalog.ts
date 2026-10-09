@@ -5,6 +5,7 @@ export const STEELERS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'black',
@@ -12,11 +13,19 @@ export const STEELERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 1997 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'gold', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'gold',
+          pantsNike: 'black',
+          socks: 'black',
+        },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'black',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -24,7 +33,14 @@ export const STEELERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 1997 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'gold', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'gold',
+          pantsNike: 'black',
+          socks: 'black',
+        },
       ],
     },
     {

@@ -26,9 +26,9 @@ const SOURCE_PATHS = [
   },
 ] as const;
 
-const SCALE = 0.12;
-const OFFSET_X = 296;
-const OFFSET_Y = 150;
+const SCALE = 0.166;
+const OFFSET_X = 242;
+const OFFSET_Y = 36;
 const TOKEN = /[a-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:e[-+]?\d+)?/g;
 
 function scaled(value: string): string {

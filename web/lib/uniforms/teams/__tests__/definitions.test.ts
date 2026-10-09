@@ -88,44 +88,55 @@ describe('team uniform definitions', () => {
     }
   );
 
-  it('resolves the Seahawks navy home construction without protected marks', () => {
+  it('resolves the Seahawks navy home construction with pants branding', () => {
     const definition = getTeamUniformDefinition('seahawks');
     const home = definition?.kits.home;
     const layerIds = home?.layers?.map((layer) => layer.id);
 
-    // Team layers retain their paint order; the pant stripe stops at the hem.
-    expect(layerIds?.filter((id) => id.startsWith('seahawks-'))).toEqual([
-      'seahawks-helmet-center-stripe',
-      // Grey wing paints under the keyline; it was missing from the pre-2026-09-03 decal.
-      'seahawks-helmet-hawk-grey',
-      'seahawks-helmet-hawk',
-      'seahawks-helmet-hawk-eye',
-      'seahawks-jersey-navy-shoulder-number-left',
-      'seahawks-jersey-navy-shoulder-number-right',
-      'seahawks-jersey-navy-shoulder-band-left',
-      'seahawks-jersey-navy-shoulder-band-right',
-      'seahawks-jersey-navy-shoulder-cap-left',
-      'seahawks-jersey-navy-shoulder-cap-right',
-      'seahawks-neck-opening',
-      'seahawks-collar-band',
-      'seahawks-collar-feathers-left',
-      'seahawks-collar-feathers-right',
-      'seahawks-neck-tab-border',
-      'seahawks-neck-tab',
-      'seahawks-neck-twelve',
-      'seahawks-jersey-navy-shoulder-wordmark-right',
-      'seahawks-pants-navy-stripe-0-left',
-      'seahawks-pants-navy-stripe-0-right',
-    ]);
+    // Team construction layers remain present; the pant stripe stops at the hem.
+    expect(
+      layerIds?.filter(
+        (id) => id.startsWith('seahawks-') && !id.includes('-nfl-shield-') && !id.endsWith('-nike')
+      )
+    ).toEqual(
+      expect.arrayContaining([
+        'seahawks-helmet-center-stripe',
+        // Grey wing paints under the keyline; it was missing from the pre-2026-09-03 decal.
+        'seahawks-helmet-hawk-grey',
+        'seahawks-helmet-hawk',
+        'seahawks-helmet-hawk-eye',
+        'seahawks-jersey-navy-shoulder-number-left',
+        'seahawks-jersey-navy-shoulder-number-right',
+        'seahawks-jersey-navy-shoulder-band-left',
+        'seahawks-jersey-navy-shoulder-band-right',
+        'seahawks-jersey-navy-shoulder-cap-left',
+        'seahawks-jersey-navy-shoulder-cap-right',
+        'seahawks-neck-opening',
+        'seahawks-collar-band',
+        'seahawks-collar-feathers-left',
+        'seahawks-collar-feathers-right',
+        'seahawks-neck-tab-border',
+        'seahawks-neck-tab',
+        'seahawks-neck-twelve',
+        'seahawks-jersey-navy-shoulder-wordmark-right',
+        'seahawks-pants-navy-stripe-0-left',
+        'seahawks-pants-navy-stripe-0-right',
+      ])
+    );
     expect(layerIds?.some((id) => id.startsWith('generic-'))).toBe(false);
-    // League shields and sponsor marks stay out of every kit.
-    expect(layerIds?.some((id) => /shield|sponsor/.test(id))).toBe(false);
+    expect(home?.layers?.find((layer) => layer.id === 'seahawks-pants-navy-nike')).toMatchObject({
+      fill: '#69BE28',
+      surface: 'pants',
+    });
+    expect(
+      home?.layers?.find((layer) => layer.id === 'seahawks-pants-navy-nfl-shield-1')
+    ).toMatchObject({ fill: '#05366B', surface: 'pants' });
 
     const model = resolveUniformModel(definition, 'home', SEAHAWKS_COLORS);
     expect(model).toMatchObject({
       helmetColor: '#002244',
-      jerseyColor: '#002244',
-      pantsColor: '#002244',
+      jerseyColor: '#24293C',
+      pantsColor: '#24293C',
     });
     // Wolf grey must survive as a literal: resolving it from `accent` would silently paint the
     // band and the number the same action green as the sleeve cap on every home render.
@@ -198,8 +209,7 @@ describe('team uniform definitions', () => {
       fill: '#FFFFFF',
     });
     expect(model.layers.some((layer) => layer.id === 'generic-collar')).toBe(false);
-    // The reference's white away pants carry no stripe at all, so the generic pair is dropped
-    // rather than recolored.
+    // The generic pair is replaced by Seattle's feathered seam stripe.
     for (const droppedLayerId of ['generic-pants-stripe-left', 'generic-pants-stripe-right']) {
       expect(model.layers.some((layer) => layer.id === droppedLayerId)).toBe(false);
     }

@@ -20,6 +20,19 @@ import { expandTeamSpec, findCoordinateLiterals, findUnresolvedColors } from '..
 // under the key its own catalog names — a catalog file that exists but was never wired in
 // (or was registered under the wrong teamId) silently keeps using the hand-written data.ts
 // rows instead.
+const pairings = (catalog: Parameters<typeof catalogKits>[0]) =>
+  Object.fromEntries(
+    Object.entries(catalogKits(catalog)).map(([key, ref]) => {
+      const {
+        pantsNike: _pantsNike,
+        sleeveNike: _sleeveNike,
+        collarShield: _collarShield,
+        ...pairing
+      } = ref;
+      return [key, pairing];
+    })
+  );
+
 const TEAMS_DIR = join(__dirname, '..');
 const catalogDirs = readdirSync(TEAMS_DIR, { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && entry.name !== 'core' && entry.name !== '__tests__')
@@ -55,6 +68,82 @@ describe('no leftover hand-written accents for a converted team', () => {
       prefixes.some((prefix) => id.startsWith(prefix))
     );
     expect(leftovers).toEqual([]);
+  });
+});
+
+describe('pants branding in catalog combinations', () => {
+  it('provides one sleeve mark per side on every present-day combination', () => {
+    for (const { catalog } of getAllTeamCatalogs()) {
+      for (const design of catalog.designs) {
+        if (
+          design.periods.at(-1)?.to !== undefined ||
+          design.slug === '1923-throwback' ||
+          (catalog.teamId === 'eagles' && design.slug === 'kelly-green')
+        )
+          continue;
+        const definition = getTeamUniformDefinition(catalog.teamId);
+        for (const [index, combination] of design.combinations.entries()) {
+          const key =
+            index === 0
+              ? (design.constructionKey ?? design.slug)
+              : combinationKitKey(design, combination);
+          const layers = definition?.kits[key].layers ?? [];
+          for (const side of ['sleeve-left', 'sleeve-right']) {
+            expect(
+              layers.filter((layer) => layer.surface === side && layer.id.includes('nike')),
+              `${catalog.teamId}/${key}/${side}`
+            ).toHaveLength(1);
+          }
+          expect(
+            layers.filter(
+              (layer) => layer.surface === 'collar' && layer.id.endsWith('nfl-shield-0')
+            ),
+            `${catalog.teamId}/${key}/collar`
+          ).toHaveLength(1);
+        }
+      }
+    }
+  });
+  it('keeps original historical constructions free of modern equipment marks', () => {
+    for (const [team, key] of [
+      ['packers', '1923-throwback'],
+      ['eagles', 'kelly-green-original'],
+    ]) {
+      const layers = getTeamUniformDefinition(team)?.kits[key].layers ?? [];
+      expect(layers.filter((layer) => /nike|nfl-shield/.test(layer.id))).toEqual([]);
+    }
+  });
+  it('brands every current pants combination except the leather construction', () => {
+    for (const { catalog } of getAllTeamCatalogs()) {
+      for (const design of catalog.designs) {
+        if (
+          design.periods.at(-1)?.to !== undefined ||
+          design.slug === '1923-throwback' ||
+          (catalog.teamId === 'eagles' && design.slug === 'kelly-green')
+        )
+          continue;
+        for (const combination of design.combinations) {
+          expect(
+            combination.pantsNike,
+            `${catalog.teamId}/${design.slug}/${combination.key}`
+          ).toBeDefined();
+        }
+      }
+    }
+  });
+
+  it('keeps pants colors explicit and leaves the leather construction unbranded', () => {
+    const panthers = getTeamCatalog('panthers');
+    const packers = getTeamCatalog('packers');
+    expect(panthers).toBeDefined();
+    expect(packers).toBeDefined();
+    if (!panthers || !packers) return;
+    const kits = catalogKits(panthers);
+    expect(kits.home.pantsNike).toBe('white');
+    expect(kits['home--blue-pants'].pantsNike).toBe('black');
+    const greenBay = catalogKits(packers);
+    expect(greenBay['winter-warning'].pantsNike).toBe('green');
+    expect(greenBay['1923-throwback'].pantsNike).toBeUndefined();
   });
 });
 
@@ -176,10 +265,42 @@ describe('Seahawks catalog conversion', () => {
   });
 
   it('reproduces the kit map', () => {
-    expect(catalogKits(catalog)).toEqual({
-      home: { helmet: 'navy-hawk', jersey: 'navy', pants: 'navy' },
-      away: { helmet: 'navy-hawk', jersey: 'white', pants: 'white-plain' },
-      'color-rush': { helmet: 'navy-hawk', jersey: 'action-green', pants: 'action-green' },
+    expect(pairings(catalog)).toEqual({
+      home: { helmet: 'navy-hawk', jersey: 'navy', pants: 'navy', socks: 'navy' },
+      'home--grey-pants': { helmet: 'navy-hawk', jersey: 'navy', pants: 'grey', socks: 'navy' },
+      away: { helmet: 'navy-hawk', jersey: 'white', pants: 'white-plain', socks: 'navy' },
+      'away--grey-pants': { helmet: 'navy-hawk', jersey: 'white', pants: 'grey', socks: 'navy' },
+      'away--grey-pants-white-socks': {
+        helmet: 'navy-hawk',
+        jersey: 'white',
+        pants: 'grey',
+        socks: 'white',
+      },
+      'away--navy-pants': { helmet: 'navy-hawk', jersey: 'white', pants: 'navy', socks: 'navy' },
+      'away--navy-pants-white-socks': {
+        helmet: 'navy-hawk',
+        jersey: 'white',
+        pants: 'navy',
+        socks: 'white',
+      },
+      'away--white-socks': {
+        helmet: 'navy-hawk',
+        jersey: 'white',
+        pants: 'white-plain',
+        socks: 'white',
+      },
+      'color-rush': {
+        helmet: 'navy-hawk',
+        jersey: 'action-green',
+        pants: 'action-green',
+        socks: 'green',
+      },
+      'color-rush--navy-pants': {
+        helmet: 'navy-hawk',
+        jersey: 'action-green',
+        pants: 'navy',
+        socks: 'navy',
+      },
       '1976-throwback': { helmet: 'throwback-silver', jersey: 'throwback', pants: 'throwback' },
       'rivalries-2025': {
         helmet: 'teal-hawk',
@@ -245,7 +366,7 @@ describe('Bears catalog conversion', () => {
   });
 
   it('pairs the home and away jerseys with white hooped socks, and adds white pants', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'navy-c', jersey: 'navy', pants: 'navy', socks: 'white' },
       'home--white-pants': { helmet: 'navy-c', jersey: 'navy', pants: 'white', socks: 'navy' },
       away: { helmet: 'navy-c', jersey: 'white', pants: 'navy', socks: 'white' },
@@ -321,7 +442,7 @@ describe('Broncos catalog conversion', () => {
 
   it('gives every kit its socks and adds the worn pants and socks pairings', () => {
     const modern = { helmet: 'navy-horse' };
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { ...modern, jersey: 'orange', pants: 'orange', socks: 'white' },
       'home--navy-socks': { ...modern, jersey: 'orange', pants: 'orange', socks: 'navy' },
       away: { ...modern, jersey: 'white', pants: 'white', socks: 'white' },
@@ -403,7 +524,7 @@ describe('Chargers catalog conversion', () => {
 
   it('pairs every kit with its socks and registers the worn pants and socks pairings', () => {
     const white = { helmet: 'white' };
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { ...white, jersey: 'powder', pants: 'gold', socks: 'powder' },
       'home--white-pants': { ...white, jersey: 'powder', pants: 'white', socks: 'powder' },
       'home--powder-pants': { ...white, jersey: 'powder', pants: 'powder', socks: 'white' },
@@ -462,7 +583,7 @@ describe('Colts catalog conversion', () => {
   });
 
   it('pairs both jerseys with the white pants and navy socks', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'white-horseshoe', jersey: 'navy', pants: 'white', socks: 'navy' },
       away: { helmet: 'white-horseshoe', jersey: 'white', pants: 'white', socks: 'navy' },
     });
@@ -530,7 +651,7 @@ describe('Jets catalog conversion', () => {
   });
 
   it("registers each design's own kit with its helmet, pants and socks", () => {
-    const kits = catalogKits(catalog);
+    const kits = pairings(catalog);
     expect(kits.home).toEqual({ helmet: 'green', jersey: 'green', pants: 'green', socks: 'green' });
     expect(kits.away).toEqual({ helmet: 'green', jersey: 'white', pants: 'white', socks: 'white' });
     expect(kits['rivalries-2025']).toEqual({
@@ -601,7 +722,7 @@ describe('49ers catalog conversion', () => {
   });
 
   it('pairs each jersey with its helmet, pants and red socks', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'gold', jersey: 'red', pants: 'gold', socks: 'red' },
       away: { helmet: 'gold', jersey: 'white', pants: 'gold', socks: 'red' },
       'rivalries-2025': { helmet: 'black', jersey: 'black', pants: 'black', socks: 'red' },
@@ -670,7 +791,7 @@ describe('Bengals catalog conversion', () => {
   });
 
   it('registers every kit on the orange helmet', () => {
-    const kits = catalogKits(catalog);
+    const kits = pairings(catalog);
     expect(Object.values(kits).every((kit) => kit.helmet === 'orange')).toBe(true);
     expect(kits['color-rush']).toEqual({
       helmet: 'orange',
@@ -735,7 +856,7 @@ describe('Buccaneers catalog conversion', () => {
 
   it('registers the worn pants pairings with their socks', () => {
     const flag = { helmet: 'pewter-flag' };
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { ...flag, jersey: 'red', pants: 'white', socks: 'pewter' },
       'home--pewter-pants': { ...flag, jersey: 'red', pants: 'pewter', socks: 'pewter' },
       away: { ...flag, jersey: 'white', pants: 'white', socks: 'pewter' },
@@ -787,7 +908,7 @@ describe('Chiefs catalog conversion', () => {
   });
 
   it('keeps the away kit on white pants with red pants as the one extra', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'red-arrowhead', jersey: 'red', pants: 'white', socks: 'red' },
       away: { helmet: 'red-arrowhead', jersey: 'white', pants: 'white', socks: 'white' },
       'away--red-pants': {
@@ -854,7 +975,7 @@ describe('Commanders catalog conversion', () => {
   });
 
   it('pairs each jersey with its pants and leaves the socks in the pants colour', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'burgundy', jersey: 'burgundy', pants: 'burgundy' },
       away: { helmet: 'burgundy', jersey: 'white', pants: 'white' },
       '70s-burgundy': { helmet: 'burgundy', jersey: 'burgundy', pants: 'burgundy' },
@@ -904,7 +1025,7 @@ describe('Cowboys catalog conversion', () => {
   });
 
   it('pairs each jersey with the shared helmet and pants and leaves the socks in the pants colour', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'silver-star', jersey: 'navy', pants: 'white' },
       away: { helmet: 'silver-star', jersey: 'white', pants: 'white' },
     });
@@ -972,7 +1093,7 @@ describe('Dolphins catalog conversion', () => {
   });
 
   it('registers one kit per verified pairing, the away white pants as an extra', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'white', jersey: 'teal', pants: 'white', socks: 'teal' },
       away: { helmet: 'white', jersey: 'white', pants: 'teal', socks: 'teal' },
       'away--white-pants': { helmet: 'white', jersey: 'white', pants: 'white' },
@@ -1060,7 +1181,7 @@ describe('Eagles catalog conversion', () => {
   });
 
   it('pairs each jersey with its verified helmet, pants and socks', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'green', jersey: 'green', pants: 'white', socks: 'white' },
       'kelly-green-original': { helmet: 'kelly', jersey: 'kelly-original', pants: 'kelly' },
       'kelly-green-modern': {
@@ -1206,7 +1327,7 @@ describe('Falcons catalog conversion', () => {
   });
 
   it('pairs each jersey with its verified helmet, pants and socks', () => {
-    expect(catalogKits(catalog)).toEqual({
+    expect(pairings(catalog)).toEqual({
       home: { helmet: 'black-falcon', jersey: 'black', pants: 'black', socks: 'black' },
       'home--white-pants': {
         helmet: 'black-falcon',

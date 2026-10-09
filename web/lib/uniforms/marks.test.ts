@@ -159,7 +159,7 @@ describe('placeMarkOnPair', () => {
         { slot: 'b', d: 'M0,0 L5,5 L0,10 Z' },
       ],
     };
-    for (const pair of ['sleeves', 'shoulders'] as const) {
+    for (const pair of ['sleeves', 'shoulders', 'sleeve-tops'] as const) {
       expect(placeMarkOnPair('p', two, pair, { a: 'navy', b: 'white' }).map((l) => l.id)).toEqual([
         'p-a-left',
         'p-a-right',

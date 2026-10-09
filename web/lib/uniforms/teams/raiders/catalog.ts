@@ -6,6 +6,7 @@ export const RAIDERS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'silver',
       name: 'Home',
       kind: 'home',
       jersey: 'black',
@@ -18,12 +19,14 @@ export const RAIDERS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'silver-shield',
           pants: 'silver',
+          pantsNike: 'black',
           socks: 'black',
         },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'black',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -36,6 +39,7 @@ export const RAIDERS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'silver-shield',
           pants: 'silver',
+          pantsNike: 'black',
           socks: 'black',
         },
       ],

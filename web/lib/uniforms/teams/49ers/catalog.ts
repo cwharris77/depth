@@ -5,6 +5,7 @@ export const NINERS_CATALOG: TeamCatalog = {
   designs: [
     {
       slug: 'home',
+      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'red',
@@ -12,11 +13,19 @@ export const NINERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
       periods: [{ from: 2022 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'gold', pants: 'gold', socks: 'red' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'gold',
+          pants: 'gold',
+          pantsNike: 'red',
+          socks: 'red',
+        },
       ],
     },
     {
       slug: 'away',
+      sleeveNike: 'red',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -24,11 +33,19 @@ export const NINERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
       periods: [{ from: 2022 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'gold', pants: 'gold', socks: 'red' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'gold',
+          pants: 'gold',
+          pantsNike: 'red',
+          socks: 'red',
+        },
       ],
     },
     {
       slug: 'rivalries-2025',
+      sleeveNike: 'red',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'black',
@@ -36,7 +53,14 @@ export const NINERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#B3995D', onAccent: '#0a0e1a' },
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'black', socks: 'red' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'black',
+          pantsNike: 'white',
+          socks: 'red',
+        },
       ],
     },
   ],
