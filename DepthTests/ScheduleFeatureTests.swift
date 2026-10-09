@@ -630,3 +630,20 @@ private actor DelayedScheduleRepository: DepthRepository {
     #expect(await viewModel.schedule?.season == 2024)
     #expect(await viewModel.phase == .playoffs)
 }
+
+@Test func refreshKeepsTheLoadedScheduleOnScreenUntilTheReloadResolves() async {
+    let current = testSchedule(season: 2025)
+    let repository = DelayedScheduleRepository(defaultSchedule: current)
+    let viewModel = await ScheduleViewModel(teamId: "bills", repository: repository)
+    await viewModel.load()
+
+    let refresh = Task { @MainActor in await viewModel.load() }
+    await repository.waitForRequest(season: 2025)
+
+    #expect(await viewModel.loadState == .loaded)
+    #expect(await viewModel.schedule?.season == 2025)
+
+    await repository.complete(season: 2025, with: current)
+    await refresh.value
+    #expect(await viewModel.loadState == .loaded)
+}

@@ -6,7 +6,9 @@ import UIKit
 // untouched URL reads nil, and garbage never decodes as an image. The async fetch path is
 // network I/O — deliberately not exercised here (the suite never hits ESPN), so these
 // tests seed the cache directly via storeCachedResponse and use unique example.test URLs
-// that can't collide with real team logo URLs.
+// that can't collide with real team logo URLs. Seeds are memory-only: URLCache writes
+// disk-allowed entries asynchronously, and a write landing after a removal resurrects the
+// entry the test just watched get deleted.
 @MainActor
 struct TeamLogoCacheTests {
     // A 1×1 transparent PNG — a real decodable image for the round-trip test.
@@ -30,7 +32,7 @@ struct TeamLogoCacheTests {
                 response: response,
                 data: Self.png1x1,
                 userInfo: ["teamLogoCachedAt": Date()],
-                storagePolicy: .allowed
+                storagePolicy: .allowedInMemoryOnly
             ),
             for: request
         )
@@ -48,7 +50,7 @@ struct TeamLogoCacheTests {
                 response: response,
                 data: Self.png1x1,
                 userInfo: ["teamLogoCachedAt": Date().addingTimeInterval(-7 * 60 * 60)],
-                storagePolicy: .allowed
+                storagePolicy: .allowedInMemoryOnly
             ),
             for: request
         )
@@ -63,7 +65,9 @@ struct TeamLogoCacheTests {
         let response = HTTPURLResponse(
             url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
         TeamLogoCache.urlCache.storeCachedResponse(
-            CachedURLResponse(response: response, data: Data("not an image".utf8)),
+            CachedURLResponse(
+                response: response, data: Data("not an image".utf8), userInfo: nil,
+                storagePolicy: .allowedInMemoryOnly),
             for: request
         )
         defer { TeamLogoCache.urlCache.removeCachedResponse(for: request) }

@@ -130,8 +130,23 @@ enum DesignTokens {
     /// enough time to explain where players moved, and Reduce Motion callers retain a
     /// short crossfade instead of losing state feedback entirely.
     enum Motion {
+        /// Press states, small affordance changes, and every token's Reduce Motion stand-in.
         static let feedback = Animation.easeOut(duration: 0.12)
+        /// Content following a finger, such as rows shifting under a reorder drag.
+        static let track = Animation.snappy(duration: 0.15, extraBounce: 0)
+        /// A chosen value changing: segments, tabs, disclosures, paging, field pan jumps.
         static let selection = Animation.snappy(duration: 0.24, extraBounce: 0)
+        /// Something entering or leaving: state swaps, overlays, coachmarks.
+        static let reveal = Animation.easeOut(duration: 0.2)
+        /// Spatial rearrangement the eye has to follow, such as a formation change.
         static let formation = Animation.smooth(duration: 0.36)
+    }
+}
+
+extension Animation {
+    /// Swaps any motion token for `DesignTokens.Motion.feedback` under Reduce Motion, so a
+    /// state change still reads as a short crossfade instead of jumping with no cue.
+    func respectingReduceMotion(_ reduceMotion: Bool) -> Animation {
+        reduceMotion ? DesignTokens.Motion.feedback : self
     }
 }

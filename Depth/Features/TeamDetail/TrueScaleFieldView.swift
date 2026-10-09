@@ -67,15 +67,21 @@ struct TrueScaleFieldView: View {
                     colors: colors,
                     selectedKey: selectedKey,
                     onSelect: { key in
-                        withAnimation(DesignTokens.Motion.selection) {
+                        withAnimation(
+                            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)
+                        ) {
                             selectedKey = selectedKey == key ? nil : key
                         }
                     },
                     onDeselect: {
-                        withAnimation(DesignTokens.Motion.selection) { selectedKey = nil }
+                        withAnimation(
+                            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)
+                        ) { selectedKey = nil }
                     },
                     onChip: { chip in
-                        withAnimation(DesignTokens.Motion.selection) {
+                        withAnimation(
+                            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)
+                        ) {
                             selectedKey = chip.dot == nil ? nil : chip.target.key
                         }
                         // A player chip already ticks through the selection change; only the
@@ -133,7 +139,7 @@ struct TrueScaleFieldView: View {
 
     private func move(to target: CGPoint, feedback: Bool = true) {
         if feedback { jumpFeedbackCount += 1 }
-        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.26)) {
+        withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
             pan = target
         }
     }
@@ -227,7 +233,9 @@ struct TrueScaleFieldView: View {
                 systemImage: "scope", label: "Recentre on the ball",
                 identifier: "true-scale-recentre"
             ) {
-                withAnimation(DesignTokens.Motion.selection) { selectedKey = nil }
+                withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
+                    selectedKey = nil
+                }
                 move(to: layout.initialPan(window: window))
             }
             .disabled(!offCentre)
@@ -280,6 +288,7 @@ private extension View {
 /// or a recentre eases every layer together — the Canvas, the dot visibility filter, the
 /// callout, and the chips all recompute per animation frame instead of jumping.
 private struct TrueScaleSurface: View, @MainActor Animatable {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let layout: TrueScaleFieldLayout
     var pan: CGPoint
     let window: TrueScaleFieldLayout.Window
@@ -321,7 +330,8 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
                 }
                 if let selected {
                     callout(for: selected)
-                        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                        .transition(
+                            reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.9)))
                 }
             }
             .frame(width: window.size.width, height: window.size.height, alignment: .topLeading)

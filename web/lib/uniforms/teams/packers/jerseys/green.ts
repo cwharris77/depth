@@ -1,21 +1,18 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { anchoredMark } from '../../core/jersey-spec';
-import { LEAGUE_SHIELD } from '../../league/marks/shield';
-import { LEAGUE_SWOOSH } from '../../league/marks/swoosh';
-import { PACKERS_SHIELD_SLOTS } from '../marks/construction';
+import { NIKE_MARK } from '../../core/pants-logos';
 
-// Green body with an even gold, white and gold collar band, carried across the back of the neck,
-// and a gold, white, gold sleeve set split by hairlines of green. Shoulder and chest numerals are
-// white, with a white swoosh on each sleeve top and the league shield on the collar's point.
+// Green body with a narrow V collar, an even gold, white and gold band carried round the back of the
+// neck, and a gold, white, gold sleeve set; both trims are split from the gold by hairlines of
+// green. Shoulder and chest numerals are white, with a white swoosh on each sleeve top.
 export const PACKERS_JERSEY_GREEN: CompleteJerseySpec = {
   body: 'green',
   collar: {
-    style: 'inset-v',
+    style: 'narrow-v',
     color: 'gold',
     trim: 'white',
+    trimEdge: 'green',
     inside: 'body',
-    lining: 'none',
-    backBar: { color: 'gold', trim: 'white' },
     outline: true,
   },
   shoulderPanel: 'none',
@@ -36,17 +33,10 @@ export const PACKERS_JERSEY_GREEN: CompleteJerseySpec = {
   marks: [
     anchoredMark({
       paint: 'over',
-      mark: LEAGUE_SWOOSH,
+      mark: NIKE_MARK,
       anchor: 'sleeve-tops',
-      slots: { body: 'white' },
+      slots: { nike: 'white' },
       id: 'swoosh',
-    }),
-    anchoredMark({
-      paint: 'over',
-      mark: LEAGUE_SHIELD,
-      anchor: 'collar-v',
-      slots: PACKERS_SHIELD_SLOTS,
-      id: 'shield',
     }),
   ],
 };

@@ -758,8 +758,12 @@ struct TeamDetailView: View {
         activeJerseyColors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
     }
 
-    @ViewBuilder
     private var historicalContent: some View {
+        historicalContentStates.loadStateTransition(historyViewModel.state)
+    }
+
+    @ViewBuilder
+    private var historicalContentStates: some View {
         switch historyViewModel.state {
         case .loading:
             VStack {
@@ -789,8 +793,12 @@ struct TeamDetailView: View {
         }
     }
 
-    @ViewBuilder
     private var currentContent: some View {
+        currentContentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var currentContentStates: some View {
         if let snapshot = displayedSnapshot {
             rosterContent(snapshot: snapshot, historical: false)
         } else {
@@ -1068,7 +1076,7 @@ struct TeamDetailView: View {
     /// The sheet delegates its state change here to keep the main SwiftUI body small
     /// enough for the compiler while preserving the field's formation-settle animation.
     private func selectFormation(_ formation: TeamFormation) {
-        withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation) {
+        withAnimation(DesignTokens.Motion.formation.respectingReduceMotion(reduceMotion)) {
             selectedFormations[unit] = formation
         }
         showFormations = false

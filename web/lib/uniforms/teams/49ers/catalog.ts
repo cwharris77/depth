@@ -12,7 +12,14 @@ export const NINERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
       periods: [{ from: 2022 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'gold', pants: 'gold', socks: 'red' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'gold',
+          pants: 'gold',
+          pantsNike: 'red',
+          socks: 'red',
+        },
       ],
     },
     {
@@ -24,7 +31,14 @@ export const NINERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
       periods: [{ from: 2022 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'gold', pants: 'gold', socks: 'red' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'gold',
+          pants: 'gold',
+          pantsNike: 'red',
+          socks: 'red',
+        },
       ],
     },
     {
@@ -36,7 +50,14 @@ export const NINERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#B3995D', onAccent: '#0a0e1a' },
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'black', socks: 'red' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'black',
+          pantsNike: 'white',
+          socks: 'red',
+        },
       ],
     },
   ],

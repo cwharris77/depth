@@ -1,3 +1,5 @@
+import { pantsLogos } from './pants-logos';
+import { NFL_SHIELD_PAINTS } from './nfl-shield';
 // Composable uniform parts: an AUTHORING layer over TeamUniformDefinition, not a new
 // runtime. A team declares a named palette plus independent helmet/jersey/pants parts, and
 // `compileParts` assembles a kit's three references into the existing flat runtime definition
@@ -16,7 +18,7 @@
 // lib/utils/team-surfaces.ts, invariant 4) and stop doubling as the geometry palette.
 
 import { GENERIC_UNIFORM_STYLE } from '../../model';
-import { OUTLINE_PAINT, reservedPaint } from './shared';
+import { FIGURE_OUTLINE, OUTLINE_PAINT } from './shared';
 import type {
   ColorRef,
   NumberStyle,
@@ -29,8 +31,7 @@ import type {
 
 // A palette key is any name the team module chooses ('navy', 'orange', 'white'). Parts refer to
 // colors by key; compilation substitutes the hex. `readable-on-body` is passed through unchanged
-// because it is resolved against the assembled body color at render time, not authoring time. The
-// reserved paints in shared.ts (`outline`, the shield colours) resolve the same on every team.
+// because it is resolved against the assembled body color at render time, not authoring time.
 export type PaletteRef = string | 'readable-on-body' | typeof OUTLINE_PAINT;
 
 export interface UniformPart {
@@ -71,6 +72,8 @@ export type PartNumberStyle = Omit<NumberStyle, 'fill' | 'outline'> & {
 };
 
 export interface KitRef {
+  // Omitted for constructions without modern pants branding.
+  pantsNike?: PaletteRef;
   helmet: string;
   jersey: string;
   // Canonical first so compilation preserves the existing raster; remaining entries are the
@@ -110,20 +113,18 @@ export function fromGeneric(id: string, color: PaletteRef): PartLayer {
 }
 
 function hex(palette: Record<string, string>, ref: PaletteRef, teamId: string): string {
+  if (Object.hasOwn(NFL_SHIELD_PAINTS, ref)) return NFL_SHIELD_PAINTS[ref];
   if (ref === 'readable-on-body') return ref;
-  const reserved = reservedPaint(ref);
-  if (reserved) return reserved;
+  if (ref === OUTLINE_PAINT) return FIGURE_OUTLINE;
   if (ref.startsWith('pattern:')) return ref;
-  const value = palette[ref];
+  const value = Object.hasOwn(palette, ref) ? palette[ref] : undefined;
   // A typo in a palette key would otherwise resolve to colors.primary at render time and paint
   // a plausible-but-wrong color, which no test would catch. Fail at authoring time instead.
   if (!value) throw new Error(`${teamId}: unknown palette color "${ref}"`);
   return value;
 }
 
-// Pattern shape and gradient colors may be a palette key OR a literal hex (validate.ts accepts
-// both). Unlike a part layer, a pattern color is a tile-local literal, so a hex passes through:
-// the converter emits gradient-derived hex fills that must compile unchanged.
+// Pattern tiles may carry literal colors independently of a team palette.
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 function patternPaint(palette: Record<string, string>, ref: string, teamId: string): string {
@@ -175,6 +176,13 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
         ...compileLayers(helmet, palette, teamId),
         ...compileLayers(jersey, palette, teamId),
         ...compileLayers(pants, palette, teamId),
+        ...(ref.pantsNike === undefined
+          ? []
+          : compileLayers(
+              { base: pants.base, layers: pantsLogos(`${teamId}-pants-${pantsId}`, ref.pantsNike) },
+              palette,
+              teamId
+            )),
         ...(socks ? compileLayers(socks, palette, teamId) : []),
       ],
       number: number && {

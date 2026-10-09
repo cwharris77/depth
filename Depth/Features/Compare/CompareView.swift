@@ -144,8 +144,12 @@ struct CompareView: View {
         }
     }
 
-    @ViewBuilder
     private var content: some View {
+        contentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var contentStates: some View {
         switch viewModel.loadState {
         case .loading:
             ProgressView("Loading teams…")
@@ -187,7 +191,7 @@ struct CompareView: View {
                     .coachmarkAnchor(.compareContent)
                     .transition(.opacity)
                     .animation(
-                        reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection,
+                        DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion),
                         value: viewModel.tab
                     )
             }
@@ -526,7 +530,8 @@ private struct RoomPositionPicker: View {
         // carry their own `unit-tab-*` ids, and a container-level identifier on the VStack
         // overrode those, leaving every lens unreachable by id.
         .animation(
-            reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.expandedRoomID)
+            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion),
+            value: viewModel.expandedRoomID)
     }
 
     // MARK: Unit lens
@@ -564,7 +569,7 @@ private struct RoomPositionPicker: View {
         let isActive = room == viewModel.activeRoom
         return Button {
             withAnimation(
-                reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection
+                DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)
             ) {
                 viewModel.selectRoom(room)
             }
@@ -632,7 +637,9 @@ private struct RoomPositionPicker: View {
             }
             if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
         }
-        .animation(reduceMotion ? nil : DesignTokens.Motion.selection, value: viewModel.position)
+        .animation(
+            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion),
+            value: viewModel.position)
     }
 
     private func roleTile(_ pos: Position) -> some View {

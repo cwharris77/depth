@@ -1,3 +1,4 @@
+import { NFL_SHIELD_PAINTS } from './nfl-shield';
 // A strict team's construction: every part is a complete spec, so the team holds no coordinates
 // of its own outside its mark files. expandTeamSpec() produces the part groups the team
 // registers; findCoordinateLiterals() is the static check that nothing else draws.
@@ -16,7 +17,7 @@ import { expandHelmet } from './helmet-spec';
 import { expandJersey } from './jersey-spec';
 import { expandPants, expandSocks } from './pants-spec';
 import type { PaletteRef, TeamPartsDefinition, UniformPart } from './parts';
-import { reservedPaint } from './shared';
+import { OUTLINE_PAINT } from './shared';
 
 export interface TeamSpec {
   helmets: Record<string, CompleteHelmetSpec>;
@@ -47,13 +48,14 @@ export function expandTeamSpec(teamId: string, spec: TeamSpec): SpecParts {
   };
 }
 
-// Whether compileParts (parts.ts's hex()) would resolve this ref: a palette key, a
-// team-independent paint, or a pattern reference (patterns aren't validated here -- hex() passes
+// Whether compileParts (parts.ts's hex()) would resolve this ref: a palette key,
+// team-independent paints and shield colors, or a pattern reference (patterns aren't validated here -- hex() passes
 // them through unchecked too).
 function resolves(ref: PaletteRef, palette: Record<string, string>): boolean {
-  if (ref === 'readable-on-body' || reservedPaint(ref)) return true;
+  if (ref === 'readable-on-body' || ref === OUTLINE_PAINT || Object.hasOwn(NFL_SHIELD_PAINTS, ref))
+    return true;
   if (ref.startsWith('pattern:')) return true;
-  return palette[ref] !== undefined;
+  return Object.hasOwn(palette, ref) && palette[ref] !== undefined;
 }
 
 // Every palette-key colour ref across a team's parts that compileParts would fail to resolve

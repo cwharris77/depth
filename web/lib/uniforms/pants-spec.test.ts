@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { anchoredPantsMark, expandPants, expandSocks } from '@/lib/uniforms/teams/core/pants-spec';
+import { expandPants, expandSocks } from '@/lib/uniforms/teams/core/pants-spec';
 import { compileParts, type PartLayer } from '@/lib/uniforms/teams/core/parts';
-import { ANCHORS, placed, type Mark } from '@/lib/uniforms/teams/core/marks';
+import { placed } from '@/lib/uniforms/teams/core/marks';
 import {
   SEAHAWKS_PANTS_EDGE_BAND_LEFT,
   SEAHAWKS_PANTS_EDGE_BAND_RIGHT,
@@ -50,48 +50,6 @@ describe('expandPants', () => {
     expect(part.layers.map((l) => l.id)).toEqual(['under', ...plain, 'over']);
     expect(part.layers[0]).toEqual(under);
     expect(part.layers[0]).not.toBe(under);
-  });
-
-  it('places anchored marks on the hips under the pants prefix, neither mirrored', () => {
-    const TRIANGLE: Mark<'body'> = {
-      box: [0, 0, 10, 10],
-      paths: [{ slot: 'body', d: 'M0,0 L10,0 L10,10 Z' }],
-    };
-    const part = expandPants('t', {
-      body: 'gold',
-      marks: [
-        anchoredPantsMark({
-          paint: 'over',
-          mark: TRIANGLE,
-          anchor: 'hip-left',
-          slots: { body: 'white' },
-          id: 'shield',
-        }),
-        anchoredPantsMark({
-          paint: 'over',
-          mark: TRIANGLE,
-          anchor: 'hip-right',
-          slots: { body: 'green' },
-          id: 'swoosh',
-        }),
-      ],
-    });
-    expect(part.layers.map((l) => [l.id, l.surface, l.kind === 'fill' && l.fill])).toEqual([
-      ['t-shield-body-left', 'pants', 'white'],
-      ['t-swoosh-body-right', 'pants', 'green'],
-    ]);
-    // The triangle's first point is the box's top-left corner on both hips.
-    const firstX = (i: number) => Number(/^M(-?[\d.]+),/.exec(part.layers[i].d)?.[1]);
-    expect(firstX(0)).toBe(ANCHORS['hip-left'].x0);
-    expect(firstX(1)).toBe(ANCHORS['hip-right'].x0);
-    anchoredPantsMark({
-      paint: 'over',
-      mark: TRIANGLE,
-      anchor: 'hip-left',
-      // @ts-expect-error -- 'wing' is not a slot of TRIANGLE
-      slots: { body: 'white', wing: 'navy' },
-      id: 'shield',
-    });
   });
 
   it('spaces a stack a hairline apart', () => {

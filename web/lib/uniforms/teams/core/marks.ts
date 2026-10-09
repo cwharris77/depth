@@ -38,11 +38,11 @@ export type AnchorName =
   | 'sleeve-right'
   | 'shoulder-left'
   | 'shoulder-right'
+  | 'pants-shield'
+  | 'pants-nike'
   | 'sleeve-top-left'
   | 'sleeve-top-right'
-  | 'collar-v'
-  | 'hip-left'
-  | 'hip-right';
+  | 'collar-narrow-v';
 
 interface Anchor {
   surface: UniformSurface;
@@ -57,6 +57,10 @@ interface Anchor {
 }
 
 export const ANCHORS: Record<AnchorName, Anchor> = {
+  'pants-shield': { surface: 'pants', x0: 193, w: 20, cy: 867, mirror: false, idSuffix: '' },
+  'pants-nike': { surface: 'pants', x0: 360, w: 40, cy: 865, mirror: false, idSuffix: '' },
+  // The shield over the narrow V's point, at the shared collar shield's size.
+  'collar-narrow-v': { surface: 'collar', x0: 284.5, w: 19, cy: 490, mirror: false, idSuffix: '' },
   'helmet-side': { surface: 'helmet', x0: 154, w: 310, cy: 293, mirror: false, idSuffix: '' },
   'sleeve-left': {
     surface: 'sleeve-left',
@@ -110,13 +114,6 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
     mirror: false,
     idSuffix: '-right',
   },
-  // Centred on the collar's point, the league shield's place: its lower edge meets the V's outer
-  // edge.
-  'collar-v': { surface: 'collar', x0: 282, w: 24, cy: 459, mirror: false, idSuffix: '' },
-  // The front of each hip below the waist: the league shield on the left, the manufacturer mark on
-  // the right. Neither mirrors, so the right one keeps the mark's own orientation.
-  'hip-left': { surface: 'pants', x0: 186, w: 23, cy: 876, mirror: false, idSuffix: '-left' },
-  'hip-right': { surface: 'pants', x0: 367.5, w: 46, cy: 872, mirror: false, idSuffix: '-right' },
 };
 
 // One decimal, matching Python's '%.1f'. A value whose binary form is an exact tie at the second

@@ -12,7 +12,14 @@ export const SAINTS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
       periods: [{ from: 2002 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'gold-fleur', pants: 'gold', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'gold-fleur',
+          pants: 'gold',
+          pantsNike: 'black',
+          socks: 'black',
+        },
       ],
     },
     {
@@ -29,6 +36,7 @@ export const SAINTS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'gold-fleur',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
       ],
@@ -47,6 +55,7 @@ export const SAINTS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'gold-fleur',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
       ],

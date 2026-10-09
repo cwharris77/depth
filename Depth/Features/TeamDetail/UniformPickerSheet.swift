@@ -130,7 +130,8 @@ struct UniformPickerSheet: View {
                 .accessibilityIdentifier("uniform-dot-\(uniform.id)")
             }
         }
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: currentIndex)
+        .animation(
+            DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion), value: currentIndex)
     }
 }
 

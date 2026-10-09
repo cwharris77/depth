@@ -17,6 +17,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'red-arrowhead',
           pants: 'white',
+          pantsNike: 'red',
           socks: 'red',
         },
       ],
@@ -35,6 +36,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'red-arrowhead',
           pants: 'white',
+          pantsNike: 'red',
           socks: 'white',
         },
         {
@@ -42,6 +44,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
           label: 'Red pants',
           helmet: 'red-arrowhead',
           pants: 'red',
+          pantsNike: 'white',
           socks: 'white',
         },
       ],

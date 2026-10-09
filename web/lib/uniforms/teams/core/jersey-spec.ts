@@ -4,7 +4,12 @@
 import { placeMark, placeMarkOnPair, type AnchorPair, type Mark, type PlacedMark } from './marks';
 import type { PaletteRef, PartLayer, UniformPart } from './parts';
 import { JERSEY_NUMBER_THREE } from '../../jersey-art';
-import { GENERIC_COLLAR_PATH, LEGACY_ROUNDED_COLLAR_PATH, modernInsetVCollar } from './shared';
+import {
+  GENERIC_COLLAR_PATH,
+  LEGACY_ROUNDED_COLLAR_PATH,
+  modernInsetVCollar,
+  narrowVCollar,
+} from './shared';
 
 export type JerseySize = 's' | 'm' | 'l';
 export type JerseyBand = { color: string; size: JerseySize };
@@ -24,8 +29,7 @@ export interface AnchoredJerseyMark {
     | 'shoulder-left'
     | 'shoulder-right'
     | 'sleeve-top-left'
-    | 'sleeve-top-right'
-    | 'collar-v';
+    | 'sleeve-top-right';
   slots: Readonly<Record<string, PaletteRef | null>>;
   // Layer id stem, prefixed with the jersey's prefix.
   id: string;
@@ -57,16 +61,19 @@ export interface JerseyNumber {
 export interface JerseySpec {
   body: string;
   collar: {
-    style: 'shallow-v' | 'inset-v' | 'rounded' | 'none';
+    style: 'shallow-v' | 'inset-v' | 'narrow-v' | 'rounded' | 'none';
     color?: string;
     trim?: string;
     // Fill for the neck opening inside the V. Defaults to the body color; a darker shade of the
     // body reads as the jersey's inside without needing an outline.
     inside?: string;
-    // inset-v only: see modernInsetVCollar. An object backBar also carries a trim band across it.
+    // inset-v only: see modernInsetVCollar.
     lining?: string;
-    backBar?: string | { color: string; trim: string };
+    backBar?: string;
+    // inset-v and narrow-v.
     outline?: boolean;
+    // narrow-v only: hairlines of this colour along both edges of the trim.
+    trimEdge?: string;
   };
   // Color blocks stacked down from the top of each sleeve. The first band is the cap: it fills up
   // to the shoulder seam with a curved inner edge. Every band edge slopes down toward the body.
@@ -196,7 +203,7 @@ function bothSleeves(id: string, color: string, shape: (side: Sleeve) => string)
 }
 
 function collarLayers(prefix: string, spec: JerseySpec): PartLayer[] {
-  const { style, color, trim, inside, lining, backBar, outline } = spec.collar;
+  const { style, color, trim, inside, lining, backBar, outline, trimEdge } = spec.collar;
   if (style === 'none' || !color) return [];
   const stroke = (id: string, d: string, width: number, c: string): PartLayer => ({
     id: `${prefix}-${id}`,
@@ -225,12 +232,16 @@ function collarLayers(prefix: string, spec: JerseySpec): PartLayer[] {
           interior: inside ?? spec.body,
           edge: color,
           inset: trim ?? color,
-          placket: spec.body,
+          placket: color,
           lining,
-          ...(typeof backBar === 'object'
-            ? { backBar: backBar.color, backBarTrim: backBar.trim }
-            : { backBar }),
+          backBar,
         },
+        outline,
+      });
+    case 'narrow-v':
+      return narrowVCollar({
+        idPrefix: prefix,
+        colors: { interior: inside ?? spec.body, band: color, trim, trimEdge },
         outline,
       });
   }

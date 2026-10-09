@@ -121,7 +121,7 @@ struct PlayerStatsLedger: View {
 
         return VStack(alignment: .leading, spacing: 0) {
             Button {
-                withAnimation(reduceMotion ? nil : DesignTokens.Motion.selection) {
+                withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
                     if isOpen { expanded.remove(key) } else { expanded.insert(key) }
                 }
             } label: {

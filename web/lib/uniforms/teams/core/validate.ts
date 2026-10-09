@@ -1,3 +1,4 @@
+import { NFL_SHIELD_PAINTS } from './nfl-shield';
 // Strict production validation for authored uniform art.
 //
 // The authoring path has two untrusted boundaries: the model-authored JSON the converter
@@ -8,7 +9,7 @@
 //
 // This module is pure so the converter and the catalog guard can share it and so the rules
 // are unit-testable without running the outliner or sharp.
-import { reservedPaint } from './shared';
+import { OUTLINE_PAINT } from './shared';
 import type { UniformSurface } from './types';
 
 export interface ValidationIssue {
@@ -103,15 +104,15 @@ export function isValidPathData(value: unknown): boolean {
 }
 
 // `fill`/`stroke` may be a palette key, a pattern reference, the runtime-resolved pseudo-color,
-// or a reserved paint (the shared outline grey, the shield colours). Anything else would fall
-// through to a default at render time.
+// the shared outline grey, or a fixed shield paint. Unknown names cannot render reliably.
 function isResolvablePaint(
   ref: unknown,
   paletteKeys: ReadonlySet<string>,
   patternKeys: ReadonlySet<string>
 ): boolean {
   if (typeof ref !== 'string' || ref.length === 0) return false;
-  if (ref === 'readable-on-body' || reservedPaint(ref)) return true;
+  if (ref === 'readable-on-body' || ref === OUTLINE_PAINT || Object.hasOwn(NFL_SHIELD_PAINTS, ref))
+    return true;
   if (ref.startsWith('pattern:')) return patternKeys.has(ref.slice('pattern:'.length));
   return paletteKeys.has(ref);
 }

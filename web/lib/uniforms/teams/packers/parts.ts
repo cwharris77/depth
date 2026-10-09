@@ -1,10 +1,7 @@
 // Green Bay as a complete team spec: every helmet, jersey, pants and socks part, with the helmet
 // art drawn by the marks in ./marks.
-import { anchoredPantsMark } from '../core/pants-spec';
 import type { TeamSpec } from '../core/team-spec';
-import { LEAGUE_SHIELD } from '../league/marks/shield';
-import { LEAGUE_SWOOSH } from '../league/marks/swoosh';
-import { PACKERS_HELMET_DECAL, PACKERS_HELMET_G, PACKERS_SHIELD_SLOTS } from './marks/construction';
+import { PACKERS_HELMET_DECAL, PACKERS_HELMET_G } from './marks/construction';
 import { PACKERS_JERSEY_GREEN } from './jerseys/green';
 import { PACKERS_JERSEY_NAVY } from './jerseys/navy';
 import { PACKERS_JERSEY_WHITE } from './jerseys/white';
@@ -55,27 +52,7 @@ export const PACKERS_SPEC: TeamSpec = {
     navy: PACKERS_JERSEY_NAVY,
   },
   pants: {
-    // Plain gold from the front: the league shield on the left hip, a green swoosh on the right.
-    gold: {
-      body: 'gold',
-      stripes: none,
-      marks: [
-        anchoredPantsMark({
-          paint: 'over',
-          mark: LEAGUE_SHIELD,
-          anchor: 'hip-left',
-          slots: PACKERS_SHIELD_SLOTS,
-          id: 'shield',
-        }),
-        anchoredPantsMark({
-          paint: 'over',
-          mark: LEAGUE_SWOOSH,
-          anchor: 'hip-right',
-          slots: { body: 'green' },
-          id: 'swoosh',
-        }),
-      ],
-    },
+    gold: { body: 'gold', stripes: legStripe('green', 'white'), marks: [] },
     white: { body: 'white', stripes: legStripe('green', 'gold'), marks: [] },
     leather: { body: 'leather', stripes: none, marks: [] },
   },

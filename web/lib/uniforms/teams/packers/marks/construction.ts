@@ -3,7 +3,6 @@ import { PACKERS_G_MARK_LAYERS } from './decal';
 import { PACKERS_HELMET_STRIPE_INNER_PATH, PACKERS_HELMET_STRIPE_PATH } from './paths';
 import { placed } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
-import type { LEAGUE_SHIELD } from '../../league/marks/shield';
 
 const G_MARK: PartLayer[] = PACKERS_G_MARK_LAYERS.map((layer): PartLayer => ({
   ...layer,
@@ -36,15 +35,3 @@ export const PACKERS_HELMET_DECAL = placed([
   },
   ...G_MARK,
 ]);
-
-// The league shield's slots: its navy and red are the reserved shield paints, every white part
-// is the kit white.
-export const PACKERS_SHIELD_SLOTS: Record<(typeof LEAGUE_SHIELD.paths)[number]['slot'], string> = {
-  border: 'white',
-  field: 'shield-navy',
-  panel: 'white',
-  letters: 'shield-red',
-  stars: 'white',
-  ball: 'white',
-  lines: 'shield-navy',
-};

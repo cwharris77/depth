@@ -123,11 +123,12 @@ struct RootTabView: View {
                     .frame(height: editBar.tabBarInset, alignment: .top)
                     .background(DesignTokens.Colors.bg)
                     .contentShape(Rectangle())
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(
+                        reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .animation(
-                reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation,
+                DesignTokens.Motion.formation.respectingReduceMotion(reduceMotion),
                 value: currentTeamStore.editBar != nil
             )
             .ignoresSafeArea(.container, edges: .bottom)

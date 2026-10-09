@@ -95,6 +95,47 @@ describe('complete specs convert to the expander specs', () => {
     });
   });
 
+  it('converts a narrow-v collar, dropping a none piping and the body default', () => {
+    const narrow: CompleteCollar = {
+      style: 'narrow-v',
+      color: 'gold',
+      trim: 'white',
+      trimEdge: 'none',
+      inside: 'body',
+      outline: true,
+    };
+    expect(jerseySpecOf({ ...JERSEY, collar: narrow }).collar).toEqual({
+      style: 'narrow-v',
+      color: 'gold',
+      trim: 'white',
+      outline: true,
+    });
+    expect(
+      jerseySpecOf({ ...JERSEY, collar: { ...narrow, trimEdge: 'green', inside: 'navy' } }).collar
+    ).toEqual({
+      style: 'narrow-v',
+      color: 'gold',
+      trim: 'white',
+      trimEdge: 'green',
+      inside: 'navy',
+      outline: true,
+    });
+  });
+
+  it('rejects a narrow-v collar carrying an inset-v-only field', () => {
+    const narrow: CompleteCollar = {
+      style: 'narrow-v',
+      color: 'gold',
+      trim: 'none',
+      trimEdge: 'none',
+      inside: 'body',
+      outline: false,
+      // @ts-expect-error -- the narrow V carries its band round the back; it has no back bar
+      backBar: 'gold',
+    };
+    expect(narrow.style).toBe('narrow-v');
+  });
+
   it('rejects a shallow-v collar carrying an inset-v-only field', () => {
     const shallow: CompleteCollar = {
       style: 'shallow-v',
@@ -144,6 +185,7 @@ describe('question table', () => {
         'collar.lining',
         'collar.backBar',
         'collar.outline',
+        'collar.trimEdge',
         'shoulderPanel',
         'shoulderStripes',
         'shoulderNumber',
@@ -182,6 +224,22 @@ describe('findMissing', () => {
       collar: { style: 'shallow-v', color: 'white', trim: 'none' },
     };
     expect(findMissing('jersey', shallow)).toEqual([]);
+  });
+
+  it('requires the narrow-v collar fields, piping included, and none of the inset-v ones', () => {
+    const narrow = {
+      style: 'narrow-v',
+      color: 'gold',
+      trim: 'white',
+      trimEdge: 'green',
+      inside: 'body',
+      outline: true,
+    };
+    expect(findMissing('jersey', { ...JERSEY, collar: narrow })).toEqual([]);
+    const { trimEdge: _trimEdge, ...withoutPiping } = narrow;
+    expect(findMissing('jersey', { ...JERSEY, collar: withoutPiping })).toEqual([
+      'collar.trimEdge',
+    ]);
   });
 
   it('reports only collar.style when the style itself is unset, not the fields it would gate', () => {

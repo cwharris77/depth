@@ -8,6 +8,7 @@ import SwiftUI
 // feature-local `TeamStatsViewModel` and loads lazily on first visit.
 struct TeamStatsView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: TeamStatsViewModel
     @State private var showSeasonPicker = false
     @State private var evidenceExpanded = false
@@ -100,8 +101,12 @@ struct TeamStatsView: View {
         return Color(hex: TeamSurfaces.mark(page.team.colors.jersey))
     }
 
-    @ViewBuilder
     private var content: some View {
+        contentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var contentStates: some View {
         switch viewModel.loadState {
         case .loading:
             TeamStatsSkeleton()
@@ -496,7 +501,9 @@ struct TeamStatsView: View {
     private func evidenceSection(_ story: TeamSeasonStory) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
-                withAnimation(DesignTokens.Motion.selection) { evidenceExpanded.toggle() }
+                withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
+                    evidenceExpanded.toggle()
+                }
             } label: {
                 HStack(spacing: DesignTokens.Spacing.sm) {
                     Text("Behind the story")

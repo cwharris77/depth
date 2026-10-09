@@ -38,6 +38,7 @@ struct CompareLensesView: View {
                 }
             }
         }
+        .loadStateTransition(viewModel.evidenceLoadState)
     }
 
     /// Use the field page's underline tab bar instead of a second filled pill. By team/By

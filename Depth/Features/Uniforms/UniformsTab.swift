@@ -88,8 +88,12 @@ struct UniformsTab: View {
         }
     }
 
-    @ViewBuilder
     private var content: some View {
+        contentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var contentStates: some View {
         switch viewModel.loadState {
         case .loading:
             ProgressView("Loading uniforms…")
