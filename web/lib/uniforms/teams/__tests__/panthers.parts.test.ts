@@ -11,13 +11,20 @@ describe('Panthers helmet parts', () => {
     PANTHERS_PARTS.helmets[helmet].layers.map((layer) => layer.id);
 
   it('paints the mark silhouette, body, interior gaps, then fangs on both shells', () => {
-    expect(layerIds('black')).toEqual([
+    expect(layerIds('black').slice(2)).toEqual([
       'panthers-decal-keyline',
       'panthers-decal-body',
       'panthers-decal-detail',
       'panthers-decal-highlight',
     ]);
-    expect(layerIds('silver').slice(2)).toEqual(layerIds('black'));
+    expect(layerIds('silver').slice(2)).toEqual(layerIds('black').slice(2));
+    expect(PANTHERS_PARTS.helmets.black.layers.slice(0, 2)).toMatchObject([
+      { fill: 'silver', surface: 'helmet', clip: true },
+      { fill: 'blue', surface: 'helmet', clip: true },
+    ]);
+    expect(PANTHERS_PARTS.helmets.black.layers.slice(0, 2).map((l) => l.d)).toEqual(
+      PANTHERS_PARTS.helmets.silver.layers.slice(0, 2).map((l) => l.d)
+    );
     expect(PANTHERS_PARTS.helmets.silver.layers.slice(0, 2)).toMatchObject([
       { id: 'panthers-crown-blue', fill: 'blue', surface: 'helmet', clip: true },
       { id: 'panthers-crown-black', fill: 'black', surface: 'helmet', clip: true },
