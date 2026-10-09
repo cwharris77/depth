@@ -116,7 +116,7 @@ export function numeralColors(colors: JerseyColors): NumeralColors {
   if (contrastRatio(primary, DARK_BG) >= LARGE_TEXT_MIN) {
     return { fill: secondary, stroke: primary };
   }
-  // Neither jersey color reads on the ground (14 kits, e.g. Ravens purple/black). White is
+  // Neither jersey color reads on the ground (13 kits, e.g. Ravens purple/black). White is
   // the only non-team color this module ever introduces, and only here.
   return { fill: primary, stroke: WHITE };
 }

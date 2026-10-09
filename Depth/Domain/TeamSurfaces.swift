@@ -124,7 +124,7 @@ enum TeamSurfaces {
         if contrastRatio(colors.primary, darkBackgroundHex) >= largeTextMin {
             return NumeralColors(fill: colors.secondary, stroke: colors.primary)
         }
-        // Neither jersey color reads on the ground (14 kits, e.g. Ravens purple/black). White
+        // Neither jersey color reads on the ground (13 kits, e.g. Ravens purple/black). White
         // is the only non-team color this type ever introduces, and only here.
         return NumeralColors(fill: colors.primary, stroke: white)
     }
