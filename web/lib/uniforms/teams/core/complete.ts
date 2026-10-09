@@ -16,8 +16,8 @@ import type { PantsMarkUse, PantsSpec, SocksSpec, StripeStack } from './pants-sp
 type None = 'none';
 
 // Only the fields a style's expander branch (collarLayers in jersey-spec.ts) actually reads:
-// 'shallow-v'/'rounded' draw the band and its trim; only 'inset-v' honours inside/lining/backBar
-// and the keyline outline.
+// 'shallow-v'/'rounded' draw the band and its trim; 'inset-v' honours inside/lining/backBar and
+// the keyline outline; 'narrow-v' honours inside, the outline and the trim's piping.
 export type CompleteCollar =
   | { style: 'none' }
   | { style: 'shallow-v'; color: string | None; trim: string | None }
@@ -30,6 +30,15 @@ export type CompleteCollar =
       inside: string | 'body';
       lining: string | None;
       backBar: string | None;
+      outline: boolean;
+    }
+  | {
+      style: 'narrow-v';
+      color: string;
+      trim: string | None;
+      // Hairlines along both edges of the trim; 'none' when there is no trim.
+      trimEdge: string | None;
+      inside: string | 'body';
       outline: boolean;
     };
 
@@ -87,6 +96,15 @@ export function jerseySpecOf(c: CompleteJerseySpec): JerseySpec {
     if (collar.backBar !== 'none') collarOut.backBar = collar.backBar;
     collarOut.outline = collar.outline;
   }
+  if (collar.style === 'narrow-v') {
+    if (collar.inside !== 'body') collarOut.inside = collar.inside;
+    if (collar.trimEdge !== 'none') {
+      // Piping with nothing to pipe would be dropped silently by the expander.
+      if (collar.trim === 'none') throw new Error('narrow-v collar: trimEdge needs a trim');
+      collarOut.trimEdge = collar.trimEdge;
+    }
+    collarOut.outline = collar.outline;
+  }
   const { texture, ...number } = c.number;
   const spec: JerseySpec = {
     body: c.body,
@@ -140,20 +158,22 @@ type CollarPath =
   | 'collar.inside'
   | 'collar.lining'
   | 'collar.backBar'
-  | 'collar.outline';
+  | 'collar.outline'
+  | 'collar.trimEdge';
 
 // One question per field, asked of the reference during authoring. Keyed by the complete type's
 // fields, so adding a field without a question is a type error. Every collar.* question is asked
 // regardless of style; findMissing below only requires the ones the stated style actually uses.
 const JERSEY_QUESTIONS: Record<Exclude<keyof CompleteJerseySpec, 'collar'> | CollarPath, string> = {
   body: 'What colour is the jersey body?',
-  'collar.style': 'Is the collar a shallow V, an inset V, rounded, or not drawn?',
+  'collar.style': 'Is the collar a shallow V, an inset V, a narrow V, rounded, or not drawn?',
   'collar.color': 'What colour is the collar band?',
   'collar.trim': 'Is there a second, thinner trim line on the collar, and what colour?',
   'collar.inside': 'What colour is the neck opening inside the collar?',
   'collar.lining': 'Is there a contrasting collar lining, and what colour?',
   'collar.backBar': 'Is there a bar across the back of the neck, and what colour?',
   'collar.outline': 'Does the collar have a dark outline against the body?',
+  'collar.trimEdge': 'Is the collar trim piped with a hairline of another colour, and which?',
   shoulderPanel:
     'Are there colour blocks at the top of each sleeve, and in what sizes and colours?',
   shoulderStripes: 'Are there canted stripes running down from the shoulder line?',
@@ -220,6 +240,7 @@ const COLLAR_FIELDS: Record<string, readonly string[]> = {
   'shallow-v': ['color', 'trim'],
   rounded: ['color', 'trim'],
   'inset-v': ['color', 'trim', 'inside', 'lining', 'backBar', 'outline'],
+  'narrow-v': ['color', 'trim', 'trimEdge', 'inside', 'outline'],
 };
 
 function has(value: unknown, path: string): boolean {

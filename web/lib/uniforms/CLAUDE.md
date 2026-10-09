@@ -30,21 +30,22 @@ Anything the spec cannot describe is appended as ordinary layers after `spec.lay
 | Field | Meaning |
 |---|---|
 | `body` | Torso colour. |
-| `collar.style` | `inset-v` (modern V with a band down to a point), `shallow-v`, `rounded` (period crew neck), `none`. |
-| `collar.color` / `trim` | Collar band and, for `inset-v`, its centre inset. |
+| `collar.style` | `inset-v` (modern V with a band down to a point), `narrow-v` (a narrower, deeper V whose one band runs down both sides and across the back of the neck, with the trim following it all the way round), `shallow-v`, `rounded` (period crew neck), `none`. |
+| `collar.color` / `trim` | Collar band and, for `inset-v`, its centre inset; for `narrow-v`, the trim that follows the band all the way round. |
 | `collar.inside` | Fill inside the V (defaults to the body). Use a darker shade of the body (a `<colour>Neck` palette key) when the reference shows one, or when a body-coloured collar disappears without it. |
-| `collar.lining` / `backBar` / `outline` | `inset-v` only: a band on the inner half of the collar; the bar across the back of the neck (always drawn, in the collar colour unless `backBar` sets another); grey keylines on both collar edges and under the back bar. |
+| `collar.trimEdge` | `narrow-v` only: hairlines of this colour along both edges of the trim (often the body showing between the trim and the band); `'none'` when there is no trim. |
+| `collar.lining` / `backBar` / `outline` | `inset-v` only (`outline` on `narrow-v` too): a band on the inner half of the collar; the bar across the back of the neck (always drawn, in the collar colour unless `backBar` sets another); grey keylines on both collar edges and under the back bar. |
 | `shoulderPanel.bands` | Colour blocks from the top of the sleeve down. The first is the cap, filling to the shoulder seam with a curved inner edge; every edge slopes down toward the body. |
 | `shoulderStripes` | Canted stripes running down the sleeve from the shoulder line, listed from the collar outward, each leaning its lower end toward the body. Same `gap` steps as `sleeveStripes`. |
 | `shoulderNumber` | The numeral lying along the top of each shoulder, in `fill` with an optional thin `outline`. On a reference sheet it often reads as a short bar. See the orientation rule below. |
-| `sleeveStripes` | Horizontal stripes lower on the sleeve, with `gap` `none` / `narrow` / `wide` / `broad`. `edge` pipes every stripe with a thin band of that colour above and below it; the gap is then measured between pipings. |
+| `sleeveStripes` | Horizontal stripes lower on the sleeve, with `gap` `none` / `hairline` / `narrow` / `wide` / `broad`. `edge` pipes every stripe with a thin band of that colour above and below it; the gap is then measured between pipings. |
 | `cuff` | A solid band at the sleeve hem. |
 | `sleeveNumber` | The numeral, small and upright on the lower outer face of each sleeve (TV numbers), in `fill`. |
 | `number` | Numeral fill, outline colour and `outlineWeight` (`none` / `thin` / `regular` / `heavy` / `x-heavy`: 0 / 8 / 14 / 20 / 26 units). `outline` is required even with `none`. `texture` is `mesh` (the default: the shared mesh overlay) or `plain` (drawn flat). |
 
 **Shoulder number orientation** (a frequent mistake): seen from above, the two numerals' tops point at each other, toward the collar (`→ ←`), and on both shoulders the open side of the numeral (the tips of a `3`) faces the back of the jersey. The right shoulder is therefore the left one mirrored, not rotated. On the front view this puts the open side toward the top of the shoulder on both sleeves.
 
-Sizes are `s` / `m` / `l` (11 / 16 / 28 mannequin units); gaps are `none` / `narrow` / `wide` / `broad` (0 / 6 / 12 / 18). Pick the nearest step. A stripe with a contrasting border is one band with `edge` piping, not three bands. If a reference sits well between steps and the difference is visible at 390px, add a step (see below) rather than faking it with extra bands. Each primitive is drawn on both sleeves with unique layer ids.
+Sizes are `s` / `m` / `l` (11 / 16 / 28 mannequin units); gaps are `none` / `hairline` / `narrow` / `wide` / `broad` (0 / 3 / 6 / 12 / 18). Pick the nearest step. A stripe with a contrasting border is one band with `edge` piping, not three bands. If a reference sits well between steps and the difference is visible at 390px, add a step (see below) rather than faking it with extra bands. Each primitive is drawn on both sleeves with unique layer ids.
 
 ### Pants and socks
 
@@ -65,7 +66,7 @@ socks: { navy: expandSocks('<team>-navy-socks', { color: 'navy', stripes: { band
 
 When a team moves to these specs, any shin art it had drawn as pants layers on `leg-left`/`leg-right` (such as full-shin sock rectangles) moves into its socks part instead — leg layers paint over the sock colour, so leaving them in place would hide it.
 
-Pants and socks use the same step names as the jersey with narrower widths: sizes `s` / `m` / `l` are 8 / 16 / 24 units, gaps `none` / `narrow` / `wide` / `broad` are 0 / 4 / 8 / 12, and `edge` piping is 2. A reference sheet often draws the leg stripe in a swatch beside the figure; the swatch beside the socks is the sock, not the pant.
+Pants and socks use the same step names as the jersey with narrower widths: sizes `s` / `m` / `l` are 8 / 16 / 24 units, gaps `none` / `hairline` / `narrow` / `wide` / `broad` are 0 / 2 / 4 / 8 / 12, and `edge` piping is 2. A reference sheet often draws the leg stripe in a swatch beside the figure; the swatch beside the socks is the sock, not the pant.
 
 ## Helmets
 
@@ -89,11 +90,11 @@ const HELMET_WHITE = expandHelmet('<team>-white-helmet', {
 
 ## Marks
 
-Marks are fixed vector art such as a helmet decal, a sleeve logo or a team's own shoulder shapes. `teams/<team>/marks/<name>.ts` exports a `Mark` whose paths use absolute M/L/H/V/C/Q/Z commands (each coordinate group with its own command letter) in the art's own space, one per colour slot in paint order, plus a `box`: the box must contain every slot, so use `boundsOf` of the slot whose bounds contain all the others, or state the anchor's span when the art is drawn in mannequin space for that anchor. `placeMark(idPrefix, mark, anchor, slots)` in `teams/core/marks.ts` fits the box to a named anchor and emits ordinary layers; `placeMarkOnPair` does both sleeves or both shoulders, the left mirrored so both face outward. The fit is a scale and a shift, so curves survive it unchanged. `slots` maps each slot to a palette key, or to `null` to drop it (a body colour that would vanish into the garment). An unmapped slot throws. `placed(layers)` is the pass-through form for art that is already in mannequin space, used when a helmet's decal is a fixed layer set rather than a mark placed by anchor.
+Marks are fixed vector art such as a helmet decal, a sleeve logo or a team's own shoulder shapes. `teams/<team>/marks/<name>.ts` exports a `Mark` whose paths use absolute M/L/H/V/C/Q/Z commands (each coordinate group with its own command letter) in the art's own space, one per colour slot in paint order, plus a `box`: the box must contain every slot, so use `boundsOf` of the slot whose bounds contain all the others, or state the anchor's span when the art is drawn in mannequin space for that anchor. `placeMark(idPrefix, mark, anchor, slots)` in `teams/core/marks.ts` fits the box to a named anchor and emits ordinary layers; `placeMarkOnPair` does both sleeves, both shoulders or both sleeve tops, the left mirrored so both face outward. The fit is a scale and a shift, so curves survive it unchanged. `slots` maps each slot to a palette key, or to `null` to drop it (a body colour that would vanish into the garment). An unmapped slot throws. `placed(layers)` is the pass-through form for art that is already in mannequin space, used when a helmet's decal is a fixed layer set rather than a mark placed by anchor.
 
 Logo marks are extracted from a supplied SVG by a script in `scripts/uniform-draw/` and never hand-edited; construction shapes such as a shoulder band are drawn directly as a mark. Scripts emit the mark only; placement belongs to the anchor. A mark that needs a position no anchor gives is a new anchor in `ANCHORS`, not per-team coordinates.
 
-Anchors today: `helmet-side`, `sleeve-left`, `sleeve-right`, `shoulder-left`, `shoulder-right` (the front of the shoulder from the collar's edge out past the sleeve's outer edge; a shoulder mark is drawn for the right shoulder, so art drawn in mannequin space within `[356, 360, 576, 532]` places there unchanged).
+Anchors today: `helmet-side`, `sleeve-left`, `sleeve-right`, `shoulder-left`, `shoulder-right` (the front of the shoulder from the collar's edge out past the sleeve's outer edge; a shoulder mark is drawn for the right shoulder, so art drawn in mannequin space within `[356, 360, 576, 532]` places there unchanged), `sleeve-top-left`/`sleeve-top-right` (the upper outer sleeve above the stripes, where the manufacturer mark sits; the pair is `sleeve-tops`), and `pants-shield`, `pants-nike` and `collar-narrow-v` for the shared league marks.
 
 A team's own shape at a known spot on the garment (a shoulder band, a sleeve logo, a patch) is an anchored mark: the shape is the team's, the anchor says where it goes, and moving it is a change to the anchor or the shape, not to baked coordinates. Art that has to follow a garment edge the whole way (a feathered collar, a stripe hugging the leg's silhouette, an all-over print) stays a placed mark on its surface.
 
@@ -108,7 +109,7 @@ Strict means:
 - no drawn geometry outside `marks/` (see the check below);
 - kits render identically twice.
 
-Jersey art goes in `marks`: placed, or anchored to the sleeves or shoulders with `anchoredMark()`, which makes an unmapped or unknown slot a type error; `under`/`over`. Pants art the stripes can't draw goes in the pants spec's `marks` the same way. A new anchor is a reviewed change to `core/marks.ts`, never a per-team nudge.
+Jersey art goes in `marks`: placed, or anchored to the sleeves, sleeve tops or shoulders with `anchoredMark()`, which makes an unmapped or unknown slot a type error; `under`/`over`. Pants art the stripes can't draw goes in the pants spec's `marks` the same way. A new anchor is a reviewed change to `core/marks.ts`, never a per-team nudge.
 
 The no-coordinates check (`findCoordinateLiterals`) flags, outside `marks/`: path literals, `placed(` and `fromGeneric(` calls, layer literals (`kind: 'fill'`/`'stroke'`) and literal `[x, y]` pairs. Art in mannequin space is exported from a `marks/` file as a `PlacedMark` and referenced from the spec.
 
@@ -153,7 +154,7 @@ A new palette-independent colour is a new reserved paint in `teams/core/shared.t
 ## Authoring a team
 
 1. Read the team's current module and its committed renders (`ls public/uniforms | grep <team>`; year starts are the kit's first season, not the reference's). Rasters are `web/public/uniforms/<team>-<kitSlug>-<yearStart>[-full].webp`; kits map to jerseys in `<team>/parts.ts` (`kits: { home: { jersey: 'navy', … } }`), so `colts-home-2004` wears `jerseys/navy.ts`. A `-full` raster is 560×1535 px of viewBox `20 45 560 1535`; the jersey crop (`20 372 560 452`) is pixel rows 327–779. The rasters are transparent: composite them on white before comparing.
-2. Read the jersey facts from the reference: body, collar cut and colours (outside, inside, lining, back of neck), sleeve cap bands top to bottom, stripes, cuff, numeral fill and outline. Ignore manufacturer and league marks, collar-tab lettering, numeral textures, one-season patches (memorials, anniversaries, playoffs), and seams the reference sheet draws on every jersey. The grey keylines along a same-colour collar are the exception: keep them with `collar.outline`.
+2. Read the jersey facts from the reference: body, collar cut and colours (outside, inside, lining, back of neck), sleeve cap bands top to bottom, stripes, cuff, numeral fill and outline. League and manufacturer marks are shared, never drawn in a team module: every `inset-v` and `narrow-v` collar draws the NFL shield, and a combination's `pantsNike` draws the hip shield and swoosh. A sleeve swoosh the reference shows is `anchoredMark()` with `NIKE_MARK` on `sleeve-tops`. Ignore other manufacturer and league marks, collar-tab lettering, numeral textures, one-season patches (memorials, anniversaries, playoffs), and seams the reference sheet draws on every jersey. The grey keylines along a same-colour collar are the exception: keep them with `collar.outline`.
 
    A kit the reference doesn't show keeps its existing construction and colours: re-express it in the spec rather than recolouring a sibling jersey, and leave anything the spec can't express as it was.
 3. Write one spec per jersey in `jerseys/<name>.ts`. Reuse parts the reference does not show (helmets, decals, pants); never replace them with empty parts.

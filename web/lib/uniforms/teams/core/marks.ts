@@ -39,7 +39,10 @@ export type AnchorName =
   | 'shoulder-left'
   | 'shoulder-right'
   | 'pants-shield'
-  | 'pants-nike';
+  | 'pants-nike'
+  | 'sleeve-top-left'
+  | 'sleeve-top-right'
+  | 'collar-narrow-v';
 
 interface Anchor {
   surface: UniformSurface;
@@ -56,6 +59,8 @@ interface Anchor {
 export const ANCHORS: Record<AnchorName, Anchor> = {
   'pants-shield': { surface: 'pants', x0: 193, w: 20, cy: 867, mirror: false, idSuffix: '' },
   'pants-nike': { surface: 'pants', x0: 360, w: 40, cy: 865, mirror: false, idSuffix: '' },
+  // The shield over the narrow V's point, at the shared collar shield's size.
+  'collar-narrow-v': { surface: 'collar', x0: 284.5, w: 19, cy: 490, mirror: false, idSuffix: '' },
   'helmet-side': { surface: 'helmet', x0: 154, w: 310, cy: 293, mirror: false, idSuffix: '' },
   'sleeve-left': {
     surface: 'sleeve-left',
@@ -88,6 +93,24 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
     x0: 356,
     w: 220,
     cy: 446,
+    mirror: false,
+    idSuffix: '-right',
+  },
+  // The upper outer face of each sleeve, between the shoulder line and the first sleeve stripe,
+  // where the manufacturer mark sits. Drawn for the right sleeve.
+  'sleeve-top-left': {
+    surface: 'sleeve-left',
+    x0: 46.5,
+    w: 29,
+    cy: 438.5,
+    mirror: true,
+    idSuffix: '-left',
+  },
+  'sleeve-top-right': {
+    surface: 'sleeve-right',
+    x0: 512.5,
+    w: 29,
+    cy: 438.5,
     mirror: false,
     idSuffix: '-right',
   },
@@ -249,15 +272,23 @@ export function placeMark<S extends string>(
   });
 }
 
-// Both sleeves or both shoulders, interleaved left then right for each slot, the order sleeve
-// primitives use.
+export type AnchorPair = 'sleeves' | 'shoulders' | 'sleeve-tops';
+
+const PAIR_SIDE = {
+  sleeves: 'sleeve',
+  shoulders: 'shoulder',
+  'sleeve-tops': 'sleeve-top',
+} as const;
+
+// Both sleeves, both shoulders or both sleeve tops, interleaved left then right for each slot, the
+// order sleeve primitives use.
 export function placeMarkOnPair<S extends string>(
   idPrefix: string,
   mark: Mark<S>,
-  pair: 'sleeves' | 'shoulders',
+  pair: AnchorPair,
   slots: Record<S, PaletteRef | null>
 ): PartLayer[] {
-  const side = pair === 'sleeves' ? 'sleeve' : 'shoulder';
+  const side = PAIR_SIDE[pair];
   const left = placeMark(idPrefix, mark, `${side}-left`, slots);
   const right = placeMark(idPrefix, mark, `${side}-right`, slots);
   return left.flatMap((layer, i) => [layer, right[i]]);

@@ -1,4 +1,4 @@
-import { placeMark } from './marks';
+import { ANCHORS, placeMark } from './marks';
 import type { PartLayer } from './parts';
 
 export const NFL_SHIELD_PAINTS: Readonly<Record<string, string>> = {
@@ -131,7 +131,10 @@ const SHIELD_PATHS = [
   },
 ] as const;
 
-export function nflShield(prefix: string, anchor?: 'pants-shield'): PartLayer[] {
+export function nflShield(
+  prefix: string,
+  anchor?: 'pants-shield' | 'collar-narrow-v'
+): PartLayer[] {
   if (anchor) {
     return SHIELD_PATHS.map((layer, index) => {
       const color = layer.kind === 'fill' ? layer.fill : layer.stroke;
@@ -150,7 +153,7 @@ export function nflShield(prefix: string, anchor?: 'pants-shield'): PartLayer[] 
             ...fitted,
             kind: 'stroke',
             stroke: color,
-            strokeWidth: (layer.strokeWidth * 20) / 19,
+            strokeWidth: (layer.strokeWidth * ANCHORS[anchor].w) / 19,
           };
     });
   }

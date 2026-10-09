@@ -34,7 +34,7 @@ export interface SocksSpec {
 
 // Narrower than the jersey steps: a leg stripe is a fraction of a sleeve band.
 const SIZE_PX: Record<JerseySize, number> = { s: 8, m: 16, l: 24 };
-const GAP_PX: Record<JerseyGap, number> = { none: 0, narrow: 4, wide: 8, broad: 12 };
+const GAP_PX: Record<JerseyGap, number> = { none: 0, hairline: 2, narrow: 4, wide: 8, broad: 12 };
 const EDGE_PX = 2;
 
 // The legs mirror about x = 294.

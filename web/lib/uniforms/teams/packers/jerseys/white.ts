@@ -1,16 +1,18 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { anchoredMark } from '../../core/jersey-spec';
+import { NIKE_MARK } from '../../core/pants-logos';
 
-// White body (away and Winter Warning) with a green and gold collar band and a green, gold,
-// green sleeve set. Shoulder and chest numerals are green.
+// White body (away and Winter Warning) with a green narrow V collar carrying a gold trim, a green,
+// gold, green sleeve set and a green swoosh on each sleeve top. Shoulder and chest numerals are
+// plain green.
 export const PACKERS_JERSEY_WHITE: CompleteJerseySpec = {
   body: 'white',
   collar: {
-    style: 'inset-v',
+    style: 'narrow-v',
     color: 'green',
     trim: 'gold',
+    trimEdge: 'none',
     inside: 'body',
-    lining: 'none',
-    backBar: 'green',
     outline: true,
   },
   shoulderPanel: 'none',
@@ -27,6 +29,14 @@ export const PACKERS_JERSEY_WHITE: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'green', outline: 'green', outlineWeight: 'x-heavy', texture: 'mesh' },
-  marks: [],
+  number: { fill: 'green', outline: 'green', outlineWeight: 'none', texture: 'mesh' },
+  marks: [
+    anchoredMark({
+      paint: 'over',
+      mark: NIKE_MARK,
+      anchor: 'sleeve-tops',
+      slots: { nike: 'green' },
+      id: 'swoosh',
+    }),
+  ],
 };

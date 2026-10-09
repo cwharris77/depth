@@ -139,6 +139,80 @@ function backBarKeyline(): string {
   return `M${left},${bottom} H${right}`;
 }
 
+// A narrower, deeper V than the inset V: one band runs down both sides to a point and across the
+// back of the neck, with a centre trim that follows it all the way round. The opening is a V
+// from (246,409) to the point at (294,476); the outer edge reaches (294,507).
+const NARROW_V_OUTER = 'M211,383 C211,450 248,492 294,507 C340,492 377,450 377,383';
+const NARROW_V_OPENING = 'M246,409 C248,435 271,463 294,476 C317,463 340,435 342,409 Z';
+// The band's centre line: down the left side to the point, up the right, across the back bar.
+const NARROW_V_TRIM = 'M228,396 C229,440 265,482 294,491.5 C323,482 359,440 360,396 Z';
+const NARROW_V_TRIM_WIDTH = 7;
+// The figure's own outline weight: heavier than the inset V's keylines, so the band reads slimmer.
+const NARROW_V_OUTLINE_WIDTH = 4;
+// Each hairline of trim piping shows this much of its colour on either side of the trim.
+const NARROW_V_PIPING = 1.5;
+
+export interface NarrowVCollarOptions {
+  idPrefix: string;
+  colors: {
+    // Fill inside the V opening.
+    interior: string;
+    band: string;
+    trim?: string;
+    // Hairlines along both edges of the trim.
+    trimEdge?: string;
+  };
+  // Thin FIGURE_OUTLINE keylines along the band's outer edge and round the opening.
+  outline?: boolean;
+}
+
+export function narrowVCollar({
+  idPrefix,
+  colors,
+  outline = false,
+}: NarrowVCollarOptions): PartLayer[] {
+  const { trim, trimEdge } = colors;
+  const fill = (id: string, color: string, d: string): PartLayer => ({
+    id: `${idPrefix}-${id}`,
+    surface: 'collar',
+    kind: 'fill',
+    clip: true,
+    fill: color,
+    d,
+  });
+  const stroke = (id: string, color: string, width: number, d: string): PartLayer => ({
+    id: `${idPrefix}-${id}`,
+    surface: 'collar',
+    kind: 'stroke',
+    clip: true,
+    stroke: color,
+    strokeWidth: width,
+    d,
+  });
+  return [
+    fill('collar-band', colors.band, `${NARROW_V_OUTER} Z`),
+    ...(trim && trimEdge
+      ? [
+          stroke(
+            'collar-trim-edge',
+            trimEdge,
+            NARROW_V_TRIM_WIDTH + 2 * NARROW_V_PIPING,
+            NARROW_V_TRIM
+          ),
+        ]
+      : []),
+    ...(trim ? [stroke('collar-trim', trim, NARROW_V_TRIM_WIDTH, NARROW_V_TRIM)] : []),
+    fill('neck-opening', colors.interior, NARROW_V_OPENING),
+    ...(outline
+      ? [
+          stroke('collar-outline-outer', OUTLINE_PAINT, NARROW_V_OUTLINE_WIDTH, NARROW_V_OUTER),
+          stroke('collar-outline-inner', OUTLINE_PAINT, NARROW_V_OUTLINE_WIDTH, NARROW_V_OPENING),
+        ]
+      : []),
+    ...nflShield(idPrefix, 'collar-narrow-v'),
+  ];
+}
+
 export function modernInsetVCollar({
   idPrefix,
   colors,
