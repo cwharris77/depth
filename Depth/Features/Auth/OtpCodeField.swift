@@ -34,6 +34,10 @@ struct OtpCodeField: View {
                 // At accessibility sizes use the native field, which scrolls its text and
                 // keeps the same paste, autofill, and verification behavior.
                 .opacity(dynamicTypeSize.isAccessibilitySize ? 1 : 0.01)
+                // The digit boxes' fill is translucent, so the capture field's own text and
+                // caret would show through them; clear both while the boxes draw the code.
+                .foregroundStyle(dynamicTypeSize.isAccessibilitySize ? Color.primary : .clear)
+                .tint(dynamicTypeSize.isAccessibilitySize ? nil : Color.clear)
                 .font(.title2.monospacedDigit())
                 .disabled(disabled)
                 .accessibilityIdentifier("auth-code")
