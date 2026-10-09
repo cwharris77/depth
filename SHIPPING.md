@@ -17,7 +17,7 @@ Depth-specific rules layered on the global `ship-pr` skill (its step 0 reads thi
 
 **When to flag.** Gate the work when any of these hold; otherwise ship it unflagged:
 
-- It is user-visible and will not be finished and verified within this PR (a multi-PR feature, or one likely to miss the next cut).
+- Any part of it is user-visible before the whole feature is complete and fully tested. The unit is the feature (an epic, or any multi-PR feature), not the PR or ticket: the first visible piece adds the flag, every later piece reads it, and the flag launches only when the last piece is verified.
 - It is the train's risky change: a backend contract, navigation/IA, or a new data source (`risky: true` on the ticket).
 - It touches sign-in, account state or user data.
 - It needs time on real devices before users see it.

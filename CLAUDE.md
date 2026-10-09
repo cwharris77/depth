@@ -108,10 +108,12 @@ Depth/
   worktrees): `git config core.hooksPath .githooks`, and `brew install swiftlint`.
 - **Decide whether work needs a feature flag before writing it, not at ship time.**
   Every release cuts whatever is on `main`, so anything merged reaches the App Store at
-  the next cut. Gate it behind a `FeatureFlag` when any of these hold: it is user-visible
-  and won't be finished and verified in this PR (multi-PR features); it is the train's
-  risky change (a backend contract, navigation/IA, a new data source); it touches
-  sign-in, account or user data; or it needs real-device soak time before users see it.
+  the next cut. The unit is the feature, not the PR or ticket: if a user could see any
+  part of a feature (a whole epic, not just this ticket) before the feature is complete
+  and fully tested, every user-visible piece goes behind one `FeatureFlag` until the
+  last piece lands. Also gate it when it is the train's risky change (a backend
+  contract, navigation/IA, a new data source), touches sign-in, account or user data,
+  or needs real-device soak time before users see it.
   Bug fixes, copy, and small self-contained changes finished in one PR ship unflagged.
   How to add, launch and remove a flag: `SHIPPING.md` → Feature flags.
 - **Two test frameworks, split by target.** `DepthTests` (data/domain, unit-level) uses
