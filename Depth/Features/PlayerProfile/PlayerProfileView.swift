@@ -495,6 +495,7 @@ private struct PlayerProfileScreen: View {
                 }
             }
         }
+        .loadStateTransition(viewModel.statsState)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("player-profile-full-stats")
     }
