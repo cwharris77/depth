@@ -1068,7 +1068,7 @@ struct TeamDetailView: View {
     /// The sheet delegates its state change here to keep the main SwiftUI body small
     /// enough for the compiler while preserving the field's formation-settle animation.
     private func selectFormation(_ formation: TeamFormation) {
-        withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation) {
+        withAnimation(DesignTokens.Motion.formation.respectingReduceMotion(reduceMotion)) {
             selectedFormations[unit] = formation
         }
         showFormations = false

@@ -35,7 +35,7 @@ struct DepthTabBar<Selection: Hashable>: View {
         let isActive = option.value == selection
         return Button {
             withAnimation(
-                reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.selection
+                DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)
             ) {
                 onChange(option.value)
             }
