@@ -6,7 +6,7 @@ vi.mock('@/lib/roster-source.db', () => ({
   searchAllPlayers: vi.fn(),
 }));
 
-let GET: typeof import('@/app/api/players/search/route')['GET'];
+let GET: (typeof import('@/app/api/players/search/route'))['GET'];
 
 const mockedSearch = vi.mocked(searchAllPlayers);
 
