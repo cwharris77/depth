@@ -23,6 +23,25 @@ const base: TeamPartsDefinition = {
 };
 
 describe('compileParts', () => {
+  it('moves lower sleeve marks below shoulder graphics while preserving the upper default', () => {
+    const def = structuredClone(base);
+    Object.assign(def.kits.home, { sleeveNike: 'navy', sleeveNikePlacement: 'lower' });
+    def.kits.upper = { ...def.kits.home, sleeveNikePlacement: 'upper' };
+    def.kits.default = { helmet: 'plain', jersey: 'plain', pants: 'plain', sleeveNike: 'navy' };
+    const kits = compileParts(def).kits;
+    const marks = (key: string) =>
+      (kits[key].layers ?? []).filter((layer) => layer.id.includes('-sleeve-nike-'));
+    expect(marks('upper')).toEqual(marks('default'));
+    expect(marks('home')).toHaveLength(2);
+    for (const [index, lower] of marks('home').entries()) {
+      const lowerBox = boundsOf(lower.d);
+      const upperBox = boundsOf(marks('upper')[index].d);
+      expect(lowerBox[1]).toBeGreaterThan(526);
+      expect(lowerBox[3]).toBeLessThan(560);
+      expect([lowerBox[0], lowerBox[2]]).toEqual([upperBox[0], upperBox[2]]);
+      expect(lower).toMatchObject({ fill: '#001122', clip: true });
+    }
+  });
   it('positions a rounded collar shield at the neckline instead of the V point', () => {
     const def = structuredClone(base);
     Object.assign(def.kits.home, { collarShield: 'rounded' });

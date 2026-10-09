@@ -2,6 +2,7 @@ import type { JerseyColors, UniformKind } from '../../../types';
 import type { UniformSeed } from '../../data';
 import type { LegacyAccentPair } from '../../legacy-accents';
 import type { KitRef, TeamPartsDefinition } from './parts';
+import type { SleeveNikePlacement } from './sleeve-logos';
 
 // A team's catalog: one entry per distinct uniform design. It is the single source for that
 // team's archive rows, their frozen legacy accent pairs, and the kits the renderer registers.
@@ -32,6 +33,7 @@ export interface Combination {
 export interface CatalogDesign {
   // Explicit equipment treatment, independent of the design's original season.
   sleeveNike?: string;
+  sleeveNikePlacement?: SleeveNikePlacement;
   collarShield?: boolean | 'rounded';
   slug: string;
   // Kit key the canonical combination registers as. Defaults to the slug.
@@ -119,6 +121,8 @@ function kitRef(design: CatalogDesign, combination: Combination): KitRef {
   };
   if (combination.pantsNike !== undefined) ref.pantsNike = combination.pantsNike;
   if (design.sleeveNike !== undefined) ref.sleeveNike = design.sleeveNike;
+  if (design.sleeveNikePlacement !== undefined)
+    ref.sleeveNikePlacement = design.sleeveNikePlacement;
   if (design.collarShield !== undefined) ref.collarShield = design.collarShield;
   if (combination.socks !== undefined) ref.socks = combination.socks;
   return ref;

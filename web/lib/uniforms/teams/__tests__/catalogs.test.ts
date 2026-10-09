@@ -15,6 +15,7 @@ import {
   validateCatalog,
 } from '../core/catalog';
 import { expandTeamSpec, findCoordinateLiterals, findUnresolvedColors } from '../core/team-spec';
+import { boundsOf } from '../core/marks';
 
 // Every team directory that owns a catalog.ts must also be registered in catalogs.ts, and
 // under the key its own catalog names — a catalog file that exists but was never wired in
@@ -26,6 +27,7 @@ const pairings = (catalog: Parameters<typeof catalogKits>[0]) =>
       const {
         pantsNike: _pantsNike,
         sleeveNike: _sleeveNike,
+        sleeveNikePlacement: _sleeveNikePlacement,
         collarShield: _collarShield,
         ...pairing
       } = ref;
@@ -72,6 +74,37 @@ describe('no leftover hand-written accents for a converted team', () => {
 });
 
 describe('pants branding in catalog combinations', () => {
+  it('places sleeve marks below shoulder graphics for every outlier combination', () => {
+    const outliers: Record<string, string[]> = {
+      bengals: ['home', 'away', 'orange-alt'],
+      chargers: ['home', 'away', 'powder-blue', 'charger-power', 'super-chargers'],
+      rams: ['home', 'away', 'rivalries-2025'],
+    };
+    for (const { catalog } of getAllTeamCatalogs()) {
+      for (const design of catalog.designs) {
+        const lower = outliers[catalog.teamId]?.includes(design.slug) ?? false;
+        expect(design.sleeveNikePlacement, `${catalog.teamId}/${design.slug}`).toBe(
+          lower ? 'lower' : undefined
+        );
+        if (!lower) continue;
+        for (const [index, combination] of design.combinations.entries()) {
+          const key =
+            index === 0
+              ? (design.constructionKey ?? design.slug)
+              : combinationKitKey(design, combination);
+          const marks = (getTeamUniformDefinition(catalog.teamId)?.kits[key].layers ?? []).filter(
+            (layer) => layer.id.includes('-sleeve-nike-')
+          );
+          expect(marks, `${catalog.teamId}/${key}`).toHaveLength(2);
+          for (const mark of marks) {
+            const box = boundsOf(mark.d);
+            expect(box[1]).toBeGreaterThan(526);
+            expect(box[3]).toBeLessThan(560);
+          }
+        }
+      }
+    }
+  });
   it('provides one sleeve mark per side on every present-day combination', () => {
     for (const { catalog } of getAllTeamCatalogs()) {
       for (const design of catalog.designs) {

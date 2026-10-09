@@ -17,6 +17,7 @@ export const BENGALS_CATALOG: TeamCatalog = {
     {
       slug: 'home',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Home',
       kind: 'home',
       jersey: 'black',
@@ -33,6 +34,7 @@ export const BENGALS_CATALOG: TeamCatalog = {
     {
       slug: 'away',
       sleeveNike: 'black',
+      sleeveNikePlacement: 'lower',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -49,6 +51,7 @@ export const BENGALS_CATALOG: TeamCatalog = {
     {
       slug: 'orange-alt',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Orange Alternate',
       kind: 'alternate',
       jersey: 'orange',

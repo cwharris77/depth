@@ -1,6 +1,6 @@
 import { pantsLogos } from './pants-logos';
 import { NFL_SHIELD_PAINTS, nflShield } from './nfl-shield';
-import { sleeveNike } from './sleeve-logos';
+import { sleeveNike, type SleeveNikePlacement } from './sleeve-logos';
 // Composable uniform parts: an AUTHORING layer over TeamUniformDefinition, not a new
 // runtime. A team declares a named palette plus independent helmet/jersey/pants parts, and
 // `compileParts` assembles a kit's three references into the existing flat runtime definition
@@ -74,6 +74,7 @@ export type PartNumberStyle = Omit<NumberStyle, 'fill' | 'outline'> & {
 
 export interface KitRef {
   sleeveNike?: PaletteRef;
+  sleeveNikePlacement?: SleeveNikePlacement;
   collarShield?: boolean | 'rounded';
   // Omitted for constructions without modern pants branding.
   pantsNike?: PaletteRef;
@@ -193,7 +194,11 @@ export function compileParts(def: TeamPartsDefinition): TeamUniformDefinition {
             layers: [
               ...(ref.sleeveNike === undefined || jersey.layers.some((l) => l.id.includes('nike'))
                 ? []
-                : sleeveNike(`${teamId}-jersey-${ref.jersey}`, ref.sleeveNike)),
+                : sleeveNike(
+                    `${teamId}-jersey-${ref.jersey}`,
+                    ref.sleeveNike,
+                    ref.sleeveNikePlacement
+                  )),
               ...(!ref.collarShield || jersey.layers.some((l) => l.id.includes('nfl-shield'))
                 ? []
                 : nflShield(
