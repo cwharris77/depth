@@ -1,5 +1,5 @@
 // Carolina as a complete team spec: every helmet, jersey, pants and socks part, with the helmet
-// mark, shoulder fan and collar V drawn by the marks in ./marks.
+// mark and shoulder fan drawn by the marks in ./marks.
 import type { CompletePantsSpec } from '../core/complete';
 import type { TeamSpec } from '../core/team-spec';
 import { PANTHERS_HELMET_DECAL } from './marks/construction';

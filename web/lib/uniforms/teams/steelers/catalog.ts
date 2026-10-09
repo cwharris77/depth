@@ -12,7 +12,14 @@ export const STEELERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 1997 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'gold', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'gold',
+          pantsNike: 'black',
+          socks: 'black',
+        },
       ],
     },
     {
@@ -24,7 +31,14 @@ export const STEELERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 1997 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'gold', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'gold',
+          pantsNike: 'black',
+          socks: 'black',
+        },
       ],
     },
     {

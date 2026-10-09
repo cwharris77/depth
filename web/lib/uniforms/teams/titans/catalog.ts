@@ -104,6 +104,7 @@ export const TITANS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'white-2026',
           pants: 'white-2026',
+          pantsNike: 'navy',
           socks: 'lightBlue2026',
         },
       ],
@@ -122,6 +123,7 @@ export const TITANS_CATALOG: TeamCatalog = {
           label: 'Titans Blue pants',
           helmet: 'white-2026',
           pants: 'blue-2026',
+          pantsNike: 'white',
           socks: 'white',
         },
         {
@@ -129,6 +131,7 @@ export const TITANS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'white-2026',
           pants: 'white-2026',
+          pantsNike: 'navy',
           socks: 'white',
         },
       ],

@@ -12,7 +12,14 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
       periods: [{ from: 2023 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'white', pants: 'red', socks: 'red' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'white',
+          pants: 'red',
+          pantsNike: 'white',
+          socks: 'red',
+        },
       ],
     },
     {
@@ -24,7 +31,14 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
       periods: [{ from: 2023 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'white', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'white',
+          pants: 'white',
+          pantsNike: 'cardinal',
+          socks: 'white',
+        },
       ],
     },
     {
@@ -36,7 +50,14 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'cream', pants: 'cream', socks: 'rivalries' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'cream',
+          pants: 'cream',
+          pantsNike: 'rivalRed',
+          socks: 'rivalries',
+        },
       ],
     },
     {
@@ -48,7 +69,14 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
       periods: [{ from: 2023 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'black', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'black',
+          pantsNike: 'white',
+          socks: 'black',
+        },
       ],
     },
   ],

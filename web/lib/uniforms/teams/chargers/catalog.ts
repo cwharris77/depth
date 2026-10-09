@@ -8,6 +8,7 @@ const white = (key: string, label: string, pants: string, socks: string): Combin
   label,
   helmet: 'white',
   pants,
+  pantsNike: pants === 'powder' ? 'white' : 'powderBlue',
   socks,
 });
 
@@ -75,7 +76,14 @@ export const CHARGERS_CATALOG: TeamCatalog = {
       legacyAccent: GOLD_ACCENT,
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Navy pants', helmet: 'navy', pants: 'navy', socks: 'navy' },
+        {
+          key: 'standard',
+          label: 'Navy pants',
+          helmet: 'navy',
+          pants: 'navy',
+          pantsNike: 'gold',
+          socks: 'navy',
+        },
       ],
     },
   ],

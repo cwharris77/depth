@@ -11,7 +11,15 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
       colors: { primary: '#002244', secondary: '#69BE28', accent: '#A5ACAF' },
       legacyAccent: { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
       periods: [{ from: 2012 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'navy-hawk', pants: 'navy' }],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-hawk',
+          pants: 'navy',
+          pantsNike: 'green',
+        },
+      ],
     },
     // Seahawks royal/green/silver throwback — the 1976–2001 look, reintroduced as an active
     // throwback in 2023, so is_current: true despite the historical era. No published codes exist
@@ -26,7 +34,13 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#3DB06A', onAccent: '#0a0e1a' },
       periods: [{ from: 1976 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'throwback-silver', pants: 'throwback' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'throwback-silver',
+          pants: 'throwback',
+          pantsNike: 'throwbackRoyal',
+        },
       ],
     },
     {
@@ -38,7 +52,13 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
       periods: [{ from: 2012 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'navy-hawk', pants: 'white-plain' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-hawk',
+          pants: 'white-plain',
+          pantsNike: 'navy',
+        },
       ],
     },
     // Seahawks 2025 Rivalries. primary is the wolf-grey body the jersey and pants share; accent is
@@ -59,6 +79,7 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'teal-hawk',
           pants: 'rivalries-silver',
+          pantsNike: 'rivalriesJerseyNavy',
           socks: 'navy',
         },
       ],
@@ -75,7 +96,13 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#B6FF3E', onAccent: '#15161a' },
       periods: [{ from: 2016 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'navy-hawk', pants: 'action-green' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-hawk',
+          pants: 'action-green',
+          pantsNike: 'navy',
+        },
       ],
     },
   ],

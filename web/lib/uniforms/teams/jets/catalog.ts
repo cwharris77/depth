@@ -12,12 +12,20 @@ export const JETS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
-        { key: 'standard', label: 'Green pants', helmet: 'green', pants: 'green', socks: 'green' },
+        {
+          key: 'standard',
+          label: 'Green pants',
+          helmet: 'green',
+          pants: 'green',
+          pantsNike: 'white',
+          socks: 'green',
+        },
         {
           key: 'white-pants',
           label: 'White pants',
           helmet: 'green',
           pants: 'white',
+          pantsNike: 'green',
           socks: 'green',
         },
       ],
@@ -31,12 +39,20 @@ export const JETS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
-        { key: 'standard', label: 'White pants', helmet: 'green', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'White pants',
+          helmet: 'green',
+          pants: 'white',
+          pantsNike: 'green',
+          socks: 'white',
+        },
         {
           key: 'green-socks',
           label: 'Green socks',
           helmet: 'green',
           pants: 'white',
+          pantsNike: 'green',
           socks: 'green',
         },
         {
@@ -44,6 +60,7 @@ export const JETS_CATALOG: TeamCatalog = {
           label: 'Green pants',
           helmet: 'green',
           pants: 'green',
+          pantsNike: 'white',
           socks: 'white',
         },
         {
@@ -51,6 +68,7 @@ export const JETS_CATALOG: TeamCatalog = {
           label: 'Green pants, green socks',
           helmet: 'green',
           pants: 'green',
+          pantsNike: 'white',
           socks: 'green',
         },
       ],
@@ -64,7 +82,14 @@ export const JETS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'riv-green', pants: 'riv', socks: 'riv' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'riv-green',
+          pants: 'riv',
+          pantsNike: 'white',
+          socks: 'riv',
+        },
       ],
     },
     {
@@ -76,7 +101,14 @@ export const JETS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [{ from: 2024 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'black', socks: 'black' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'black',
+          pants: 'black',
+          pantsNike: 'white',
+          socks: 'black',
+        },
       ],
     },
   ],

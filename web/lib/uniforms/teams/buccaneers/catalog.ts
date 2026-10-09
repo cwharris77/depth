@@ -7,6 +7,7 @@ const flag = (key: string, label: string, pants: string, socks: string): Combina
   label,
   helmet: 'pewter-flag',
   pants,
+  pantsNike: 'red',
   socks,
 });
 
@@ -53,6 +54,7 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'white',
           pants: 'white',
+          pantsNike: 'crimson',
           socks: 'creamsicle',
         },
       ],

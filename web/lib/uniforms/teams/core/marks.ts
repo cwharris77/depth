@@ -33,7 +33,13 @@ export function placed(layers: readonly PartLayer[]): PlacedMark {
 }
 
 export type AnchorName =
-  'helmet-side' | 'sleeve-left' | 'sleeve-right' | 'shoulder-left' | 'shoulder-right';
+  | 'helmet-side'
+  | 'sleeve-left'
+  | 'sleeve-right'
+  | 'shoulder-left'
+  | 'shoulder-right'
+  | 'pants-shield'
+  | 'pants-nike';
 
 interface Anchor {
   surface: UniformSurface;
@@ -48,6 +54,8 @@ interface Anchor {
 }
 
 export const ANCHORS: Record<AnchorName, Anchor> = {
+  'pants-shield': { surface: 'pants', x0: 193, w: 20, cy: 867, mirror: false, idSuffix: '' },
+  'pants-nike': { surface: 'pants', x0: 360, w: 40, cy: 865, mirror: false, idSuffix: '' },
   'helmet-side': { surface: 'helmet', x0: 154, w: 310, cy: 293, mirror: false, idSuffix: '' },
   'sleeve-left': {
     surface: 'sleeve-left',

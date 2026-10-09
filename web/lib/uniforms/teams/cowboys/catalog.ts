@@ -13,7 +13,15 @@ export const COWBOYS_CATALOG: TeamCatalog = {
       colors: { primary: '#003594', secondary: '#869397', accent: '#869397' },
       legacyAccent: SILVER_ACCENT,
       periods: [{ from: 1964 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'silver-star', pants: 'white' }],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'silver-star',
+          pants: 'white',
+          pantsNike: 'navy',
+        },
+      ],
     },
     {
       slug: 'away',
@@ -23,7 +31,15 @@ export const COWBOYS_CATALOG: TeamCatalog = {
       colors: { primary: '#FFFFFF', secondary: '#003594', accent: '#869397' },
       legacyAccent: SILVER_ACCENT,
       periods: [{ from: 1964 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'silver-star', pants: 'white' }],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'silver-star',
+          pants: 'white',
+          pantsNike: 'navy',
+        },
+      ],
     },
   ],
 };
