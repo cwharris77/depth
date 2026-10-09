@@ -31,6 +31,19 @@ export const FIGURE_OUTLINE = '#8a9096';
 // The one team-independent paint key, resolved to FIGURE_OUTLINE instead of a palette entry.
 export const OUTLINE_PAINT = 'outline';
 
+// The league shield's navy and red, the supplied shield's own fills. The shield is the same on
+// every team, so these resolve here instead of from a team palette.
+export const SHIELD_PAINTS: Readonly<Record<string, string>> = {
+  'shield-navy': '#05366B',
+  'shield-red': '#D50D0D',
+};
+
+// A paint every team resolves the same way: the outline grey or a shield colour.
+export function reservedPaint(ref: string): string | undefined {
+  if (ref === OUTLINE_PAINT) return FIGURE_OUTLINE;
+  return Object.hasOwn(SHIELD_PAINTS, ref) ? SHIELD_PAINTS[ref] : undefined;
+}
+
 export interface ModernInsetVCollarColors {
   // Fill inside the V opening.
   interior: string;
@@ -42,6 +55,8 @@ export interface ModernInsetVCollarColors {
   lining?: string;
   // The bar across the back of the neck, inside the collar. Always drawn; defaults to `edge`.
   backBar?: string;
+  // A band across the middle of the back bar, the collar's inset carried round the back of the neck.
+  backBarTrim?: string;
 }
 
 export interface ModernInsetVCollarOptions {
@@ -72,6 +87,9 @@ const COLLAR_AXIS = 294;
 const COLLAR_BAND_HALF = 10;
 const COLLAR_LINING_REACH = 0.72; // fraction of each side, from the top, that the lining covers
 const COLLAR_BACK_BAR_DEPTH = 14;
+// The back bar's trim takes the inset's share of the band's width (8 of 20), centred in the bar
+// below the neck edge at y=383.
+const COLLAR_BACK_TRIM_DEPTH = (COLLAR_BACK_BAR_DEPTH * 8) / 20;
 const COLLAR_OUTLINE_WIDTH = 3;
 
 function cubic(side: [Point, Point, Point, Point], t: number): { p: Point; n: Point } {
@@ -141,6 +159,12 @@ function backBarPath(): string {
   return `M${left},360 H${right} V${bottom} H${left} Z`;
 }
 
+function backBarTrimPath(): string {
+  const { left, right } = backBarSpan();
+  const top = round(383 + (COLLAR_BACK_BAR_DEPTH - COLLAR_BACK_TRIM_DEPTH) / 2);
+  return `M${left},${top} H${right} V${round(top + COLLAR_BACK_TRIM_DEPTH)} H${left} Z`;
+}
+
 function backBarKeyline(): string {
   const { left, right, bottom } = backBarSpan();
   return `M${left},${bottom} H${right}`;
@@ -152,7 +176,7 @@ export function modernInsetVCollar({
   insetId = `${idPrefix}-collar-inset`,
   outline = false,
 }: ModernInsetVCollarOptions): PartLayer[] {
-  const { lining } = colors;
+  const { lining, backBarTrim } = colors;
   const stroke = (id: string, color: string, width: number, d: string): PartLayer => ({
     id: `${idPrefix}-${id}`,
     surface: 'collar',
@@ -205,6 +229,18 @@ export function modernInsetVCollar({
       fill: colors.backBar ?? colors.edge,
       d: backBarPath(),
     },
+    ...(backBarTrim
+      ? [
+          {
+            id: `${idPrefix}-collar-back-trim`,
+            surface: 'collar',
+            kind: 'fill',
+            clip: true,
+            fill: backBarTrim,
+            d: backBarTrimPath(),
+          } satisfies PartLayer,
+        ]
+      : []),
     ...(lining
       ? collarOffset(COLLAR_BAND_HALF / 2, COLLAR_LINING_REACH).map((side, i) =>
           stroke(`collar-lining-${i ? 'right' : 'left'}`, lining, COLLAR_BAND_HALF, polyline(side))

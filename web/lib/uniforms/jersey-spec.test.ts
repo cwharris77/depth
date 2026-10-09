@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { anchoredMark, expandJersey, type JerseySpec } from '@/lib/uniforms/teams/core/jersey-spec';
 import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { compileParts, type PartLayer } from '@/lib/uniforms/teams/core/parts';
-import { FIGURE_OUTLINE } from '@/lib/uniforms/teams/core/shared';
+import { FIGURE_OUTLINE, SHIELD_PAINTS } from '@/lib/uniforms/teams/core/shared';
 import { placed, type Mark } from '@/lib/uniforms/teams/core/marks';
 
 const numbers = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
@@ -203,6 +203,27 @@ describe('expandJersey', () => {
     expect(span('t-stripe-1-edge-left')[0] - edgeBottom).toBe(12);
   });
 
+  it('spaces sleeve stripes a hairline apart', () => {
+    const layers = expandJersey('t', {
+      body: 'green',
+      collar: { style: 'none' },
+      sleeveStripes: {
+        bands: [
+          { color: 'gold', size: 'm' },
+          { color: 'white', size: 's' },
+        ],
+        gap: 'hairline',
+      },
+      number: { fill: 'white', outline: 'white', outlineWeight: 'none' },
+    }).layers;
+    // M outer,top L inner,top L inner,bottom L outer,bottom Z
+    const span = (id: string) => {
+      const n = numbers(layers.find((l) => l.id === id)?.d ?? '');
+      return [n[1], n[5]];
+    };
+    expect(span('t-stripe-1-left')[0] - span('t-stripe-0-left')[1]).toBe(3);
+  });
+
   it('fills the inset-V neck opening with the inside color when given', () => {
     const layers = (inside?: string) =>
       expandJersey('t', {
@@ -241,6 +262,26 @@ describe('expandJersey', () => {
       't-collar-outline-inner',
       't-collar-outline-back',
     ]);
+  });
+
+  it('carries a trim band across the back bar only when the back bar names one', () => {
+    const layers = (backBar?: string | { color: string; trim: string }) =>
+      expandJersey('t', {
+        body: 'green',
+        collar: { style: 'inset-v', color: 'gold', trim: 'white', backBar },
+        number: { fill: 'white', outline: 'white', outlineWeight: 'thin' },
+      }).layers;
+    expect(layers('gold').map((l) => l.id)).not.toContain('t-collar-back-trim');
+    const trimmed = layers({ color: 'gold', trim: 'white' });
+    expect(trimmed.map((l) => l.id).slice(4)).toEqual(['t-collar-back', 't-collar-back-trim']);
+    expect(trimmed.find((l) => l.id === 't-collar-back')).toMatchObject({ fill: 'gold' });
+    const trim = trimmed.find((l) => l.id === 't-collar-back-trim');
+    expect(trim).toMatchObject({ surface: 'collar', fill: 'white' });
+    // A band inside the bar, which runs from the neck edge at 383 to 397.
+    const [, top, , , bottom] = numbers(trim?.d ?? '');
+    expect(top).toBeGreaterThan(383);
+    expect(bottom).toBeLessThan(397);
+    expect(layers({ color: 'gold', trim: 'white' }).length).toBe(layers('gold').length + 1);
   });
 
   it('draws an upright sleeve number on each sleeve only when asked', () => {
@@ -290,6 +331,40 @@ describe('expandJersey', () => {
       kits: { home: { helmet: 'h', jersey: 'j', pants: 'p' } },
     });
     expect(JSON.stringify(def)).toContain(FIGURE_OUTLINE);
+  });
+
+  it('resolves the shield paints to the shield colours on a palette without them', () => {
+    const def = compileParts({
+      teamId: 't',
+      palette: { green: '#203731', white: '#FFFFFF' },
+      helmets: { h: { base: 'green', layers: [] } },
+      jerseys: {
+        j: expandJersey('t', {
+          body: 'green',
+          collar: { style: 'none' },
+          number: { fill: 'white', outline: 'white', outlineWeight: 'thin' },
+          marks: [
+            anchoredMark({
+              paint: 'over',
+              mark: {
+                box: [0, 0, 10, 10],
+                paths: [
+                  { slot: 'field', d: 'M0,0 L10,0 L10,10 Z' },
+                  { slot: 'letters', d: 'M0,0 L5,5 L0,10 Z' },
+                ],
+              },
+              anchor: 'collar-v',
+              slots: { field: 'shield-navy', letters: 'shield-red' },
+              id: 'shield',
+            }),
+          ],
+        }),
+      },
+      pants: { p: { base: 'white', layers: [] } },
+      kits: { home: { helmet: 'h', jersey: 'j', pants: 'p' } },
+    });
+    const fills = (def.kits.home.layers ?? []).map((l) => l.kind === 'fill' && l.fill);
+    expect(fills).toEqual([SHIELD_PAINTS['shield-navy'], SHIELD_PAINTS['shield-red']]);
   });
 
   it('draws no collar layers for style none', () => {
@@ -388,6 +463,33 @@ describe('jersey marks', () => {
       collar: { style: 'shallow-v', color: 'navy' },
     }).layers;
     expect(part.layers.map((l) => l.id)).toEqual(['t-logo-body-right', ...plain.map((l) => l.id)]);
+  });
+
+  it('places a mark on both sleeve tops and on the collar point', () => {
+    const part = expandJersey('t', {
+      ...base,
+      marks: [
+        anchoredMark({
+          paint: 'over',
+          mark: TRIANGLE,
+          anchor: 'sleeve-tops',
+          slots: { body: 'white' },
+          id: 'swoosh',
+        }),
+        anchoredMark({
+          paint: 'over',
+          mark: TRIANGLE,
+          anchor: 'collar-v',
+          slots: { body: 'white' },
+          id: 'shield',
+        }),
+      ],
+    });
+    expect(part.layers.map((l) => [l.id, l.surface])).toEqual([
+      ['t-swoosh-body-left', 'sleeve-left'],
+      ['t-swoosh-body-right', 'sleeve-right'],
+      ['t-shield-body', 'collar'],
+    ]);
   });
 
   it('rejects an anchored mark whose slot map misses or adds a slot', () => {

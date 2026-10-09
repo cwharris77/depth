@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "6023ef8232de096757f5e337361e16096154a5e97139de0fadadebd1e53ab35d",
-  "revision": "d8e78e0ca1a894dd",
+  "sourceDigest": "4cceee1f63c334b6544b01aa37ef7b05c97050bf4373f3f43e455c2a65e5b91b",
+  "revision": "eb629348a0404df9",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1436,7 +1436,7 @@
     {
       "catalogId": "packers-away-1959",
       "constructionKey": "away",
-      "revision": "566f17adafc72236",
+      "revision": "ee48fcccbd6c7739",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-away-1959.webp",
@@ -1444,29 +1444,29 @@
         },
         "full": {
           "path": "/uniforms/packers-away-1959-full.webp",
-          "sha256": "84a073c45ee1eca31c6935f8f6367677861e5a8ffacbe7348c5e7473bf70825c"
+          "sha256": "e35c6fa21125adcd9e0057fa472d8c9544c0a06457cd8b959a7ec1ffa101a392"
         }
       }
     },
     {
       "catalogId": "packers-home-1959",
       "constructionKey": "home",
-      "revision": "4adee3f0b0936756",
+      "revision": "b4c1ee5a72810877",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-home-1959.webp",
-          "sha256": "a284a018193d0ddf945cd6f0cc0d6fe6fd8888f98949c02763206d2623728dae"
+          "sha256": "ed4759e5106cc90c7edbbc80fa63c069627a3a9dbf84ba7bd4fc4d2337770725"
         },
         "full": {
           "path": "/uniforms/packers-home-1959-full.webp",
-          "sha256": "229c4097ce7c145f53d79450d80a646a2c15d8a6e0e23a85050d6c9896d836c1"
+          "sha256": "c94c13c9b9c5c616da49662ee2d36910e822f62c67dc08308ceaeb5317679a33"
         }
       }
     },
     {
       "catalogId": "packers-winter-warning-2025",
       "constructionKey": "winter-warning",
-      "revision": "90ed5bed14db0e5c",
+      "revision": "b677d72ceb07f5a9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-winter-warning-2025.webp",
@@ -1474,7 +1474,7 @@
         },
         "full": {
           "path": "/uniforms/packers-winter-warning-2025-full.webp",
-          "sha256": "65aefbab0d8cd8edae825e523f4e9deafa07b0a9ffa4027f18cdfa2d11ac3ea9"
+          "sha256": "fb438198783dc8b2abdd35d8f3934bc0d950960fc3cd2bf0f251392be3fcc5c8"
         }
       }
     },

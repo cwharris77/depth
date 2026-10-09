@@ -1,8 +1,8 @@
 // Declarative pants and socks descriptions: palette keys and named steps, no coordinates.
 // expandPants() and expandSocks() own the leg geometry, fitted once to the shared mannequin, and
 // emit ordinary UniformPart layers.
-import type { PlacedMark } from './marks';
-import type { PartLayer, UniformPart } from './parts';
+import { placeMark, type Mark, type PlacedMark } from './marks';
+import type { PaletteRef, PartLayer, UniformPart } from './parts';
 import type { JerseyBand, JerseyGap, JerseySize } from './jersey-spec';
 
 export interface StripeStack {
@@ -19,12 +19,36 @@ export interface PantsSpec {
   // follows the leg's outer silhouette, which is how a side-seam stripe reads from the front;
   // 'center' is a straight stack centred on the leg's seam line.
   stripes?: StripeStack & { position: 'center' | 'leg-edge' };
-  // Leg art the stripes cannot describe, already in mannequin space: 'under' paints before the
-  // stripes, 'over' after them.
+  // Leg art the stripes cannot describe, already in mannequin space or placed by anchor: 'under'
+  // paints before the stripes, 'over' after them.
   marks?: readonly PantsMarkUse[];
 }
 
-export type PantsMarkUse = { paint: 'under' | 'over'; mark: PlacedMark };
+declare const anchored: unique symbol;
+
+// A mark placed on a hip from its own box. Built only by anchoredPantsMark(), which checks the slot
+// map against the mark's own slots at compile time.
+export interface AnchoredPantsMark {
+  paint: 'under' | 'over';
+  mark: Mark;
+  anchor: 'hip-left' | 'hip-right';
+  slots: Readonly<Record<string, PaletteRef | null>>;
+  // Layer id stem, prefixed with the pants' prefix.
+  id: string;
+  readonly [anchored]: true;
+}
+
+export function anchoredPantsMark<S extends string>(use: {
+  paint: 'under' | 'over';
+  mark: Mark<S>;
+  anchor: AnchoredPantsMark['anchor'];
+  slots: Record<S, PaletteRef | null>;
+  id: string;
+}): AnchoredPantsMark {
+  return use as unknown as AnchoredPantsMark;
+}
+
+export type PantsMarkUse = { paint: 'under' | 'over'; mark: PlacedMark } | AnchoredPantsMark;
 
 export interface SocksSpec {
   color: string;
@@ -34,7 +58,7 @@ export interface SocksSpec {
 
 // Narrower than the jersey steps: a leg stripe is a fraction of a sleeve band.
 const SIZE_PX: Record<JerseySize, number> = { s: 8, m: 16, l: 24 };
-const GAP_PX: Record<JerseyGap, number> = { none: 0, narrow: 4, wide: 8, broad: 12 };
+const GAP_PX: Record<JerseyGap, number> = { none: 0, hairline: 2, narrow: 4, wide: 8, broad: 12 };
 const EDGE_PX = 2;
 
 // The legs mirror about x = 294.
@@ -139,19 +163,23 @@ function stackLayers(
   return layers;
 }
 
-function markLayers(spec: PantsSpec, paint: PantsMarkUse['paint']): PartLayer[] {
+function markLayers(prefix: string, spec: PantsSpec, paint: PantsMarkUse['paint']): PartLayer[] {
   return (spec.marks ?? [])
     .filter((m) => m.paint === paint)
-    .flatMap((m) => m.mark.layers.map((l) => ({ ...l })));
+    .flatMap((m) =>
+      'anchor' in m
+        ? placeMark(`${prefix}-${m.id}`, m.mark, m.anchor, m.slots)
+        : m.mark.layers.map((l) => ({ ...l }))
+    );
 }
 
 export function expandPants(prefix: string, spec: PantsSpec): UniformPart {
   return {
     base: spec.body,
     layers: [
-      ...markLayers(spec, 'under'),
+      ...markLayers(prefix, spec, 'under'),
       ...stripeLayers(prefix, spec),
-      ...markLayers(spec, 'over'),
+      ...markLayers(prefix, spec, 'over'),
     ],
   };
 }

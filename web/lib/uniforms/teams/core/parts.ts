@@ -16,7 +16,7 @@
 // lib/utils/team-surfaces.ts, invariant 4) and stop doubling as the geometry palette.
 
 import { GENERIC_UNIFORM_STYLE } from '../../model';
-import { FIGURE_OUTLINE, OUTLINE_PAINT } from './shared';
+import { OUTLINE_PAINT, reservedPaint } from './shared';
 import type {
   ColorRef,
   NumberStyle,
@@ -29,7 +29,8 @@ import type {
 
 // A palette key is any name the team module chooses ('navy', 'orange', 'white'). Parts refer to
 // colors by key; compilation substitutes the hex. `readable-on-body` is passed through unchanged
-// because it is resolved against the assembled body color at render time, not authoring time.
+// because it is resolved against the assembled body color at render time, not authoring time. The
+// reserved paints in shared.ts (`outline`, the shield colours) resolve the same on every team.
 export type PaletteRef = string | 'readable-on-body' | typeof OUTLINE_PAINT;
 
 export interface UniformPart {
@@ -110,7 +111,8 @@ export function fromGeneric(id: string, color: PaletteRef): PartLayer {
 
 function hex(palette: Record<string, string>, ref: PaletteRef, teamId: string): string {
   if (ref === 'readable-on-body') return ref;
-  if (ref === OUTLINE_PAINT) return FIGURE_OUTLINE;
+  const reserved = reservedPaint(ref);
+  if (reserved) return reserved;
   if (ref.startsWith('pattern:')) return ref;
   const value = palette[ref];
   // A typo in a palette key would otherwise resolve to colors.primary at render time and paint

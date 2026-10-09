@@ -16,7 +16,7 @@ import { expandHelmet } from './helmet-spec';
 import { expandJersey } from './jersey-spec';
 import { expandPants, expandSocks } from './pants-spec';
 import type { PaletteRef, TeamPartsDefinition, UniformPart } from './parts';
-import { OUTLINE_PAINT } from './shared';
+import { reservedPaint } from './shared';
 
 export interface TeamSpec {
   helmets: Record<string, CompleteHelmetSpec>;
@@ -47,11 +47,11 @@ export function expandTeamSpec(teamId: string, spec: TeamSpec): SpecParts {
   };
 }
 
-// Whether compileParts (parts.ts's hex()) would resolve this ref: a palette key, the two
-// team-independent paints, or a pattern reference (patterns aren't validated here -- hex() passes
+// Whether compileParts (parts.ts's hex()) would resolve this ref: a palette key, a
+// team-independent paint, or a pattern reference (patterns aren't validated here -- hex() passes
 // them through unchecked too).
 function resolves(ref: PaletteRef, palette: Record<string, string>): boolean {
-  if (ref === 'readable-on-body' || ref === OUTLINE_PAINT) return true;
+  if (ref === 'readable-on-body' || reservedPaint(ref)) return true;
   if (ref.startsWith('pattern:')) return true;
   return palette[ref] !== undefined;
 }

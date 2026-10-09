@@ -33,7 +33,16 @@ export function placed(layers: readonly PartLayer[]): PlacedMark {
 }
 
 export type AnchorName =
-  'helmet-side' | 'sleeve-left' | 'sleeve-right' | 'shoulder-left' | 'shoulder-right';
+  | 'helmet-side'
+  | 'sleeve-left'
+  | 'sleeve-right'
+  | 'shoulder-left'
+  | 'shoulder-right'
+  | 'sleeve-top-left'
+  | 'sleeve-top-right'
+  | 'collar-v'
+  | 'hip-left'
+  | 'hip-right';
 
 interface Anchor {
   surface: UniformSurface;
@@ -83,6 +92,31 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
     mirror: false,
     idSuffix: '-right',
   },
+  // The upper outer face of each sleeve, between the shoulder line and the first sleeve stripe,
+  // where the manufacturer mark sits. Drawn for the right sleeve.
+  'sleeve-top-left': {
+    surface: 'sleeve-left',
+    x0: 46.5,
+    w: 29,
+    cy: 438.5,
+    mirror: true,
+    idSuffix: '-left',
+  },
+  'sleeve-top-right': {
+    surface: 'sleeve-right',
+    x0: 512.5,
+    w: 29,
+    cy: 438.5,
+    mirror: false,
+    idSuffix: '-right',
+  },
+  // Centred on the collar's point, the league shield's place: its lower edge meets the V's outer
+  // edge.
+  'collar-v': { surface: 'collar', x0: 282, w: 24, cy: 459, mirror: false, idSuffix: '' },
+  // The front of each hip below the waist: the league shield on the left, the manufacturer mark on
+  // the right. Neither mirrors, so the right one keeps the mark's own orientation.
+  'hip-left': { surface: 'pants', x0: 186, w: 23, cy: 876, mirror: false, idSuffix: '-left' },
+  'hip-right': { surface: 'pants', x0: 367.5, w: 46, cy: 872, mirror: false, idSuffix: '-right' },
 };
 
 // One decimal, matching Python's '%.1f'. A value whose binary form is an exact tie at the second
@@ -241,15 +275,23 @@ export function placeMark<S extends string>(
   });
 }
 
-// Both sleeves or both shoulders, interleaved left then right for each slot, the order sleeve
-// primitives use.
+export type AnchorPair = 'sleeves' | 'shoulders' | 'sleeve-tops';
+
+const PAIR_SIDE = {
+  sleeves: 'sleeve',
+  shoulders: 'shoulder',
+  'sleeve-tops': 'sleeve-top',
+} as const;
+
+// Both sleeves, both shoulders or both sleeve tops, interleaved left then right for each slot, the
+// order sleeve primitives use.
 export function placeMarkOnPair<S extends string>(
   idPrefix: string,
   mark: Mark<S>,
-  pair: 'sleeves' | 'shoulders',
+  pair: AnchorPair,
   slots: Record<S, PaletteRef | null>
 ): PartLayer[] {
-  const side = pair === 'sleeves' ? 'sleeve' : 'shoulder';
+  const side = PAIR_SIDE[pair];
   const left = placeMark(idPrefix, mark, `${side}-left`, slots);
   const right = placeMark(idPrefix, mark, `${side}-right`, slots);
   return left.flatMap((layer, i) => [layer, right[i]]);

@@ -29,7 +29,8 @@ export type CompleteCollar =
       // 'body' fills the neck opening with the body colour.
       inside: string | 'body';
       lining: string | None;
-      backBar: string | None;
+      // An object carries the collar's trim across the bar as a band of its own.
+      backBar: string | None | { color: string; trim: string };
       outline: boolean;
     };
 
@@ -152,7 +153,8 @@ const JERSEY_QUESTIONS: Record<Exclude<keyof CompleteJerseySpec, 'collar'> | Col
   'collar.trim': 'Is there a second, thinner trim line on the collar, and what colour?',
   'collar.inside': 'What colour is the neck opening inside the collar?',
   'collar.lining': 'Is there a contrasting collar lining, and what colour?',
-  'collar.backBar': 'Is there a bar across the back of the neck, and what colour?',
+  'collar.backBar':
+    'Is there a bar across the back of the neck, what colour, and does a trim band cross it?',
   'collar.outline': 'Does the collar have a dark outline against the body?',
   shoulderPanel:
     'Are there colour blocks at the top of each sleeve, and in what sizes and colours?',
