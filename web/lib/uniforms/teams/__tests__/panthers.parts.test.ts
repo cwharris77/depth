@@ -11,13 +11,17 @@ describe('Panthers helmet parts', () => {
     PANTHERS_PARTS.helmets[helmet].layers.map((layer) => layer.id);
 
   it('paints the mark silhouette, body, interior gaps, then fangs on both shells', () => {
-    expect(layerIds('silver')).toEqual([
+    expect(layerIds('black')).toEqual([
       'panthers-decal-keyline',
       'panthers-decal-body',
       'panthers-decal-detail',
       'panthers-decal-highlight',
     ]);
-    expect(layerIds('black')).toEqual(layerIds('silver'));
+    expect(layerIds('silver').slice(2)).toEqual(layerIds('black'));
+    expect(PANTHERS_PARTS.helmets.silver.layers.slice(0, 2)).toMatchObject([
+      { id: 'panthers-crown-blue', fill: 'blue', surface: 'helmet', clip: true },
+      { id: 'panthers-crown-black', fill: 'black', surface: 'helmet', clip: true },
+    ]);
   });
 
   it('takes the fang highlight from the mark, not from the kit silver', () => {
@@ -93,7 +97,9 @@ describe('Panthers shared collars', () => {
 
 describe('Panthers shoulder and sleeve details', () => {
   it('reuses every helmet decal contour without changing its proportions', () => {
-    const helmet = PANTHERS_PARTS.helmets.silver.layers;
+    const helmet = PANTHERS_PARTS.helmets.silver.layers.filter((layer) =>
+      layer.id.startsWith('panthers-decal-')
+    );
     const sleeve = PANTHERS_PARTS.jerseys.blue.layers.filter(
       (layer) => layer.id.startsWith('panthers-sleeve-') && layer.id.endsWith('-left')
     );

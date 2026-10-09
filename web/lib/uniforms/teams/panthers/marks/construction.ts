@@ -1,6 +1,8 @@
 // Carolina's own art, bound to palette keys and emitted exactly as written: the helmet mark, the
 // shoulder fan, the keylined leg stripe.
 import {
+  PANTHERS_CROWN_BLUE,
+  PANTHERS_CROWN_BLACK,
   PANTHERS_DECAL_BODY_PATH,
   PANTHERS_DECAL_DETAIL_PATH,
   PANTHERS_DECAL_HIGHLIGHT_PATH,
@@ -36,6 +38,21 @@ export const PANTHERS_HELMET_DECAL = placed(
     fill,
   }))
 );
+
+export const PANTHERS_SILVER_HELMET = placed([
+  ...[
+    ['panthers-crown-blue', PANTHERS_CROWN_BLUE, 'blue'],
+    ['panthers-crown-black', PANTHERS_CROWN_BLACK, 'black'],
+  ].map(([id, d, fill]): PartLayer => ({
+    id,
+    surface: 'helmet',
+    d,
+    clip: true,
+    kind: 'fill',
+    fill,
+  })),
+  ...PANTHERS_HELMET_DECAL.layers,
+]);
 
 export function panthersShoulderNumbers(fill: string, outline: string): PlacedMark {
   const box = boundsOf(JERSEY_NUMBER_THREE);
