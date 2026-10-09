@@ -39,7 +39,7 @@ const legStripe = (outer: string, middle: string) => ({
 
 export const PACKERS_SPEC: TeamSpec = {
   helmets: {
-    // The gold shell with the G and a green cage; the side view shows no crown stripe.
+    // The gold shell with the G alone and a green cage; it carries no crown stripe.
     gold: { shell: 'gold', facemask: 'green', decal: PACKERS_HELMET_G, number: none },
     // The white shell with the crown stripe and G, grey cage.
     white: { shell: 'white', facemask: 'cageGrey', decal: PACKERS_HELMET_DECAL, number: none },

@@ -225,7 +225,7 @@ describe('expandJersey', () => {
     expect(span('t-stripe-1-left')[0] - span('t-stripe-0-left')[1]).toBe(3);
   });
 
-  it('draws the narrow V as one band, adding its trim, piping and outlines only when asked', () => {
+  it("draws the narrow V's sides and back band, adding trim, piping and outlines only when asked", () => {
     type Collar = Parameters<typeof expandJersey>[1]['collar'];
     const layers = (collar: Omit<Collar, 'style'> = {}) =>
       expandJersey('t', {
@@ -240,14 +240,24 @@ describe('expandJersey', () => {
     expect(ids()).toEqual(['t-collar-band', 't-neck-opening']);
     // Piping needs a trim to pipe.
     expect(ids({ trimEdge: 'green' })).toEqual(['t-collar-band', 't-neck-opening']);
+    // A trim alone draws no piping, on the sides or the back.
+    expect(ids({ trim: 'white' })).toEqual([
+      't-collar-band',
+      't-collar-trim',
+      't-collar-back-trim',
+      't-neck-opening',
+    ]);
     const full = layers({ trim: 'white', trimEdge: 'green', inside: 'navy', outline: true });
     expect(full.map((l) => l.id).filter((id) => !id.includes('-nfl-shield-'))).toEqual([
       't-collar-band',
       't-collar-trim-edge',
       't-collar-trim',
+      't-collar-back-trim-edge',
+      't-collar-back-trim',
       't-neck-opening',
       't-collar-outline-outer',
       't-collar-outline-inner',
+      't-collar-back-keylines',
     ]);
     const byId = (id: string) => full.find((l) => l.id === id);
     expect(byId('t-collar-band')).toMatchObject({ kind: 'fill', fill: 'gold', surface: 'collar' });
@@ -261,6 +271,17 @@ describe('expandJersey', () => {
     const width = (l?: PartLayer) => (l?.kind === 'stroke' ? l.strokeWidth : 0);
     expect(width(piping) - width(trim)).toBe(3);
     expect(byId('t-collar-outline-outer')).toMatchObject({ stroke: 'outline', strokeWidth: 4 });
+    // The side trim is open at the shoulder line; the back band carries its own trim.
+    expect(trim?.d).not.toMatch(/Z$/);
+    expect(byId('t-collar-back-trim')).toMatchObject({
+      stroke: 'white',
+      strokeWidth: width(trim),
+      lineCap: 'butt',
+    });
+    expect(byId('t-collar-back-trim-edge')).toMatchObject({
+      stroke: 'green',
+      strokeWidth: width(piping),
+    });
   });
 
   it("holds the shield within the narrow V's point, at the shared shield size", () => {
