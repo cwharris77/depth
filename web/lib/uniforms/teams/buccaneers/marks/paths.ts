@@ -9,7 +9,3 @@ export const BUCCANEERS_CUFF_RIGHT = 'M558,545 H442 V578 H558 Z';
 export const BUCCANEERS_CREAM_BOUNDS = [528, 539, 559, 578];
 export const BUCCANEERS_SLEEVE_X_LEFT = [30, 146];
 export const BUCCANEERS_SLEEVE_X_RIGHT = [442, 558];
-
-// The collar is a keyline rather than a band, about 2 reference px.
-export const BUCCANEERS_COLLAR_PATH = 'M214,418 L294,478 L374,418';
-export const BUCCANEERS_COLLAR_WIDTH = 7;

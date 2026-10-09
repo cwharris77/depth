@@ -2,9 +2,10 @@
 // drawn by the marks in ./marks.
 //
 // Not one construction. The current kits wear a single solid pewter band at the sleeve hem and a
-// thin collar keyline on a pewter shell with the flag decal; the creamsicle wears a three-band cuff,
-// red over white over red, no collar trim, on a white shell with its own decal. Pants are plain:
+// shared inset-V collar on a pewter shell with the flag decal; the creamsicle wears a three-band cuff,
+// red over white over red, an orange inset-V collar, on a white shell with its own decal. Pants are plain:
 // the leg stripes sit on the side seam, which a front-on mannequin cannot show.
+import { BUCCANEERS_SHIP_COLORS } from './marks/ship';
 import type { TeamSpec } from '../core/team-spec';
 import {
   BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
@@ -23,6 +24,7 @@ export const BUCCANEERS_PALETTE = {
   crimson: '#C8102E',
   creamOrange: '#FF8200',
   white: '#FFFFFF',
+  ...BUCCANEERS_SHIP_COLORS,
   ...BUCCANEERS_FLAG_DECAL_PATHS_COLORS,
   ...BUCCANEERS_CREAMSICLE_DECAL_PATHS_COLORS,
 };
@@ -39,10 +41,10 @@ export const BUCCANEERS_SPEC: TeamSpec = {
       decal: BUCCANEERS_FLAG_DECAL,
       number: 'none',
     },
-    // The white shell with the creamsicle decal and a white cage.
+    // The white shell with the creamsicle decal and an orange cage.
     white: {
       shell: 'white',
-      facemask: 'white',
+      facemask: 'creamOrange',
       decal: BUCCANEERS_CREAMSICLE_DECAL,
       number: 'none',
     },
