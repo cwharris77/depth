@@ -1,8 +1,8 @@
 // Carolina as a complete team spec: every helmet, jersey, pants and socks part, with the helmet
-// mark, shoulder fan and collar V drawn by the marks in ./marks.
+// mark and shoulder fan drawn by the marks in ./marks.
 import type { CompletePantsSpec } from '../core/complete';
 import type { TeamSpec } from '../core/team-spec';
-import { PANTHERS_HELMET_DECAL } from './marks/construction';
+import { PANTHERS_HELMET_DECAL, PANTHERS_SILVER_HELMET } from './marks/construction';
 import { PANTHERS_JERSEY_BLACK } from './jerseys/black';
 import { PANTHERS_JERSEY_BLUE } from './jerseys/blue';
 import { PANTHERS_JERSEY_WHITE } from './jerseys/white';
@@ -36,7 +36,7 @@ export const PANTHERS_SPEC: TeamSpec = {
     // The panther mark on a black shell with a black cage.
     black: { shell: 'black', facemask: 'black', decal: PANTHERS_HELMET_DECAL, number: 'none' },
     // The same mark on a silver shell, black cage.
-    silver: { shell: 'silver', facemask: 'black', decal: PANTHERS_HELMET_DECAL, number: 'none' },
+    silver: { shell: 'silver', facemask: 'black', decal: PANTHERS_SILVER_HELMET, number: 'none' },
   },
   jerseys: {
     blue: PANTHERS_JERSEY_BLUE,

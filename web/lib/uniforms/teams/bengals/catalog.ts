@@ -7,6 +7,7 @@ const orangeHelmet = (key: string, label: string, pants: string, socks: string):
   label,
   helmet: 'orange',
   pants,
+  pantsNike: pants === 'black' ? 'white' : 'black',
   socks,
 });
 
@@ -61,7 +62,12 @@ export const BENGALS_CATALOG: TeamCatalog = {
       colors: { primary: '#FFFFFF', secondary: '#000000', accent: '#000000' },
       legacyAccent: ACCENT,
       periods: [{ from: 2016, to: 2022, source: NEEDS_SOURCE }],
-      combinations: [orangeHelmet('standard', 'White pants, white socks', 'white-claws', 'white')],
+      combinations: [
+        {
+          ...orangeHelmet('standard', 'White pants, white socks', 'white-claws', 'white'),
+          pantsNike: undefined,
+        },
+      ],
     },
   ],
 };

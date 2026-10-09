@@ -17,6 +17,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'black-falcon',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
         {
@@ -24,6 +25,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'black-falcon',
           pants: 'white',
+          pantsNike: 'black',
           socks: 'black',
         },
       ],
@@ -42,6 +44,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'black-falcon',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
         {
@@ -49,6 +52,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
           label: 'White pants',
           helmet: 'black-falcon',
           pants: 'white',
+          pantsNike: 'black',
           socks: 'white',
         },
       ],

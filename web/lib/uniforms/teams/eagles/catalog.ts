@@ -12,7 +12,14 @@ export const EAGLES_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
       periods: [{ from: 1996 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'green', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'green',
+          pants: 'white',
+          pantsNike: 'green',
+          socks: 'white',
+        },
       ],
     },
     {
@@ -24,7 +31,9 @@ export const EAGLES_CATALOG: TeamCatalog = {
       colors: { primary: '#046A38', secondary: '#A5ACAF', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#2BB673', onAccent: '#0a0e1a' },
       periods: [{ from: 1987 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'kelly', pants: 'kelly' }],
+      combinations: [
+        { key: 'standard', label: 'Standard', helmet: 'kelly', pants: 'kelly', pantsNike: 'white' },
+      ],
     },
     {
       slug: 'kelly-green-modern',
@@ -40,6 +49,7 @@ export const EAGLES_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'kelly',
           pants: 'silver',
+          pantsNike: 'green',
           socks: 'kelly-hoops',
         },
       ],
@@ -53,12 +63,20 @@ export const EAGLES_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
       periods: [{ from: 1996 }],
       combinations: [
-        { key: 'standard', label: 'White pants', helmet: 'green', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'White pants',
+          helmet: 'green',
+          pants: 'white',
+          pantsNike: 'green',
+          socks: 'white',
+        },
         {
           key: 'green-pants',
           label: 'Green pants',
           helmet: 'green',
           pants: 'green',
+          pantsNike: 'white',
           socks: 'white',
         },
         {
@@ -66,6 +84,7 @@ export const EAGLES_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'green',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'white',
         },
       ],
@@ -78,7 +97,9 @@ export const EAGLES_CATALOG: TeamCatalog = {
       colors: { primary: '#000000', secondary: '#004C54', accent: '#A5ACAF' },
       legacyAccent: { uiAccent: '#2FA3A3', onAccent: '#0a0e1a' },
       periods: [{ from: 2003 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'black', pants: 'black' }],
+      combinations: [
+        { key: 'standard', label: 'Standard', helmet: 'black', pants: 'black', pantsNike: 'white' },
+      ],
     },
   ],
 };

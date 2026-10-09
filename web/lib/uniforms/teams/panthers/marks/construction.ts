@@ -1,8 +1,8 @@
 // Carolina's own art, bound to palette keys and emitted exactly as written: the helmet mark, the
-// shoulder fan, the deep collar V and the keylined leg stripe.
+// shoulder fan, the keylined leg stripe.
 import {
-  PANTHERS_COLLAR_PATH,
-  PANTHERS_COLLAR_WIDTH,
+  PANTHERS_CROWN_BLUE,
+  PANTHERS_CROWN_BLACK,
   PANTHERS_DECAL_BODY_PATH,
   PANTHERS_DECAL_DETAIL_PATH,
   PANTHERS_DECAL_HIGHLIGHT_PATH,
@@ -14,7 +14,9 @@ import {
   PANTHERS_WEDGE_LEFT,
   PANTHERS_WEDGE_RIGHT,
 } from './paths';
-import { placed, type PlacedMark } from '../../core/marks';
+import { boundsOf, placed, type PlacedMark } from '../../core/marks';
+import { NIKE_MARK } from '../../core/pants-logos';
+import { JERSEY_NUMBER_THREE } from '../../../jersey-art';
 import { fromGeneric, type PartLayer } from '../../core/parts';
 
 // Paint order is the whole trick: silhouette, body, the body's interior gaps back in blue, fangs.
@@ -37,6 +39,115 @@ export const PANTHERS_HELMET_DECAL = placed(
   }))
 );
 
+export const PANTHERS_SILVER_HELMET = placed([
+  ...[
+    ['panthers-crown-blue', PANTHERS_CROWN_BLUE, 'blue'],
+    ['panthers-crown-black', PANTHERS_CROWN_BLACK, 'black'],
+  ].map(([id, d, fill]): PartLayer => ({
+    id,
+    surface: 'helmet',
+    d,
+    clip: true,
+    kind: 'fill',
+    fill,
+  })),
+  ...PANTHERS_HELMET_DECAL.layers,
+]);
+
+export function panthersShoulderNumbers(fill: string, outline: string): PlacedMark {
+  const box = boundsOf(JERSEY_NUMBER_THREE);
+  const scale = 45 / (box[3] - box[1]);
+  const coordinates = (JERSEY_NUMBER_THREE.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+  const layers: PartLayer[] = [];
+  for (const side of ['left', 'right'] as const) {
+    const rotated: number[] = [];
+    for (let i = 0; i < coordinates.length; i += 2) {
+      const x = 157 - (coordinates[i + 1] - (box[1] + box[3]) / 2) * scale;
+      const y = 419 + (coordinates[i] - (box[0] + box[2]) / 2) * scale;
+      rotated.push(side === 'left' ? x : 588 - x, y);
+    }
+    let i = 0;
+    const d = JERSEY_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, () =>
+      String(Math.round(rotated[i++] * 100) / 100)
+    );
+    layers.push(
+      {
+        id: `panthers-shoulder-number-outline-${side}`,
+        surface: `sleeve-${side}`,
+        d,
+        clip: true,
+        kind: 'stroke',
+        stroke: outline,
+        strokeWidth: 2.5,
+      },
+      {
+        id: `panthers-shoulder-number-${side}`,
+        surface: `sleeve-${side}`,
+        d,
+        clip: true,
+        kind: 'fill',
+        fill,
+      }
+    );
+  }
+  return placed(layers);
+}
+
+// The sleeve wraps out of the front view; the jersey silhouette clips the outer portion of each mark.
+export function panthersSleeveMarks(nikeColor: string): PlacedMark {
+  const box = boundsOf(PANTHERS_DECAL_KEYLINE_PATH);
+  const fit = (d: string, source: readonly number[], x: number, cy: number, width: number) => {
+    const scale = width / (source[2] - source[0]);
+    let i = 0;
+    return d.replace(/-?\d+(?:\.\d+)?/g, (value) => {
+      const coordinate = Number(value);
+      const fitted =
+        i++ % 2 === 0
+          ? x + (coordinate - source[0]) * scale
+          : cy + (coordinate - (source[1] + source[3]) / 2) * scale;
+      return String(Math.round(fitted * 100) / 100);
+    });
+  };
+  const left: PartLayer[] = DECAL_SHAPES.map(([id, d, fill]) => ({
+    id: `${id.replace('panthers-decal', 'panthers-sleeve')}-left`,
+    surface: 'sleeve-left',
+    d: fit(d, box, -42, 527, 110),
+    clip: true,
+    kind: 'fill',
+    fill,
+  }));
+  let nikeCoordinate = 0;
+  const nikeLeft = fit(NIKE_MARK.paths[0].d, NIKE_MARK.box, 14, 466, 40).replace(
+    /-?\d+(?:\.\d+)?/g,
+    (value) =>
+      nikeCoordinate++ % 2 === 0 ? String(Math.round((68 - Number(value)) * 100) / 100) : value
+  );
+  left.push({
+    id: 'panthers-nike-left',
+    surface: 'sleeve-left',
+    d: nikeLeft,
+    clip: true,
+    kind: 'fill',
+    fill: nikeColor,
+  });
+  return placed(
+    left.flatMap((layer): PartLayer[] => {
+      let i = 0;
+      return [
+        layer,
+        {
+          ...layer,
+          id: layer.id.replace('left', 'right'),
+          surface: 'sleeve-right',
+          d: layer.d.replace(/-?\d+(?:\.\d+)?/g, (value) =>
+            i++ % 2 === 0 ? String(Math.round((588 - Number(value)) * 100) / 100) : value
+          ),
+        },
+      ];
+    })
+  );
+}
+
 // A wider triangle first, the shorter one over it: where the middle band ends, the two outer bands
 // merge.
 export function panthersShoulderFan(outer: string, middle: string): PlacedMark {
@@ -56,20 +167,6 @@ export function panthersShoulderFan(outer: string, middle: string): PlacedMark {
       fill,
     }))
   );
-}
-
-export function panthersCollar(fill: string): PlacedMark {
-  return placed([
-    {
-      id: 'panthers-collar',
-      surface: 'collar',
-      d: PANTHERS_COLLAR_PATH,
-      clip: true,
-      kind: 'stroke',
-      stroke: fill,
-      strokeWidth: PANTHERS_COLLAR_WIDTH,
-    },
-  ]);
 }
 
 // The mannequin's own stripe band as the keyline, the measured centre over it.

@@ -20,18 +20,19 @@ export const PANTHERS_DECAL_HIGHLIGHT_PATH =
 // The shoulder fan: three bands tapering to a shared point above the sleeve hem, the middle band
 // ending early. The outer colour is one triangle and the middle band a shorter triangle over it,
 // which reads outer/inner/outer.
-export const PANTHERS_FAN_LEFT = 'M61,435 L111,421 L136,539 Z';
-export const PANTHERS_FAN_RIGHT = 'M527,435 L477,421 L452,539 Z';
-export const PANTHERS_WEDGE_LEFT = 'M74,421 L102,426 L121,493 Z';
-export const PANTHERS_WEDGE_RIGHT = 'M514,421 L486,426 L467,493 Z';
-
-// The collar V: both arms meet at y=513, far deeper than the generic chevron, whose point is at
-// y=455. The band is 24 units thick perpendicular to the arm.
-export const PANTHERS_COLLAR_PATH = 'M189,392 L295,513 L399,392';
-export const PANTHERS_COLLAR_WIDTH = 24;
+export const PANTHERS_FAN_LEFT = 'M58,414 L104,398 L147,580 Z';
+export const PANTHERS_FAN_RIGHT = 'M530,414 L484,398 L441,580 Z';
+export const PANTHERS_WEDGE_LEFT = 'M69,409 L93,402 L130,536 Z';
+export const PANTHERS_WEDGE_RIGHT = 'M519,409 L495,402 L458,536 Z';
 
 // The leg stripe centre: a hairline keyline, a wide centre, a hairline keyline, so the centre is
 // 82% of the mannequin's 16-unit generic stripe band. The generic stripe layers paint the keyline
 // colour and only the centre is authored here.
 export const PANTHERS_STRIPE_CENTER_LEFT = 'M119.5,807 H132.5 V1462 H119.5 Z';
 export const PANTHERS_STRIPE_CENTER_RIGHT = 'M455.5,807 H468.5 V1462 H455.5 Z';
+
+// The visible crown stripe tapers down the rear of the side-view shell.
+export const PANTHERS_CROWN_BLUE =
+  'M204,246 C199,177 224,117 290,88 C345,64 410,60 471,69 C580,84 660,162 685,274 L691,322 L684,322 C672,202 601,109 476,80 C410,66 345,72 292,96 C237,122 218,177 204,246 Z';
+export const PANTHERS_CROWN_BLACK =
+  'M208,226 C205,167 232,115 292,89 C348,65 411,63 471,72 C579,87 657,163 681,273 L684,302 C668,198 598,111 475,81 C411,68 348,74 294,98 C242,121 221,168 208,226 Z';

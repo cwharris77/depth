@@ -19,6 +19,8 @@ export const NEEDS_SOURCE = 'needs-source';
 
 // One verified helmet/pants/socks pairing for a design's jersey. Parts are never freely mixed.
 export interface Combination {
+  // Palette paint for the Nike mark; omission keeps the construction unbranded.
+  pantsNike?: string;
   key: string;
   label: string;
   helmet: string;
@@ -112,6 +114,7 @@ function kitRef(design: CatalogDesign, combination: Combination): KitRef {
     jersey: design.jersey,
     pants: combination.pants,
   };
+  if (combination.pantsNike !== undefined) ref.pantsNike = combination.pantsNike;
   if (combination.socks !== undefined) ref.socks = combination.socks;
   return ref;
 }

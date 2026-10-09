@@ -3,7 +3,7 @@ import { anchoredMark, expandJersey, type JerseySpec } from '@/lib/uniforms/team
 import { JERSEY_NUMBER_THREE } from '@/lib/uniforms/jersey-art';
 import { compileParts, type PartLayer } from '@/lib/uniforms/teams/core/parts';
 import { FIGURE_OUTLINE } from '@/lib/uniforms/teams/core/shared';
-import { placed, type Mark } from '@/lib/uniforms/teams/core/marks';
+import { boundsOf, placed, type Mark } from '@/lib/uniforms/teams/core/marks';
 
 const numbers = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
 
@@ -215,6 +215,39 @@ describe('expandJersey', () => {
     expect(opening(layers('orangeNeck'))).toMatchObject({ fill: 'orangeNeck' });
   });
 
+  it('places the NFL shield above the inset collar outlines', () => {
+    const jersey = expandJersey('t', {
+      body: 'orange',
+      collar: { style: 'inset-v', color: 'orange', outline: true },
+      number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
+    });
+    const shield = jersey.layers.filter((layer) => layer.id.includes('-nfl-shield-'));
+    expect(shield.length).toBeGreaterThan(3);
+    expect(jersey.layers.slice(-shield.length)).toEqual(shield);
+  });
+
+  it('holds the shield within the pointed collar panel', () => {
+    const layers = expandJersey('t', {
+      body: 'white',
+      collar: { style: 'inset-v', color: 'navy', outline: true },
+      number: { fill: 'navy', outline: 'white', outlineWeight: 'thin' },
+    }).layers;
+    const edge = layers.find((layer) => layer.id === 't-collar-edge');
+    expect(edge).toMatchObject({ kind: 'fill', fill: 'navy' });
+    expect(layers.find((layer) => layer.id === 't-collar-placket')).toMatchObject({ fill: 'navy' });
+    const inner = boundsOf(
+      (layers.find((layer) => layer.id === 't-collar-outline-inner')?.d ?? '') + ' Z'
+    );
+    const outer = boundsOf(
+      (layers.find((layer) => layer.id === 't-collar-outline-outer')?.d ?? '') + ' Z'
+    );
+    const shield = layers
+      .filter((layer) => layer.id.includes('-nfl-shield-'))
+      .map((layer) => boundsOf(layer.d));
+    expect(Math.min(...shield.map((box) => box[1]))).toBeGreaterThan(inner[3]);
+    expect(Math.max(...shield.map((box) => box[3]))).toBeLessThan(outer[3]);
+  });
+
   it('always draws the back bar and adds lining and outline layers only when asked', () => {
     const layers = (extra: { lining?: string; backBar?: string; outline?: boolean } = {}) =>
       expandJersey('t', {
@@ -222,7 +255,10 @@ describe('expandJersey', () => {
         collar: { style: 'inset-v', color: 'orange', ...extra },
         number: { fill: 'white', outline: 'navy', outlineWeight: 'thin' },
       }).layers;
-    const ids = (extra?: Parameters<typeof layers>[0]) => layers(extra).map((l) => l.id);
+    const ids = (extra?: Parameters<typeof layers>[0]) =>
+      layers(extra)
+        .filter((l) => !l.id.includes('-nfl-shield-') && !l.id.includes('-collar-rib-'))
+        .map((l) => l.id);
     expect(ids()).toEqual([
       't-neck-opening',
       't-collar-edge',
@@ -290,6 +326,10 @@ describe('expandJersey', () => {
       kits: { home: { helmet: 'h', jersey: 'j', pants: 'p' } },
     });
     expect(JSON.stringify(def)).toContain(FIGURE_OUTLINE);
+    const shield = def.kits.home.layers?.filter((layer) => layer.id.includes('-nfl-shield-'));
+    expect(shield?.[0]).toMatchObject({ stroke: '#ffffff' });
+    expect(shield?.[1]).toMatchObject({ fill: '#05366B' });
+    expect(shield?.some((layer) => layer.kind === 'fill' && layer.fill === '#D50D0D')).toBe(true);
   });
 
   it('draws no collar layers for style none', () => {

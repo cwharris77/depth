@@ -12,12 +12,20 @@ export const BEARS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
       periods: [{ from: 2012 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-c',
+          pants: 'navy',
+          pantsNike: 'white',
+          socks: 'white',
+        },
         {
           key: 'white-pants',
           label: 'White pants',
           helmet: 'navy-c',
           pants: 'white',
+          pantsNike: 'navy',
           socks: 'navy',
         },
       ],
@@ -31,7 +39,14 @@ export const BEARS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
       periods: [{ from: 2012 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-c',
+          pants: 'navy',
+          pantsNike: 'white',
+          socks: 'white',
+        },
       ],
     },
     // Bears orange alternate (modern alt, no throwback era). Hexes: orange #C83803, navy #0B162A.
@@ -44,7 +59,9 @@ export const BEARS_CATALOG: TeamCatalog = {
       colors: { primary: '#C83803', secondary: '#0B162A', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
       periods: [{ from: 2005 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy' }],
+      combinations: [
+        { key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy', pantsNike: 'white' },
+      ],
     },
   ],
 };
