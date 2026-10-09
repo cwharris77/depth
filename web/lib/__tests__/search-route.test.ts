@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { searchAllPlayers } from '@/lib/roster-source.db';
-import { searchRateLimiter } from '@/app/api/players/search/route';
 
 vi.mock('@/lib/roster-source.db', () => ({
   searchAllPlayers: vi.fn(),
 }));
 
-import { GET } from '@/app/api/players/search/route';
+let GET: (typeof import('@/app/api/players/search/route'))['GET'];
 
 const mockedSearch = vi.mocked(searchAllPlayers);
 
@@ -20,8 +19,9 @@ function makeRequest(q: string | null): NextRequest {
 }
 
 describe('GET /api/players/search', () => {
-  beforeEach(() => {
-    searchRateLimiter.reset();
+  beforeEach(async () => {
+    vi.resetModules();
+    ({ GET } = await import('@/app/api/players/search/route'));
     mockedSearch.mockReset();
     mockedSearch.mockResolvedValue([]);
   });
