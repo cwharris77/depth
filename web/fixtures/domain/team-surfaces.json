@@ -1795,16 +1795,16 @@
     "id": "texans-h-town-2024",
     "colors": {
       "primary": "#03202F",
-      "secondary": "#A71930",
-      "accent": "#0072CE"
+      "secondary": "#0072CE",
+      "accent": "#A71930"
     },
     "expected": {
       "fill": "#03202F",
-      "ring": "#A71930",
+      "ring": "#0072CE",
       "mark": "#0072CE",
       "textOnFill": "#ffffff",
       "numeralFill": "#03202F",
-      "numeralStroke": "#FFFFFF"
+      "numeralStroke": "#0072CE"
     }
   }
 ]
