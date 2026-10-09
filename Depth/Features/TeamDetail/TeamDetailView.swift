@@ -758,8 +758,12 @@ struct TeamDetailView: View {
         activeJerseyColors.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
     }
 
-    @ViewBuilder
     private var historicalContent: some View {
+        historicalContentStates.loadStateTransition(historyViewModel.state)
+    }
+
+    @ViewBuilder
+    private var historicalContentStates: some View {
         switch historyViewModel.state {
         case .loading:
             VStack {
@@ -789,8 +793,12 @@ struct TeamDetailView: View {
         }
     }
 
-    @ViewBuilder
     private var currentContent: some View {
+        currentContentStates.loadStateTransition(viewModel.loadState)
+    }
+
+    @ViewBuilder
+    private var currentContentStates: some View {
         if let snapshot = displayedSnapshot {
             rosterContent(snapshot: snapshot, historical: false)
         } else {

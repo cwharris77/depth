@@ -44,7 +44,8 @@ final class TeamListViewModel {
     }
 
     func load() async {
-        loadState = .loading
+        // A refresh over loaded content keeps it on screen until the reload resolves.
+        if loadState != .loaded { loadState = .loading }
         do {
             teams = try await repository.teams()
             loadState = .loaded

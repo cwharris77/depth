@@ -305,7 +305,8 @@ final class CompareViewModel {
     }
 
     func load() async {
-        loadState = .loading
+        // A refresh over loaded content keeps it on screen until the reload resolves.
+        if loadState != .loaded { loadState = .loading }
         do {
             allTeams = try await repository.teams()
             loadState = .loaded

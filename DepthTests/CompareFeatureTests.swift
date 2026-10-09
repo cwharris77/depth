@@ -1048,3 +1048,66 @@ private func twoSeasonViewModel() async -> CompareViewModel {
     // Previously `.unavailable` — the formatter rejected the string, not the data.
     #expect(compareFreshness(updatedAt: updatedAt, now: now) == .current)
 }
+
+@Test func compareRefreshKeepsTheLoadedTeamsOnScreenUntilTheReloadResolves() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let repository = SuspendingTeamsRepository(teams: [hawks])
+    let viewModel = await CompareViewModel(repository: repository)
+    await viewModel.load()
+
+    let refresh = Task { @MainActor in await viewModel.load() }
+    await repository.waitForSuspendedCall()
+
+    #expect(await viewModel.loadState == .loaded)
+    #expect(await viewModel.teams.map(\.id) == ["seahawks"])
+
+    await repository.resume()
+    await refresh.value
+    #expect(await viewModel.loadState == .loaded)
+}
+
+/// Answers the first `teams()` call immediately and holds every later one until `resume()`,
+/// so a test can observe the view model mid-refresh.
+private actor SuspendingTeamsRepository: DepthRepository {
+    let teams: [Team]
+    private var calls = 0
+    private var suspended: CheckedContinuation<Void, Never>?
+    private var suspendWaiter: CheckedContinuation<Void, Never>?
+
+    init(teams: [Team]) { self.teams = teams }
+
+    func teams() async throws -> [Team] {
+        calls += 1
+        if calls > 1 {
+            await withCheckedContinuation { continuation in
+                suspended = continuation
+                suspendWaiter?.resume()
+                suspendWaiter = nil
+            }
+        }
+        return teams
+    }
+
+    func waitForSuspendedCall() async {
+        if suspended != nil { return }
+        await withCheckedContinuation { suspendWaiter = $0 }
+    }
+
+    func resume() {
+        suspended?.resume()
+        suspended = nil
+    }
+
+    func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
+    func appConfig() async throws -> AppConfig {
+        AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
+    }
+}
