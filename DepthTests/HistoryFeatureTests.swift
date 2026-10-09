@@ -80,6 +80,20 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     #expect(roster.uniforms.isEmpty, "history keeps team colors but does not render uniforms")
 }
 
+// nflverse heights are total inches; the profile shows feet and inches like a live roster.
+@Test func historicalMapperFormatsInchHeightsAsFeetAndInches() throws {
+    #expect(HistoricalRosterMapper.displayHeight("74") == "6' 2\"")
+    #expect(HistoricalRosterMapper.displayHeight("72") == "6' 0\"")
+    #expect(HistoricalRosterMapper.displayHeight(" 71 ") == "5' 11\"")
+    #expect(HistoricalRosterMapper.displayHeight("5' 11\"") == "5' 11\"")
+    #expect(HistoricalRosterMapper.displayHeight("0") == "0")
+    #expect(HistoricalRosterMapper.displayHeight(nil) == "")
+
+    let roster = try HistoricalRosterMapper.map(
+        team: historyTeam(), rows: [historyRow(height: "74")])
+    #expect(roster.players.first?.height == "6' 2\"")
+}
+
 @Test func historicalMapperMapsBackupAndStoredMissingValuesWithoutCoercingOrder() throws {
     let roster = try HistoricalRosterMapper.map(
         team: historyTeam(),
