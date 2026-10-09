@@ -249,10 +249,15 @@ export function placeMark<S extends string>(
     const v = ((y - by0) * 100) / (by1 - by0);
     return `${fmt1(anchor.x0 + (u * anchor.w) / 100)},${fmt1(y0 + (v * h) / 100)}`;
   };
+  // Art drawn in several runs of one colour repeats a slot; later runs take a numbered id so every
+  // layer id in a part stays unique.
+  const seen = new Map<string, number>();
   return mark.paths.flatMap(({ slot, d }): PartLayer[] => {
     if (!(slot in slots)) throw new Error(`${idPrefix}: mark slot "${slot}" is not mapped`);
     const color = slots[slot];
     if (color === null) return [];
+    const run = (seen.get(slot) ?? 0) + 1;
+    seen.set(slot, run);
     const placed = subpaths(d)
       .map((segments) => {
         const drawn = segments.map(({ cmd, pts }) => `${cmd}${pts.map(at).join(' ')}`);
@@ -261,7 +266,7 @@ export function placeMark<S extends string>(
       .join(' ');
     return [
       {
-        id: `${idPrefix}-${slot}${anchor.idSuffix}`,
+        id: `${idPrefix}-${slot}${run > 1 ? `-${run}` : ''}${anchor.idSuffix}`,
         surface: anchor.surface,
         d: placed,
         clip: true,
