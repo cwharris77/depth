@@ -215,9 +215,41 @@ describe('Seahawks catalog conversion', () => {
 
   it('reproduces the kit map', () => {
     expect(pairings(catalog)).toEqual({
-      home: { helmet: 'navy-hawk', jersey: 'navy', pants: 'navy' },
-      away: { helmet: 'navy-hawk', jersey: 'white', pants: 'white-plain' },
-      'color-rush': { helmet: 'navy-hawk', jersey: 'action-green', pants: 'action-green' },
+      home: { helmet: 'navy-hawk', jersey: 'navy', pants: 'navy', socks: 'navy' },
+      'home--grey-pants': { helmet: 'navy-hawk', jersey: 'navy', pants: 'grey', socks: 'navy' },
+      away: { helmet: 'navy-hawk', jersey: 'white', pants: 'white-plain', socks: 'navy' },
+      'away--grey-pants': { helmet: 'navy-hawk', jersey: 'white', pants: 'grey', socks: 'navy' },
+      'away--grey-pants-white-socks': {
+        helmet: 'navy-hawk',
+        jersey: 'white',
+        pants: 'grey',
+        socks: 'white',
+      },
+      'away--navy-pants': { helmet: 'navy-hawk', jersey: 'white', pants: 'navy', socks: 'navy' },
+      'away--navy-pants-white-socks': {
+        helmet: 'navy-hawk',
+        jersey: 'white',
+        pants: 'navy',
+        socks: 'white',
+      },
+      'away--white-socks': {
+        helmet: 'navy-hawk',
+        jersey: 'white',
+        pants: 'white-plain',
+        socks: 'white',
+      },
+      'color-rush': {
+        helmet: 'navy-hawk',
+        jersey: 'action-green',
+        pants: 'action-green',
+        socks: 'green',
+      },
+      'color-rush--navy-pants': {
+        helmet: 'navy-hawk',
+        jersey: 'action-green',
+        pants: 'navy',
+        socks: 'navy',
+      },
       '1976-throwback': { helmet: 'throwback-silver', jersey: 'throwback', pants: 'throwback' },
       'rivalries-2025': {
         helmet: 'teal-hawk',

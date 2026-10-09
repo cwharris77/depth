@@ -54,6 +54,14 @@ export const PANTHERS_SILVER_HELMET = placed([
   ...PANTHERS_HELMET_DECAL.layers,
 ]);
 
+export const PANTHERS_BLACK_HELMET = placed([
+  ...PANTHERS_SILVER_HELMET.layers.slice(0, 2).map((layer) => ({
+    ...layer,
+    ...(layer.kind === 'fill' ? { fill: layer.fill === 'blue' ? 'silver' : 'blue' } : {}),
+  })),
+  ...PANTHERS_HELMET_DECAL.layers,
+]);
+
 export function panthersShoulderNumbers(fill: string, outline: string): PlacedMark {
   const box = boundsOf(JERSEY_NUMBER_THREE);
   const scale = 45 / (box[3] - box[1]);

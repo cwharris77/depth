@@ -1,13 +1,13 @@
+import { seahawksSleeveNike } from '../marks/equipment';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { anchoredMark } from '../../core/jersey-spec';
 import { seahawksModernCollar } from '../marks/construction';
 import { SEAHAWKS_SHOULDER, SEAHAWKS_SHOULDER_WORDMARK } from '../marks/shoulder';
 
 // The shoulder band, cap and numerals are Seattle's own shapes placed by the shoulder anchors; the
-// feathered collar is Seattle's own geometry. The spec's shoulder and collar primitives have
-// different shapes.
+// feathered trim overlays the shared collar geometry.
 export const SEAHAWKS_JERSEY_NAVY: CompleteJerseySpec = {
-  body: 'navy',
+  body: 'jerseyNavy',
   collar: { style: 'none' },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
@@ -24,7 +24,7 @@ export const SEAHAWKS_JERSEY_NAVY: CompleteJerseySpec = {
       slots: { number: 'wolfGrey', band: 'wolfGrey', cap: 'green' },
       id: 'shoulder',
     }),
-    { paint: 'over', mark: seahawksModernCollar('navy', 'navyNeck', 'green') },
+    { paint: 'over', mark: seahawksModernCollar('jerseyNavy', 'navyNeck', 'green') },
     anchoredMark({
       paint: 'over',
       mark: SEAHAWKS_SHOULDER_WORDMARK,
@@ -32,5 +32,6 @@ export const SEAHAWKS_JERSEY_NAVY: CompleteJerseySpec = {
       slots: { wordmark: 'navy' },
       id: 'shoulder',
     }),
+    { paint: 'over', mark: seahawksSleeveNike('navy') },
   ],
 };
