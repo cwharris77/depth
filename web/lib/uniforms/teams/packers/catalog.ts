@@ -12,7 +12,14 @@ export const PACKERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 1959 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'gold', pants: 'gold', socks: 'green' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'gold',
+          pants: 'gold',
+          pantsNike: 'green',
+          socks: 'green',
+        },
       ],
     },
     {
@@ -24,7 +31,14 @@ export const PACKERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 1959 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'gold', pants: 'gold', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'gold',
+          pants: 'gold',
+          pantsNike: 'green',
+          socks: 'white',
+        },
       ],
     },
     {
@@ -48,7 +62,14 @@ export const PACKERS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 2025 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'white', pants: 'white', socks: 'white' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'white',
+          pants: 'white',
+          pantsNike: 'green',
+          socks: 'white',
+        },
       ],
     },
   ],

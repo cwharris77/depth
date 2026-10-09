@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileParts, fromGeneric, type TeamPartsDefinition } from '../core/parts';
+import { boundsOf } from '../core/marks';
 import { GENERIC_UNIFORM_STYLE } from '../../model';
 
 // The authoring layer's guarantees. The palette-key throw is the important one: without it a
@@ -22,6 +23,46 @@ const base: TeamPartsDefinition = {
 };
 
 describe('compileParts', () => {
+  it('places fixed NFL colors and a palette-colored Nike mark on branded pants only', () => {
+    const def = structuredClone(base);
+    def.kits.home.pantsNike = 'white';
+    def.kits.archive = { helmet: 'plain', jersey: 'plain', pants: 'plain' };
+    const kits = compileParts(def).kits;
+    const layers = kits.home.layers ?? [];
+    expect(layers.find((layer) => layer.id === 'test-pants-plain-nike')).toMatchObject({
+      surface: 'pants',
+      fill: '#FFFFFF',
+      clip: true,
+    });
+    const shield = layers.filter((layer) => layer.id.includes('-pants-plain-nfl-shield-'));
+    expect(shield.length).toBeGreaterThan(3);
+    expect(shield.some((layer) => layer.kind === 'fill' && layer.fill === '#05366B')).toBe(true);
+    const nike = layers.find((layer) => layer.id === 'test-pants-plain-nike');
+    const nikeBox = boundsOf(nike?.d ?? '');
+    const shieldBox = boundsOf(shield[0].d);
+    expect(shieldBox[0]).toBeGreaterThan(176);
+    expect(shieldBox[2]).toBeLessThan(294);
+    expect(nikeBox[0]).toBeGreaterThan(294);
+    expect(nikeBox[2]).toBeLessThan(412);
+    for (const box of [nikeBox, shieldBox]) {
+      expect(box[1]).toBeGreaterThan(807);
+      expect(box[3]).toBeLessThan(909);
+    }
+    expect(kits.archive.layers).toEqual([]);
+  });
+
+  it('does not silently replace an invalid pants logo paint with a team color', () => {
+    const def = structuredClone(base);
+    def.kits.home.pantsNike = 'missing';
+    expect(() => compileParts(def)).toThrow(/unknown palette color "missing"/);
+  });
+
+  it.each(['constructor', 'toString', '__proto__'])('rejects inherited paint name %s', (ref) => {
+    const def = structuredClone(base);
+    def.kits.home.pantsNike = ref;
+    expect(() => compileParts(def)).toThrow(/unknown palette color/);
+  });
+
   it('substitutes palette keys for literal hexes', () => {
     const kit = compileParts(base).kits.home;
     expect(kit.helmetColor).toBe('#001122');

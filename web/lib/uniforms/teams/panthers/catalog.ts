@@ -19,9 +19,17 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'black',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
-        { key: 'blue-pants', label: 'Blue pants', helmet: 'black', pants: 'blue', socks: 'blue' },
+        {
+          key: 'blue-pants',
+          label: 'Blue pants',
+          helmet: 'black',
+          pants: 'blue',
+          pantsNike: 'black',
+          socks: 'blue',
+        },
       ],
     },
     {
@@ -38,6 +46,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'silver',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
         {
@@ -45,6 +54,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'White pants, black socks',
           helmet: 'black',
           pants: 'white',
+          pantsNike: 'black',
           socks: 'black',
         },
         {
@@ -52,6 +62,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'White pants, blue socks',
           helmet: 'silver',
           pants: 'white',
+          pantsNike: 'black',
           socks: 'blue',
         },
         {
@@ -59,6 +70,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'Blue pants, white socks',
           helmet: 'silver',
           pants: 'blue',
+          pantsNike: 'black',
           socks: 'white',
         },
         {
@@ -66,6 +78,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'Blue pants, blue socks',
           helmet: 'silver',
           pants: 'blue',
+          pantsNike: 'black',
           socks: 'blue',
         },
         {
@@ -73,6 +86,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'Silver pants',
           helmet: 'silver',
           pants: 'silver',
+          pantsNike: 'black',
           socks: 'white',
         },
       ],
@@ -91,6 +105,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'Black pants',
           helmet: 'silver',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
         {
@@ -98,6 +113,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'Black helmet',
           helmet: 'black',
           pants: 'black',
+          pantsNike: 'white',
           socks: 'black',
         },
         {
@@ -105,6 +121,7 @@ export const PANTHERS_CATALOG: TeamCatalog = {
           label: 'Silver pants',
           helmet: 'silver',
           pants: 'silver',
+          pantsNike: 'black',
           socks: 'black',
         },
       ],

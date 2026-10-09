@@ -11,7 +11,15 @@ export const COMMANDERS_CATALOG: TeamCatalog = {
       colors: { primary: '#5A1414', secondary: '#FFB612', accent: '#FFB612' },
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 2022 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'burgundy', pants: 'burgundy' }],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'burgundy',
+          pants: 'burgundy',
+          pantsNike: 'white',
+        },
+      ],
     },
     {
       slug: 'away',
@@ -21,7 +29,15 @@ export const COMMANDERS_CATALOG: TeamCatalog = {
       colors: { primary: '#FFFFFF', secondary: '#5A1414', accent: '#FFB612' },
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 2022 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'burgundy', pants: 'white' }],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'burgundy',
+          pants: 'white',
+          pantsNike: 'burgundy',
+        },
+      ],
     },
     {
       slug: '70s-burgundy',
@@ -31,7 +47,15 @@ export const COMMANDERS_CATALOG: TeamCatalog = {
       colors: { primary: '#5A1414', secondary: '#FFB612', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [{ from: 1972 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'burgundy', pants: 'burgundy' }],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'burgundy',
+          pants: 'burgundy',
+          pantsNike: 'white',
+        },
+      ],
     },
   ],
 };

@@ -88,13 +88,17 @@ describe('team uniform definitions', () => {
     }
   );
 
-  it('resolves the Seahawks navy home construction without protected marks', () => {
+  it('resolves the Seahawks navy home construction with pants branding', () => {
     const definition = getTeamUniformDefinition('seahawks');
     const home = definition?.kits.home;
     const layerIds = home?.layers?.map((layer) => layer.id);
 
     // Team layers retain their paint order; the pant stripe stops at the hem.
-    expect(layerIds?.filter((id) => id.startsWith('seahawks-'))).toEqual([
+    expect(
+      layerIds?.filter(
+        (id) => id.startsWith('seahawks-') && !id.includes('-nfl-shield-') && !id.endsWith('-nike')
+      )
+    ).toEqual([
       'seahawks-helmet-center-stripe',
       // Grey wing paints under the keyline; it was missing from the pre-2026-09-03 decal.
       'seahawks-helmet-hawk-grey',
@@ -118,8 +122,13 @@ describe('team uniform definitions', () => {
       'seahawks-pants-navy-stripe-0-right',
     ]);
     expect(layerIds?.some((id) => id.startsWith('generic-'))).toBe(false);
-    // League shields and sponsor marks stay out of every kit.
-    expect(layerIds?.some((id) => /shield|sponsor/.test(id))).toBe(false);
+    expect(home?.layers?.find((layer) => layer.id === 'seahawks-pants-navy-nike')).toMatchObject({
+      fill: '#69BE28',
+      surface: 'pants',
+    });
+    expect(
+      home?.layers?.find((layer) => layer.id === 'seahawks-pants-navy-nfl-shield-1')
+    ).toMatchObject({ fill: '#05366B', surface: 'pants' });
 
     const model = resolveUniformModel(definition, 'home', SEAHAWKS_COLORS);
     expect(model).toMatchObject({

@@ -218,7 +218,7 @@ function collarLayers(prefix: string, spec: JerseySpec): PartLayer[] {
           interior: inside ?? spec.body,
           edge: color,
           inset: trim ?? color,
-          placket: spec.body,
+          placket: color,
           lining,
           backBar,
         },

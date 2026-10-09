@@ -14,7 +14,14 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       legacyAccent: AQUA_ACCENT,
       periods: [{ from: 2018 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'white', pants: 'white', socks: 'teal' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'white',
+          pants: 'white',
+          pantsNike: 'teal',
+          socks: 'teal',
+        },
       ],
     },
     {
@@ -26,8 +33,21 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       legacyAccent: AQUA_ACCENT,
       periods: [{ from: 2018 }],
       combinations: [
-        { key: 'standard', label: 'Teal pants', helmet: 'white', pants: 'teal', socks: 'teal' },
-        { key: 'white-pants', label: 'White pants', helmet: 'white', pants: 'white' },
+        {
+          key: 'standard',
+          label: 'Teal pants',
+          helmet: 'white',
+          pants: 'teal',
+          pantsNike: 'white',
+          socks: 'teal',
+        },
+        {
+          key: 'white-pants',
+          label: 'White pants',
+          helmet: 'white',
+          pants: 'white',
+          pantsNike: 'teal',
+        },
       ],
     },
     {
@@ -38,7 +58,9 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       colors: { primary: '#101820', secondary: '#008E97', accent: '#FC4C02' },
       legacyAccent: AQUA_ACCENT,
       periods: [{ from: 2025 }],
-      combinations: [{ key: 'standard', label: 'Standard', helmet: 'navy', pants: 'navy' }],
+      combinations: [
+        { key: 'standard', label: 'Standard', helmet: 'navy', pants: 'navy', pantsNike: 'white' },
+      ],
     },
     {
       slug: '1972-throwback',
@@ -49,7 +71,13 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       legacyAccent: AQUA_ACCENT,
       periods: [{ from: 1966 }],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'white1972', pants: 'white1972' },
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'white1972',
+          pants: 'white1972',
+          pantsNike: 'teal',
+        },
       ],
     },
   ],
