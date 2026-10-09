@@ -216,6 +216,22 @@ private func season(
     #expect(PlayerStatLedger.seasonCountLabel(5) == "REG · 5 SEASONS")
 }
 
+@Test func ledgerHighlightsTheOpenSeasonNotTheNewest() {
+    // Newest first, as the ledger renders it; 2007 has a row per team after a trade.
+    let rows = [season(2010), season(2007, team: "BUF"), season(2007, team: "MIA"), season(2005)]
+    func highlighted(_ open: Int?) -> [Int] {
+        rows.enumerated().compactMap { index, row in
+            PlayerStatLedger.isHighlighted(row, index: index, highlightedSeason: open)
+                ? index : nil
+        }
+    }
+    #expect(highlighted(nil) == [0])
+    #expect(highlighted(2005) == [3])
+    #expect(highlighted(2007) == [1, 2])
+    // A season the player has no row for highlights nothing rather than a wrong year.
+    #expect(highlighted(2006).isEmpty)
+}
+
 @Test func ledgerRowLabelPairsEveryNumberWithItsStat() {
     let row = season(2025, passingYards: 4_118, passingTds: 31, passingInterceptions: 9)
     #expect(

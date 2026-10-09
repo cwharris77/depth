@@ -30,6 +30,9 @@ struct PlayerProfileView: View {
     let kitColors: JerseyColors?
     let depthContext: PlayerDepthContext?
     let isHistorical: Bool
+    /// The historical season the roster is open to, so SEASON STATS highlights that year
+    /// rather than the player's latest one. Nil highlights the newest season.
+    let highlightedSeason: Int?
     private let repository: DepthRepository
 
     /// The player on screen. DEPTH CHART row taps replace it in place rather than pushing
@@ -43,13 +46,15 @@ struct PlayerProfileView: View {
         kitColors: JerseyColors? = nil,
         repository: DepthRepository,
         depthContext: PlayerDepthContext? = nil,
-        isHistorical: Bool = false
+        isHistorical: Bool = false,
+        highlightedSeason: Int? = nil
     ) {
         self.team = team
         self.kitColors = kitColors
         self.repository = repository
         self.depthContext = depthContext
         self.isHistorical = isHistorical
+        self.highlightedSeason = highlightedSeason
         _currentPlayer = State(initialValue: player)
     }
 
@@ -61,6 +66,7 @@ struct PlayerProfileView: View {
             repository: repository,
             depthContext: depthContext,
             isHistorical: isHistorical,
+            highlightedSeason: highlightedSeason,
             onSelectPlayer: { currentPlayer = $0 }
         )
         // A fresh identity per player resets the stats view model, section open state, and
@@ -75,6 +81,7 @@ private struct PlayerProfileScreen: View {
     let kitColors: JerseyColors?
     let depthContext: PlayerDepthContext?
     let isHistorical: Bool
+    let highlightedSeason: Int?
     let onSelectPlayer: (Player) -> Void
 
     @State private var viewModel: PlayerProfileViewModel
@@ -107,6 +114,7 @@ private struct PlayerProfileScreen: View {
         repository: DepthRepository,
         depthContext: PlayerDepthContext?,
         isHistorical: Bool,
+        highlightedSeason: Int?,
         onSelectPlayer: @escaping (Player) -> Void
     ) {
         self.player = player
@@ -114,6 +122,7 @@ private struct PlayerProfileScreen: View {
         self.kitColors = kitColors
         self.depthContext = depthContext
         self.isHistorical = isHistorical
+        self.highlightedSeason = highlightedSeason
         self.onSelectPlayer = onSelectPlayer
         _viewModel = State(
             initialValue: PlayerProfileViewModel(
@@ -478,6 +487,7 @@ private struct PlayerProfileScreen: View {
                         stats: viewModel.stats,
                         position: player.position,
                         currentTeamAbbrev: team?.abbrev,
+                        highlightedSeason: highlightedSeason,
                         inProgressSeason: viewModel.inProgressSeason,
                         mark: markColor
                     )

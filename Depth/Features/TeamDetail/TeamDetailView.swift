@@ -312,7 +312,9 @@ struct TeamDetailView: View {
                         isCustom: !historyViewModel.isHistorical
                             && confirmedOrders[player.position] != nil
                     ),
-                    isHistorical: historyViewModel.isHistorical
+                    isHistorical: historyViewModel.isHistorical,
+                    highlightedSeason: historyViewModel.isHistorical
+                        ? historyViewModel.selectedSeason.year : nil
                 )
             }
             // Reorder is handled in edit mode: a field tap

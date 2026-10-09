@@ -17,9 +17,6 @@ import { normalizePlayerSearchQuery } from '@/lib/utils/search/search';
 // scripted burst is stopped cold.
 const searchLimiter = createSlidingWindowLimiter({ windowMs: 60_000, max: 180 });
 
-// Exported for the route test to reset the window between cases (search-route.test.ts).
-export const searchRateLimiter = searchLimiter;
-
 export async function GET(request: NextRequest) {
   // Vercel fills x-forwarded-for with the client's address; the first entry is the
   // origin, later ones are proxy hops. Absent the header every client shares the

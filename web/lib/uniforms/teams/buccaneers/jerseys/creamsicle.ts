@@ -1,11 +1,17 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { buccaneersCreamCuff } from '../marks/construction';
 
-// A red, white, red three-band cuff with no collar trim, and white numerals
-// ringed crimson.
 export const BUCCANEERS_JERSEY_CREAMSICLE: CompleteJerseySpec = {
   body: 'creamOrange',
-  collar: { style: 'none' },
+  collar: {
+    style: 'inset-v',
+    color: 'creamOrange',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'creamOrange',
+    outline: true,
+  },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
   shoulderNumber: 'none',
