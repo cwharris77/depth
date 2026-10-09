@@ -20,8 +20,13 @@ struct TeamStatsView: View {
     /// instead — same store the tab tint and Schedule read.
     private let currentTeamStore: CurrentTeamStore
 
-    init(teamId: String, repository: DepthRepository, currentTeamStore: CurrentTeamStore) {
-        _viewModel = State(initialValue: TeamStatsViewModel(teamId: teamId, repository: repository))
+    /// Takes its view model rather than building one so the embedding team page can keep
+    /// the selected season alive across page switches.
+    init(
+        viewModel: TeamStatsViewModel, repository: DepthRepository,
+        currentTeamStore: CurrentTeamStore
+    ) {
+        _viewModel = State(initialValue: viewModel)
         self.repository = repository
         self.currentTeamStore = currentTeamStore
     }

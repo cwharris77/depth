@@ -118,6 +118,19 @@ private actor StatsRepositoryFake: DepthRepository {
     #expect(await viewModel.loadState == .loaded)
 }
 
+// The team page re-runs `load()` each time Stats reappears after a page switch; the
+// chosen season must survive it.
+@Test func reloadAfterPageSwitchKeepsSelectedSeason() async {
+    let repository = StatsRepositoryFake(page: statsPage())
+    let viewModel = await TeamStatsViewModel(teamId: "bills", repository: repository)
+    await viewModel.load()
+    await viewModel.selectSeason(2023)
+
+    await viewModel.load()
+
+    #expect(await viewModel.selectedSeason == 2023)
+}
+
 /// Roster leaders are re-derived per season tab (web parity: getRosterLeaders takes a
 /// season param, not pinned to the roster's newest season). `load()` fans the read out
 /// once per season up front; switching tabs afterward reads the cached-by-season result

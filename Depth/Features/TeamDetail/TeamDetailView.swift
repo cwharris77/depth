@@ -90,6 +90,11 @@ struct TeamDetailView: View {
     /// opponent id, matching web's `?a=<teamId>&b=<opponentId>` compare-link params.
     private let onOpenCompare: (String, String) -> Void
     @State private var historyViewModel: HistoryViewModel
+    /// Owned here rather than by the pages, which `.id(page)` rebuilds on every switch, so
+    /// Schedule's season and phase and Stats' season survive a trip to another page. A team
+    /// switch rebuilds this view (DepthChartsTab's `.id(teamId)`), resetting them.
+    @State private var scheduleViewModel: ScheduleViewModel
+    @State private var statsViewModel: TeamStatsViewModel
     /// Refined with the resolved kit color (`resolvedUiAccentHex`)
     /// whenever it changes, so Stats/Schedule (which read this same store) follow a
     /// picked kit the way the roster field and tab tint already do.
@@ -124,6 +129,10 @@ struct TeamDetailView: View {
             initialValue: preferences.uniformSelection(for: viewModel.teamId))
         _historyViewModel = State(
             initialValue: HistoryViewModel(teamId: viewModel.teamId, repository: repository))
+        _scheduleViewModel = State(
+            initialValue: ScheduleViewModel(teamId: viewModel.teamId, repository: repository))
+        _statsViewModel = State(
+            initialValue: TeamStatsViewModel(teamId: viewModel.teamId, repository: repository))
     }
 
     private var navigationTitleText: String {
@@ -714,12 +723,12 @@ struct TeamDetailView: View {
             }
         case .stats:
             TeamStatsView(
-                teamId: viewModel.teamId, repository: repository, currentTeamStore: currentTeamStore
+                viewModel: statsViewModel, repository: repository,
+                currentTeamStore: currentTeamStore
             )
         case .schedule:
             ScheduleView(
-                teamId: viewModel.teamId,
-                repository: repository,
+                viewModel: scheduleViewModel,
                 currentTeamStore: currentTeamStore,
                 isEmbedded: true,
                 onSelectOpponent: { opponent in
