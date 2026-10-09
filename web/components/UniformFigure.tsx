@@ -397,8 +397,36 @@ export default function UniformFigure({
             {sockLayers.map((layer) => (
               <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
             ))}
+            <g
+              data-detail="pads"
+              clipPath={`url(#${uid}-pants)`}
+              fill="none"
+              strokeWidth={4}
+              opacity={0.7}>
+              {[undefined, 'translate(588 0) scale(-1 1)'].map((transform, index) => (
+                <g key={index} transform={transform}>
+                  <path
+                    transform="translate(-20 0)"
+                    d="M174,929 Q195,926 215,930 Q235,933 236,951 L225,1039 Q223,1054 209,1059 Q193,1061 178,1060"
+                  />
+                  <path d="M147,1111 Q177,1102 205,1109 M148,1174 Q174,1182 199,1177 Q211,1173 213,1160" />
+                </g>
+              ))}
+            </g>
             <Geo part="shoeL" shared={sharedDefs} fill="#ffffff" />
             <Geo part="shoeR" shared={sharedDefs} fill="#ffffff" />
+            <g data-detail="laces" fill="none" strokeWidth={2.5}>
+              {[undefined, 'translate(588 0) scale(-1 1)'].map((transform, index) => (
+                <g key={index} transform={transform}>
+                  <path d="M130,1472 Q153,1465 179,1472 L183,1518 Q159,1527 121,1520 Z" />
+                  <path d="M130,1479 L176,1487 M176,1479 L128,1487 M128,1491 L178,1499 M178,1491 L125,1499 M125,1503 L180,1511 M180,1503 L123,1511" />
+                  <path
+                    d="M104,1542 Q148,1530 188,1541 M101,1553 Q148,1542 191,1552"
+                    opacity={0.6}
+                  />
+                </g>
+              ))}
+            </g>
           </>
         )}
         {hasJersey && (
