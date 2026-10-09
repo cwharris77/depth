@@ -27,6 +27,7 @@ enum TeamStatsLens: String, CaseIterable, Identifiable, Hashable {
 /// selected season, so switching lenses is pure local state with no refetch.
 struct TeamStatsReferenceView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var lens: TeamStatsLens
     let stats: TeamSeasonStats
     let ranks: TeamStatsRanks?
@@ -87,7 +88,9 @@ struct TeamStatsReferenceView: View {
                     ForEach(TeamStatsLens.allCases) { item in
                         lensTab(item) {
                             lens = item
-                            withAnimation(DesignTokens.Motion.selection) {
+                            withAnimation(
+                                DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)
+                            ) {
                                 proxy.scrollTo(item, anchor: .center)
                             }
                         }

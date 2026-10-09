@@ -682,7 +682,7 @@ private struct PlayerProfileScreen: View {
 
     private func knownForScopeButton(_ claim: PlayerKnownForClaim) -> some View {
         Button {
-            withAnimation(reduceMotion ? nil : DesignTokens.Motion.feedback) {
+            withAnimation(DesignTokens.Motion.feedback) {
                 knownForScopeOpen.toggle()
             }
         } label: {
@@ -707,7 +707,7 @@ private struct PlayerProfileScreen: View {
         _ title: String, meta: String?, isOpen: Binding<Bool>, identifier: String
     ) -> some View {
         Button {
-            withAnimation(reduceMotion ? nil : DesignTokens.Motion.selection) {
+            withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
                 isOpen.wrappedValue.toggle()
             }
         } label: {

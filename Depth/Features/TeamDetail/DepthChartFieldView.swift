@@ -222,7 +222,7 @@ struct DepthChartFieldView: View {
                 .id(unit)
                 .transition(.opacity)
                 .animation(
-                    reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.formation,
+                    DesignTokens.Motion.formation.respectingReduceMotion(reduceMotion),
                     value: formation
                 )
             }
@@ -503,7 +503,7 @@ private struct PlayerDotWiggleModifier: ViewModifier {
     /// this dot back to 0 and replaces the repeating animation with a one-shot.
     private func updateAnimation() {
         guard let motion else {
-            withAnimation(.easeInOut(duration: 0.12)) {
+            withAnimation(DesignTokens.Motion.feedback) {
                 wiggleAngle = 0
             }
             return
