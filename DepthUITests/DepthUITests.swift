@@ -53,6 +53,9 @@ final class DepthUITests: XCTestCase {
 
     func testAppLaunches() throws {
         let app = XCUIApplication()
+        // Still the configured live backend. The argument only marks the process as a UI
+        // test, which keeps it from asking for notification permission or a device token.
+        app.launchArguments = [XCUIApplication.liveBackendSmokeArgument]
         app.launch()
     }
 

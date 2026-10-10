@@ -123,22 +123,27 @@ enum DepthEnvironment {
         #endif
         return SupabaseAppEventsRecorder(client: supabaseClient)
     }()
-    static let pushSubscriptionService: any PushSubscriptionServicing = {
+    /// True when a UI test launched this process. Nothing in the process environment
+    /// tells a UI-test launch apart from an ordinary one, so the signal is the launch
+    /// arguments: every UI-test launch passes at least one `UI_TESTING_` argument,
+    /// including the suites that run against a live backend. Always false in Release,
+    /// where UITEST_FIXTURES is absent, so a shipped binary cannot be switched by an
+    /// argument.
+    static let isUITestProcess: Bool = {
         #if UITEST_FIXTURES
-            // A fixture run has no backend to register a device with.
-            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
-                return NoOpPushSubscriptionService()
-            }
+            return ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("UI_TESTING_") }
+        #else
+            return false
         #endif
+    }()
+    static let pushSubscriptionService: any PushSubscriptionServicing = {
+        // A UI test must never register a device, whichever backend it runs against.
+        if isUITestProcess { return NoOpPushSubscriptionService() }
         return SupabasePushSubscriptionService(client: supabaseClient)
     }()
     static let notificationAuthorizer: any NotificationAuthorizing = {
-        #if UITEST_FIXTURES
-            // UI tests must never raise the system permission dialog.
-            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
-                return NoOpNotificationAuthorizer()
-            }
-        #endif
+        // A UI test must never raise the system permission dialog or ask for a token.
+        if isUITestProcess { return NoOpNotificationAuthorizer() }
         return SystemNotificationAuthorizer()
     }()
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)

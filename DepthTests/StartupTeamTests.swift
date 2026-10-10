@@ -126,3 +126,21 @@ import Testing
         ) == "chiefs"
     )
 }
+
+@Test func aRoutedTeamOutranksTheFavoriteOnceTheListLoads() {
+    #expect(
+        StartupTeam.resolve(
+            favoriteTeamId: "seahawks", startOnFavorite: true, lastTeamId: "bills",
+            routedTeamId: "bills", validIds: ["bills", "seahawks"]) == "bills")
+}
+
+@Test func aRoutedTeamThatIsNotALiveTeamFallsThroughToTheUsualOrder() {
+    #expect(
+        StartupTeam.resolve(
+            favoriteTeamId: "seahawks", startOnFavorite: true, lastTeamId: "oilers",
+            routedTeamId: "oilers", validIds: ["bills", "seahawks"]) == "seahawks")
+    #expect(
+        StartupTeam.resolve(
+            lastTeamId: "oilers", routedTeamId: "oilers", validIds: ["bills", "seahawks"])
+            == StartupTeam.defaultTeamId)
+}

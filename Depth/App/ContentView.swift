@@ -102,6 +102,7 @@ struct ContentView: View {
             // every launch after the first (or once the tutorial's been skipped or
             // finished) — see OnboardingController.startIfNeeded.
             onboarding.startIfNeeded()
+            await DepthEnvironment.notificationSettings.refresh()
         }
         // Re-gate on foreground. A server-side minimum-build flip has to reach
         // apps that are already running, not just cold launches — without this, a
@@ -109,8 +110,17 @@ struct ContentView: View {
         // keeps reading a schema it may be too old for. `check()` is cheap (one singleton
         // row) and can only ever move the gate toward blocked.
         .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                DepthEnvironment.preferences.hasFinishedFirstSession = true
+            }
             guard phase == .active else { return }
-            Task { await updateGate.check() }
+            Task {
+                await updateGate.check()
+                guard updateGate.state == .allowed else { return }
+                // The system permission and the APNs token can both change while the app
+                // is in the background. Inert while the feature is switched off.
+                await DepthEnvironment.notificationSettings.refresh()
+            }
         }
         .modifier(UITestingDynamicTypeOverride())
     }

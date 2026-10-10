@@ -32,6 +32,10 @@ extension XCUIApplication {
     /// PerformanceUITests' cache journeys, the bare `testAppLaunches`) simply omits it.
     static let fixtureBackendArgument = "UI_TESTING_FIXTURE_BACKEND"
 
+    /// Marks a launch that otherwise passes no argument as a UI test. The app treats any
+    /// `UI_TESTING_` argument as that signal; this one changes nothing else.
+    static let liveBackendSmokeArgument = "UI_TESTING_LIVE_SMOKE"
+
     /// Clean slate + hermetic fixture backend — the standard launch for a journey that
     /// should not depend on a live database.
     static let hermeticLaunchArguments = ["UI_TESTING_RESET_STATE", fixtureBackendArgument]

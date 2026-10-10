@@ -39,6 +39,9 @@ struct DepthChartsTab: View {
     /// chart" from the uniform kit sheet — applied once on appear so the
     /// depth chart shows the originating kit, not whatever was last persisted.
     @State private var requestedUniformId: String?
+    /// The team last opened by a route request. Lets the launch-time re-resolve below
+    /// keep a team the user asked for instead of replacing it with the favorite.
+    @State private var routedTeamId: String?
 
     init(
         repository: CachingDepthRepository,
@@ -135,15 +138,20 @@ struct DepthChartsTab: View {
                 favoriteTeamId: userSettingsStore.favoriteTeamId,
                 startOnFavorite: userSettingsStore.startOnFavorite,
                 lastTeamId: teamId,
+                routedTeamId: routedTeamId == teamId ? routedTeamId : nil,
                 validIds: teams.map(\.id)
             )
         }
         // Consumed (not just read) so a re-render for an unrelated reason can't re-apply
         // a request the user has since navigated away from — see TeamRouteStore.
-        .onChange(of: teamRouteStore.requestedTeamId) { _, _ in
+        // `initial: true` because a request can be made before this view exists: a
+        // notification tap that cold-starts the app is delivered while the tree is still
+        // being built, and a change handler alone would never see a value already set.
+        .onChange(of: teamRouteStore.requestedTeamId, initial: true) { _, _ in
             let (teamId, uniformId) = teamRouteStore.consume()
             if let teamId {
                 self.teamId = teamId
+                self.routedTeamId = teamId
                 self.requestedUniformId = uniformId
             }
         }
