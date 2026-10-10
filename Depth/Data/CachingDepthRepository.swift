@@ -280,6 +280,28 @@ actor CachingDepthRepository: DepthRepository {
         Task { try? await self.refreshUniformList() }
     }
 
+    // MARK: - User-initiated refresh
+
+    // Each of these goes straight to the underlying repository and stores the result,
+    // sharing the in-flight dedup of the background refreshes. A failure throws without
+    // touching the stored row, so a pull-to-refresh that fails keeps the last good data.
+
+    func freshTeams() async throws -> [Team] {
+        try await refreshTeamList()
+    }
+
+    func freshTeamSnapshot(teamId: String) async throws -> TeamSnapshot {
+        try await refreshSnapshot(teamId: teamId)
+    }
+
+    func freshTeamStats(teamId: String) async throws -> TeamStatsPage {
+        try await refreshStats(teamId: teamId)
+    }
+
+    func freshTeamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        try await refreshSchedule(teamId: teamId, season: season)
+    }
+
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {
         now.timeIntervalSince(cachedAt) > staleAfter
     }

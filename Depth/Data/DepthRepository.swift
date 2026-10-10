@@ -58,9 +58,28 @@ protocol DepthRepository: Sendable {
     /// known value and
     /// fall back to it when this throws.
     func appConfig() async throws -> AppConfig
+
+    /// Network-first variants of the cached reads, for a user-initiated refresh. A caching
+    /// repository fetches from its source regardless of how fresh its stored copy is and
+    /// stores the result; on failure it throws and leaves the stored copy untouched so the
+    /// caller can keep showing it. Repositories with no cache fall back to the ordinary read.
+    func freshTeams() async throws -> [Team]
+    func freshTeamSnapshot(teamId: String) async throws -> TeamSnapshot
+    func freshTeamStats(teamId: String) async throws -> TeamStatsPage
+    func freshTeamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule
 }
 
 extension DepthRepository {
+    func freshTeams() async throws -> [Team] { try await teams() }
+    func freshTeamSnapshot(teamId: String) async throws -> TeamSnapshot {
+        try await teamSnapshot(teamId: teamId)
+    }
+    func freshTeamStats(teamId: String) async throws -> TeamStatsPage {
+        try await teamStats(teamId: teamId)
+    }
+    func freshTeamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        try await teamSchedule(teamId: teamId, season: season)
+    }
     func recentParticipation(teamId: String) async throws -> RecentParticipation? { nil }
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { nil }

@@ -55,7 +55,7 @@ struct ScheduleView: View {
         }
         .onAppear { DepthEnvironment.onboarding.pageDidAppear(.schedule) }
         .task { await viewModel.load() }
-        .refreshable { await viewModel.load() }
+        .refreshable { await viewModel.load(forceRefresh: true) }
         .sheet(isPresented: $showSeasonPicker) {
             // `defaultSeason != nil` rather than a binding: the value itself is unused here
             // (seasonOptions already derives from it and is empty without it), it is only the

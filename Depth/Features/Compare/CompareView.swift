@@ -44,7 +44,7 @@ struct CompareView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .background(DesignTokens.Colors.bg)
                 .task { await viewModel.load() }
-                .refreshable { await viewModel.load() }
+                .refreshable { await viewModel.load(forceRefresh: true) }
                 .toolbar {
                     depthTopNavToolbar(teamPill: { EmptyView() }) {
                         showAccount = true

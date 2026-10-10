@@ -119,6 +119,8 @@ private actor FakeDepthRepository: DepthRepository {
     }
 
     func historyCallCount() -> Int { seasonCallCount }
+
+    func teamsCalls() -> Int { teamsCallCount }
 }
 
 private func inMemoryContainer() -> ModelContainer {
@@ -131,9 +133,9 @@ private func inMemoryStore() -> CachedSnapshotStore {
     CachedSnapshotStore(modelContainer: inMemoryContainer())
 }
 
-private func team(id: String = "bills") -> Team {
+private func team(id: String = "bills", city: String = "Buffalo") -> Team {
     Team(
-        id: id, city: "Buffalo", name: "Bills", abbrev: "BUF", conference: "AFC", division: "East",
+        id: id, city: city, name: "Bills", abbrev: "BUF", conference: "AFC", division: "East",
         colors: TeamColors(primary: "#00338d", secondary: "#d50a0a", accent: "#d50a0a"),
         logo: nil, logoDark: nil
     )
@@ -596,4 +598,94 @@ private func uniformListing(id: String = "bills-home") -> UniformListing {
     await underlying.setUniformsResult(.failure(DepthError.notFound))
     let cached = try await repository.listUniforms()
     #expect(cached.count == 1)
+}
+
+// MARK: - User-initiated refresh (network-first, bypasses the cache window)
+
+@Suite struct CachingDepthRepositoryForcedRefreshTests {
+    private static func staleSnapshot() -> TeamSnapshot { snapshot(teamId: "bills") }
+
+    private static func changedSnapshot() -> TeamSnapshot {
+        TeamSnapshot(
+            team: team(id: "bills", city: "Orchard Park"), players: [], specialTeams: [],
+            uniforms: [])
+    }
+
+    @Test func freshTeamSnapshotBypassesAFreshCacheRowAndStoresTheResult() async throws {
+        let store = inMemoryStore()
+        try await store.saveTeamSnapshot(Self.staleSnapshot(), teamId: "bills", cachedAt: Date())
+        let underlying = FakeDepthRepository(
+            snapshotResults: ["bills": .success(Self.changedSnapshot())])
+        let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+        let result = try await repository.freshTeamSnapshot(teamId: "bills")
+
+        #expect(result.team.city == "Orchard Park")
+        #expect(await underlying.callCount(forTeam: "bills") == 1)
+        #expect(try await store.teamSnapshot(teamId: "bills")?.team.city == "Orchard Park")
+    }
+
+    @Test func freshTeamSnapshotFailureLeavesTheLastGoodRowInPlace() async throws {
+        let store = inMemoryStore()
+        try await store.saveTeamSnapshot(Self.staleSnapshot(), teamId: "bills", cachedAt: Date())
+        let underlying = FakeDepthRepository(
+            snapshotResults: ["bills": .failure(DepthError.notFound)])
+        let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+        await #expect(throws: DepthError.self) {
+            _ = try await repository.freshTeamSnapshot(teamId: "bills")
+        }
+        #expect(try await store.teamSnapshot(teamId: "bills")?.team.city == "Buffalo")
+    }
+
+    @Test func freshTeamStatsBypassesTheTTLWindowAndStoresTheResult() async throws {
+        let store = inMemoryStore()
+        try await store.saveTeamStats(statsPage(), teamId: "bills", cachedAt: Date())
+        let changed = TeamStatsPage(
+            team: team(id: "bills"), seasons: [], upcomingSeason: nil, currentSeason: 2027)
+        let underlying = FakeDepthRepository(statsResults: ["bills": .success(changed)])
+        let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+        let result = try await repository.freshTeamStats(teamId: "bills")
+
+        #expect(result.currentSeason == 2027)
+        #expect(await underlying.statsCallCount(forTeam: "bills") == 1)
+        #expect(try await store.teamStats(teamId: "bills")?.currentSeason == 2027)
+    }
+
+    @Test func freshTeamScheduleBypassesTheTTLWindowAndStoresTheResult() async throws {
+        let store = inMemoryStore()
+        try await store.saveTeamSchedule(
+            schedule(season: 2026), teamId: "bills", season: 2026, cachedAt: Date())
+        let changed = TeamSchedule(
+            season: 2026,
+            games: [
+                ScheduleGame(
+                    week: 1, isBye: false, date: "2026-09-13", isHome: true,
+                    opponent: team(id: "jets"), teamScore: 31, opponentScore: 17, result: .win
+                )
+            ])
+        let underlying = FakeDepthRepository(
+            scheduleResults: [scheduleCacheKey(teamId: "bills", season: 2026): .success(changed)])
+        let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+        let result = try await repository.freshTeamSchedule(teamId: "bills", season: 2026)
+
+        #expect(result.games[0].teamScore == 31)
+        #expect(await underlying.scheduleCallCount(teamId: "bills", season: 2026) == 1)
+    }
+
+    @Test func freshTeamsBypassesTheCachedListAndStoresTheResult() async throws {
+        let store = inMemoryStore()
+        try await store.saveTeamList([team(id: "bills")], cachedAt: Date())
+        let underlying = FakeDepthRepository(
+            teamsResult: .success([team(id: "bills"), team(id: "jets")]))
+        let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+        let result = try await repository.freshTeams()
+
+        #expect(result.map(\.id) == ["bills", "jets"])
+        #expect(await underlying.teamsCalls() == 1)
+        #expect(try await store.teamList()?.teams.count == 2)
+    }
 }

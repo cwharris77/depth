@@ -243,7 +243,7 @@ struct TeamListView: View {
             .listStyle(.plain)
             .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
-            .refreshable { await viewModel.load() }
+            .refreshable { await viewModel.load(forceRefresh: true) }
         }
     }
 

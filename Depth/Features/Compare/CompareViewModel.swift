@@ -309,11 +309,18 @@ final class CompareViewModel {
             depthChart: snapshot.depthChart)
     }
 
-    func load() async {
+    /// `forceRefresh` is the pull-to-refresh path: the team list and both resolved sides read
+    /// through the network instead of the cache window, and a failed read keeps what is
+    /// already shown.
+    func load(forceRefresh: Bool = false) async {
         // A refresh over loaded content keeps it on screen until the reload resolves.
-        if loadState != .loaded { loadState = .loading }
+        let keepsContent = loadState == .loaded
+        if !keepsContent { loadState = .loading }
         do {
-            allTeams = try await repository.teams()
+            allTeams =
+                forceRefresh
+                ? try await repository.freshTeams()
+                : try await repository.teams()
             loadState = .loaded
             // Apply the schedule-card preselection once teams are known —
             // mirrors web's compare page resolving both a/b query params unconditionally
@@ -323,10 +330,15 @@ final class CompareViewModel {
                 await pickTeam(preselectedTeamIds.a, into: .a)
                 await pickTeam(preselectedTeamIds.b, into: .b)
             }
+            if forceRefresh {
+                for teamId in [teamA?.id, teamB?.id].compactMap({ $0 }) {
+                    await resolveSide(teamId, forceRefresh: true)
+                }
+            }
         } catch let error as DepthError {
-            loadState = .failed(error)
+            if !keepsContent { loadState = .failed(error) }
         } catch {
-            loadState = .failed(.server("\(error)"))
+            if !keepsContent { loadState = .failed(.server("\(error)")) }
         }
     }
 
@@ -345,24 +357,31 @@ final class CompareViewModel {
 
     /// Resolves one side's stats + snapshot once its team is known. A read failure
     /// degrades that side (dashes / no players) rather than failing the page.
-    private func resolveSide(_ teamId: String) async {
+    private func resolveSide(_ teamId: String, forceRefresh: Bool = false) async {
         resolvingTeamIds.insert(teamId)
         defer { resolvingTeamIds.remove(teamId) }
 
         // Stats and roster are independently optional. Resolve them concurrently, then
         // retain every successful result so one absent feed never blanks the other.
-        async let stats = try? repository.teamStats(teamId: teamId)
-        async let snapshot = try? repository.teamSnapshot(teamId: teamId)
+        async let stats =
+            forceRefresh
+            ? try? repository.freshTeamStats(teamId: teamId)
+            : try? repository.teamStats(teamId: teamId)
+        async let snapshot =
+            forceRefresh
+            ? try? repository.freshTeamSnapshot(teamId: teamId)
+            : try? repository.teamSnapshot(teamId: teamId)
         let (page, snap) = await (stats, snapshot)
 
+        // A failed forced refresh keeps the side already on screen instead of degrading it.
         if let page {
             statsPages[teamId] = page
-        } else {
+        } else if !forceRefresh {
             statsPages.removeValue(forKey: teamId)
         }
         if let snap {
             snapshots[teamId] = snap
-        } else {
+        } else if !forceRefresh {
             snapshots.removeValue(forKey: teamId)
         }
     }

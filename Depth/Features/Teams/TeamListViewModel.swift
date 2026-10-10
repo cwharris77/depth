@@ -43,17 +43,24 @@ final class TeamListViewModel {
         }
     }
 
-    func load() async {
-        // A refresh over loaded content keeps it on screen until the reload resolves.
-        if loadState != .loaded { loadState = .loading }
+    /// `forceRefresh` is the pull-to-refresh path: it reads through the network instead of
+    /// the cached list.
+    func load(forceRefresh: Bool = false) async {
+        // A refresh over loaded content keeps it on screen until the reload resolves, and
+        // keeps it if the reload fails.
+        let keepsContent = loadState == .loaded
+        if !keepsContent { loadState = .loading }
         do {
-            teams = try await repository.teams()
+            teams =
+                forceRefresh
+                ? try await repository.freshTeams()
+                : try await repository.teams()
             loadState = .loaded
         } catch let error as DepthError {
-            loadState = .failed(error)
+            if !keepsContent { loadState = .failed(error) }
             events.record(.error(category: error.telemetryCategory))
         } catch {
-            loadState = .failed(.server("\(error)"))
+            if !keepsContent { loadState = .failed(.server("\(error)")) }
             events.record(.error(category: "server"))
         }
     }
