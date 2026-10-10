@@ -138,6 +138,8 @@ async function main() {
 
   let rowsWritten = 0;
   const dropped: Drop[] = [];
+  // Depth-chart rows per code that no position table knows, across every season run.
+  const unmappedDepthChartCodes: Record<string, number> = {};
   const allRows: RosterHistoryInsert[] = [];
 
   for (const season of seasons) {
@@ -149,9 +151,12 @@ async function main() {
           ? getText(assetUrl(DEPTH_CHARTS_TAG, `${DEPTH_CHARTS_PREFIX}${season}.csv`))
           : Promise.resolve(null),
       ]);
-      const depthChartPositions = depthChartCsv
+      const { positions: depthChartPositions, unmappedCodes } = depthChartCsv
         ? mapHistoricalDepthChartPositions(season, parseCsv(depthChartCsv), resolveTeamCode)
-        : new Map();
+        : { positions: new Map(), unmappedCodes: {} };
+      for (const [code, count] of Object.entries(unmappedCodes)) {
+        unmappedDepthChartCodes[code] = (unmappedDepthChartCodes[code] ?? 0) + count;
+      }
       const rosterRows = parseCsv(rosterCsv);
       const { rows, dropped: seasonDropped } = toRosterHistoryRows(
         season,
@@ -180,7 +185,10 @@ async function main() {
       console.log(
         `${season}: ${supabase ? 'wrote' : 'computed'} ${rows.length} rows, ` +
           `dropped ${JSON.stringify(countByReason(seasonDropped))}, ` +
-          `depth positions ${depthChartPositions.size}`
+          `depth positions ${depthChartPositions.size}` +
+          (Object.keys(unmappedCodes).length
+            ? `, unmapped depth-chart codes ${JSON.stringify(unmappedCodes)}`
+            : '')
       );
     } catch (e) {
       failures.push({ season, message: (e as Error).message });
@@ -225,6 +233,9 @@ async function main() {
     diagnostics: {
       dropped_by_reason: countByReason(dropped),
       unmapped_positions: countValues(dropped, 'unmapped_position'),
+      unmapped_depth_chart_positions: Object.fromEntries(
+        Object.entries(unmappedDepthChartCodes).sort(([a], [b]) => a.localeCompare(b))
+      ),
       unknown_teams: countValues(dropped, 'unknown_team'),
     },
   });
