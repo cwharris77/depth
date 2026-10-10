@@ -29,7 +29,12 @@ import {
   type SeasonCheckpoint,
 } from './player-seasons';
 import { createPublisher, type StatFileTarget, type StatFilesManifest } from './publish';
-import { buildRecordFiles, type RecordGameRow, type RecordSeasonCheckpoint } from './records';
+import {
+  buildRecordFiles,
+  type RecordGameRow,
+  type RecordOutputs,
+  type RecordSeasonCheckpoint,
+} from './records';
 import {
   checkRecordSeasonShrink,
   checkSeasonShrink,
@@ -125,6 +130,15 @@ export interface RecordBuildOptions {
   /** Every season the box source publishes up to the completed one. */
   expectedSeasons: number[];
   buildSeason: (season: number) => Promise<RecordGameRow[]>;
+  /**
+   * Called once with the built record files and the rows they were computed from, before
+   * anything is uploaded. A caller that acts on them should wait for the run to resolve,
+   * since a later guard can still reject the build.
+   */
+  onBuilt?: (
+    built: RecordOutputs,
+    rowsBySeason: ReadonlyMap<number, readonly RecordGameRow[]>
+  ) => void;
 }
 
 export interface BuildRunOptions {
@@ -255,7 +269,7 @@ export async function runStatFileBuild(opts: BuildRunOptions): Promise<BuildRunR
   let recordFiles = 0;
   let highlightFiles = 0;
   if (opts.records) {
-    const { expectedSeasons, buildSeason } = opts.records;
+    const { expectedSeasons, buildSeason, onBuilt } = opts.records;
     const rowsBySeason = new Map<number, RecordGameRow[]>();
     const toBuild: number[] = [];
     for (const season of expectedSeasons) {
@@ -283,6 +297,7 @@ export async function runStatFileBuild(opts: BuildRunOptions): Promise<BuildRunR
       } satisfies RecordSeasonCheckpoint);
     }
     const built = buildRecordFiles(rowsBySeason, STAT_FILES_SCHEMA_VERSION);
+    onBuilt?.(built, rowsBySeason);
     for (const [stat, file] of built.records) {
       await stager.put(recordsKey(stat), file);
       recordFiles++;

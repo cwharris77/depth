@@ -46,7 +46,7 @@ on:
         type: boolean
         default: false
       record_files:
-        description: 'Also build and publish the league record and player highlight stat files (v1/records/, v1/players/*/highlights.json). Off for scheduled runs.'
+        description: 'Also build and publish the league record and player highlight stat files (v1/records/, v1/players/*/highlights.json). Always built on scheduled runs.'
         type: boolean
         default: false
       stat_files_only:
@@ -178,7 +178,8 @@ jobs:
         run: |
           FLAGS=""
           if [ "$TEAM_FILES" = "true" ]; then FLAGS="--teams"; fi
-          if [ "$RECORD_FILES" = "true" ]; then FLAGS="$FLAGS --records"; fi
+          # Scheduled runs always build record files: the event detector reads them.
+          if [ "$RECORD_FILES" = "true" ] || [ "$GITHUB_EVENT_NAME" = "schedule" ]; then FLAGS="$FLAGS --records"; fi
           if [ -n "$SEASONS" ]; then
             npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" $FLAGS
           else
@@ -202,7 +203,8 @@ jobs:
         run: |
           FLAGS=""
           if [ "$TEAM_FILES" = "true" ]; then FLAGS="--teams"; fi
-          if [ "$RECORD_FILES" = "true" ]; then FLAGS="$FLAGS --records"; fi
+          # Scheduled runs always build record files: the event detector reads them.
+          if [ "$RECORD_FILES" = "true" ] || [ "$GITHUB_EVENT_NAME" = "schedule" ]; then FLAGS="$FLAGS --records"; fi
           if [ -n "$SEASONS" ]; then
             npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" $FLAGS
           else
