@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { buildNotification, deliveryKey, planSends } from './plan-sends';
+import { buildNotification, deliveryKey, MAX_PAYLOAD_EVENT_IDS, planSends } from './plan-sends';
 import type { PushDevice, PushableEvent } from './types';
 
 const NOW = new Date('2026-10-10T20:00:00Z');
@@ -117,6 +117,49 @@ describe('buildNotification', () => {
     });
     expect(payload.event_ids).toEqual(['e1', 'e2', 'e3', 'e4', 'e5', 'e6']);
     expect(payload.event_type).toBeUndefined();
+  });
+
+  it.each([
+    [2, 'Headline 1\nHeadline 2'],
+    [4, 'Headline 1\nHeadline 2\nHeadline 3\nHeadline 4'],
+    [5, 'Headline 1\nHeadline 2\nHeadline 3\nHeadline 4\nand 1 more'],
+  ])('summarizes exactly %i events', (count, body) => {
+    const events = Array.from({ length: count }, (_, i) =>
+      event({ id: `e${i + 1}`, headline: `Headline ${i + 1}` })
+    );
+    expect(buildNotification(device(), events).payload.aps.alert).toEqual({
+      title: `${count} updates on your team`,
+      body,
+    });
+  });
+
+  describe('a batch too large to list every event id', () => {
+    const headline =
+      'Seahawks: Jaxon Smith-Njigba moves to WR1 ahead of Cooper Kupp on the depth chart';
+    const events = Array.from({ length: 100 }, (_, i) =>
+      event({ id: `3f2b8c1e-7a4d-4e9b-b0c6-${String(i).padStart(12, '0')}`, headline })
+    );
+    const { payload, collapseId } = buildNotification(device(), events);
+
+    it('carries only the first event ids, in send order, and stays under the APNs limit', () => {
+      expect(MAX_PAYLOAD_EVENT_IDS).toBe(20);
+      expect(payload.event_ids).toHaveLength(20);
+      expect(payload.event_ids).toEqual(events.slice(0, 20).map((e) => e.id));
+      expect(Buffer.byteLength(JSON.stringify(payload))).toBeLessThan(4096);
+    });
+
+    it('still counts every event in the title', () => {
+      expect(headline.length).toBeGreaterThanOrEqual(80);
+      expect(payload.aps.alert.title).toBe('100 updates on your team');
+    });
+
+    it('derives the collapse id from every event id, not only the listed ones', () => {
+      const sameFirstTwenty = [...events.slice(0, 99), event({ id: 'another-event', headline })];
+      expect(buildNotification(device(), sameFirstTwenty).payload.event_ids).toEqual(
+        payload.event_ids
+      );
+      expect(buildNotification(device(), sameFirstTwenty).collapseId).not.toBe(collapseId);
+    });
   });
 
   it('marks a batch holding an everything-tier event so the app can offer to leave it', () => {

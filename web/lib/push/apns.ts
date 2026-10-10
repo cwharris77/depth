@@ -42,19 +42,35 @@ export function createApnsJwt(args: {
   return `${header}.${claims}.${base64url(signature)}`;
 }
 
-export type ApnsOutcome = 'sent' | 'prune' | 'retry' | 'fatal';
+/**
+ * `unknown` is a request that was written to an open connection and got no status back:
+ * APNs may or may not have accepted it. `retry` is a request APNs definitely did not
+ * deliver.
+ */
+export type ApnsOutcome = 'sent' | 'prune' | 'retry' | 'fatal' | 'unknown';
 
 const PRUNE_REASONS = new Set(['BadDeviceToken', 'DeviceTokenNotForTopic']);
 
+/** The 403 reasons that say the provider token itself is bad, for every device alike. */
+const PROVIDER_TOKEN_REASONS = new Set([
+  'InvalidProviderToken',
+  'ExpiredProviderToken',
+  'MissingProviderToken',
+]);
+
 /**
  * What a response means for the sender: delivered, the token is dead, try again on a
- * later run, or the provider credentials are wrong and no request in this run can work.
- * Status 0 stands for a request that never got a response.
+ * later run, or the provider token is wrong and no request in this run can work. Any
+ * other 403 is about one device's topic or environment, so only that request fails.
+ * Status 0 stands for a request that was never started; one that was written and went
+ * unanswered is `unknown`, which the client decides and this never returns.
  */
 export function classifyApnsResponse(status: number, reason: string | null): ApnsOutcome {
   if (status === 200) return 'sent';
   if (status === 410) return 'prune';
-  if (status === 403) return 'fatal';
+  if (status === 403) {
+    return reason === null || PROVIDER_TOKEN_REASONS.has(reason) ? 'fatal' : 'retry';
+  }
   if (status === 400 && reason !== null && PRUNE_REASONS.has(reason)) return 'prune';
   return 'retry';
 }
@@ -88,17 +104,34 @@ function errorReason(body: string): string | null {
   }
 }
 
-export function createHttp2ApnsClient(args: { jwt: string; now: Date }): ApnsClient {
-  const sessions = new Map<ApnsEnvironment, ClientHttp2Session>();
+interface OpenSession {
+  session: ClientHttp2Session;
+  /** False until the connection is established; nothing is written before that. */
+  connected: boolean;
+}
+
+export function createHttp2ApnsClient(args: {
+  jwt: string;
+  now: Date;
+  /** Opens the HTTP/2 session for a host. Defaults to `node:http2`'s `connect`. */
+  connect?: (url: string) => ClientHttp2Session;
+  requestTimeoutMs?: number;
+}): ApnsClient {
+  const open = args.connect ?? connect;
+  const timeoutMs = args.requestTimeoutMs ?? REQUEST_TIMEOUT_MS;
+  const sessions = new Map<ApnsEnvironment, OpenSession>();
   const expiration = String(Math.floor(args.now.getTime() / 1000) + EXPIRATION_SECONDS);
 
-  function session(environment: ApnsEnvironment): ClientHttp2Session {
-    const open = sessions.get(environment);
-    if (open && !open.closed && !open.destroyed) return open;
-    const created = connect(HOSTS[environment]);
+  function session(environment: ApnsEnvironment): OpenSession {
+    const existing = sessions.get(environment);
+    if (existing && !existing.session.closed && !existing.session.destroyed) return existing;
+    const created: OpenSession = { session: open(HOSTS[environment]), connected: false };
+    created.session.on('connect', () => {
+      created.connected = true;
+    });
     // A session error is reported by the request that hits it; without a listener it
     // would be an unhandled 'error' event.
-    created.on('error', () => {});
+    created.session.on('error', () => {});
     sessions.set(environment, created);
     return created;
   }
@@ -106,11 +139,11 @@ export function createHttp2ApnsClient(args: { jwt: string; now: Date }): ApnsCli
   return {
     send(request) {
       return new Promise((resolve) => {
-        const finish = (status: number, reason: string | null) =>
-          resolve({ outcome: classifyApnsResponse(status, reason), status, reason });
+        let used: OpenSession;
         let stream: ClientHttp2Stream;
         try {
-          stream = session(request.environment).request({
+          used = session(request.environment);
+          stream = used.session.request({
             ':method': 'POST',
             ':path': `/3/device/${request.token}`,
             authorization: `bearer ${args.jwt}`,
@@ -122,26 +155,39 @@ export function createHttp2ApnsClient(args: { jwt: string; now: Date }): ApnsCli
             'content-type': 'application/json',
           });
         } catch (error) {
-          finish(0, (error as Error).message);
+          // No stream exists, so nothing was written.
+          resolve({ outcome: 'retry', status: 0, reason: (error as Error).message });
           return;
         }
         let status = 0;
         let body = '';
+        // Runs on the first of 'error' and 'close'; a later call's resolve is a no-op.
+        const finish = (failure: string | null) => {
+          if (status !== 0) {
+            const reason = errorReason(body);
+            resolve({ outcome: classifyApnsResponse(status, reason), status, reason });
+            return;
+          }
+          // A request made while the session is still connecting is queued and only
+          // written once it connects, so a session that never connected sent nothing.
+          // After that the request may have reached APNs, whatever ended the stream.
+          resolve({ outcome: used.connected ? 'unknown' : 'retry', status: 0, reason: failure });
+        };
         stream.setEncoding('utf8');
-        stream.setTimeout(REQUEST_TIMEOUT_MS, () => stream.close());
+        stream.setTimeout(timeoutMs, () => stream.close());
         stream.on('response', (headers) => {
           status = Number(headers[':status'] ?? 0);
         });
         stream.on('data', (chunk: string) => {
           body += chunk;
         });
-        stream.on('error', (error: Error) => finish(0, error.message));
-        stream.on('close', () => finish(status, errorReason(body)));
+        stream.on('error', (error: Error) => finish(error.message));
+        stream.on('close', () => finish(null));
         stream.end(JSON.stringify(request.payload));
       });
     },
     close() {
-      for (const open of sessions.values()) open.close();
+      for (const existing of sessions.values()) existing.session.close();
       sessions.clear();
     },
   };

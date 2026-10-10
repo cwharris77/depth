@@ -13,6 +13,12 @@ export const EVERYTHING_CATEGORY = 'EVERYTHING_TIER';
 /** How many headlines a summary lists before it counts the rest. */
 export const SUMMARY_HEADLINE_LIMIT = 4;
 
+/**
+ * How many event ids a payload lists. APNs rejects a payload over 4096 bytes, and the
+ * ids are the only part that grows with the batch.
+ */
+export const MAX_PAYLOAD_EVENT_IDS = 20;
+
 export function deliveryKey(eventId: string, deviceId: string): string {
   return `${eventId}:${deviceId}`;
 }
@@ -70,8 +76,9 @@ export function planSends(args: {
 
 /**
  * One notification for one device. A single event is shown with its stored text; more
- * than one becomes a fixed summary. The collapse id is derived from the event ids, so
- * if the same batch ever reached a device twice the second would replace the first.
+ * than one becomes a fixed summary. The collapse id is derived from every event id in
+ * the batch, including the ones the payload does not list, so if the same batch ever
+ * reached a device twice the second would replace the first.
  */
 export function buildNotification(
   device: PushDevice,
@@ -102,7 +109,7 @@ export function buildNotification(
         ...(offerLeave ? { category: EVERYTHING_CATEGORY } : {}),
       },
       team_id: device.teamId,
-      event_ids: ids,
+      event_ids: ids.slice(0, MAX_PAYLOAD_EVENT_IDS),
       ...(events.length === 1 ? { event_type: first.type } : {}),
     },
     collapseId: createHash('sha256').update(ids.join(',')).digest('hex'),

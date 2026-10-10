@@ -136,8 +136,7 @@ async function main() {
   try {
     const summary = await runSender({ store: supabaseStore(supabase), client, enabled, now });
     console.log(formatSummary(summary));
-    if (summary.fatal) console.error(summary.fatal);
-    if (summary.fatal || summary.failed > 0) process.exitCode = 1;
+    if (summary.fatal || summary.aborted || summary.failed > 0) process.exitCode = 1;
   } finally {
     client?.close();
   }
