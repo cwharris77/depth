@@ -48,6 +48,13 @@ one rule mechanically: published data stays decodable by every supported app bui
     `DB`; `HistoricalRosterMapper` drops and logs those rows, so those players are omitted
     from that build's historical view, never mislabeled. Builds that decode `DB` seat them
     in empty corner and safety slots.
+  - `app_events.event_name` accepts `notification_opened` in addition to the six names
+    build 764 sends (`app_launch`, `depth_chart_reached`, `auth_started`,
+    `auth_completed`, `override_saved`, `error`), widened by
+    `20261011120000_allow_notification_opened_event.sql`. The table is insert-only for
+    clients and no build reads it, so the wider list changes nothing build 764 decodes
+    or writes. The check constraint is dropped and re-added in one migration, which is
+    why that migration carries an annotation.
   - The canonical `player_season_stats` table has **not** landed; build 764
     still reads the legacy `player_stats` table exclusively.
   - `app_config` is frozen by contract — the gate reads exactly two columns
@@ -67,6 +74,7 @@ one rule mechanically: published data stays decodable by every supported app bui
 | 764 | 2026-09-24 | Gate armed at 764. The rosters ingest stops omitting and deleting generic `OT`/`G` rows, so historical seasons publish those values again. | Yes (764) |
 | 764 | 2026-09-27 | 1999–2025 `roster_history` re-ingested with the canonical position mapping: nflverse `FB`/`NT`/`FS`/`SS` preserved, `SAF` → `S`, generic defensive backs stored as `DB`. No schema change. Build 764 drops and logs the `DB` rows, so those players are missing from its historical view until a build that decodes `DB` is live and gated. | Yes (764) |
 | 764 | 2026-10-10 | 2001–2025 `roster_history` re-ingested with the per-unit nflverse depth-chart mapping: club spellings of a sided slot resolve to it (`LOT` → `LT`, `LE` → `LDE`, `WILL` → `WLB`, `NCB` → `NB`), a defensive tackle charted as `LT`/`RT` is stored as `DT` rather than an offensive tackle, and a special-teams listing no longer overwrites a field position. No schema change, no rows added or removed, and every written value is one build 764 already decodes. | Yes (764) |
+| 764 | 2026-10-10 | `app_events.event_name` check widened to also allow `notification_opened` (`20261011120000_allow_notification_opened_event.sql`). Expand-only: all six names build 764 inserts stay allowed, and no client reads the table. Grants, RLS and columns unchanged. | Yes (764) |
 <!-- add a row per release that changes the client/backend contract -->
 
 ## Release sequencing checklist
