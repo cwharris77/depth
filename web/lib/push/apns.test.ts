@@ -3,11 +3,12 @@ import { createPublicKey, generateKeyPairSync, verify } from 'node:crypto';
 import {
   connect,
   createServer,
+  type ClientHttp2Session,
   type Http2Server,
   type ServerHttp2Session,
   type ServerHttp2Stream,
 } from 'node:http2';
-import type { AddressInfo } from 'node:net';
+import { createServer as createTcpServer, type AddressInfo, type Socket } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   classifyApnsResponse,
@@ -173,6 +174,42 @@ describe('createHttp2ApnsClient', () => {
     server = undefined;
     expect(await clientFor(url).send(request)).toMatchObject({ outcome: 'retry', status: 0 });
   });
+
+  it('times out as a retry on a connection that never finishes opening', async () => {
+    // Accepts the socket and never answers, so the TLS handshake cannot complete.
+    const sockets = new Set<Socket>();
+    const silent = createTcpServer((socket) => sockets.add(socket));
+    await new Promise<void>((resolve) => silent.listen(0, '127.0.0.1', resolve));
+    const url = `https://127.0.0.1:${(silent.address() as AddressInfo).port}`;
+    const opened: ClientHttp2Session[] = [];
+    client = createHttp2ApnsClient({
+      jwt: 'jwt',
+      now: new Date('2026-10-10T12:00:00Z'),
+      connect: () => {
+        const session = connect(url);
+        opened.push(session);
+        return session;
+      },
+      requestTimeoutMs: 50,
+    });
+    try {
+      expect(await client.send(request)).toMatchObject({ outcome: 'retry', status: 0 });
+      expect(opened[0].destroyed).toBe(true);
+      // The timed-out session is not reused.
+      expect(await client.send(request)).toMatchObject({ outcome: 'retry', status: 0 });
+      expect(opened).toHaveLength(2);
+
+      // A session still connecting when the client closes is not left open either.
+      const pending = client.send(request);
+      client.close();
+      expect(await pending).toMatchObject({ outcome: 'retry', status: 0 });
+      expect(opened).toHaveLength(3);
+      expect(opened.every((session) => session.destroyed)).toBe(true);
+    } finally {
+      for (const socket of sockets) socket.destroy();
+      await new Promise<void>((resolve) => silent.close(() => resolve()));
+    }
+  }, 2000);
 
   it('is a retry when the session cannot be created at all', async () => {
     client = createHttp2ApnsClient({

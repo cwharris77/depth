@@ -161,8 +161,10 @@ export function createHttp2ApnsClient(args: {
         }
         let status = 0;
         let body = '';
-        // Runs on the first of 'error' and 'close'; a later call's resolve is a no-op.
+        // Runs on the first of the deadline, 'error' and 'close'; a later call's resolve
+        // is a no-op.
         const finish = (failure: string | null) => {
+          clearTimeout(deadline);
           if (status !== 0) {
             const reason = errorReason(body);
             resolve({ outcome: classifyApnsResponse(status, reason), status, reason });
@@ -173,8 +175,20 @@ export function createHttp2ApnsClient(args: {
           // After that the request may have reached APNs, whatever ended the stream.
           resolve({ outcome: used.connected ? 'unknown' : 'retry', status: 0, reason: failure });
         };
+        // A stream's own timeout never fires while its session is still connecting, so
+        // the deadline is a timer and settles the request itself.
+        const deadline = setTimeout(() => {
+          if (used.connected) {
+            stream.close();
+          } else {
+            // The connection never opened. Destroying it frees the socket, and dropping
+            // it from the cache makes the next request open a fresh one.
+            if (sessions.get(request.environment) === used) sessions.delete(request.environment);
+            used.session.destroy();
+          }
+          finish('request timed out');
+        }, timeoutMs);
         stream.setEncoding('utf8');
-        stream.setTimeout(timeoutMs, () => stream.close());
         stream.on('response', (headers) => {
           status = Number(headers[':status'] ?? 0);
         });
@@ -187,7 +201,11 @@ export function createHttp2ApnsClient(args: {
       });
     },
     close() {
-      for (const existing of sessions.values()) existing.session.close();
+      for (const existing of sessions.values()) {
+        // A graceful close waits on a connection that may never open.
+        if (existing.connected) existing.session.close();
+        else existing.session.destroy();
+      }
       sessions.clear();
     },
   };

@@ -19,6 +19,9 @@ concurrency:
   group: send-team-notifications
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   send:
     runs-on: ubuntu-latest
