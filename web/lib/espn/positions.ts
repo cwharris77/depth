@@ -1,6 +1,6 @@
 import type { Position } from '../types';
 
-const DEPTH_POSITION: Record<string, Position> = {
+export const DEPTH_POSITION: Record<string, Position> = {
   qb: 'QB',
   rb: 'RB',
   fb: 'FB',
@@ -39,7 +39,7 @@ export function mapDepthchartPosition(key: string): Position | null {
   return DEPTH_POSITION[key.toLowerCase()] ?? null;
 }
 
-const SPECIAL: Record<string, 'k' | 'p' | 'ls' | 'kr' | 'pr'> = {
+export const SPECIAL: Record<string, 'k' | 'p' | 'ls' | 'kr' | 'pr'> = {
   pk: 'k',
   k: 'k',
   p: 'p',
@@ -57,7 +57,7 @@ export function mapSpecialPosition(key: string): 'k' | 'p' | 'ls' | 'kr' | 'pr' 
 // as a fallback when a special-teams player (KR/PR/etc) doesn't otherwise appear on the
 // offense/defense depth chart (e.g. a low-ranked WR who's still the primary returner).
 // A bio carries no side, so tackles and guards stay generic `OT`/`G`.
-const BIO_POSITION: Record<string, Position> = {
+export const BIO_POSITION: Record<string, Position> = {
   qb: 'QB',
   rb: 'RB',
   fb: 'FB',

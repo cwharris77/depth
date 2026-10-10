@@ -1,31 +1,97 @@
 import { describe, it, expect } from 'vitest';
+import type { Position } from '../types';
 import {
+  BIO_POSITION,
+  DEPTH_POSITION,
+  SPECIAL,
   mapDepthchartPosition,
   mapSpecialPosition,
   mapBioPosition,
   classifyItem,
 } from './positions';
 
+// Each table's approved mappings are written out independently of the production table,
+// so a changed or added mapping has to be restated here.
+const DEPTH_EXPECTED: Record<string, Position> = {
+  qb: 'QB',
+  rb: 'RB',
+  fb: 'FB',
+  wr: 'WR',
+  te: 'TE',
+  lt: 'LT',
+  lg: 'LG',
+  c: 'C',
+  rg: 'RG',
+  rt: 'RT',
+  lde: 'LDE',
+  rde: 'RDE',
+  de: 'DE',
+  nt: 'NT',
+  dt: 'DT',
+  wlb: 'WLB',
+  lilb: 'LILB',
+  rilb: 'RILB',
+  slb: 'SLB',
+  lb: 'LB',
+  mlb: 'LB',
+  lcb: 'LCB',
+  rcb: 'RCB',
+  cb: 'CB',
+  nb: 'NB',
+  ss: 'SS',
+  fs: 'FS',
+  s: 'S',
+  pk: 'K',
+  k: 'K',
+  p: 'P',
+  ls: 'LS',
+};
+
+// A bio abbreviation carries no side or role, so a lineman, linebacker or corner reads
+// generically; `fb`/`nt`/`fs`/`ss` are distinct bio abbreviations and stay granular.
+const BIO_EXPECTED: Record<string, Position> = {
+  qb: 'QB',
+  rb: 'RB',
+  fb: 'FB',
+  wr: 'WR',
+  te: 'TE',
+  ot: 'OT',
+  t: 'OT',
+  g: 'G',
+  og: 'G',
+  c: 'C',
+  de: 'DE',
+  dt: 'DT',
+  nt: 'NT',
+  lb: 'LB',
+  cb: 'CB',
+  s: 'S',
+  fs: 'FS',
+  ss: 'SS',
+  pk: 'K',
+  k: 'K',
+  p: 'P',
+  ls: 'LS',
+};
+
+const SPECIAL_EXPECTED: Record<string, string> = {
+  pk: 'k',
+  k: 'k',
+  p: 'p',
+  ls: 'ls',
+  kr: 'kr',
+  pr: 'pr',
+};
+
 describe('mapDepthchartPosition', () => {
-  it('maps offense keys', () => {
-    expect(mapDepthchartPosition('lt')).toBe('LT');
-    expect(mapDepthchartPosition('rt')).toBe('RT');
-    expect(mapDepthchartPosition('qb')).toBe('QB');
+  it.each(Object.entries(DEPTH_EXPECTED))('maps %s to %s', (key, position) => {
+    expect(mapDepthchartPosition(key)).toBe(position);
   });
-  it('maps every granular defensive/FB key to its own Position, not a collapsed group', () => {
-    expect(mapDepthchartPosition('lde')).toBe('LDE');
-    expect(mapDepthchartPosition('rde')).toBe('RDE');
-    expect(mapDepthchartPosition('nt')).toBe('NT');
-    expect(mapDepthchartPosition('wlb')).toBe('WLB');
-    expect(mapDepthchartPosition('lilb')).toBe('LILB');
-    expect(mapDepthchartPosition('rilb')).toBe('RILB');
-    expect(mapDepthchartPosition('slb')).toBe('SLB');
-    expect(mapDepthchartPosition('lcb')).toBe('LCB');
-    expect(mapDepthchartPosition('rcb')).toBe('RCB');
-    expect(mapDepthchartPosition('nb')).toBe('NB');
-    expect(mapDepthchartPosition('ss')).toBe('SS');
-    expect(mapDepthchartPosition('fs')).toBe('FS');
-    expect(mapDepthchartPosition('fb')).toBe('FB');
+  it('has an expectation for every key in the production table', () => {
+    expect(Object.keys(DEPTH_POSITION).sort()).toEqual(Object.keys(DEPTH_EXPECTED).sort());
+  });
+  it('is case-insensitive', () => {
+    expect(mapDepthchartPosition('LT')).toBe('LT');
   });
   it('drops positions not in our enum', () => {
     expect(mapDepthchartPosition('h')).toBeNull();
@@ -33,27 +99,11 @@ describe('mapDepthchartPosition', () => {
 });
 
 describe('mapBioPosition', () => {
-  it('maps the bio-abbreviation-distinguishable granular keys, not the collapsed groups', () => {
-    // Unlike the depthchart keys above, a bio abbreviation carries no side/role info
-    // (a lineman/linebacker/corner reads generically) -- but fb/nt/fs/ss are real,
-    // distinct ESPN bio abbreviations, so those still resolve granular here too.
-    expect(mapBioPosition('fb')).toBe('FB');
-    expect(mapBioPosition('nt')).toBe('NT');
-    expect(mapBioPosition('fs')).toBe('FS');
-    expect(mapBioPosition('ss')).toBe('SS');
+  it.each(Object.entries(BIO_EXPECTED))('maps %s to %s', (abbreviation, position) => {
+    expect(mapBioPosition(abbreviation)).toBe(position);
   });
-  it('keeps the generic fallback for positions bio abbreviations cannot distinguish a side/role for', () => {
-    expect(mapBioPosition('de')).toBe('DE');
-    expect(mapBioPosition('dt')).toBe('DT');
-    expect(mapBioPosition('lb')).toBe('LB');
-    expect(mapBioPosition('cb')).toBe('CB');
-    expect(mapBioPosition('s')).toBe('S');
-  });
-  it('keeps OL abbreviations generic, since a bio carries no side', () => {
-    expect(mapBioPosition('ot')).toBe('OT');
-    expect(mapBioPosition('t')).toBe('OT');
-    expect(mapBioPosition('g')).toBe('G');
-    expect(mapBioPosition('og')).toBe('G');
+  it('has an expectation for every abbreviation in the production table', () => {
+    expect(Object.keys(BIO_POSITION).sort()).toEqual(Object.keys(BIO_EXPECTED).sort());
   });
   it('returns null for an abbreviation not in the table', () => {
     expect(mapBioPosition('h')).toBeNull();
@@ -61,9 +111,13 @@ describe('mapBioPosition', () => {
 });
 
 describe('mapSpecialPosition', () => {
-  it('maps special keys, dropping holder', () => {
-    expect(mapSpecialPosition('pk')).toBe('k');
-    expect(mapSpecialPosition('kr')).toBe('kr');
+  it.each(Object.entries(SPECIAL_EXPECTED))('maps %s to %s', (key, slot) => {
+    expect(mapSpecialPosition(key)).toBe(slot);
+  });
+  it('has an expectation for every key in the production table', () => {
+    expect(Object.keys(SPECIAL).sort()).toEqual(Object.keys(SPECIAL_EXPECTED).sort());
+  });
+  it('drops the holder', () => {
     expect(mapSpecialPosition('h')).toBeNull();
   });
 });
