@@ -834,7 +834,17 @@ struct TeamDetailView: View {
                 rosterStack(snapshot: snapshot, historical: historical)
             }
         } else {
-            rosterStack(snapshot: snapshot, historical: historical)
+            // The field fills the page height exactly (see rosterStack), so it can't sit in a
+            // ScrollView that proposes unbounded height. Pinning the stack to the measured
+            // height keeps that layout while giving `.refreshable` a scroll view to attach to;
+            // `.always` bounce lets the pull start even though the content never overflows.
+            GeometryReader { proxy in
+                ScrollView {
+                    rosterStack(snapshot: snapshot, historical: historical)
+                        .frame(height: proxy.size.height)
+                }
+                .scrollBounceBehavior(.always)
+            }
         }
     }
 
