@@ -49,6 +49,7 @@ describe('toRosterHistoryRows', () => {
         headshot_url: 'https://example.com/wilson.png',
         depth_rank: 1,
         player_order: 1,
+        roles: null,
       },
     ]);
   });
@@ -172,5 +173,25 @@ describe('toRosterHistoryRows', () => {
       new Map()
     );
     expect(rows[0].espn_id).toBeNull();
+  });
+
+  it('writes the roles a player held and null for a player with none', () => {
+    const { rows } = toRosterHistoryRows(
+      2022,
+      [
+        rosterRow({ gsis_id: 'slot', full_name: 'Slot Corner', position: 'CB' }),
+        rosterRow({ gsis_id: 'qb', full_name: 'Quarterback', position: 'QB' }),
+      ],
+      [],
+      RESOLVE,
+      new Map(),
+      new Map(),
+      new Map([['seahawks|slot', { nb: 1, pr: 2 }]])
+    );
+
+    const byId = Object.fromEntries(rows.map((r) => [r.gsis_id, r]));
+    expect(byId.slot.position).toBe('CB');
+    expect(byId.slot.roles).toEqual({ nb: 1, pr: 2 });
+    expect(byId.qb.roles).toBeNull();
   });
 });

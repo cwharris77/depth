@@ -1,6 +1,7 @@
 import type { Drop } from '../utils/ingest/drops';
 import type { Position } from '../types';
 import { mapRosterPosition, type RosterPosition } from './positions';
+import type { RosterRoles } from './depth-charts';
 import { rankByUsage, usageScore, type UsageEntry, type UsageStatsRow } from './depth-heuristic';
 
 // 1999 is where stats_player_reg_ starts -- the depth heuristic needs a stats file to
@@ -16,6 +17,9 @@ export const SEASONS_MIN = 1999;
 // for the same team in the raw CSV (e.g. a practice-squad elevation); the last occurrence wins,
 // matching roster_history's (season, team_id, gsis_id) primary key, and each earlier occurrence
 // is dropped as `superseded_duplicate`. Every input row is therefore either written or dropped.
+//
+// `roles` are the jobs a player held on top of his position (nickel back, returner), keyed
+// by the same team/player pair as the depth-chart position; null when he held none.
 //
 // `espn_id` comes from the roster CSV when present, else from the caller-supplied
 // gsis_id -> espn_id crosswalk (the same players.csv buildCrosswalk the player-stats
@@ -38,6 +42,7 @@ export interface RosterHistoryInsert {
   headshot_url: string | null;
   depth_rank: number;
   player_order: number;
+  roles: RosterRoles | null;
 }
 
 export type RosterDropReason =
@@ -102,7 +107,8 @@ export function toRosterHistoryRows(
   statsCsvRows: Record<string, string>[],
   resolveTeamCode: (code: string) => string | null,
   crosswalk: Map<string, string> = new Map(),
-  depthChartPositions: Map<string, Position> = new Map()
+  depthChartPositions: Map<string, Position> = new Map(),
+  depthChartRoles: Map<string, RosterRoles> = new Map()
 ): { rows: RosterHistoryInsert[]; dropped: Drop<RosterDropReason>[] } {
   const usageByGsisId = buildUsageByGsisId(statsCsvRows);
 
@@ -187,6 +193,7 @@ export function toRosterHistoryRows(
         headshot_url: ranked.item.headshotUrl,
         depth_rank: ranked.depthRank,
         player_order: ranked.playerOrder,
+        roles: depthChartRoles.get(`${teamId}|${ranked.item.gsisId}`) ?? null,
       });
     }
   }

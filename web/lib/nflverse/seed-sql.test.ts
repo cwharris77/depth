@@ -270,6 +270,7 @@ describe('buildRosterHistorySeedSql', () => {
         headshot_url: null,
         depth_rank: 1,
         player_order: 1,
+        roles: null,
       },
     ];
     const sql = buildRosterHistorySeedSql(rows);
