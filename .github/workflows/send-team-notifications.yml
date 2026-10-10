@@ -1,0 +1,57 @@
+name: Send team notifications
+
+# Pushes each new team event to the devices subscribed to that team. Runs after either
+# ingest finishes, because the ingests are what write team events, and on demand.
+#
+# Sending is off unless the repository variable for that target is exactly "true":
+# PUSH_SENDER_ENABLED for production, PUSH_SENDER_ENABLED_STAGING for staging. A paused
+# run still reports how many notifications are owed. Pausing never stops detection.
+
+on:
+  workflow_run:
+    workflows: ['Ingest ESPN data', 'Ingest nflverse data']
+    types: [completed]
+  workflow_dispatch:
+
+# Two ingests can finish close together. Runs queue rather than overlap; the delivery
+# table would keep overlapping runs correct, this just keeps the logs readable.
+concurrency:
+  group: send-team-notifications
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Send team notifications (production)
+        run: npm run push:send
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          PUSH_SENDER_ENABLED: ${{ vars.PUSH_SENDER_ENABLED }}
+          APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}
+          APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
+          APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
+      # Staging runs even when the production step fails, so one target's failure never
+      # hides the other's result.
+      - name: Send team notifications (staging)
+        if: ${{ !cancelled() }}
+        run: npm run push:send
+        env:
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
+          PUSH_SENDER_ENABLED: ${{ vars.PUSH_SENDER_ENABLED_STAGING }}
+          APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}
+          APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
+          APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
