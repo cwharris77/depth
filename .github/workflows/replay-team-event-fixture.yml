@@ -1,0 +1,45 @@
+name: Replay team event fixture (staging)
+
+# Writes one synthetic team event to the staging project through the real stat-event
+# write, or removes it. The script refuses any other target. Used to prove the events
+# pipeline and push delivery end to end; the sender picks the event up on its next run.
+
+on:
+  workflow_dispatch:
+    inputs:
+      team:
+        description: 'Team id the event is written for.'
+        type: string
+        default: seahawks
+      cleanup:
+        description: 'Remove fixture events instead of writing one.'
+        type: boolean
+        default: false
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Replay fixture event (staging)
+        run: |
+          if [ "$CLEANUP" = "true" ]; then
+            npm run events:replay-fixture -- --cleanup
+          else
+            npm run events:replay-fixture -- --team "$TEAM"
+          fi
+        env:
+          TEAM: ${{ inputs.team }}
+          CLEANUP: ${{ inputs.cleanup }}
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
