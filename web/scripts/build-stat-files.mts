@@ -68,8 +68,7 @@ import {
 import type { StatFileTarget } from '@/lib/stat-files/publish';
 import { createRawArchive, createSourceFetcher } from '@/lib/stat-files/raw-archive';
 import { FileSystemStatFileTarget, r2StatFileTargetFromEnv } from '@/lib/stat-files/targets';
-import { findStatMoments, statMomentEvents } from '@/lib/events/stat-events';
-import { toTeamEventRow } from '@/lib/events/types';
+import { writeStatEvents } from '@/lib/events/write-stat-events';
 import { toRecordRows, type RecordGameRow, type RecordOutputs } from '@/lib/stat-files/records';
 import { toTeamGameRows, type TeamGameRow } from '@/lib/stat-files/team-seasons';
 import {
@@ -467,47 +466,6 @@ async function recordRun(run: {
   if (error) console.error(`failed to record ingestion_runs: ${error.message}`);
 }
 
-/**
- * Record chases and historic games from a finished build, written when this process has
- * database credentials. Runs only after the publish succeeded, so an event never
- * describes a record file that was not uploaded.
- */
-async function writeStatEvents(
-  built: RecordOutputs,
-  rowsBySeason: ReadonlyMap<number, readonly RecordGameRow[]>,
-  currentSeason: number,
-  now: string
-): Promise<number> {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key) return 0;
-  const moments = findStatMoments({
-    currentSeason,
-    records: built.records,
-    currentRows: rowsBySeason.get(currentSeason) ?? [],
-  });
-  if (moments.length === 0) return 0;
-
-  const supabase = createClient<Database>(url, key, { auth: { persistSession: false } });
-  const ids = [...new Set(moments.map((moment) => moment.playerId))];
-  const { data, error: namesError } = await supabase
-    .from('players')
-    .select('id, name')
-    .in('id', ids);
-  if (namesError) throw new Error(`players read: ${namesError.message}`);
-
-  const events = statMomentEvents(moments, {
-    playerNames: new Map((data ?? []).map((player) => [player.id, player.name])),
-    now,
-  });
-  if (events.length === 0) return 0;
-  const { error } = await supabase
-    .from('team_events')
-    .upsert(events.map(toTeamEventRow), { onConflict: 'dedupe_key', ignoreDuplicates: true });
-  if (error) throw new Error(`team_events upsert: ${error.message}`);
-  return events.length;
-}
-
 function coverageSources(): ManifestSources {
   const sources: ManifestSources = {};
   for (const [source, counts] of [...coverage.entries()].sort(([a], [b]) => a.localeCompare(b))) {
@@ -651,13 +609,23 @@ async function main(): Promise<void> {
     // The files are published either way. A failed event write is reported and fails the
     // job, but must not turn a good publish into a recorded failure.
     if (recordBuild.value) {
+      const url = process.env.SUPABASE_URL;
+      const key = process.env.SUPABASE_SECRET_KEY;
       try {
-        const written = await writeStatEvents(
-          recordBuild.value.built,
-          recordBuild.value.rowsBySeason,
-          currentSeasonOf(state),
-          startedAt
-        );
+        // Without database credentials there is nowhere to write; the files are still
+        // published.
+        const written =
+          url && key
+            ? await writeStatEvents(
+                createClient<Database>(url, key, { auth: { persistSession: false } }),
+                {
+                  built: recordBuild.value.built,
+                  rowsBySeason: recordBuild.value.rowsBySeason,
+                  currentSeason: currentSeasonOf(state),
+                  now: startedAt,
+                }
+              )
+            : 0;
         console.log(`team events: ${written} detected`);
       } catch (error) {
         console.error(`team events: ${(error as Error).message}`);
