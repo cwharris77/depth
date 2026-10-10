@@ -1,5 +1,32 @@
 import Testing
+import SwiftUI
 @testable import Depth
+
+@MainActor
+@Suite struct UniformPickerOrderingTests {
+    private func kit(_ id: String, kind: UniformKind, current: Bool = true) -> Uniform {
+        Uniform(
+            id: id, teamId: "bills", kind: kind, name: id, yearStart: 2025,
+            yearEnd: nil, isCurrent: current, colors: billsColors, imagePath: nil)
+    }
+
+    @Test func currentHomeAndAwayPrecedeAlternatesAndHistory() {
+        let kits = [
+            kit("old-home", kind: .home, current: false),
+            kit("alternate", kind: .alternate), kit("away", kind: .away),
+            kit("home", kind: .home), kit("throwback", kind: .throwback),
+        ]
+        let picker = UniformPickerSheet(uniforms: kits, selectedID: "old-home") { _ in }
+        #expect(
+            picker.uniforms.map(\.id) == ["home", "away", "alternate", "throwback", "old-home"])
+    }
+
+    @Test func samePriorityKitsKeepTheirSourceOrder() {
+        let kits = [kit("second", kind: .alternate), kit("first", kind: .colorRush)]
+        let picker = UniformPickerSheet(uniforms: kits, selectedID: nil) { _ in }
+        #expect(picker.uniforms.map(\.id) == ["second", "first"])
+    }
+}
 
 // Pure-rule tests for the uniform archive. The grouping/ordering rules mirror
 // web/lib/uniforms/filter.ts (eraBucket/matchesFilters/compareKits/groupByDivision) so the
