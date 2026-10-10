@@ -24,6 +24,18 @@ const nextConfig: NextConfig = {
       expire: 2592000, // 30 days
     },
   },
+  async headers() {
+    return [
+      {
+        // Files in public/ default to `max-age=0, must-revalidate`, so every view re-checks
+        // with the origin. No client appends `?rev=` to art URLs yet, so a long immutable
+        // lifetime would pin stale art; an hour keeps corrected art bounded while sparing the
+        // per-view revalidation round trip.
+        source: '/uniforms/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=3600' }],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
