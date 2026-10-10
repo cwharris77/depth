@@ -107,6 +107,12 @@ targets:
         # http://127.0.0.1:54321 (`supabase start`). Remote cleartext stays blocked.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+    # Remote notifications. `development` here is what a locally signed build needs;
+    # an App Store or TestFlight export re-signs with the production value.
+    entitlements:
+      path: Depth/Depth.entitlements
+      properties:
+        aps-environment: development
     settings:
       base:
         GENERATE_INFOPLIST_FILE: NO

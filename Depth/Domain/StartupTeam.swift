@@ -14,13 +14,21 @@ enum StartupTeam {
     ///
     /// Resolves favorite → last viewed → default. A favorite is considered only when
     /// `startOnFavorite` is enabled and the saved value is non-empty.
+    ///
+    /// `routedTeamId` is a team the user explicitly asked to open during launch (a
+    /// notification tap, a cross-tab jump). It outranks the favorite, so re-resolving
+    /// once the list loads does not replace the team they asked for.
     static func resolve(
         favoriteTeamId: String? = nil,
         startOnFavorite: Bool = false,
         lastTeamId: String? = nil,
+        routedTeamId: String? = nil,
         validIds: [String]? = nil,
         defaultId: String = defaultTeamId
     ) -> String {
+        if let routedTeamId, !routedTeamId.isEmpty, validIds?.contains(routedTeamId) != false {
+            return routedTeamId
+        }
         if startOnFavorite,
             let favorite = favoriteTeamId?.trimmingCharacters(in: .whitespacesAndNewlines),
             !favorite.isEmpty,

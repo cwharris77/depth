@@ -9,8 +9,19 @@ import Observation
 /// case and its dead code path in the next release.
 /// `everyFeatureFlagIsWithinItsLifetime()` fails once a flag outlives `maximumLifetime`.
 enum FeatureFlag: CaseIterable, Sendable {
+    /// Team notifications and the team feed.
+    case proactiveNotifications
+
     var definition: FeatureFlagDefinition {
-        switch self {}
+        switch self {
+        case .proactiveNotifications:
+            FeatureFlagDefinition(
+                key: "proactiveNotifications",
+                summary: "Team notifications and the team feed",
+                kind: .release,
+                added: "2026-10-09",
+                launched: false)
+        }
     }
 
     /// How long a flag may exist, counted from `FeatureFlagDefinition.added`.
@@ -87,8 +98,6 @@ final class FeatureFlagStore {
         self.overrides = overrides
     }
 
-    // While FeatureFlag has no cases it is uninhabited, so the compiler reports this
-    // body as never executed; the warning clears once a flag is added.
     func isEnabled(_ flag: FeatureFlag) -> Bool {
         isEnabled(flag.definition)
     }

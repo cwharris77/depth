@@ -32,6 +32,10 @@ extension XCUIApplication {
     /// PerformanceUITests' cache journeys, the bare `testAppLaunches`) simply omits it.
     static let fixtureBackendArgument = "UI_TESTING_FIXTURE_BACKEND"
 
+    /// Marks a launch that otherwise passes no argument as a UI test. The app treats any
+    /// `UI_TESTING_` argument as that signal; this one changes nothing else.
+    static let liveBackendSmokeArgument = "UI_TESTING_LIVE_SMOKE"
+
     /// Clean slate + hermetic fixture backend — the standard launch for a journey that
     /// should not depend on a live database.
     static let hermeticLaunchArguments = ["UI_TESTING_RESET_STATE", fixtureBackendArgument]
@@ -49,6 +53,17 @@ extension XCUIApplication {
             Self.hermeticLaunchArguments + ["\(Self.uiTestingStartTeamArgPrefix)\(teamId)"]
         launch()
         return waitForDepthChart(timeout: timeout)
+    }
+
+    /// Opens Settings from the depth chart's account button and waits for the sheet.
+    func openSettings(file: StaticString = #filePath, line: UInt = #line) {
+        let accountButton = buttons["account-button"]
+        XCTAssertTrue(
+            accountButton.waitForExistence(timeout: 15),
+            "the depth chart should expose the account button", file: file, line: line)
+        XCTAssertTrue(
+            accountButton.tapUntil { self.buttons["account-close-button"].exists },
+            "the account button should open Settings", file: file, line: line)
     }
 
     /// Opens the switcher from the navigation-bar team name, searches, and selects a

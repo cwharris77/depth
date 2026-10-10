@@ -81,7 +81,8 @@ enum DepthEnvironment {
             // be redirected by a launch argument.
             if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
                 return CachingDepthRepository(
-                    underlying: FixtureDepthRepository.load(),
+                    underlying: FixtureDepthRepository.load(
+                        offersBigMoment: isBigMomentPromptRequested),
                     store: CachedSnapshotStore(modelContainer: ephemeralFixtureContainer())
                 )
             }
@@ -123,6 +124,46 @@ enum DepthEnvironment {
         #endif
         return SupabaseAppEventsRecorder(client: supabaseClient)
     }()
+    /// True when a UI test launched this process. Nothing in the process environment
+    /// tells a UI-test launch apart from an ordinary one, so the signal is the launch
+    /// arguments: every UI-test launch passes at least one `UI_TESTING_` argument,
+    /// including the suites that run against a live backend. Always false in Release,
+    /// where UITEST_FIXTURES is absent, so a shipped binary cannot be switched by an
+    /// argument.
+    static let isUITestProcess: Bool = {
+        #if UITEST_FIXTURES
+            return ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("UI_TESTING_") }
+        #else
+            return false
+        #endif
+    }()
+    /// True only for the UI journey that covers the notification prompt.
+    static let isBigMomentPromptRequested: Bool = {
+        #if UITEST_FIXTURES
+            return ProcessInfo.processInfo.arguments.contains("UI_TESTING_BIG_MOMENT_PROMPT")
+        #else
+            return false
+        #endif
+    }()
+    /// The notification prompt stays down in every UI-test process except the journey
+    /// that asks for it, so no other suite can meet a sheet it does not expect.
+    static let isBigMomentPromptSuppressed = isUITestProcess && !isBigMomentPromptRequested
+    static let pushSubscriptionService: any PushSubscriptionServicing = {
+        // A UI test must never register a device, whichever backend it runs against.
+        if isUITestProcess { return NoOpPushSubscriptionService() }
+        return SupabasePushSubscriptionService(client: supabaseClient)
+    }()
+    static let notificationAuthorizer: any NotificationAuthorizing = {
+        // A UI test must never raise the system permission dialog or ask for a token.
+        // UI_TESTING_NOTIFICATIONS_AUTHORIZED stands in for a user who already allowed
+        // notifications; without it the permission question is unanswered.
+        if isUITestProcess {
+            let isAuthorized = ProcessInfo.processInfo.arguments.contains(
+                "UI_TESTING_NOTIFICATIONS_AUTHORIZED")
+            return NoOpNotificationAuthorizer(fixed: isAuthorized ? .authorized : .notDetermined)
+        }
+        return SystemNotificationAuthorizer()
+    }()
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)
     /// Shared favorite/start-on-favorite state. Backed by the user_settings row
     /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale
@@ -151,4 +192,14 @@ enum DepthEnvironment {
     @MainActor static let networkMonitor = NetworkMonitor()
     /// Compiled-in feature flags plus internal-build overrides (see FeatureFlag).
     @MainActor static let featureFlags = FeatureFlagStore()
+    /// The device's team-notification choice.
+    @MainActor static let notificationSettings = NotificationSettingsStore(
+        service: pushSubscriptionService,
+        authorizer: notificationAuthorizer,
+        preferences: preferences,
+        bundleId: Bundle.main.bundleIdentifier ?? "",
+        environment: PushRegistration.apnsEnvironment(
+            isInternalBuild: FeatureFlagStore.isInternalBuild),
+        isEnabled: { featureFlags.isEnabled(.proactiveNotifications) }
+    )
 }

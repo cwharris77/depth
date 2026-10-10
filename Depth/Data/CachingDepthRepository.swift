@@ -349,6 +349,11 @@ actor CachingDepthRepository: DepthRepository {
         Task { try? await self.refreshSnapshot(teamId: teamId) }
     }
 
+    /// Never cached: see the protocol.
+    func latestBigMoment(teamId: String) async throws -> TeamEvent? {
+        try await underlying.latestBigMoment(teamId: teamId)
+    }
+
     // MARK: - App config (update gate)
 
     /// Unlike team data, this tries the network first — a stale cached minimum-build

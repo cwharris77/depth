@@ -73,6 +73,9 @@ final class OnboardingController {
         return index == Self.steps(for: activeTutorial).count - 1
     }
 
+    /// True while neither the welcome screen nor a coachmark tour is up.
+    var isIdle: Bool { phase == .hidden && activeTutorial == nil }
+
     func startIfNeeded() {
         hasEvaluatedLaunch = true
         guard !preferences.hasSeenOnboarding else {

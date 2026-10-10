@@ -671,6 +671,30 @@ actor SupabaseDepthRepository: DepthRepository {
             .value
     }
 
+    func latestBigMoment(teamId: String) async throws -> TeamEvent? {
+        do {
+            let rows: [TeamEventDTO] =
+                try await client
+                .from("team_events")
+                .select("id, event_type, tier, team_id, headline, detail, source, occurred_at")
+                .eq("team_id", value: teamId)
+                .eq("tier", value: "big_moments")
+                .order("occurred_at", ascending: false)
+                .limit(1)
+                .execute()
+                .value
+            return rows.first?.toDomain()
+        } catch let error as PostgrestError {
+            throw Self.mapPostgrestError(error)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
+        } catch {
+            throw DepthError.server("\(error)")
+        }
+    }
+
     func appConfig() async throws -> AppConfig {
         do {
             let dto: AppConfigDTO =

@@ -111,8 +111,12 @@ struct SettingsView: View {
             // presentation (idempotent; remote is nil while signed out, so this is a
             // no-op there) and resolve the 32-team list for the picker once.
             await settingsStore.load()
-            guard let teams = try? await DepthEnvironment.repository.teams() else { return }
-            self.teams = teams
+            if let teams = try? await DepthEnvironment.repository.teams() {
+                self.teams = teams
+            }
+            // The permission may have changed in iOS Settings since the last foreground.
+            // Inert while the feature is switched off.
+            await DepthEnvironment.notificationSettings.refresh()
         }
         .sheet(isPresented: $showAuth) {
             // DepthSheet owns each sheet's background — no explicit
@@ -219,6 +223,15 @@ struct SettingsView: View {
                     Divider().overlay(DesignTokens.Colors.borderSubtle)
                 }
                 playerNamesRow
+                if DepthEnvironment.featureFlags.isEnabled(.proactiveNotifications) {
+                    Divider().overlay(DesignTokens.Colors.borderSubtle)
+                        .padding(.top, DesignTokens.Spacing.sm)
+                    NotificationSettingsCard(
+                        store: DepthEnvironment.notificationSettings,
+                        teams: teams,
+                        candidateTeamId: settingsStore.favoriteTeamId
+                            ?? DepthEnvironment.preferences.lastTeamId)
+                }
             }
             .padding(.vertical, DesignTokens.Spacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -480,14 +493,7 @@ struct SettingsView: View {
     // plain white-at-7% fill rather than a colored tint).
     private func iconBadge(_ systemName: String, tint: Color, background: Color? = nil) -> some View
     {
-        ZStack {
-            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
-                .fill(background ?? tint.opacity(0.16))
-            Image(systemName: systemName)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(tint)
-        }
-        .frame(width: 28, height: 28)
+        SettingsIconBadge(systemName: systemName, tint: tint, background: background)
     }
 
     private func sectionLabel(_ title: String, tint: Color) -> some View {
@@ -522,6 +528,25 @@ struct SettingsView: View {
         } catch {
             signOutError = .server
         }
+    }
+}
+
+/// The leading badge of a Settings row: a tinted rounded square with a centered glyph.
+/// A type rather than a private helper so rows defined in other files match exactly.
+struct SettingsIconBadge: View {
+    let systemName: String
+    let tint: Color
+    var background: Color?
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                .fill(background ?? tint.opacity(0.16))
+            Image(systemName: systemName)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(tint)
+        }
+        .frame(width: 28, height: 28)
     }
 }
 

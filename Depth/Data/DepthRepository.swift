@@ -54,6 +54,10 @@ protocol DepthRepository: Sendable {
     /// code — kit metadata only, no player/depth-chart embeds, so the payload stays
     /// bounded. Cache-first like the team list (stable, ~105 rows).
     func listUniforms() async throws -> [UniformListing]
+    /// The team's newest Big moment, or nil when it has none. A live read that is never
+    /// cached: its only use is deciding whether there is something new to tell the user.
+    /// A default nil keeps unrelated focused test doubles source-compatible.
+    func latestBigMoment(teamId: String) async throws -> TeamEvent?
     /// The public `app_config` singleton backing the update gate. Callers cache the last
     /// known value and
     /// fall back to it when this throws.
@@ -102,4 +106,5 @@ extension DepthRepository {
         nil
     }
     func leagueRecords(stat: RecordStat) async throws -> LeagueRecords? { nil }
+    func latestBigMoment(teamId: String) async throws -> TeamEvent? { nil }
 }

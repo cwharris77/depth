@@ -6,6 +6,8 @@ import SwiftUI
 // protocol (Data/); views never query Supabase directly.
 @main
 struct DepthApp: App {
+    @UIApplicationDelegateAdaptor(DepthAppDelegate.self) private var appDelegate
+
     init() {
         // Opens the "app init → first useful render" signpost interval (Performance
         // Review #5); closed by TeamDetailViewModel.load() on its first successful load.
@@ -27,6 +29,9 @@ struct DepthApp: App {
             // UI_TESTING_SHOW_ONBOARDING (below) opts back into seeing it.
             DepthEnvironment.preferences.markOnboardingSeen()
             DepthEnvironment.preferences.markAllTutorialsSeen()
+            // A notification choice left by an earlier run would change what the
+            // notification control shows first.
+            DepthEnvironment.preferences.resetNotificationState()
         }
 
         // UI_TESTING_START_TEAM: an optional test launch arg (`UI_TESTING_START_TEAM=bills`)
@@ -69,6 +74,25 @@ struct DepthApp: App {
             DepthEnvironment.preferences.clearOnboardingSeen()
             DepthEnvironment.preferences.clearTutorialsSeen()
         }
+
+        #if UITEST_FIXTURES
+            // The notification prompt never appears in a first session; the journey
+            // that covers it starts as a returning user.
+            if DepthEnvironment.isBigMomentPromptRequested {
+                DepthEnvironment.preferences.hasFinishedFirstSession = true
+            }
+
+            // UI_TESTING_ROUTE_TEAM=<id> asks for a team's depth chart here, before any
+            // view exists, which is when a notification tap that cold-starts the app
+            // makes its request.
+            if let routeArgument = ProcessInfo.processInfo.arguments.first(where: {
+                $0.hasPrefix("UI_TESTING_ROUTE_TEAM=")
+            }) {
+                DepthEnvironment.teamRouteStore.request(
+                    teamId: routeArgument.replacingOccurrences(
+                        of: "UI_TESTING_ROUTE_TEAM=", with: ""))
+            }
+        #endif
 
         if ProcessInfo.processInfo.arguments.contains("UI_TESTING_LEGACY_ONBOARDING") {
             DepthEnvironment.preferences.markOnboardingSeen()

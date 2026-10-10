@@ -22,6 +22,17 @@ struct ContentView: View {
     /// view when `phase` changes) — a real `@State` bool kept in sync via `.onChange`
     /// is the reliable pattern.
     @State private var isWelcomeShowing = false
+    @State private var bigMomentPrompt = BigMomentPromptModel(
+        repository: DepthEnvironment.repository,
+        authorizer: DepthEnvironment.notificationAuthorizer,
+        settings: DepthEnvironment.notificationSettings,
+        preferences: DepthEnvironment.preferences,
+        isSuppressed: DepthEnvironment.isBigMomentPromptSuppressed,
+        isOnboardingIdle: { DepthEnvironment.onboarding.isIdle })
+    /// Mirrors `bigMomentPrompt.event`, synced by the `.onChange` below, for the same
+    /// reason `isWelcomeShowing` mirrors the onboarding phase: a binding computed from
+    /// an `@Observable` property does not reliably drive a presentation.
+    @State private var promptEvent: TeamEvent?
 
     var body: some View {
         Group {
@@ -57,6 +68,22 @@ struct ContentView: View {
         }
         .onChange(of: onboarding.phase, initial: true) { _, phase in
             isWelcomeShowing = phase == .welcome
+        }
+        .onChange(of: bigMomentPrompt.event) { _, event in
+            promptEvent = event
+        }
+        // `onDismiss` covers the close button and a swipe down, which end the sheet
+        // without calling either of its actions.
+        .sheet(item: $promptEvent, onDismiss: { bigMomentPrompt.decline() }) { event in
+            BigMomentPromptSheet(
+                event: event,
+                onAccept: { Task { await bigMomentPrompt.accept() } },
+                onDecline: { bigMomentPrompt.decline() }
+            )
+            .modifier(UITestingDynamicTypeOverride())
+            // Tells the model the sheet really appeared; a presentation attempted while
+            // another sheet is open never gets here.
+            .onAppear { bigMomentPrompt.didPresent() }
         }
         // The app is always dark, matching the website. Keeping the scheme at the app level
         // the app level keeps the interface dark. Flipping the scheme here at
@@ -102,6 +129,8 @@ struct ContentView: View {
             // every launch after the first (or once the tutorial's been skipped or
             // finished) — see OnboardingController.startIfNeeded.
             onboarding.startIfNeeded()
+            await DepthEnvironment.notificationSettings.refresh()
+            await evaluateBigMomentPrompt()
         }
         // Re-gate on foreground. A server-side minimum-build flip has to reach
         // apps that are already running, not just cold launches — without this, a
@@ -109,10 +138,32 @@ struct ContentView: View {
         // keeps reading a schema it may be too old for. `check()` is cheap (one singleton
         // row) and can only ever move the gate toward blocked.
         .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                DepthEnvironment.preferences.hasFinishedFirstSession = true
+            }
             guard phase == .active else { return }
-            Task { await updateGate.check() }
+            Task {
+                await updateGate.check()
+                guard updateGate.state == .allowed else { return }
+                // The system permission and the APNs token can both change while the app
+                // is in the background. Inert while the feature is switched off.
+                await DepthEnvironment.notificationSettings.refresh()
+                await evaluateBigMomentPrompt()
+            }
         }
         .modifier(UITestingDynamicTypeOverride())
+    }
+
+    private func evaluateBigMomentPrompt() async {
+        // Checked first so a launch that could not show the prompt does no extra work.
+        // An event that was published but never appeared still has to be re-evaluated.
+        guard bigMomentPrompt.isEligible || bigMomentPrompt.hasUnpresentedEvent else { return }
+        // The favorite comes from the server; wait for it so a signed-in user is asked
+        // about their favorite team, not the last one they happened to view.
+        await DepthEnvironment.userSettingsStore.load()
+        await bigMomentPrompt.evaluate(
+            candidateTeamId: DepthEnvironment.userSettingsStore.favoriteTeamId
+                ?? DepthEnvironment.preferences.lastTeamId)
     }
 }
 
