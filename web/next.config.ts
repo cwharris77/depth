@@ -24,6 +24,19 @@ const nextConfig: NextConfig = {
       expire: 2592000, // 30 days
     },
   },
+  async headers() {
+    return [
+      {
+        // Files in public/ default to `max-age=0, must-revalidate`, so every view re-checks
+        // with the origin. Art URLs carrying `?rev=<revision>` (lib/uniforms/art.tsx) change
+        // whenever the bytes do, which makes them safe to cache indefinitely. Unversioned
+        // requests (the iOS app's) keep the default so corrected art still reaches them.
+        source: '/uniforms/:path*',
+        has: [{ type: 'query', key: 'rev' }],
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
