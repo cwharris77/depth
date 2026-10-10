@@ -6,7 +6,7 @@ import Observation
 ///
 /// What is sent to the server is the chosen tier while permission is granted and `off`
 /// once it is denied, so revoking permission in system settings stops delivery without
-/// discarding the choice.
+/// discarding the choice. Nothing is sent before the permission question is answered.
 @MainActor
 @Observable
 final class NotificationSettingsStore {
@@ -20,6 +20,8 @@ final class NotificationSettingsStore {
     @ObservationIgnored private let bundleId: String
     @ObservationIgnored private let environment: String
     @ObservationIgnored private let isEnabled: @MainActor () -> Bool
+    /// The one pass that is sending registrations, if any. See `sync()`.
+    @ObservationIgnored private var sending: Task<Void, Never>?
 
     init(
         service: any PushSubscriptionServicing,
@@ -47,6 +49,12 @@ final class NotificationSettingsStore {
     func refresh() async {
         guard isAvailable else { return }
         authorization = await authorizer.status()
+        if authorization == .notDetermined, preferences.pushToken != nil {
+            // This install has never registered for a token, so a stored one was restored
+            // from a backup or device transfer and identifies a different install.
+            preferences.pushToken = nil
+            preferences.lastSyncedRegistration = nil
+        }
         if authorization == .authorized, tier != .off, teamId != nil {
             // Tokens can change between launches; asking again is how a new one arrives.
             authorizer.registerForRemoteNotifications()
@@ -97,7 +105,6 @@ final class NotificationSettingsStore {
     func handleDeviceToken(_ data: Data) async {
         guard isAvailable else { return }
         preferences.pushToken = data.map { String(format: "%02x", $0) }.joined()
-        authorization = await authorizer.status()
         await sync()
     }
 
@@ -118,22 +125,65 @@ final class NotificationSettingsStore {
         preferences.notificationTeamId = newTeamId
     }
 
-    /// Sends the current registration when it differs from the last one the server
-    /// accepted. Without a token or a team there is nothing to register. A failure
-    /// leaves the marker unchanged, so the next refresh tries again.
+    /// What the server should hold right now. Nil without a token or a team, and while the
+    /// permission question is unanswered. `off` is sent only when it was chosen or when
+    /// permission is denied.
+    private var desiredRegistration: PushRegistration? {
+        guard let token = preferences.pushToken, let teamId else { return nil }
+        let effective: NotificationTier
+        switch authorization {
+        case .authorized: effective = tier
+        case .denied: effective = .off
+        case .notDetermined: return nil
+        }
+        return PushRegistration(
+            token: token, teamId: teamId, tier: effective, bundleId: bundleId,
+            environment: environment)
+    }
+
+    private func marker(for registration: PushRegistration) -> String {
+        "\(registration.token)|\(registration.teamId)|\(registration.tier.rawValue)"
+    }
+
+    /// Brings the server up to date with the current choice and system permission, and
+    /// returns once that is done or has failed. The permission is read here so that no
+    /// caller can sync from a value read earlier or never read at all.
+    ///
+    /// At most one request is in flight. A call that arrives during one waits for the
+    /// running pass, which keeps sending until what it last sent is what is wanted.
     private func sync() async {
-        guard let token = preferences.pushToken, let teamId else { return }
-        let effective = authorization == .authorized ? tier : NotificationTier.off
-        let marker = "\(token)|\(teamId)|\(effective.rawValue)"
-        guard preferences.lastSyncedRegistration != marker else { return }
-        do {
-            try await service.register(
-                PushRegistration(
-                    token: token, teamId: teamId, tier: effective, bundleId: bundleId,
-                    environment: environment))
-            preferences.lastSyncedRegistration = marker
-        } catch {
-            // Best-effort: the choice is kept locally and re-sent on the next refresh.
+        authorization = await authorizer.status()
+        if let sending {
+            await sending.value
+            return
+        }
+        let pass = Task {
+            await sendUntilCurrent()
+            // Cleared in the same main-actor turn as the loop's last check, so a caller
+            // never waits on a pass that has already decided to stop.
+            sending = nil
+        }
+        sending = pass
+        await pass.value
+    }
+
+    /// The marker is cleared before each request and written only after it succeeds: a
+    /// request with an unknown outcome leaves no marker, so the next sync sends again
+    /// whatever the choice is by then. A failure is not retried here unless the wanted
+    /// registration changed in the meantime; the next refresh retries it.
+    private func sendUntilCurrent() async {
+        var lastSent: PushRegistration?
+        while let wanted = desiredRegistration, wanted != lastSent,
+            preferences.lastSyncedRegistration != marker(for: wanted)
+        {
+            preferences.lastSyncedRegistration = nil
+            lastSent = wanted
+            do {
+                try await service.register(wanted)
+                preferences.lastSyncedRegistration = marker(for: wanted)
+            } catch {
+                // Best-effort: the choice is kept locally and re-sent on the next refresh.
+            }
         }
     }
 }

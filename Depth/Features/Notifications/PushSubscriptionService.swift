@@ -9,6 +9,12 @@ struct PushRegistration: Sendable, Equatable {
     let bundleId: String
     /// "sandbox" or "production": which APNs host can reach this build's token.
     let environment: String
+
+    /// Internal builds are signed for development, so their tokens are only reachable
+    /// through the APNs sandbox; store builds use production.
+    static func apnsEnvironment(isInternalBuild: Bool) -> String {
+        isInternalBuild ? "sandbox" : "production"
+    }
 }
 
 protocol PushSubscriptionServicing: Sendable {

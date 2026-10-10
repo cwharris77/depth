@@ -169,14 +169,14 @@ enum DepthEnvironment {
     @MainActor static let networkMonitor = NetworkMonitor()
     /// Compiled-in feature flags plus internal-build overrides (see FeatureFlag).
     @MainActor static let featureFlags = FeatureFlagStore()
-    /// The device's team-notification choice. Internal builds are signed for development,
-    /// so their tokens are only reachable through the APNs sandbox.
+    /// The device's team-notification choice.
     @MainActor static let notificationSettings = NotificationSettingsStore(
         service: pushSubscriptionService,
         authorizer: notificationAuthorizer,
         preferences: preferences,
         bundleId: Bundle.main.bundleIdentifier ?? "",
-        environment: FeatureFlagStore.isInternalBuild ? "sandbox" : "production",
+        environment: PushRegistration.apnsEnvironment(
+            isInternalBuild: FeatureFlagStore.isInternalBuild),
         isEnabled: { featureFlags.isEnabled(.proactiveNotifications) }
     )
 }
