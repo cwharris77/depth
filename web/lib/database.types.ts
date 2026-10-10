@@ -2350,6 +2350,59 @@ export type Database = {
           },
         ]
       }
+      team_events: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          detail: string | null
+          event_type: string
+          headline: string
+          id: string
+          occurred_at: string
+          payload: NonNullable<Json>
+          player_id: string | null
+          source: string
+          team_id: string
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key: string
+          detail?: string | null
+          event_type: string
+          headline: string
+          id?: string
+          occurred_at: string
+          payload?: NonNullable<Json>
+          player_id?: string | null
+          source: string
+          team_id: string
+          tier: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          detail?: string | null
+          event_type?: string
+          headline?: string
+          id?: string
+          occurred_at?: string
+          payload?: NonNullable<Json>
+          player_id?: string | null
+          source?: string
+          team_id?: string
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_formations: {
         Row: {
           alignment: string
@@ -2872,6 +2925,47 @@ export type Database = {
           },
         ]
       }
+      team_starter_state: {
+        Row: {
+          candidate_player_id: string | null
+          candidate_player_name: string | null
+          candidate_seen_at: string | null
+          confirmed_player_id: string
+          confirmed_player_name: string
+          position: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_player_id?: string | null
+          candidate_player_name?: string | null
+          candidate_seen_at?: string | null
+          confirmed_player_id: string
+          confirmed_player_name: string
+          position: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_player_id?: string | null
+          candidate_player_name?: string | null
+          candidate_seen_at?: string | null
+          confirmed_player_id?: string
+          confirmed_player_name?: string
+          position?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_starter_state_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_stats: {
         Row: {
           conference_losses: number | null
@@ -3121,7 +3215,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      show_limit: { Args: never; Returns: number }
+      show_limit: { Args: Record<PropertyKey, never>; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       upsert_depth_override_group: {
         Args: { p_player_ids: string[]; p_position: string; p_team_id: string }
@@ -3184,8 +3278,7 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -3209,8 +3302,7 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -3234,8 +3326,7 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -3274,4 +3365,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
