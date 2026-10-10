@@ -55,6 +55,12 @@ private func bigMoment(daysAgo: Double) -> TeamEvent {
         occurredAt: now.addingTimeInterval(-daysAgo * 86_400))
 }
 
+/// Stands in for the first-run tutorial, so a test can start or finish it mid-test.
+@MainActor
+private final class OnboardingState {
+    var isIdle = true
+}
+
 @MainActor
 private struct PromptHarness {
     let model: BigMomentPromptModel
@@ -71,14 +77,23 @@ private func makeModel(
     firstSessionFinished: Bool = true,
     alreadyShown: Bool = false,
     isEnabled: Bool = true,
-    isSuppressed: Bool = false
+    isSuppressed: Bool = false,
+    tier: NotificationTier = .bigMoments,
+    onboardingIdle: OnboardingState = OnboardingState(),
+    reusing existing: UserPreferences? = nil
 ) throws -> PromptHarness {
-    let suite = "BigMomentPromptModelTests.\(UUID().uuidString)"
-    let defaults = try #require(UserDefaults(suiteName: suite))
-    defaults.removePersistentDomain(forName: suite)
-    let preferences = UserPreferences(defaults: defaults)
-    preferences.hasFinishedFirstSession = firstSessionFinished
-    preferences.bigMomentPromptShown = alreadyShown
+    let preferences: UserPreferences
+    if let existing {
+        preferences = existing
+    } else {
+        let suite = "BigMomentPromptModelTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        preferences = UserPreferences(defaults: defaults)
+        preferences.hasFinishedFirstSession = firstSessionFinished
+        preferences.bigMomentPromptShown = alreadyShown
+        preferences.notificationTier = tier
+    }
     let authorizer = PromptAuthorizer(authorization)
     let settings = NotificationSettingsStore(
         service: NoOpPushSubscriptionService(), authorizer: authorizer, preferences: preferences,
@@ -87,7 +102,8 @@ private func makeModel(
     let repository = PromptRepositoryFake(event: event)
     let model = BigMomentPromptModel(
         repository: repository, authorizer: authorizer, settings: settings,
-        preferences: preferences, isSuppressed: isSuppressed, now: { now })
+        preferences: preferences, isSuppressed: isSuppressed,
+        isOnboardingIdle: { onboardingIdle.isIdle }, now: { now })
     return PromptHarness(
         model: model, preferences: preferences, settings: settings, repository: repository,
         authorizer: authorizer)
@@ -98,6 +114,7 @@ private func makeModel(
     #expect(harness.model.isEligible)
     await harness.model.evaluate(candidateTeamId: "seahawks")
     #expect(harness.model.event?.id == "e1")
+    #expect(harness.preferences.bigMomentPromptShown)
     #expect(await harness.repository.askedFor == ["seahawks"])
     // Showing the prompt is not the system dialog: that waits for the user to accept.
     #expect(harness.authorizer.requestCount == 0)
@@ -193,4 +210,78 @@ private func makeModel(
     harness.model.decline()
     #expect(harness.settings.teamId == "seahawks")
     #expect(harness.preferences.bigMomentPromptShown)
+}
+
+@MainActor @Test func aPromptLeftUnansweredWhenTheAppDiesIsNotShownAgain() async throws {
+    let first = try makeModel(event: bigMoment(daysAgo: 2))
+    await first.model.evaluate(candidateTeamId: "seahawks")
+    first.model.didPresent()
+    #expect(first.model.event != nil)
+
+    // A new process: same stored state, a fresh model, no answer ever recorded.
+    let second = try makeModel(event: bigMoment(daysAgo: 2), reusing: first.preferences)
+    #expect(second.model.isEligible == false)
+    await second.model.evaluate(candidateTeamId: "seahawks")
+    #expect(second.model.event == nil)
+    #expect(await second.repository.askedFor.isEmpty)
+}
+
+@MainActor @Test func thePromptWaitsUntilOnboardingIsOver() async throws {
+    let onboarding = OnboardingState()
+    onboarding.isIdle = false
+    let harness = try makeModel(event: bigMoment(daysAgo: 2), onboardingIdle: onboarding)
+
+    #expect(harness.model.isEligible == false)
+    await harness.model.evaluate(candidateTeamId: "seahawks")
+    #expect(harness.model.event == nil)
+    #expect(harness.preferences.bigMomentPromptShown == false)
+    #expect(await harness.repository.askedFor.isEmpty)
+
+    onboarding.isIdle = true
+    await harness.model.evaluate(candidateTeamId: "seahawks")
+    #expect(harness.model.event?.id == "e1")
+}
+
+@MainActor @Test func aPromptThatNeverReachedTheScreenIsOfferedAgain() async throws {
+    let harness = try makeModel(event: bigMoment(daysAgo: 2))
+    await harness.model.evaluate(candidateTeamId: "seahawks")
+    #expect(harness.model.event != nil)
+
+    // The sheet was never presented, so the next evaluation starts over.
+    await harness.model.evaluate(candidateTeamId: "seahawks")
+    #expect(harness.model.event?.id == "e1")
+    #expect(harness.preferences.bigMomentPromptShown)
+    #expect(await harness.repository.askedFor == ["seahawks", "seahawks"])
+
+    // Once it is on screen, later evaluations leave it alone.
+    harness.model.didPresent()
+    await harness.model.evaluate(candidateTeamId: "seahawks")
+    #expect(harness.model.event?.id == "e1")
+    #expect(await harness.repository.askedFor == ["seahawks", "seahawks"])
+}
+
+@MainActor @Test func aPromptThatNeverReachedTheScreenIsWithdrawnWhenItNoLongerApplies()
+    async throws
+{
+    let onboarding = OnboardingState()
+    let harness = try makeModel(event: bigMoment(daysAgo: 2), onboardingIdle: onboarding)
+    await harness.model.evaluate(candidateTeamId: "seahawks")
+    #expect(harness.model.event != nil)
+
+    onboarding.isIdle = false
+    await harness.model.evaluate(candidateTeamId: "seahawks")
+    #expect(harness.model.event == nil)
+    // It was never seen, so it has not used up the one showing.
+    #expect(harness.preferences.bigMomentPromptShown == false)
+}
+
+@MainActor @Test func acceptingAlwaysLeavesTheTierAtBigMoments() async throws {
+    let harness = try makeModel(event: bigMoment(daysAgo: 2), tier: .everything)
+    #expect(harness.settings.tier == .everything)
+    await harness.model.evaluate(candidateTeamId: "seahawks")
+    await harness.model.accept()
+    #expect(harness.settings.tier == .bigMoments)
+    #expect(harness.preferences.notificationTier == .bigMoments)
+    #expect(harness.settings.teamId == "seahawks")
+    #expect(harness.authorizer.requestCount == 1)
 }

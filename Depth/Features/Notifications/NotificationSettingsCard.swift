@@ -14,6 +14,17 @@ struct NotificationSettingsCard: View {
 
     private var shownTeamId: String? { store.teamId ?? candidateTeamId }
 
+    /// Until the system permission question is answered nothing is delivered, whatever
+    /// tier is stored, so the control reads Off rather than a default that is not in
+    /// effect. Picking a tier from the menu is what asks the question.
+    private var isUnanswered: Bool { store.authorization == .notDetermined }
+
+    private var shownTier: NotificationTier { isUnanswered ? .off : store.tier }
+
+    private var summary: String {
+        isUnanswered ? "Choose what you want to hear about your team." : store.tier.summary
+    }
+
     private var teamLabel: String {
         guard let id = shownTeamId, let team = teams.first(where: { $0.id == id }) else {
             return "Choose a team"
@@ -31,26 +42,26 @@ struct NotificationSettingsCard: View {
                         }
                     }
                 } label: {
-                    valueRow(icon: "bell.fill", title: "Notifications", value: store.tier.title)
+                    valueRow(icon: "bell.fill", title: "Notifications", value: shownTier.title)
                 }
                 .accessibilityIdentifier("settings-notifications-tier")
 
-                Text(store.tier.summary)
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-                    .accessibilityIdentifier("settings-notifications-summary")
+                Group {
+                    Text(summary)
+                        .accessibilityIdentifier("settings-notifications-summary")
 
-                if store.authorization == .denied, store.tier != .off {
-                    Text("Notifications are turned off for this app in iOS Settings.")
-                        .font(.caption)
-                        .foregroundStyle(DesignTokens.Colors.textMuted)
-                        .accessibilityIdentifier("settings-notifications-denied")
+                    if store.authorization == .denied, store.tier != .off {
+                        Text("Notifications are turned off for this app in iOS Settings.")
+                            .accessibilityIdentifier("settings-notifications-denied")
+                    }
                 }
+                .font(.caption)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+                .padding(.horizontal, DesignTokens.Spacing.md)
             }
-            .padding(.horizontal, DesignTokens.Spacing.md)
             .padding(.bottom, DesignTokens.Spacing.sm)
 
-            if store.tier != .off {
+            if shownTier != .off {
                 divider
                 Menu {
                     ForEach(teams, id: \.id) { team in
@@ -62,7 +73,6 @@ struct NotificationSettingsCard: View {
                     valueRow(icon: "person.2.fill", title: "Team", value: teamLabel)
                 }
                 .accessibilityIdentifier("settings-notifications-team")
-                .padding(.horizontal, DesignTokens.Spacing.md)
             }
 
             divider
@@ -95,13 +105,15 @@ struct NotificationSettingsCard: View {
     }
 
     /// The icon, title, current value and menu chevrons of a menu row. Stacks at
-    /// accessibility sizes, where a title and a value no longer fit on one line.
+    /// accessibility sizes, where a title and a value no longer fit on one line. The
+    /// horizontal padding is part of the label, ahead of the frame and content shape, so
+    /// the row accepts taps edge to edge of the card.
     private func valueRow(icon: String, title: String, value: String) -> some View {
         rowLayout {
             SettingsIconBadge(systemName: icon, tint: DesignTokens.Colors.accent)
             Text(title)
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
-            Spacer()
+            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
             Text(value)
                 .font(.subheadline)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
@@ -111,7 +123,8 @@ struct NotificationSettingsCard: View {
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(DesignTokens.Colors.textFaint)
         }
-        .frame(maxWidth: .infinity, minHeight: 44)
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
         .contentShape(Rectangle())
     }
 

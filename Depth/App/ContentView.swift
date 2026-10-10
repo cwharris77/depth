@@ -27,7 +27,8 @@ struct ContentView: View {
         authorizer: DepthEnvironment.notificationAuthorizer,
         settings: DepthEnvironment.notificationSettings,
         preferences: DepthEnvironment.preferences,
-        isSuppressed: DepthEnvironment.isBigMomentPromptSuppressed)
+        isSuppressed: DepthEnvironment.isBigMomentPromptSuppressed,
+        isOnboardingIdle: { DepthEnvironment.onboarding.isIdle })
     /// Mirrors `bigMomentPrompt.event`, synced by the `.onChange` below, for the same
     /// reason `isWelcomeShowing` mirrors the onboarding phase: a binding computed from
     /// an `@Observable` property does not reliably drive a presentation.
@@ -80,6 +81,9 @@ struct ContentView: View {
                 onDecline: { bigMomentPrompt.decline() }
             )
             .modifier(UITestingDynamicTypeOverride())
+            // Tells the model the sheet really appeared; a presentation attempted while
+            // another sheet is open never gets here.
+            .onAppear { bigMomentPrompt.didPresent() }
         }
         // The app is always dark, matching the website. Keeping the scheme at the app level
         // the app level keeps the interface dark. Flipping the scheme here at
@@ -152,7 +156,8 @@ struct ContentView: View {
 
     private func evaluateBigMomentPrompt() async {
         // Checked first so a launch that could not show the prompt does no extra work.
-        guard bigMomentPrompt.isEligible else { return }
+        // An event that was published but never appeared still has to be re-evaluated.
+        guard bigMomentPrompt.isEligible || bigMomentPrompt.hasUnpresentedEvent else { return }
         // The favorite comes from the server; wait for it so a signed-in user is asked
         // about their favorite team, not the last one they happened to view.
         await DepthEnvironment.userSettingsStore.load()

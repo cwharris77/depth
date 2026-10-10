@@ -10,6 +10,22 @@ struct OnboardingControllerTests {
         return UserPreferences(defaults: defaults)
     }
 
+    @Test func isIdleOnlyWhileNoWelcomeOrCoachmarkIsUp() {
+        let controller = OnboardingController(preferences: freshPreferences())
+        #expect(controller.isIdle)
+
+        controller.startIfNeeded()
+        #expect(controller.phase == .welcome)
+        #expect(controller.isIdle == false)
+
+        controller.beginCoachmarks()
+        #expect(controller.activeTutorial != nil)
+        #expect(controller.isIdle == false)
+
+        controller.skipCoachmarks()
+        #expect(controller.isIdle)
+    }
+
     @Test func firstLaunchShowsWelcomeAndSeenLaunchDoesNot() {
         let firstLaunch = OnboardingController(preferences: freshPreferences())
         firstLaunch.startIfNeeded()

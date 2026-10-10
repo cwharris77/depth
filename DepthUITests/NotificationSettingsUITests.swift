@@ -55,14 +55,20 @@ final class NotificationSettingsUITests: XCTestCase {
         XCTAssertTrue(tier.waitForLabel(containing: "Off"), "got \"\(tier.label)\"")
         XCTAssertTrue(team.waitForAbsence(timeout: 5), "Off has no team to choose")
 
-        // The padded row, not just its text, must accept the tap.
-        tier.coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.5)).tap()
+        // The row has to accept a tap anywhere it is drawn, so tap in the gutter between
+        // the card's edge and the row's icon, where there is no text or glyph.
+        let card = app.buttons["settings-notifications-system-settings"].frame
+        XCTAssertEqual(tier.frame.minX, card.minX, accuracy: 1, "the row should span the card")
+        XCTAssertEqual(tier.frame.maxX, card.maxX, accuracy: 1, "the row should span the card")
+        tier.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
+            .withOffset(CGVector(dx: 4, dy: 0)).tap()
         XCTAssertTrue(app.buttons["Everything"].waitForExistence(timeout: 5))
         app.buttons["Everything"].tap()
         XCTAssertTrue(tier.waitForLabel(containing: "Everything"), "got \"\(tier.label)\"")
         XCTAssertTrue(team.waitForExistence(timeout: 5))
 
-        team.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        team.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+            .withOffset(CGVector(dx: -4, dy: 0)).tap()
         XCTAssertTrue(app.buttons["Chicago Bears"].waitForExistence(timeout: 5))
         app.buttons["Chicago Bears"].tap()
         XCTAssertTrue(team.waitForLabel(containing: "Chicago Bears"), "got \"\(team.label)\"")
@@ -101,18 +107,51 @@ final class NotificationSettingsUITests: XCTestCase {
         XCTAssertFalse(app.buttons["settings-notifications-system-settings"].exists)
     }
 
-    func testBigMomentPromptShowsOnceAndDecliningDismissesIt() throws {
-        let app = launch(flagOn: true, extraArguments: [Self.promptArgument])
+    func testAnUnansweredPermissionReadsOffUntilATierIsPicked() throws {
+        // No authorized argument: the permission question has never been answered.
+        let app = launch(flagOn: true)
+        XCTAssertTrue(app.waitForDepthChart())
+        app.openSettings()
+
+        let tier = app.buttons["settings-notifications-tier"]
+        let team = app.buttons["settings-notifications-team"]
+        XCTAssertTrue(tier.waitForExistence(timeout: 10))
+        XCTAssertTrue(tier.label.contains("Off"), "got \"\(tier.label)\"")
+        XCTAssertFalse(tier.label.contains("Big moments"), "got \"\(tier.label)\"")
+        XCTAssertFalse(team.exists, "nothing is on, so there is no team to choose")
+        let summary = app.staticTexts["settings-notifications-summary"]
+        XCTAssertEqual(summary.label, "Choose what you want to hear about your team.")
+        attachScreenshot(app, named: "settings-notifications-unanswered")
+
+        // Picking a tier asks for permission. In a UI test nothing grants it, so the
+        // row lands on the chosen tier with the note that the system has it switched off.
+        tier.tap()
+        XCTAssertTrue(app.buttons["Big moments"].waitForExistence(timeout: 5))
+        app.buttons["Big moments"].tap()
+        XCTAssertTrue(tier.waitForLabel(containing: "Big moments"), "got \"\(tier.label)\"")
+        XCTAssertTrue(app.staticTexts["settings-notifications-denied"].waitForExistence(timeout: 5))
+        XCTAssertTrue(team.waitForLabel(containing: "Buffalo Bills"), "got \"\(team.label)\"")
+        XCTAssertTrue(app.buttons["account-close-button"].isHittable)
+        attachScreenshot(app, named: "settings-notifications-denied")
+    }
+
+    private func waitForPrompt(in app: XCUIApplication) -> XCUIElement {
         let accept = app.buttons["big-moment-prompt-accept"]
-        let decline = app.buttons["big-moment-prompt-decline"]
         XCTAssertTrue(accept.waitForExistence(timeout: 20), "the prompt should appear")
         XCTAssertTrue(
             app.descendants(matching: .any)["big-moment-prompt-event"].exists,
             "the prompt should show the event it is about")
+        return accept
+    }
+
+    func testDecliningTheBigMomentPromptDismissesItForGood() throws {
+        let app = launch(flagOn: true, extraArguments: [Self.promptArgument])
+        let accept = waitForPrompt(in: app)
         attachScreenshot(app, named: "big-moment-prompt")
 
         // The padded row, not just its text, must accept the tap.
-        decline.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: 0.5)).tap()
+        app.buttons["big-moment-prompt-decline"]
+            .coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: 0.5)).tap()
         XCTAssertTrue(accept.waitForAbsence(timeout: 10), "declining should dismiss the prompt")
 
         app.terminate()
@@ -124,17 +163,38 @@ final class NotificationSettingsUITests: XCTestCase {
             "an answered prompt should never come back")
     }
 
-    func testNoPromptAppearsUnlessAJourneyAsksForIt() throws {
-        // Everything the prompt needs except the request: a returning user, the flag on,
-        // an unanswered permission question.
-        let first = launch(flagOn: true, extraArguments: [Self.promptArgument])
-        XCTAssertTrue(first.buttons["big-moment-prompt-accept"].waitForExistence(timeout: 20))
-        first.terminate()
+    func testAPromptLeftUnansweredWhenTheAppIsKilledDoesNotComeBack() throws {
+        let app = launch(flagOn: true, extraArguments: [Self.promptArgument])
+        _ = waitForPrompt(in: app)
+        app.terminate()
 
+        let relaunched = launch(
+            flagOn: true, resettingState: false, extraArguments: [Self.promptArgument])
+        XCTAssertTrue(relaunched.waitForDepthChart())
+        XCTAssertFalse(
+            relaunched.buttons["big-moment-prompt-accept"].waitForExistence(timeout: 5),
+            "the prompt is shown once, answered or not")
+    }
+
+    func testNoPromptAppearsUnlessAJourneyAsksForIt() throws {
+        // The first launch only prepares stored state: a returning user who has never
+        // seen the prompt. The flag is off, so it cannot show the prompt itself.
+        let prepared = launch(flagOn: false, extraArguments: [Self.promptArgument])
+        XCTAssertTrue(prepared.waitForDepthChart())
+        prepared.terminate()
+
+        // Flag on, permission unanswered, but no request for the prompt.
         let app = launch(flagOn: true, resettingState: false)
         XCTAssertTrue(app.waitForDepthChart())
         XCTAssertFalse(
             app.buttons["big-moment-prompt-accept"].waitForExistence(timeout: 5),
             "a UI-test launch that did not ask for the prompt must not see it")
+        app.terminate()
+
+        // The same stored state does show it once a launch asks, so the launch above
+        // was held back by the missing request and by nothing else.
+        let asking = launch(
+            flagOn: true, resettingState: false, extraArguments: [Self.promptArgument])
+        _ = waitForPrompt(in: asking)
     }
 }
