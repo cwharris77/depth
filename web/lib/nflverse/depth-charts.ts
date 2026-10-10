@@ -7,9 +7,9 @@ import { classifyDepthChartCode, depthChartUnit } from './positions';
 // labels. This stays pure so ingest and the one-time backfill use precisely
 // the same selection rule.
 //
-// Only a row that names a field position sets one: a special-teams role or a reviewed
-// code with no canonical position leaves the player on whatever else he is charted at,
-// or on his roster position. `unmappedCodes` counts rows per `unit:code` that no table
+// Only a row that names a field position sets one: a role such as nickel back or
+// returner, or a reviewed code with no canonical position, leaves the player on whatever
+// else he is charted at, or on his roster position. `unmappedCodes` counts rows per `unit:code` that no table
 // knows (or `formation:code` when the unit itself is unreadable), so a code nflverse
 // starts publishing is reported instead of vanishing.
 export function mapHistoricalDepthChartPositions(

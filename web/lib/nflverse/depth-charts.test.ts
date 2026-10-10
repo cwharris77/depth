@@ -142,4 +142,19 @@ describe('mapHistoricalDepthChartPositions', () => {
     expect(positions.size).toBe(0);
     expect(unmappedCodes).toEqual({ 'Nickel:LT': 1 });
   });
+
+  it('keeps a corner at corner when he is also charted as the nickel back', () => {
+    const { positions, unmappedCodes } = mapHistoricalDepthChartPositions(
+      2022,
+      [
+        { ...legacy, formation: 'Defense', week: '18', gsis_id: 'cb', depth_position: 'RCB' },
+        { ...legacy, formation: 'Defense', week: '18', gsis_id: 'cb', depth_position: 'NB' },
+        { ...legacy, formation: 'Defense', week: '18', gsis_id: 'slot', depth_position: 'NCB' },
+      ],
+      resolveTeamCode
+    );
+
+    expect(Object.fromEntries(positions)).toEqual({ 'seahawks|cb': 'RCB' });
+    expect(unmappedCodes).toEqual({});
+  });
 });
