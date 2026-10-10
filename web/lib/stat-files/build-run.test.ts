@@ -328,6 +328,25 @@ describe('record files', () => {
     expect(file.scope).toBe('REG');
   });
 
+  it('hands the built records and every season of rows to onBuilt', async () => {
+    const target = new RecordingTarget();
+    const calls: { stats: number; seasons: number[] }[] = [];
+    await runStatFileBuild(
+      options(target, [2023, 2024, 2025], undefined, {
+        records: {
+          ...recordsOption([]),
+          onBuilt: (built, rowsBySeason) => {
+            calls.push({
+              stats: built.records.size,
+              seasons: [...rowsBySeason.keys()].sort((a, b) => a - b),
+            });
+          },
+        },
+      })
+    );
+    expect(calls).toEqual([{ stats: 6, seasons: [2023, 2024, 2025] }]);
+  });
+
   it('writes no record keys unless record files are enabled', async () => {
     const target = new RecordingTarget();
     const result = await runStatFileBuild(options(target, [2023, 2024, 2025]));
