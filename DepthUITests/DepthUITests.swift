@@ -9,6 +9,48 @@ import XCTest
 // `testAppLaunches`, the one live smoke that boots against the configured backend.
 @MainActor
 final class DepthUITests: XCTestCase {
+    func testUniformPickerPaddingAndPreviewAccessibility() throws {
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"))
+        app.buttons["depth-chart-overflow"].tap()
+        XCTAssertTrue(app.buttons["choose-uniform"].waitForExistence(timeout: 5))
+        app.buttons["choose-uniform"].tap()
+        let dots = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'uniform-dot-'"))
+        XCTAssertTrue(dots.element(boundBy: 1).waitForExistence(timeout: 5))
+        let first = dots.element(boundBy: 0)
+        let second = dots.element(boundBy: 1)
+        first.tap()
+        XCTAssertEqual(
+            XCTWaiter.wait(
+                for: [
+                    XCTNSPredicateExpectation(
+                        predicate: NSPredicate(format: "selected == true"), object: first)
+                ], timeout: 5), .completed)
+        XCTAssertEqual(first.value as? String, "1 of \(dots.count)")
+        second.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        XCTAssertEqual(
+            XCTWaiter.wait(
+                for: [
+                    XCTNSPredicateExpectation(
+                        predicate: NSPredicate(format: "selected == true"), object: second)
+                ], timeout: 5), .completed)
+        XCTAssertFalse(first.isSelected)
+        let awayCard = app.otherElements["uniform-bills-away-2011"]
+        XCTAssertTrue(awayCard.waitForLabel(containing: "Away, selected"))
+        XCTAssertEqual(second.value as? String, "2 of \(dots.count)")
+        first.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)).tap()
+        XCTAssertEqual(
+            XCTWaiter.wait(
+                for: [
+                    XCTNSPredicateExpectation(
+                        predicate: NSPredicate(format: "selected == true"), object: first)
+                ], timeout: 5), .completed)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "uniform-picker-padding-and-selection"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     func testAppLaunches() throws {
         let app = XCUIApplication()
         app.launch()

@@ -25,17 +25,24 @@ struct UniformPickerSheet: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let uniforms: [Uniform]
-    let selectedID: String?
     let onSelect: (String) -> Void
 
     @State private var currentIndex: Int
 
     init(uniforms: [Uniform], selectedID: String?, onSelect: @escaping (String) -> Void) {
-        self.uniforms = uniforms
-        self.selectedID = selectedID
+        func priority(_ uniform: Uniform) -> Int {
+            guard uniform.isCurrent else { return 3 }
+            switch uniform.kind {
+            case .home: return 0
+            case .away: return 1
+            default: return 2
+            }
+        }
+        let ordered = uniforms.sorted { priority($0) < priority($1) }
+        self.uniforms = ordered
         self.onSelect = onSelect
         let startIndex =
-            selectedID.flatMap { id in uniforms.firstIndex(where: { $0.id == id }) } ?? 0
+            selectedID.flatMap { id in ordered.firstIndex(where: { $0.id == id }) } ?? 0
         _currentIndex = State(initialValue: startIndex)
     }
 
@@ -48,9 +55,9 @@ struct UniformPickerSheet: View {
                     ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
                         Group {
                             if dynamicTypeSize.isAccessibilitySize {
-                                ScrollView { card(for: uniform) }
+                                ScrollView { card(for: uniform, index: index) }
                             } else {
-                                card(for: uniform)
+                                card(for: uniform, index: index)
                             }
                         }
                         .tag(index)
@@ -73,7 +80,7 @@ struct UniformPickerSheet: View {
         .accessibilityIdentifier("uniform-picker-sheet")
     }
 
-    private func card(for uniform: Uniform) -> some View {
+    private func card(for uniform: Uniform, index: Int) -> some View {
         VStack(spacing: DesignTokens.Spacing.sm) {
             UniformThumb(
                 url: UniformArt.jerseyURL(for: uniform.id), size: 140, heightMultiplier: 0.81
@@ -96,8 +103,9 @@ struct UniformPickerSheet: View {
         .accessibilityElement(children: .ignore)
         .accessibilityIdentifier("uniform-\(uniform.id)")
         .accessibilityLabel(
-            "\(uniform.name), \(uniform.kind.displayName)\(uniform.id == selectedID ? ", selected" : "")"
+            "\(uniform.name), \(uniform.kind.displayName)\(index == currentIndex ? ", selected" : "")"
         )
+        .accessibilityValue("\(index + 1) of \(uniforms.count)")
     }
 
     /// Accent-tinted page dots (web's UniformSheet.tsx page-dot row): the active dot is
@@ -107,27 +115,45 @@ struct UniformPickerSheet: View {
     /// accent glow on the active pill) — the 6pt/`textFaintest` original read as flat,
     /// low-contrast specks against the dark background.
     private var pageDots: some View {
-        HStack(spacing: 8) {
-            ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
-                Button {
-                    currentIndex = index
-                } label: {
-                    Capsule()
-                        .fill(
-                            index == currentIndex
-                                ? DesignTokens.Colors.accent : DesignTokens.Colors.textFaint
-                        )
-                        .frame(width: index == currentIndex ? 24 : 8, height: 8)
-                        .shadow(
-                            color: index == currentIndex
-                                ? DesignTokens.Colors.accent.opacity(0.6) : .clear,
-                            radius: 4
-                        )
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                HStack(spacing: DesignTokens.Spacing.sm) {
+                    ForEach(Array(uniforms.enumerated()), id: \.element.id) { index, uniform in
+                        Button {
+                            currentIndex = index
+                        } label: {
+                            Capsule()
+                                .fill(
+                                    index == currentIndex
+                                        ? DesignTokens.Colors.accent : DesignTokens.Colors.textFaint
+                                )
+                                .frame(width: index == currentIndex ? 24 : 8, height: 8)
+                                .shadow(
+                                    color: index == currentIndex
+                                        ? DesignTokens.Colors.accent.opacity(0.6) : .clear,
+                                    radius: 4
+                                )
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .id(index)
+                        .accessibilityLabel("Select \(uniform.name)")
+                        .accessibilityValue("\(index + 1) of \(uniforms.count)")
+                        .accessibilityAddTraits(index == currentIndex ? .isSelected : [])
+                        .accessibilityIdentifier("uniform-dot-\(uniform.id)")
+                    }
                 }
-                .frame(minWidth: 44, minHeight: 44)
-                .contentShape(Rectangle())
-                .accessibilityLabel("Select \(uniform.name)")
-                .accessibilityIdentifier("uniform-dot-\(uniform.id)")
+                .padding(.horizontal, DesignTokens.Spacing.md)
+            }
+            .scrollIndicators(.hidden)
+            .defaultScrollAnchor(.center, for: .alignment)
+            .frame(height: 44)
+            .onAppear { proxy.scrollTo(currentIndex, anchor: .center) }
+            .onChange(of: currentIndex) { _, index in
+                withAnimation(DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion)) {
+                    proxy.scrollTo(index, anchor: .center)
+                }
             }
         }
         .animation(
