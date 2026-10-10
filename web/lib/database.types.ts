@@ -41,6 +41,7 @@ export type Database = {
           minimum_supported_build: number
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           id?: boolean
           maintenance_message?: string | null
@@ -63,6 +64,7 @@ export type Database = {
           event_name: string
           id: string
         }
+        ComputedFields: never
         Insert: {
           app_version?: string | null
           created_at?: string
@@ -89,6 +91,7 @@ export type Database = {
           ui_accent: string | null
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           color_accent?: string | null
           color_primary?: string | null
@@ -126,6 +129,7 @@ export type Database = {
           team_id: string
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           depth_rank: number
           id?: string
@@ -167,6 +171,7 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        ComputedFields: never
         Insert: {
           player_ids: string[]
           position: string
@@ -219,6 +224,7 @@ export type Database = {
           team_abb: string | null
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           epa_total?: number | null
           exp_sack?: number | null
@@ -311,6 +317,7 @@ export type Database = {
           week_num: number | null
           week_text: string | null
         }
+        ComputedFields: never
         Insert: {
           epa_total?: number | null
           exp_sack?: number | null
@@ -416,6 +423,7 @@ export type Database = {
           updated_at: string
           week: number | null
         }
+        ComputedFields: never
         Insert: {
           date_pulled?: string | null
           ftn_game_id: string
@@ -506,6 +514,7 @@ export type Database = {
           updated_at: string
           week: number | null
         }
+        ComputedFields: never
         Insert: {
           away_moneyline?: number | null
           away_score?: number | null
@@ -581,6 +590,7 @@ export type Database = {
           status: string
           teams_written: number | null
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           diagnostics?: Json | null
@@ -758,6 +768,7 @@ export type Database = {
           updated_at: string
           wopr: number | null
         }
+        ComputedFields: never
         Insert: {
           air_yards_share?: number | null
           attempts?: number | null
@@ -1219,6 +1230,7 @@ export type Database = {
           week: number
           wopr: number | null
         }
+        ComputedFields: never
         Insert: {
           air_yards_share?: number | null
           attempts?: number | null
@@ -1586,6 +1598,7 @@ export type Database = {
           week: number
           yards: number | null
         }
+        ComputedFields: never
         Insert: {
           aggressiveness?: number | null
           attempts?: number | null
@@ -1757,6 +1770,7 @@ export type Database = {
           updated_at: string
           week: number
         }
+        ComputedFields: never
         Insert: {
           carries?: number | null
           def_adot?: number | null
@@ -1889,6 +1903,7 @@ export type Database = {
           window_game_ids: string[]
           window_start_week: number
         }
+        ComputedFields: never
         Insert: {
           defense_pct?: number | null
           defense_snaps: number
@@ -1984,6 +1999,7 @@ export type Database = {
           team_id: string | null
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           attempts?: number | null
           carries?: number | null
@@ -2111,6 +2127,7 @@ export type Database = {
           updated_at: string
           weight: number | null
         }
+        ComputedFields: never
         Insert: {
           age?: number | null
           bio?: string | null
@@ -2153,6 +2170,51 @@ export type Database = {
           },
         ]
       }
+      push_devices: {
+        Row: {
+          apns_environment: string
+          apns_token: string
+          bundle_id: string
+          created_at: string
+          id: string
+          notify_after: string
+          team_id: string
+          tier: string
+          updated_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          apns_environment: string
+          apns_token: string
+          bundle_id: string
+          created_at?: string
+          id?: string
+          notify_after?: string
+          team_id: string
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          apns_environment?: string
+          apns_token?: string
+          bundle_id?: string
+          created_at?: string
+          id?: string
+          notify_after?: string
+          team_id?: string
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_devices_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roster_history: {
         Row: {
           college: string | null
@@ -2170,6 +2232,7 @@ export type Database = {
           updated_at: string
           weight: number | null
         }
+        ComputedFields: never
         Insert: {
           college?: string | null
           depth_rank: number
@@ -2218,6 +2281,7 @@ export type Database = {
           team_id: string
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           season: number
           team_id: string
@@ -2246,6 +2310,7 @@ export type Database = {
           team_id: string
           user_id: string
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           owner_name: string
@@ -2280,6 +2345,7 @@ export type Database = {
           x: number | null
           y: number | null
         }
+        ComputedFields: never
         Insert: {
           id: string
           label: string
@@ -2324,6 +2390,7 @@ export type Database = {
           team_id: string
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           coach_experience: number
           coach_name: string
@@ -2350,6 +2417,40 @@ export type Database = {
           },
         ]
       }
+      team_event_deliveries: {
+        Row: {
+          claimed_at: string
+          device_id: string
+          event_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          claimed_at?: string
+          device_id: string
+          event_id: string
+        }
+        Update: {
+          claimed_at?: string
+          device_id?: string
+          event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_event_deliveries_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "push_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_event_deliveries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "team_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_events: {
         Row: {
           created_at: string
@@ -2365,6 +2466,7 @@ export type Database = {
           team_id: string
           tier: string
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           dedupe_key: string
@@ -2414,6 +2516,7 @@ export type Database = {
           unit: string
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           alignment: string
           pct: number
@@ -2466,6 +2569,7 @@ export type Database = {
           team_id: string
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           adjusted_line_yards?: number | null
           avg_pass_rushers?: number | null
@@ -2651,6 +2755,7 @@ export type Database = {
           timeouts: number | null
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           attempts?: number | null
           carries?: number | null
@@ -2936,6 +3041,7 @@ export type Database = {
           team_id: string
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           candidate_player_id?: string | null
           candidate_player_name?: string | null
@@ -2989,6 +3095,7 @@ export type Database = {
           updated_at: string
           win_percent: number | null
         }
+        ComputedFields: never
         Insert: {
           conference_losses?: number | null
           conference_wins?: number | null
@@ -3059,6 +3166,7 @@ export type Database = {
           name: string
           updated_at: string
         }
+        ComputedFields: never
         Insert: {
           abbrev: string
           city: string
@@ -3098,6 +3206,7 @@ export type Database = {
           source_url: string
           title: string
         }
+        ComputedFields: never
         Insert: {
           id?: string
           notified_at?: string
@@ -3129,6 +3238,7 @@ export type Database = {
           year_end: number | null
           year_start: number
         }
+        ComputedFields: never
         Insert: {
           color_accent: string
           color_primary: string
@@ -3179,6 +3289,7 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        ComputedFields: never
         Insert: {
           favorite_team_id?: string | null
           last_team_id?: string | null
@@ -3215,6 +3326,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      register_push_device: {
+        Args: {
+          p_bundle_id: string
+          p_environment: string
+          p_team_id: string
+          p_tier: string
+          p_token: string
+        }
+        Returns: undefined
+      }
       show_limit: { Args: Record<PropertyKey, never>; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       upsert_depth_override_group: {
