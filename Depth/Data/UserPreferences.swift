@@ -16,6 +16,12 @@ struct UserPreferences: Sendable {
         static let depthOverrides = "preferences.depthOverrides"
         static let seenOnboarding = "preferences.seenOnboarding"
         static let seenTutorials = "preferences.seenTutorials"
+        static let notificationTier = "preferences.notificationTier"
+        static let notificationTeamId = "preferences.notificationTeamId"
+        static let pushToken = "preferences.pushToken"
+        static let lastSyncedRegistration = "preferences.lastSyncedRegistration"
+        static let hasFinishedFirstSession = "preferences.hasFinishedFirstSession"
+        static let bigMomentPromptShown = "preferences.bigMomentPromptShown"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -30,6 +36,47 @@ struct UserPreferences: Sendable {
     var lastUnit: Unit? {
         get { (defaults.string(forKey: Key.lastUnit)).flatMap(Unit.init(rawValue:)) }
         nonmutating set { defaults.set(newValue?.rawValue, forKey: Key.lastUnit) }
+    }
+
+    /// The chosen notification level. Absent means the default, Big moments.
+    var notificationTier: NotificationTier {
+        get {
+            defaults.string(forKey: Key.notificationTier).flatMap(NotificationTier.init(rawValue:))
+                ?? .bigMoments
+        }
+        nonmutating set { defaults.set(newValue.rawValue, forKey: Key.notificationTier) }
+    }
+
+    /// The team this device is notified about. Set when the user opts in and changed only
+    /// from the notification control; it does not follow the team being viewed.
+    var notificationTeamId: String? {
+        get { defaults.string(forKey: Key.notificationTeamId) }
+        nonmutating set { defaults.set(newValue, forKey: Key.notificationTeamId) }
+    }
+
+    /// The last APNs token the system handed over, as lowercase hex.
+    var pushToken: String? {
+        get { defaults.string(forKey: Key.pushToken) }
+        nonmutating set { defaults.set(newValue, forKey: Key.pushToken) }
+    }
+
+    /// "token|team|tier" of the last registration the server accepted, so an unchanged
+    /// one is not sent on every foreground.
+    var lastSyncedRegistration: String? {
+        get { defaults.string(forKey: Key.lastSyncedRegistration) }
+        nonmutating set { defaults.set(newValue, forKey: Key.lastSyncedRegistration) }
+    }
+
+    /// True once the app has gone to the background at least once.
+    var hasFinishedFirstSession: Bool {
+        get { defaults.bool(forKey: Key.hasFinishedFirstSession) }
+        nonmutating set { defaults.set(newValue, forKey: Key.hasFinishedFirstSession) }
+    }
+
+    /// True once the one-time notification prompt has been shown, whatever the answer.
+    var bigMomentPromptShown: Bool {
+        get { defaults.bool(forKey: Key.bigMomentPromptShown) }
+        nonmutating set { defaults.set(newValue, forKey: Key.bigMomentPromptShown) }
     }
 
     /// Per-team uniform selection: the uniform the

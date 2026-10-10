@@ -123,6 +123,24 @@ enum DepthEnvironment {
         #endif
         return SupabaseAppEventsRecorder(client: supabaseClient)
     }()
+    static let pushSubscriptionService: any PushSubscriptionServicing = {
+        #if UITEST_FIXTURES
+            // A fixture run has no backend to register a device with.
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
+                return NoOpPushSubscriptionService()
+            }
+        #endif
+        return SupabasePushSubscriptionService(client: supabaseClient)
+    }()
+    static let notificationAuthorizer: any NotificationAuthorizing = {
+        #if UITEST_FIXTURES
+            // UI tests must never raise the system permission dialog.
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
+                return NoOpNotificationAuthorizer()
+            }
+        #endif
+        return SystemNotificationAuthorizer()
+    }()
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)
     /// Shared favorite/start-on-favorite state. Backed by the user_settings row
     /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale
@@ -151,4 +169,14 @@ enum DepthEnvironment {
     @MainActor static let networkMonitor = NetworkMonitor()
     /// Compiled-in feature flags plus internal-build overrides (see FeatureFlag).
     @MainActor static let featureFlags = FeatureFlagStore()
+    /// The device's team-notification choice. Internal builds are signed for development,
+    /// so their tokens are only reachable through the APNs sandbox.
+    @MainActor static let notificationSettings = NotificationSettingsStore(
+        service: pushSubscriptionService,
+        authorizer: notificationAuthorizer,
+        preferences: preferences,
+        bundleId: Bundle.main.bundleIdentifier ?? "",
+        environment: FeatureFlagStore.isInternalBuild ? "sandbox" : "production",
+        isEnabled: { featureFlags.isEnabled(.proactiveNotifications) }
+    )
 }
