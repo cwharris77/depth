@@ -22,6 +22,16 @@ struct ContentView: View {
     /// view when `phase` changes) — a real `@State` bool kept in sync via `.onChange`
     /// is the reliable pattern.
     @State private var isWelcomeShowing = false
+    @State private var bigMomentPrompt = BigMomentPromptModel(
+        repository: DepthEnvironment.repository,
+        authorizer: DepthEnvironment.notificationAuthorizer,
+        settings: DepthEnvironment.notificationSettings,
+        preferences: DepthEnvironment.preferences,
+        isSuppressed: DepthEnvironment.isBigMomentPromptSuppressed)
+    /// Mirrors `bigMomentPrompt.event`, synced by the `.onChange` below, for the same
+    /// reason `isWelcomeShowing` mirrors the onboarding phase: a binding computed from
+    /// an `@Observable` property does not reliably drive a presentation.
+    @State private var promptEvent: TeamEvent?
 
     var body: some View {
         Group {
@@ -57,6 +67,19 @@ struct ContentView: View {
         }
         .onChange(of: onboarding.phase, initial: true) { _, phase in
             isWelcomeShowing = phase == .welcome
+        }
+        .onChange(of: bigMomentPrompt.event) { _, event in
+            promptEvent = event
+        }
+        // `onDismiss` covers the close button and a swipe down, which end the sheet
+        // without calling either of its actions.
+        .sheet(item: $promptEvent, onDismiss: { bigMomentPrompt.decline() }) { event in
+            BigMomentPromptSheet(
+                event: event,
+                onAccept: { Task { await bigMomentPrompt.accept() } },
+                onDecline: { bigMomentPrompt.decline() }
+            )
+            .modifier(UITestingDynamicTypeOverride())
         }
         // The app is always dark, matching the website. Keeping the scheme at the app level
         // the app level keeps the interface dark. Flipping the scheme here at
@@ -103,6 +126,7 @@ struct ContentView: View {
             // finished) — see OnboardingController.startIfNeeded.
             onboarding.startIfNeeded()
             await DepthEnvironment.notificationSettings.refresh()
+            await evaluateBigMomentPrompt()
         }
         // Re-gate on foreground. A server-side minimum-build flip has to reach
         // apps that are already running, not just cold launches — without this, a
@@ -120,9 +144,21 @@ struct ContentView: View {
                 // The system permission and the APNs token can both change while the app
                 // is in the background. Inert while the feature is switched off.
                 await DepthEnvironment.notificationSettings.refresh()
+                await evaluateBigMomentPrompt()
             }
         }
         .modifier(UITestingDynamicTypeOverride())
+    }
+
+    private func evaluateBigMomentPrompt() async {
+        // Checked first so a launch that could not show the prompt does no extra work.
+        guard bigMomentPrompt.isEligible else { return }
+        // The favorite comes from the server; wait for it so a signed-in user is asked
+        // about their favorite team, not the last one they happened to view.
+        await DepthEnvironment.userSettingsStore.load()
+        await bigMomentPrompt.evaluate(
+            candidateTeamId: DepthEnvironment.userSettingsStore.favoriteTeamId
+                ?? DepthEnvironment.preferences.lastTeamId)
     }
 }
 

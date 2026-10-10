@@ -29,6 +29,9 @@ struct DepthApp: App {
             // UI_TESTING_SHOW_ONBOARDING (below) opts back into seeing it.
             DepthEnvironment.preferences.markOnboardingSeen()
             DepthEnvironment.preferences.markAllTutorialsSeen()
+            // A notification choice left by an earlier run would change what the
+            // notification control shows first.
+            DepthEnvironment.preferences.resetNotificationState()
         }
 
         // UI_TESTING_START_TEAM: an optional test launch arg (`UI_TESTING_START_TEAM=bills`)
@@ -73,6 +76,12 @@ struct DepthApp: App {
         }
 
         #if UITEST_FIXTURES
+            // The notification prompt never appears in a first session; the journey
+            // that covers it starts as a returning user.
+            if DepthEnvironment.isBigMomentPromptRequested {
+                DepthEnvironment.preferences.hasFinishedFirstSession = true
+            }
+
             // UI_TESTING_ROUTE_TEAM=<id> asks for a team's depth chart here, before any
             // view exists, which is when a notification tap that cold-starts the app
             // makes its request.

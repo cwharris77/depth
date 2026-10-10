@@ -79,6 +79,16 @@ struct UserPreferences: Sendable {
         nonmutating set { defaults.set(newValue, forKey: Key.bigMomentPromptShown) }
     }
 
+    /// Returns the notification choice and the prompt to a fresh install's state.
+    func resetNotificationState() {
+        for key in [
+            Key.notificationTier, Key.notificationTeamId, Key.pushToken,
+            Key.lastSyncedRegistration, Key.bigMomentPromptShown,
+        ] {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
     /// Per-team uniform selection: the uniform the
     /// field recolors with. Keyed by team id so switching teams keeps each team's own
     /// jersey, mirroring web's per-team localStorage kit selection.

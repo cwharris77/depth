@@ -69,15 +69,21 @@
 
     actor FixtureDepthRepository: DepthRepository {
         private let bundle: UITestFixtureBundle
+        /// Whether `latestBigMoment` reports an event. Off unless a journey asks for it,
+        /// so no other fixture run can meet the notification prompt.
+        private let offersBigMoment: Bool
 
-        init(bundle: UITestFixtureBundle) {
+        init(bundle: UITestFixtureBundle, offersBigMoment: Bool = false) {
             self.bundle = bundle
+            self.offersBigMoment = offersBigMoment
         }
 
         /// Loads the bundled fixture JSON. A missing/unreadable bundle is a test-harness fault,
         /// not a data condition — fail loudly rather than degrade to empty screens, which would
         /// produce confidently-wrong screenshots (the failure mode this seam exists to remove).
-        static func load(bundleName: String = "UITestFixtures") -> FixtureDepthRepository {
+        static func load(bundleName: String = "UITestFixtures", offersBigMoment: Bool = false)
+            -> FixtureDepthRepository
+        {
             guard
                 let url = Bundle.main.url(forResource: bundleName, withExtension: "json"),
                 let data = try? Data(contentsOf: url),
@@ -87,7 +93,7 @@
                     "UI_TESTING_FIXTURE_BACKEND was set but \(bundleName).json is missing or unreadable from the app bundle."
                 )
             }
-            return FixtureDepthRepository(bundle: decoded)
+            return FixtureDepthRepository(bundle: decoded, offersBigMoment: offersBigMoment)
         }
 
         func teams() async throws -> [Team] {
@@ -168,6 +174,18 @@
 
         func listUniforms() async throws -> [UniformListing] {
             bundle.uniforms
+        }
+
+        /// Synthesized, not recorded: the prompt only shows an event from the last few
+        /// days, which a checked-in timestamp could not stay.
+        func latestBigMoment(teamId: String) async throws -> TeamEvent? {
+            guard offersBigMoment, let team = bundle.teams.first(where: { $0.id == teamId })
+            else { return nil }
+            return TeamEvent(
+                id: "fixture-big-moment", type: "starter_change", tier: "big_moments",
+                teamId: teamId, headline: "\(team.name): a new starter at quarterback",
+                detail: "A sample event from the UI-test fixtures.", source: "fixture",
+                occurredAt: Date().addingTimeInterval(-24 * 60 * 60))
         }
 
         func appConfig() async throws -> AppConfig {

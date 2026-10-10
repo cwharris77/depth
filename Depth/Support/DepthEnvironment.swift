@@ -81,7 +81,8 @@ enum DepthEnvironment {
             // be redirected by a launch argument.
             if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FIXTURE_BACKEND") {
                 return CachingDepthRepository(
-                    underlying: FixtureDepthRepository.load(),
+                    underlying: FixtureDepthRepository.load(
+                        offersBigMoment: isBigMomentPromptRequested),
                     store: CachedSnapshotStore(modelContainer: ephemeralFixtureContainer())
                 )
             }
@@ -136,6 +137,17 @@ enum DepthEnvironment {
             return false
         #endif
     }()
+    /// True only for the UI journey that covers the notification prompt.
+    static let isBigMomentPromptRequested: Bool = {
+        #if UITEST_FIXTURES
+            return ProcessInfo.processInfo.arguments.contains("UI_TESTING_BIG_MOMENT_PROMPT")
+        #else
+            return false
+        #endif
+    }()
+    /// The notification prompt stays down in every UI-test process except the journey
+    /// that asks for it, so no other suite can meet a sheet it does not expect.
+    static let isBigMomentPromptSuppressed = isUITestProcess && !isBigMomentPromptRequested
     static let pushSubscriptionService: any PushSubscriptionServicing = {
         // A UI test must never register a device, whichever backend it runs against.
         if isUITestProcess { return NoOpPushSubscriptionService() }
@@ -143,7 +155,13 @@ enum DepthEnvironment {
     }()
     static let notificationAuthorizer: any NotificationAuthorizing = {
         // A UI test must never raise the system permission dialog or ask for a token.
-        if isUITestProcess { return NoOpNotificationAuthorizer() }
+        // UI_TESTING_NOTIFICATIONS_AUTHORIZED stands in for a user who already allowed
+        // notifications; without it the permission question is unanswered.
+        if isUITestProcess {
+            let isAuthorized = ProcessInfo.processInfo.arguments.contains(
+                "UI_TESTING_NOTIFICATIONS_AUTHORIZED")
+            return NoOpNotificationAuthorizer(fixed: isAuthorized ? .authorized : .notDetermined)
+        }
         return SystemNotificationAuthorizer()
     }()
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)

@@ -55,6 +55,17 @@ extension XCUIApplication {
         return waitForDepthChart(timeout: timeout)
     }
 
+    /// Opens Settings from the depth chart's account button and waits for the sheet.
+    func openSettings(file: StaticString = #filePath, line: UInt = #line) {
+        let accountButton = buttons["account-button"]
+        XCTAssertTrue(
+            accountButton.waitForExistence(timeout: 15),
+            "the depth chart should expose the account button", file: file, line: line)
+        XCTAssertTrue(
+            accountButton.tapUntil { self.buttons["account-close-button"].exists },
+            "the account button should open Settings", file: file, line: line)
+    }
+
     /// Opens the switcher from the navigation-bar team name, searches, and selects a
     /// team. Returns once the switcher has dismissed and the header (and chart) have
     /// re-rendered for the *newly selected* team specifically.
