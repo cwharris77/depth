@@ -99,6 +99,7 @@ final class ScheduleViewModel {
             selectedSeason = result.season
             schedule = result
             loadState = result.games.isEmpty ? .empty : .loaded
+            if forceRefresh { await repository.refreshRelatedInBackground(teamId: teamId) }
         } catch let error as DepthError {
             guard requestID == latestRequestID, !keepsContent else { return }
             schedule = nil

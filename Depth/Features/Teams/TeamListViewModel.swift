@@ -56,6 +56,7 @@ final class TeamListViewModel {
                 ? try await repository.freshTeams()
                 : try await repository.teams()
             loadState = .loaded
+            if forceRefresh { await repository.refreshRelatedInBackground(teamId: nil) }
         } catch let error as DepthError {
             if !keepsContent { loadState = .failed(error) }
             events.record(.error(category: error.telemetryCategory))

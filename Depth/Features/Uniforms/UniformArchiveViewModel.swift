@@ -40,16 +40,23 @@ final class UniformArchiveViewModel {
         self.repository = repository
     }
 
-    func load() async {
+    /// `forceRefresh` is the pull-to-refresh path: it reads through the network instead of
+    /// the cached archive, and a failed read keeps the archive already on screen.
+    func load(forceRefresh: Bool = false) async {
         // A refresh over loaded content keeps it on screen until the reload resolves.
-        if loadState != .loaded { loadState = .loading }
+        let keepsContent = loadState == .loaded
+        if !keepsContent { loadState = .loading }
         do {
-            listings = try await repository.listUniforms()
+            listings =
+                forceRefresh
+                ? try await repository.freshUniforms()
+                : try await repository.listUniforms()
             loadState = .loaded
+            if forceRefresh { await repository.refreshRelatedInBackground(teamId: nil) }
         } catch let error as DepthError {
-            loadState = .failed(error)
+            if !keepsContent { loadState = .failed(error) }
         } catch {
-            loadState = .failed(.server("\(error)"))
+            if !keepsContent { loadState = .failed(.server("\(error)")) }
         }
     }
 

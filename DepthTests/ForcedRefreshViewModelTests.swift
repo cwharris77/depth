@@ -29,6 +29,8 @@ private actor RefreshRepositoryFake: DepthRepository {
     var freshSchedule: Result<TeamSchedule, DepthError>
     var cachedStats: TeamStatsPage
     var freshStats: TeamStatsPage
+    var cachedUniforms: [UniformListing] = []
+    var freshUniformsResult: Result<[UniformListing], DepthError> = .success([])
 
     init(
         cachedSchedule: TeamSchedule = refreshSchedule(games: 1),
@@ -59,6 +61,14 @@ private actor RefreshRepositoryFake: DepthRepository {
         try freshSchedule.get()
     }
     func freshTeamStats(teamId: String) async throws -> TeamStatsPage { freshStats }
+
+    func listUniforms() async throws -> [UniformListing] { cachedUniforms }
+    func freshUniforms() async throws -> [UniformListing] { try freshUniformsResult.get() }
+
+    func setUniforms(cached: [UniformListing], fresh: Result<[UniformListing], DepthError>) {
+        cachedUniforms = cached
+        freshUniformsResult = fresh
+    }
 }
 
 @Test func forcedScheduleLoadShowsTheFreshReadNotTheCachedOne() async {
@@ -90,4 +100,42 @@ private actor RefreshRepositoryFake: DepthRepository {
     await viewModel.load(forceRefresh: true)
 
     #expect(await viewModel.page?.currentSeason == 2027)
+}
+
+private func refreshListing(id: String) -> UniformListing {
+    UniformListing(
+        id: id, teamId: "bills", teamName: "Buffalo Bills", teamAbbrev: "BUF",
+        teamShortName: "Bills", conference: "AFC", division: "East", kind: .home,
+        name: id, yearStart: 2025, yearEnd: nil, isCurrent: true,
+        colors: TeamColors(primary: "#00338d", secondary: "#c60c30", accent: "#c60c30"),
+        imagePath: nil)
+}
+
+@Test func forcedUniformLoadShowsTheFreshListNotTheCachedOne() async {
+    let repository = RefreshRepositoryFake()
+    await repository.setUniforms(
+        cached: [refreshListing(id: "bills-home-2025")],
+        fresh: .success([
+            refreshListing(id: "bills-home-2025"), refreshListing(id: "bills-away-2025"),
+        ]))
+    let viewModel = await UniformArchiveViewModel(repository: repository)
+    await viewModel.load()
+    #expect(await viewModel.listings.count == 1)
+
+    await viewModel.load(forceRefresh: true)
+
+    #expect(await viewModel.listings.count == 2)
+}
+
+@Test func failedForcedUniformLoadKeepsTheArchiveOnScreen() async {
+    let repository = RefreshRepositoryFake()
+    await repository.setUniforms(
+        cached: [refreshListing(id: "bills-home-2025")], fresh: .failure(.server("offline")))
+    let viewModel = await UniformArchiveViewModel(repository: repository)
+    await viewModel.load()
+
+    await viewModel.load(forceRefresh: true)
+
+    #expect(await viewModel.loadState == .loaded)
+    #expect(await viewModel.listings.count == 1)
 }

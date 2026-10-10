@@ -334,6 +334,7 @@ final class CompareViewModel {
                 for teamId in [teamA?.id, teamB?.id].compactMap({ $0 }) {
                     await resolveSide(teamId, forceRefresh: true)
                 }
+                await repository.refreshRelatedInBackground(teamId: nil)
             }
         } catch let error as DepthError {
             if !keepsContent { loadState = .failed(error) }

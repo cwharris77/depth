@@ -121,6 +121,8 @@ private actor FakeDepthRepository: DepthRepository {
     func historyCallCount() -> Int { seasonCallCount }
 
     func teamsCalls() -> Int { teamsCallCount }
+
+    func uniformsCallCountValue() -> Int { uniformsCallCount }
 }
 
 private func inMemoryContainer() -> ModelContainer {
@@ -687,5 +689,65 @@ private func uniformListing(id: String = "bills-home") -> UniformListing {
         #expect(result.map(\.id) == ["bills", "jets"])
         #expect(await underlying.teamsCalls() == 1)
         #expect(try await store.teamList()?.teams.count == 2)
+    }
+
+    @Test func freshUniformsBypassesTheCachedListAndStoresTheResult() async throws {
+        let store = inMemoryStore()
+        let underlying = FakeDepthRepository(uniformsResult: .success([]))
+        let repository = CachingDepthRepository(underlying: underlying, store: store)
+
+        let result = try await repository.freshUniforms()
+
+        #expect(result.isEmpty)
+        #expect(await underlying.uniformsCallCountValue() == 1)
+    }
+
+    @Test func refreshRelatedInBackgroundWarmsTheListsAndTheGivenTeam() async throws {
+        let underlying = FakeDepthRepository(
+            teamsResult: .success([team(id: "bills")]),
+            snapshotResults: ["bills": .success(snapshot())],
+            statsResults: ["bills": .success(statsPage())],
+            scheduleResults: [scheduleCacheKey(teamId: "bills", season: nil): .success(schedule())],
+            uniformsResult: .success([]))
+        let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+
+        await repository.refreshRelatedInBackground(teamId: "bills")
+
+        // The warm-up is fire-and-forget, so wait (bounded) for the underlying reads to land.
+        var warmed = false
+        for _ in 0..<60 where !warmed {
+            let teams = await underlying.teamsCalls()
+            let uniforms = await underlying.uniformsCallCountValue()
+            let snapshots = await underlying.callCount(forTeam: "bills")
+            let stats = await underlying.statsCallCount(forTeam: "bills")
+            let schedules = await underlying.scheduleCallCount(teamId: "bills", season: nil)
+            warmed = teams >= 1 && uniforms >= 1 && snapshots >= 1 && stats >= 1 && schedules >= 1
+            if !warmed { try await Task.sleep(for: .milliseconds(50)) }
+        }
+        #expect(await underlying.teamsCalls() >= 1, "team list")
+        #expect(await underlying.uniformsCallCountValue() >= 1, "uniform list")
+        #expect(await underlying.callCount(forTeam: "bills") >= 1, "snapshot")
+        #expect(await underlying.statsCallCount(forTeam: "bills") >= 1, "stats")
+        #expect(await underlying.scheduleCallCount(teamId: "bills", season: nil) >= 1, "schedule")
+        #expect(warmed)
+    }
+
+    @Test func freshReadsReachTheCachingImplementationThroughTheProtocolType() async throws {
+        let store = inMemoryStore()
+        try await store.saveTeamStats(statsPage(), teamId: "bills", cachedAt: Date())
+        let changed = TeamStatsPage(
+            team: team(id: "bills"), seasons: [], upcomingSeason: nil, currentSeason: 2027)
+        let underlying = FakeDepthRepository(
+            statsResults: ["bills": .success(changed)], uniformsResult: .success([]))
+        let repository: any DepthRepository = CachingDepthRepository(
+            underlying: underlying, store: store)
+
+        let page = try await repository.freshTeamStats(teamId: "bills")
+        _ = try await repository.freshUniforms()
+        await repository.refreshRelatedInBackground(teamId: nil)
+
+        #expect(page.currentSeason == 2027)
+        #expect(await underlying.statsCallCount(forTeam: "bills") == 1)
+        #expect(await underlying.uniformsCallCountValue() >= 1)
     }
 }

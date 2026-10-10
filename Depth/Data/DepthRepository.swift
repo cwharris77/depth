@@ -67,6 +67,11 @@ protocol DepthRepository: Sendable {
     func freshTeamSnapshot(teamId: String) async throws -> TeamSnapshot
     func freshTeamStats(teamId: String) async throws -> TeamStatsPage
     func freshTeamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule
+    func freshUniforms() async throws -> [UniformListing]
+    /// Warms the other cached reads after a user-initiated refresh (the team list, the uniform
+    /// archive and, when given, that team's snapshot, stats and schedule) so the next screen
+    /// opens with current data. Returns once the work is started, not when it finishes.
+    func refreshRelatedInBackground(teamId: String?) async
 }
 
 extension DepthRepository {
@@ -80,6 +85,8 @@ extension DepthRepository {
     func freshTeamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
         try await teamSchedule(teamId: teamId, season: season)
     }
+    func freshUniforms() async throws -> [UniformListing] { try await listUniforms() }
+    func refreshRelatedInBackground(teamId: String?) async {}
     func recentParticipation(teamId: String) async throws -> RecentParticipation? { nil }
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { nil }

@@ -156,6 +156,7 @@ final class TeamStatsViewModel {
             if let history = await history { statHistory = history }
             self.page = page
             refreshFailed = false
+            if forceRefresh { await repository.refreshRelatedInBackground(teamId: teamId) }
             if selectedSeason == nil {
                 selectedSeason = page.seasons.first?.season ?? page.upcomingSeason
             }

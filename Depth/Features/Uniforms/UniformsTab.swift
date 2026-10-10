@@ -129,6 +129,7 @@ struct UniformsTab: View {
                 // get the system's drag-to-dismiss for free — wire the same behavior up
                 // manually so the keyboard doesn't get stuck open while browsing.
                 .scrollDismissesKeyboard(.immediately)
+                .refreshable { await viewModel.load(forceRefresh: true) }
             }
         }
     }

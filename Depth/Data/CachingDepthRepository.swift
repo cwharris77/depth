@@ -302,6 +302,23 @@ actor CachingDepthRepository: DepthRepository {
         try await refreshSchedule(teamId: teamId, season: season)
     }
 
+    /// Also evicts the HTTP-cached art for every kit: the art is served with an hour-long
+    /// lifetime, so a refresh the user asked for has to drop it explicitly.
+    func freshUniforms() async throws -> [UniformListing] {
+        let listings = try await refreshUniformList()
+        UniformArt.removeCachedArt(for: listings.map(\.id))
+        return listings
+    }
+
+    func refreshRelatedInBackground(teamId: String?) async {
+        refreshTeamListInBackground()
+        Task { try? await self.freshUniforms() }
+        guard let teamId else { return }
+        refreshSnapshotInBackground(teamId: teamId)
+        refreshStatsInBackground(teamId: teamId)
+        refreshScheduleInBackground(teamId: teamId, season: nil)
+    }
+
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {
         now.timeIntervalSince(cachedAt) > staleAfter
     }

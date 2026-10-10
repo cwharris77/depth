@@ -49,9 +49,9 @@ final class TeamDetailViewModel {
                 forceRefresh
                 ? try await repository.freshTeamSnapshot(teamId: teamId)
                 : try await repository.teamSnapshot(teamId: teamId)
-            if forceRefresh { UniformArt.removeCachedArt(for: result.uniforms.map(\.id)) }
             snapshot = result
             cachedAt = await repository.teamSnapshotCachedAt(teamId: teamId)
+            if forceRefresh { await repository.refreshRelatedInBackground(teamId: teamId) }
             loadState = .loaded
             // Closes the app-launch signpost on the first screen with real, user-visible
             // content. As of the 2026-08-15 navigation-parity change that is this depth
