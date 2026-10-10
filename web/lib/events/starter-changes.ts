@@ -42,6 +42,7 @@ export function advanceStarters(args: {
       confirmedPlayerName: seen.playerName,
       candidatePlayerId: null,
       candidatePlayerName: null,
+      candidateSeenAt: null,
     };
 
     if (!prior || prior.confirmedPlayerId === seen.playerId) {
@@ -53,6 +54,7 @@ export function advanceStarters(args: {
         ...prior,
         candidatePlayerId: seen.playerId,
         candidatePlayerName: seen.playerName,
+        candidateSeenAt: now,
       });
       continue;
     }
@@ -64,7 +66,10 @@ export function advanceStarters(args: {
       previousName: prior.confirmedPlayerName,
     });
     events.push({
-      dedupeKey: `starter_change:${teamId}:${seen.position}:${seen.playerId}:${now.slice(0, 10)}`,
+      // Dated by the candidate's first sighting, not by this run: the state row keeps that
+      // date until the change is stored, so detecting the same change again on a later day
+      // produces the same key.
+      dedupeKey: `starter_change:${teamId}:${seen.position}:${seen.playerId}:${(prior.candidateSeenAt ?? now).slice(0, 10)}`,
       type: 'starter_change',
       tier: tierFor(seen.position),
       teamId,

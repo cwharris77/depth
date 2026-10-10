@@ -35,6 +35,8 @@ const SENTENCE_VERBS = [
   'Signed',
   'SIgned',
   'Re-signed',
+  'Re-Signed',
+  'Cut',
   'Placed',
   'Waived',
   'Released',
@@ -49,8 +51,13 @@ const SENTENCE_VERBS = [
   'Terminated',
   'Announced',
 ];
-// Splits on the whitespace after a period, keeping the period with its sentence.
-const SENTENCE_BREAK = new RegExp(`(?<=\\.)\\s+(?=(?:${SENTENCE_VERBS.join('|')})\\b)`);
+// Splits on the whitespace after a period, keeping the period with its sentence. Two
+// cases: before a known verb, and before any capitalized "-ed" word when the period ends a
+// lowercase word. The second catches verbs missing from the list; requiring a lowercase
+// letter before the period keeps initials ("D.J. Reed") from splitting a name.
+const SENTENCE_BREAK = new RegExp(
+  `(?<=\\.)\\s+(?=(?:${SENTENCE_VERBS.join('|')})\\b)|(?<=[a-z]\\.)\\s+(?=[A-Z][A-Za-z-]*ed\\s)`
+);
 
 const POSITIONS =
   'QB|RB|FB|WR|TE|OT|OL|OG|G|C|T|DE|DT|NT|DL|LB|OLB|ILB|MLB|CB|SS|FS|S|DB|PK|K|P|LS|EDGE';

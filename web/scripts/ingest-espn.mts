@@ -617,7 +617,7 @@ async function writeTeamEvents(
     const { data, error } = await supabase
       .from('team_starter_state')
       .select(
-        'team_id, position, confirmed_player_id, confirmed_player_name, candidate_player_id, candidate_player_name'
+        'team_id, position, confirmed_player_id, confirmed_player_name, candidate_player_id, candidate_player_name, candidate_seen_at'
       )
       .eq('team_id', roster.team.id);
     if (error) throw new Error(`team_starter_state read: ${error.message}`);

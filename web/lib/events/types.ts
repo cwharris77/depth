@@ -56,6 +56,8 @@ export interface StarterState {
   confirmedPlayerName: string;
   candidatePlayerId: string | null;
   candidatePlayerName: string | null;
+  // When the candidate was first seen (ISO 8601); null when there is no candidate.
+  candidateSeenAt: string | null;
 }
 
 export interface StarterStateRow {
@@ -65,6 +67,7 @@ export interface StarterStateRow {
   confirmed_player_name: string;
   candidate_player_id: string | null;
   candidate_player_name: string | null;
+  candidate_seen_at: string | null;
   updated_at?: string;
 }
 
@@ -76,6 +79,7 @@ export function toStarterStateRow(state: StarterState, now: string): StarterStat
     confirmed_player_name: state.confirmedPlayerName,
     candidate_player_id: state.candidatePlayerId,
     candidate_player_name: state.candidatePlayerName,
+    candidate_seen_at: state.candidateSeenAt,
     updated_at: now,
   };
 }
@@ -88,5 +92,6 @@ export function fromStarterStateRow(row: StarterStateRow): StarterState {
     confirmedPlayerName: row.confirmed_player_name,
     candidatePlayerId: row.candidate_player_id,
     candidatePlayerName: row.candidate_player_name,
+    candidateSeenAt: row.candidate_seen_at,
   };
 }

@@ -31,6 +31,20 @@ describe('splitSentences', () => {
     ]);
   });
 
+  it('splits before a verb it has never seen, so its players are not read as traded', () => {
+    const text = 'Traded CB Joey Porter Jr. to Dallas. Transferred LB John Doe to injured reserve.';
+    expect(splitSentences(text)).toHaveLength(2);
+    expect(tradedPlayers(text)).toEqual([
+      { direction: 'out', position: 'CB', name: 'Joey Porter Jr.' },
+    ]);
+  });
+
+  it('does not split before a surname that looks like a verb', () => {
+    expect(tradedPlayers('Traded CB D.J. Reed to Detroit.')).toEqual([
+      { direction: 'out', position: 'CB', name: 'D.J. Reed' },
+    ]);
+  });
+
   it('returns nothing for empty text', () => {
     expect(splitSentences('')).toEqual([]);
   });

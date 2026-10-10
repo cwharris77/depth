@@ -44,6 +44,7 @@ describe('starter state rows', () => {
     confirmedPlayerName: 'Geno Smith',
     candidatePlayerId: '2',
     candidatePlayerName: 'Sam Darnold',
+    candidateSeenAt: '2026-10-08T20:00:00.000Z',
   };
 
   it('round-trips through the row shape', () => {

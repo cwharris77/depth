@@ -11,7 +11,11 @@ function run(previous: StarterState[], observed: ObservedStarter[], now = NOW) {
   return advanceStarters({ teamId: 'seahawks', teamName: 'Seahawks', previous, observed, now });
 }
 
-function confirmed(starter: ObservedStarter, candidate: ObservedStarter | null = null) {
+function confirmed(
+  starter: ObservedStarter,
+  candidate: ObservedStarter | null = null,
+  seenAt: string = NOW
+) {
   return {
     teamId: 'seahawks',
     position: starter.position,
@@ -19,6 +23,7 @@ function confirmed(starter: ObservedStarter, candidate: ObservedStarter | null =
     confirmedPlayerName: starter.playerName,
     candidatePlayerId: candidate?.playerId ?? null,
     candidatePlayerName: candidate?.playerName ?? null,
+    candidateSeenAt: candidate ? seenAt : null,
   } satisfies StarterState;
 }
 
@@ -89,10 +94,23 @@ describe('advanceStarters', () => {
     expect(result.events).toEqual([]);
   });
 
-  it('keeps the same dedupe key for a second run on the same day', () => {
-    const morning = run([confirmed(geno, sam)], [sam], '2026-10-09T15:00:00.000Z');
-    const evening = run([confirmed(geno, sam)], [sam], '2026-10-09T20:00:00.000Z');
-    expect(evening.events[0].dedupeKey).toBe(morning.events[0].dedupeKey);
+  it('dates the key by when the candidate first appeared, so a late retry cannot duplicate', () => {
+    const held = [confirmed(geno, sam, '2026-10-08T20:00:00.000Z')];
+    const first = run(held, [sam], '2026-10-09T15:00:00.000Z');
+    const retry = run(held, [sam], '2026-10-10T15:00:00.000Z');
+    expect(first.events[0].dedupeKey).toBe('starter_change:seahawks:QB:2:2026-10-08');
+    expect(retry.events[0].dedupeKey).toBe(first.events[0].dedupeKey);
+  });
+
+  it('gives the same change a new key when it happens again later', () => {
+    const early = run([confirmed(geno, sam, '2026-09-10T15:00:00.000Z')], [sam]);
+    const late = run([confirmed(geno, sam, '2026-11-20T15:00:00.000Z')], [sam]);
+    expect(late.events[0].dedupeKey).not.toBe(early.events[0].dedupeKey);
+  });
+
+  it('keeps the first-seen time while the same candidate is held', () => {
+    const first = run([confirmed(geno)], [sam], '2026-10-08T20:00:00.000Z');
+    expect(first.next[0].candidateSeenAt).toBe('2026-10-08T20:00:00.000Z');
   });
 
   it('files a long snapper change under the everything tier', () => {
