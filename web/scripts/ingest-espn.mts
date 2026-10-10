@@ -55,6 +55,15 @@ import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
 import { TEAMS } from '@/lib/teams/index';
 import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
 import { assertConserved, countByReason, countValues, type Drop } from '@/lib/utils/ingest/drops';
+import { advanceStarters, type ObservedStarter } from '@/lib/events/starter-changes';
+import { buildNameIndex, tradeEvents, type EspnTransaction } from '@/lib/events/transactions';
+import {
+  fromStarterStateRow,
+  toStarterStateRow,
+  toTeamEventRow,
+  type StarterState,
+  type TeamEvent,
+} from '@/lib/events/types';
 import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
 import type { TeamRoster, TeamStats } from '@/lib/types';
 import type { Database } from '@/lib/database.types';
@@ -322,11 +331,15 @@ async function main() {
   if (!supabase) return; // unreachable (seedOut handled above); narrows the type below
 
   let teamsWritten = 0;
+  // Only a team whose roster wrote this run is diffed for events: a team that failed is
+  // unobserved, so its starter state stays exactly as the last good run left it.
+  const writtenRosters: BuiltRoster[] = [];
   for (const roster of Object.values(built)) {
     try {
       await writeTeam(supabase, roster, coachByTeamId[roster.team.id] ?? null);
       await writeTeamStats(supabase, roster.team.id, statsByTeamId[roster.team.id]);
       teamsWritten++;
+      writtenRosters.push(roster);
     } catch (e) {
       errors.push({ team: roster.team.id, message: `write failed: ${(e as Error).message}` });
     }
@@ -363,6 +376,33 @@ async function main() {
     } catch (e) {
       errors.push({ team: `preseason ${season}`, message: (e as Error).message });
     }
+  }
+
+  // Team events ride this run: the rosters are already in memory and the transactions
+  // feed is one more request. A feed that will not load is a data note, since starter
+  // changes do not depend on it; a failed write is an error like any other failed write.
+  let transactions: EspnTransaction[] = [];
+  try {
+    const feed = await getJson<{ transactions?: EspnTransaction[] }>(
+      `${SITE}/transactions?limit=100`
+    );
+    transactions = feed.transactions ?? [];
+  } catch (e) {
+    diagnostics.push({
+      team: 'team events',
+      message: `transactions feed: ${(e as Error).message}`,
+    });
+  }
+  try {
+    const written = await writeTeamEvents(supabase, {
+      rosters: writtenRosters,
+      transactions,
+      teamIdByEspnId,
+      now: startedAt,
+    });
+    console.log(`team events: ${written} detected`);
+  } catch (e) {
+    errors.push({ team: 'team events', message: (e as Error).message });
   }
 
   const finishedAt = new Date().toISOString();
@@ -546,6 +586,77 @@ async function writeTeamStats(
     { onConflict: 'team_id,season' }
   );
   if (error) throw new Error(`team_stats upsert: ${error.message}`);
+}
+
+// Starter changes and trades for the teams written this run. Events are inserted before
+// the starter state advances: if the state write then fails, the next run detects the
+// same change again and the unique dedupe key drops the repeat, whereas the other order
+// would lose the event. Returns how many events were detected (new or already stored).
+async function writeTeamEvents(
+  supabase: SupabaseClient<Database>,
+  args: {
+    rosters: BuiltRoster[];
+    transactions: EspnTransaction[];
+    teamIdByEspnId: ReadonlyMap<string, string>;
+    now: string;
+  }
+): Promise<number> {
+  const events: TeamEvent[] = [];
+  const nextState: StarterState[] = [];
+
+  for (const roster of args.rosters) {
+    const names = new Map(roster.players.map((p) => [p.id, p.name]));
+    const observed: ObservedStarter[] = [];
+    for (const slot of roster.depthChartSlots) {
+      const playerName = names.get(slot.playerId);
+      if (slot.depthRank === 1 && playerName) {
+        observed.push({ position: slot.position, playerId: slot.playerId, playerName });
+      }
+    }
+    // One query per team: the whole table is close to the API's default row cap.
+    const { data, error } = await supabase
+      .from('team_starter_state')
+      .select(
+        'team_id, position, confirmed_player_id, confirmed_player_name, candidate_player_id, candidate_player_name'
+      )
+      .eq('team_id', roster.team.id);
+    if (error) throw new Error(`team_starter_state read: ${error.message}`);
+
+    const result = advanceStarters({
+      teamId: roster.team.id,
+      teamName: roster.team.name,
+      previous: (data ?? []).map(fromStarterStateRow),
+      observed,
+      now: args.now,
+    });
+    events.push(...result.events);
+    nextState.push(...result.next);
+  }
+
+  events.push(
+    ...tradeEvents({
+      transactions: args.transactions,
+      teamIdByEspnId: args.teamIdByEspnId,
+      teams: Object.values(TEAMS).map(({ team }) => team),
+      playerIdByName: buildNameIndex(args.rosters.flatMap((roster) => roster.players)),
+      now: args.now,
+    })
+  );
+
+  if (events.length) {
+    const { error } = await supabase
+      .from('team_events')
+      .upsert(events.map(toTeamEventRow), { onConflict: 'dedupe_key', ignoreDuplicates: true });
+    if (error) throw new Error(`team_events upsert: ${error.message}`);
+  }
+  if (nextState.length) {
+    const { error } = await supabase.from('team_starter_state').upsert(
+      nextState.map((state) => toStarterStateRow(state, args.now)),
+      { onConflict: 'team_id,position' }
+    );
+    if (error) throw new Error(`team_starter_state upsert: ${error.message}`);
+  }
+  return events.length;
 }
 
 // The current season's `team_coach_seasons` row for every team ESPN gave us a coach for
