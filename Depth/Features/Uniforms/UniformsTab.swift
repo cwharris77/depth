@@ -117,6 +117,7 @@ struct UniformsTab: View {
                 header
                 ScrollView {
                     VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
+                        if viewModel.refreshFailed { RefreshFailedBanner() }
                         summaryRow
                         body(for: viewModel.viewMode)
                         attribution

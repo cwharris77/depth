@@ -19,6 +19,9 @@ final class TeamDetailViewModel {
     private(set) var loadState: LoadState = .loading
     private(set) var snapshot: TeamSnapshot?
     private(set) var cachedAt: Date?
+    /// True when a pull-to-refresh failed over content already on screen. The content stays
+    /// and the view says the refresh didn't land.
+    private(set) var refreshFailed = false
 
     private let repository: CachingDepthRepository
     private let events: any AppEventsRecording
@@ -50,8 +53,11 @@ final class TeamDetailViewModel {
                 ? try await repository.freshTeamSnapshot(teamId: teamId)
                 : try await repository.teamSnapshot(teamId: teamId)
             snapshot = result
+            refreshFailed = false
             cachedAt = await repository.teamSnapshotCachedAt(teamId: teamId)
-            if forceRefresh { await repository.refreshRelatedInBackground(teamId: teamId) }
+            if forceRefresh {
+                await repository.refreshRelatedInBackground(teamId: teamId, after: .snapshot)
+            }
             loadState = .loaded
             // Closes the app-launch signpost on the first screen with real, user-visible
             // content. As of the 2026-08-15 navigation-parity change that is this depth
@@ -68,11 +74,15 @@ final class TeamDetailViewModel {
             if snapshot == nil {
                 loadState = .failed(error)
                 events.record(.error(category: error.telemetryCategory))
+            } else {
+                refreshFailed = true
             }
         } catch {
             if snapshot == nil {
                 loadState = .failed(.server("\(error)"))
                 events.record(.error(category: "server"))
+            } else {
+                refreshFailed = true
             }
         }
     }

@@ -123,6 +123,7 @@ struct ScheduleView: View {
     private func scheduleContent(_ schedule: TeamSchedule) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                if viewModel.refreshFailed { RefreshFailedBanner() }
                 seasonPicker
                 // Canvas 1a: phase tabs share the roster page's underline row (not the
                 // filled page-switcher pill), so the two levels of navigation read apart.

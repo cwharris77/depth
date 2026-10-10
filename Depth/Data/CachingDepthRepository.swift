@@ -310,13 +310,15 @@ actor CachingDepthRepository: DepthRepository {
         return listings
     }
 
-    func refreshRelatedInBackground(teamId: String?) async {
-        refreshTeamListInBackground()
-        Task { try? await self.freshUniforms() }
+    /// The uniform archive is warmed without evicting its art: only a refresh pulled on the
+    /// archive itself should cost a re-download of every kit.
+    func refreshRelatedInBackground(teamId: String?, after refreshed: RefreshedRead) async {
+        if refreshed != .teams { refreshTeamListInBackground() }
+        if refreshed != .uniforms { refreshUniformListInBackground() }
         guard let teamId else { return }
-        refreshSnapshotInBackground(teamId: teamId)
-        refreshStatsInBackground(teamId: teamId)
-        refreshScheduleInBackground(teamId: teamId, season: nil)
+        if refreshed != .snapshot { refreshSnapshotInBackground(teamId: teamId) }
+        if refreshed != .stats { refreshStatsInBackground(teamId: teamId) }
+        if refreshed != .schedule { refreshScheduleInBackground(teamId: teamId, season: nil) }
     }
 
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {

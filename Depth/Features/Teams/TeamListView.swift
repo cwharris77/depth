@@ -224,6 +224,9 @@ struct TeamListView: View {
             .scrollContentBackground(.hidden)
         } else {
             List {
+                if viewModel.refreshFailed {
+                    RefreshFailedBanner().listRowSeparator(.hidden)
+                }
                 ForEach(divisions, id: \.division) { division in
                     Section(header: sectionHeader(divisionHeader(division.division))) {
                         ForEach(Array(division.teams.enumerated()), id: \.element.id) {

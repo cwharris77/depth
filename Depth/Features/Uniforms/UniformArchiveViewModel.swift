@@ -29,6 +29,9 @@ final class UniformArchiveViewModel {
 
     private(set) var loadState: LoadState = .loading
     private(set) var listings: [UniformListing] = []
+    /// True when a pull-to-refresh failed over content already on screen. The content stays
+    /// and the view says the refresh didn't land.
+    private(set) var refreshFailed = false
 
     var query = ""
     var viewMode: ViewMode = .team
@@ -52,11 +55,22 @@ final class UniformArchiveViewModel {
                 ? try await repository.freshUniforms()
                 : try await repository.listUniforms()
             loadState = .loaded
-            if forceRefresh { await repository.refreshRelatedInBackground(teamId: nil) }
+            refreshFailed = false
+            if forceRefresh {
+                await repository.refreshRelatedInBackground(teamId: nil, after: .uniforms)
+            }
         } catch let error as DepthError {
-            if !keepsContent { loadState = .failed(error) }
+            if keepsContent {
+                refreshFailed = true
+            } else {
+                loadState = .failed(error)
+            }
         } catch {
-            if !keepsContent { loadState = .failed(.server("\(error)")) }
+            if keepsContent {
+                refreshFailed = true
+            } else {
+                loadState = .failed(.server("\(error)"))
+            }
         }
     }
 

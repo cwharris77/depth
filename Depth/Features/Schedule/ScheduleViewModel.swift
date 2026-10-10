@@ -19,6 +19,9 @@ final class ScheduleViewModel {
     private(set) var schedule: TeamSchedule?
     private(set) var selectedSeason: Int?
     private(set) var defaultSeason: Int?
+    /// True when a pull-to-refresh failed over content already on screen. The content stays
+    /// and the view says the refresh didn't land.
+    private(set) var refreshFailed = false
     /// The PRESEASON/REGULAR/PLAYOFFS tab. Held here, not in the view, so it survives the
     /// view being rebuilt by a page switch.
     var phase: SchedulePhase = .regular
@@ -86,6 +89,7 @@ final class ScheduleViewModel {
         if !keepsContent {
             schedule = nil
             loadState = .loading
+            refreshFailed = false
         }
         do {
             let result =
@@ -98,14 +102,25 @@ final class ScheduleViewModel {
             }
             selectedSeason = result.season
             schedule = result
+            refreshFailed = false
             loadState = result.games.isEmpty ? .empty : .loaded
-            if forceRefresh { await repository.refreshRelatedInBackground(teamId: teamId) }
+            if forceRefresh {
+                await repository.refreshRelatedInBackground(teamId: teamId, after: .schedule)
+            }
         } catch let error as DepthError {
-            guard requestID == latestRequestID, !keepsContent else { return }
+            guard requestID == latestRequestID else { return }
+            if keepsContent {
+                refreshFailed = true
+                return
+            }
             schedule = nil
             loadState = error == .notFound ? .empty : .failed(error)
         } catch {
-            guard requestID == latestRequestID, !keepsContent else { return }
+            guard requestID == latestRequestID else { return }
+            if keepsContent {
+                refreshFailed = true
+                return
+            }
             schedule = nil
             loadState = .failed(.server("\(error)"))
         }

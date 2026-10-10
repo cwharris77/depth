@@ -76,6 +76,9 @@ final class CompareViewModel {
     }
 
     private(set) var loadState: LoadState = .loading
+    /// True when a pull-to-refresh failed over content already on screen. The content stays
+    /// and the view says the refresh didn't land.
+    private(set) var refreshFailed = false
     private(set) var teamA: Team?
     private(set) var teamB: Team?
     private(set) var statsA: TeamSeasonStats?
@@ -322,6 +325,7 @@ final class CompareViewModel {
                 ? try await repository.freshTeams()
                 : try await repository.teams()
             loadState = .loaded
+            refreshFailed = false
             // Apply the schedule-card preselection once teams are known —
             // mirrors web's compare page resolving both a/b query params unconditionally
             // on load. Re-running on `.refreshable` just re-picks the same two teams
@@ -334,12 +338,20 @@ final class CompareViewModel {
                 for teamId in [teamA?.id, teamB?.id].compactMap({ $0 }) {
                     await resolveSide(teamId, forceRefresh: true)
                 }
-                await repository.refreshRelatedInBackground(teamId: nil)
+                await repository.refreshRelatedInBackground(teamId: nil, after: .teams)
             }
         } catch let error as DepthError {
-            if !keepsContent { loadState = .failed(error) }
+            if keepsContent {
+                refreshFailed = true
+            } else {
+                loadState = .failed(error)
+            }
         } catch {
-            if !keepsContent { loadState = .failed(.server("\(error)")) }
+            if keepsContent {
+                refreshFailed = true
+            } else {
+                loadState = .failed(.server("\(error)"))
+            }
         }
     }
 

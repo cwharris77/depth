@@ -90,6 +90,7 @@ private actor RefreshRepositoryFake: DepthRepository {
 
     #expect(await viewModel.loadState == .loaded)
     #expect(await viewModel.schedule?.games.count == 1)
+    #expect(await viewModel.refreshFailed)
 }
 
 @Test func forcedStatsLoadShowsTheFreshReadNotTheCachedOne() async {
@@ -138,4 +139,11 @@ private func refreshListing(id: String) -> UniformListing {
 
     #expect(await viewModel.loadState == .loaded)
     #expect(await viewModel.listings.count == 1)
+    #expect(await viewModel.refreshFailed)
+
+    await repository.setUniforms(
+        cached: [], fresh: .success([refreshListing(id: "bills-home-2025")]))
+    await viewModel.load(forceRefresh: true)
+
+    #expect(await viewModel.refreshFailed == false)
 }

@@ -15,6 +15,9 @@ final class TeamListViewModel {
 
     private(set) var loadState: LoadState = .loading
     private(set) var teams: [Team] = []
+    /// True when a pull-to-refresh failed over content already on screen. The content stays
+    /// and the view says the refresh didn't land.
+    private(set) var refreshFailed = false
     private(set) var playerHits: [PlayerHit] = []
     var searchText: String = ""
 
@@ -56,12 +59,23 @@ final class TeamListViewModel {
                 ? try await repository.freshTeams()
                 : try await repository.teams()
             loadState = .loaded
-            if forceRefresh { await repository.refreshRelatedInBackground(teamId: nil) }
+            refreshFailed = false
+            if forceRefresh {
+                await repository.refreshRelatedInBackground(teamId: nil, after: .teams)
+            }
         } catch let error as DepthError {
-            if !keepsContent { loadState = .failed(error) }
+            if keepsContent {
+                refreshFailed = true
+            } else {
+                loadState = .failed(error)
+            }
             events.record(.error(category: error.telemetryCategory))
         } catch {
-            if !keepsContent { loadState = .failed(.server("\(error)")) }
+            if keepsContent {
+                refreshFailed = true
+            } else {
+                loadState = .failed(.server("\(error)"))
+            }
             events.record(.error(category: "server"))
         }
     }
