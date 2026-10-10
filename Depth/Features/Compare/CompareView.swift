@@ -471,6 +471,7 @@ private struct PositionDepthSection: View {
                 CompareRows(
                     a: (team: teamA, players: viewModel.positionGroupA),
                     b: (team: teamB, players: viewModel.positionGroupB),
+                    viewModel: viewModel,
                     repository: repository
                 )
             } else {
@@ -811,6 +812,7 @@ private struct CompareRows: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let a: (team: Team, players: [Player])
     let b: (team: Team, players: [Player])
+    let viewModel: CompareViewModel
     let repository: DepthRepository
 
     private var rowCount: Int { max(a.players.count, b.players.count) }
@@ -838,11 +840,11 @@ private struct CompareRows: View {
                     if dynamicTypeSize.isAccessibilitySize {
                         Text(a.team.abbrev).font(.caption.bold())
                     }
-                    PlayerCell(player: a.players[safe: rank], team: a.team, repository: repository)
+                    cell(a.players[safe: rank], team: a.team)
                     if dynamicTypeSize.isAccessibilitySize {
                         Text(b.team.abbrev).font(.caption.bold())
                     }
-                    PlayerCell(player: b.players[safe: rank], team: b.team, repository: repository)
+                    cell(b.players[safe: rank], team: b.team)
                 }
                 .background(rank % 2 == 1 ? DesignTokens.Colors.surfaceCard2 : Color.clear)
                 .overlay(alignment: .top) {
@@ -858,6 +860,20 @@ private struct CompareRows: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("compare-rows")
+        // Keyed by the visible players so a position or team change reads only the new rows;
+        // the view model skips anyone already loaded.
+        .task(id: a.players.map(\.id) + b.players.map(\.id)) {
+            async let sideA: Void = viewModel.loadPlayerStats(for: a.players, team: a.team)
+            async let sideB: Void = viewModel.loadPlayerStats(for: b.players, team: b.team)
+            _ = await (sideA, sideB)
+        }
+    }
+
+    private func cell(_ player: Player?, team: Team) -> PlayerCell {
+        PlayerCell(
+            player: player, team: team,
+            statLine: player.flatMap { viewModel.statLine(for: $0, team: team) },
+            repository: repository)
     }
 }
 
@@ -884,7 +900,8 @@ private struct TeamHeaderCell: View {
     }
 }
 
-/// Web's `PlayerCell` — one cell in a depth column: `#number LastName`. Web shows the
+/// Web's `PlayerCell` — one cell in a depth column: `#number LastName`, with the player's
+/// season line from the profile ledger stacked beneath it when one exists. Web shows the
 /// full name past 480pt; native keeps the last-name form everywhere because the two compare
 /// columns are always narrow. Each cell is centered within its half of the table.
 private struct PlayerCell: View {
@@ -892,6 +909,7 @@ private struct PlayerCell: View {
     @Namespace private var profileZoom
     let player: Player?
     let team: Team
+    let statLine: PlayerCompactStatLine?
     let repository: DepthRepository
 
     var body: some View {
@@ -903,22 +921,63 @@ private struct PlayerCell: View {
                     PlayerProfileView(player: player, team: team, repository: repository)
                         .zoomNavigationTransition(from: player.id, in: profileZoom)
                 } label: {
-                    Text("#\(player.number) \(formatLastName(player.name))")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                    VStack(spacing: 0) {
+                        Text("#\(player.number) \(formatLastName(player.name))")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(DesignTokens.Colors.textPrimary)
+                            .lineLimit(lineLimit)
+                        if let statLine {
+                            statStack(statLine)
+                        }
+                    }
+                    .cellFrame()
+                    // The whole padded half-row opens the profile, not just the glyphs.
+                    .contentShape(Rectangle())
                 }
+                .accessibilityValue(statLine?.accessibilityLabel ?? "")
                 .accessibilityIdentifier("compare-player-cell-\(player.id)")
             } else {
                 Text("—")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(DesignTokens.Colors.textFaintest)
+                    .cellFrame()
             }
         }
-        .padding(.horizontal, DesignTokens.Spacing.sm + 2)
-        .frame(maxWidth: .infinity, minHeight: 40)
         .zoomTransitionSource(
             id: player?.id, in: profileZoom, cornerRadius: DesignTokens.Radius.sm)
+    }
+
+    private var lineLimit: Int? { dynamicTypeSize.isAccessibilitySize ? nil : 1 }
+
+    // The ledger row's figures, stacked for the narrow column: the headline figure over the
+    // muted summary, in the ledger's "value LABEL · value LABEL" form.
+    private func statStack(_ line: PlayerCompactStatLine) -> some View {
+        VStack(spacing: 0) {
+            if let headline = line.figures.first {
+                Text("\(headline.value) \(headline.short)")
+                    .font(.caption2.weight(.heavy))
+                    .foregroundStyle(DesignTokens.Colors.textSecondary)
+                    .lineLimit(lineLimit)
+            }
+            let summary = line.figures.dropFirst()
+            if !summary.isEmpty {
+                Text(summary.map { "\($0.value) \($0.short)" }.joined(separator: " · "))
+                    .font(.caption2)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .lineLimit(lineLimit)
+            }
+        }
+        .multilineTextAlignment(.center)
+        .monospacedDigit()
+        .accessibilityHidden(true)
+    }
+}
+
+private extension View {
+    func cellFrame() -> some View {
+        padding(.horizontal, DesignTokens.Spacing.sm + 2)
+            .padding(.vertical, DesignTokens.Spacing.xs)
+            .frame(maxWidth: .infinity, minHeight: 40)
     }
 }
 

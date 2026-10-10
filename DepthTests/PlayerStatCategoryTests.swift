@@ -338,3 +338,76 @@ private func season(
     // HistoricalRosterMapper fills bio with "{season} · {city} {name}" filler.
     #expect(PlayerProfileDisplay.bio("2019 · Buffalo Bills", isHistorical: true) == nil)
 }
+
+@Test func compactLineIsTheLeadCategoryHeadlineThenSummary() {
+    let qb = [
+        season(
+            2025, attempts: 580, passingYards: 4_118, passingTds: 31, passingInterceptions: 9,
+            carries: 62, rushingYards: 341)
+    ]
+    let line = PlayerStatLedger.compactLine(for: qb, position: .qb, season: 2025, teamAbbrev: "SEA")
+    #expect(line?.figures.map { "\($0.value) \($0.short)" } == ["4,118 YDS", "31 TD", "9 INT"])
+    #expect(
+        line?.accessibilityLabel
+            == "2025 season, Passing yards 4,118, 31 touchdowns, 9 interceptions")
+
+    let receiver = [
+        season(2025, receptions: 88, targets: 120, receivingYards: 1_150, receivingTds: 8)
+    ]
+    #expect(
+        PlayerStatLedger.compactLine(for: receiver, position: .wr, season: nil, teamAbbrev: nil)?
+            .figures.map { "\($0.value) \($0.short)" } == ["1,150 YDS", "88 REC", "8 TD"])
+}
+
+@Test func compactLineReadsTheRequestedSeasonOnly() {
+    let rows = [
+        season(2025, carries: 200, rushingYards: 900),
+        season(2024, carries: 150, rushingYards: 610),
+    ]
+    #expect(
+        PlayerStatLedger.compactLine(for: rows, position: .rb, season: 2024, teamAbbrev: nil)?
+            .figures.first?.value == "610")
+    // No season pinned: the newest played season, regardless of row order.
+    #expect(
+        PlayerStatLedger.compactLine(
+            for: rows.reversed(), position: .rb, season: nil, teamAbbrev: nil)?
+            .figures.first?.value == "900")
+    // A season the player has no row for is absent, never a neighbouring year's line.
+    #expect(
+        PlayerStatLedger.compactLine(for: rows, position: .rb, season: 2023, teamAbbrev: nil) == nil
+    )
+}
+
+@Test func compactLineIsAbsentWithoutPlayedGames() {
+    #expect(
+        PlayerStatLedger.compactLine(for: [], position: .qb, season: nil, teamAbbrev: nil) == nil)
+    let unplayed = [season(2025, games: 0, passingYards: 0)]
+    #expect(
+        PlayerStatLedger.compactLine(for: unplayed, position: .qb, season: 2025, teamAbbrev: nil)
+            == nil)
+}
+
+@Test func compactLinePrefersTheStintWithTheComparedTeam() {
+    let traded = [
+        season(2025, team: "SEA", games: 8, receptions: 20, targets: 30, receivingYards: 240),
+        season(2025, team: "DEN", games: 9, receptions: 35, targets: 50, receivingYards: 512),
+    ]
+    #expect(
+        PlayerStatLedger.compactLine(for: traded, position: .wr, season: 2025, teamAbbrev: "DEN")?
+            .figures.first?.value == "512")
+    #expect(
+        PlayerStatLedger.compactLine(for: traded, position: .wr, season: 2025, teamAbbrev: "KC")?
+            .figures.first?.value == "240")
+}
+
+@Test func compactLineForParticipationOnlyPositions() {
+    let guardRow = [season(2025, offenseSnaps: 1_050, offensePct: 0.98)]
+    #expect(
+        PlayerStatLedger.compactLine(for: guardRow, position: .lg, season: 2025, teamAbbrev: nil)?
+            .figures.map { "\($0.value) \($0.short)" } == ["1,050 OFF", "17 GP"])
+    // The games fallback's headline and summary are the same figure; it appears once.
+    let gamesOnly = [season(2025, games: 17)]
+    #expect(
+        PlayerStatLedger.compactLine(for: gamesOnly, position: .lg, season: 2025, teamAbbrev: nil)?
+            .figures.map { "\($0.value) \($0.short)" } == ["17 GP"])
+}
