@@ -2227,6 +2227,7 @@ export type Database = {
           number: number | null
           player_order: number
           position: string
+          roles: Json | null
           season: number
           team_id: string
           updated_at: string
@@ -2244,6 +2245,7 @@ export type Database = {
           number?: number | null
           player_order: number
           position: string
+          roles?: Json | null
           season: number
           team_id: string
           updated_at?: string
@@ -2260,6 +2262,7 @@ export type Database = {
           number?: number | null
           player_order?: number
           position?: string
+          roles?: Json | null
           season?: number
           team_id?: string
           updated_at?: string

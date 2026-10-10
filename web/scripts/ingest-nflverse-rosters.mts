@@ -140,6 +140,8 @@ async function main() {
   const dropped: Drop[] = [];
   // Depth-chart rows per code that no position table knows, across every season run.
   const unmappedDepthChartCodes: Record<string, number> = {};
+  // Role holders left out because the club gave them no rank among several, per role.
+  const unrankedDepthChartRoles: Record<string, number> = {};
   const allRows: RosterHistoryInsert[] = [];
 
   for (const season of seasons) {
@@ -151,11 +153,19 @@ async function main() {
           ? getText(assetUrl(DEPTH_CHARTS_TAG, `${DEPTH_CHARTS_PREFIX}${season}.csv`))
           : Promise.resolve(null),
       ]);
-      const { positions: depthChartPositions, unmappedCodes } = depthChartCsv
+      const {
+        positions: depthChartPositions,
+        roles: depthChartRoles,
+        unmappedCodes,
+        unrankedRoles,
+      } = depthChartCsv
         ? mapHistoricalDepthChartPositions(season, parseCsv(depthChartCsv), resolveTeamCode)
-        : { positions: new Map(), unmappedCodes: {} };
+        : { positions: new Map(), roles: new Map(), unmappedCodes: {}, unrankedRoles: {} };
       for (const [code, count] of Object.entries(unmappedCodes)) {
         unmappedDepthChartCodes[code] = (unmappedDepthChartCodes[code] ?? 0) + count;
+      }
+      for (const [role, count] of Object.entries(unrankedRoles)) {
+        unrankedDepthChartRoles[role] = (unrankedDepthChartRoles[role] ?? 0) + count;
       }
       const rosterRows = parseCsv(rosterCsv);
       const { rows, dropped: seasonDropped } = toRosterHistoryRows(
@@ -164,7 +174,8 @@ async function main() {
         parseCsv(statsCsv),
         resolveTeamCode,
         crosswalk,
-        depthChartPositions
+        depthChartPositions,
+        depthChartRoles
       );
       // Checked before any write, so a season that loses rows without a reason writes
       // nothing and records a failure.
@@ -185,7 +196,7 @@ async function main() {
       console.log(
         `${season}: ${supabase ? 'wrote' : 'computed'} ${rows.length} rows, ` +
           `dropped ${JSON.stringify(countByReason(seasonDropped))}, ` +
-          `depth positions ${depthChartPositions.size}` +
+          `depth positions ${depthChartPositions.size}, role holders ${depthChartRoles.size}` +
           (Object.keys(unmappedCodes).length
             ? `, unmapped depth-chart codes ${JSON.stringify(unmappedCodes)}`
             : '')
@@ -236,6 +247,7 @@ async function main() {
       unmapped_depth_chart_positions: Object.fromEntries(
         Object.entries(unmappedDepthChartCodes).sort(([a], [b]) => a.localeCompare(b))
       ),
+      unranked_depth_chart_roles: unrankedDepthChartRoles,
       unknown_teams: countValues(dropped, 'unknown_team'),
     },
   });
