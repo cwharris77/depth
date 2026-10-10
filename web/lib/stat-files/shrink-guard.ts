@@ -4,7 +4,7 @@
 // file and every client. Pure: the caller loads the previous checkpoint and decides what to
 // do with the violations.
 
-import type { PlayerSeasonRow, StatLine } from './player-seasons';
+import { SECTION_SPECS, type PlayerSeasonRow, type StatLine } from './player-seasons';
 import type { RecordGameRow } from './records';
 import type { TeamGameRow } from './team-seasons';
 
@@ -17,6 +17,15 @@ export const SHRINK_THRESHOLDS = {
 } as const;
 
 const SECTIONS = ['box', 'snaps', 'pfr', 'ngs', 'qbr'] as const;
+
+// Rate and weighted fields are omitted from a season line when their summed denominator is
+// not positive, and a denominator such as air yards can fall as games are added. Their
+// non-null count can therefore drop in a season that lost no source data.
+const DERIVED_PLAYER_FIELDS: ReadonlySet<string> = new Set(
+  Object.entries(SECTION_SPECS).flatMap(([section, spec]) =>
+    [...Object.keys(spec.rate), ...Object.keys(spec.weighted)].map((field) => `${section}.${field}`)
+  )
+);
 
 export interface ShrinkViolation {
   season: number;
@@ -51,12 +60,13 @@ function compareCounts(opts: {
   previousFields: ReadonlyMap<string, number>;
   nextFields: ReadonlyMap<string, number>;
   inProgress: boolean;
+  /** Fields held to the completed-season threshold even while the season is in progress. */
+  derivedFields?: ReadonlySet<string>;
 }): ShrinkViolation[] {
   const { season, rowLabel, previousRows, nextRows, previousFields, nextFields, inProgress } = opts;
   const violations: ShrinkViolation[] = [];
   const maxRowDrop = inProgress ? 0 : SHRINK_THRESHOLDS.playerRows;
-  const maxFieldDrop = inProgress ? 0 : SHRINK_THRESHOLDS.fieldNonNull;
-  const limit = (fraction: number) => (inProgress ? 'any drop' : `${fraction * 100}% drop`);
+  const limit = (fraction: number) => (fraction === 0 ? 'any drop' : `${fraction * 100}% drop`);
 
   if (previousRows - nextRows > previousRows * maxRowDrop) {
     violations.push({
@@ -70,6 +80,8 @@ function compareCounts(opts: {
 
   for (const [field, before] of [...previousFields].sort(([a], [b]) => a.localeCompare(b))) {
     const after = nextFields.get(field) ?? 0;
+    const maxFieldDrop =
+      inProgress && !opts.derivedFields?.has(field) ? 0 : SHRINK_THRESHOLDS.fieldNonNull;
     if (before - after > before * maxFieldDrop) {
       violations.push({
         season,
@@ -85,8 +97,9 @@ function compareCounts(opts: {
 
 /**
  * Violations for one rebuilt season. A completed season may lose up to the thresholds; an
- * in-progress season is still being filled in, so it may only grow. No previous checkpoint
- * means a first build, which has nothing to shrink from.
+ * in-progress season is still being filled in, so its rows and summed fields may only grow,
+ * while derived rates keep the completed-season threshold. No previous checkpoint means a
+ * first build, which has nothing to shrink from.
  */
 export function checkSeasonShrink(opts: {
   season: number;
@@ -104,6 +117,7 @@ export function checkSeasonShrink(opts: {
     previousFields: fieldCounts(previous),
     nextFields: fieldCounts(next),
     inProgress,
+    derivedFields: DERIVED_PLAYER_FIELDS,
   });
 }
 
