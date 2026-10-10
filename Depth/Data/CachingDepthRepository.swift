@@ -280,6 +280,47 @@ actor CachingDepthRepository: DepthRepository {
         Task { try? await self.refreshUniformList() }
     }
 
+    // MARK: - User-initiated refresh
+
+    // Each of these goes straight to the underlying repository and stores the result,
+    // sharing the in-flight dedup of the background refreshes. A failure throws without
+    // touching the stored row, so a pull-to-refresh that fails keeps the last good data.
+
+    func freshTeams() async throws -> [Team] {
+        try await refreshTeamList()
+    }
+
+    func freshTeamSnapshot(teamId: String) async throws -> TeamSnapshot {
+        try await refreshSnapshot(teamId: teamId)
+    }
+
+    func freshTeamStats(teamId: String) async throws -> TeamStatsPage {
+        try await refreshStats(teamId: teamId)
+    }
+
+    func freshTeamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        try await refreshSchedule(teamId: teamId, season: season)
+    }
+
+    /// Also evicts the HTTP-cached art for every kit: the art is served with an hour-long
+    /// lifetime, so a refresh the user asked for has to drop it explicitly.
+    func freshUniforms() async throws -> [UniformListing] {
+        let listings = try await refreshUniformList()
+        UniformArt.removeCachedArt(for: listings.map(\.id))
+        return listings
+    }
+
+    /// The uniform archive is warmed without evicting its art: only a refresh pulled on the
+    /// archive itself should cost a re-download of every kit.
+    func refreshRelatedInBackground(teamId: String?, after refreshed: RefreshedRead) async {
+        if refreshed != .teams { refreshTeamListInBackground() }
+        if refreshed != .uniforms { refreshUniformListInBackground() }
+        guard let teamId else { return }
+        if refreshed != .snapshot { refreshSnapshotInBackground(teamId: teamId) }
+        if refreshed != .stats { refreshStatsInBackground(teamId: teamId) }
+        if refreshed != .schedule { refreshScheduleInBackground(teamId: teamId, season: nil) }
+    }
+
     static func isStale(_ cachedAt: Date, now: Date = Date()) -> Bool {
         now.timeIntervalSince(cachedAt) > staleAfter
     }

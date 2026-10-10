@@ -29,6 +29,9 @@ final class UniformArchiveViewModel {
 
     private(set) var loadState: LoadState = .loading
     private(set) var listings: [UniformListing] = []
+    /// True when a pull-to-refresh failed over content already on screen. The content stays
+    /// and the view says the refresh didn't land.
+    private(set) var refreshFailed = false
 
     var query = ""
     var viewMode: ViewMode = .team
@@ -40,16 +43,34 @@ final class UniformArchiveViewModel {
         self.repository = repository
     }
 
-    func load() async {
+    /// `forceRefresh` is the pull-to-refresh path: it reads through the network instead of
+    /// the cached archive, and a failed read keeps the archive already on screen.
+    func load(forceRefresh: Bool = false) async {
         // A refresh over loaded content keeps it on screen until the reload resolves.
-        if loadState != .loaded { loadState = .loading }
+        let keepsContent = loadState == .loaded
+        if !keepsContent { loadState = .loading }
         do {
-            listings = try await repository.listUniforms()
+            listings =
+                forceRefresh
+                ? try await repository.freshUniforms()
+                : try await repository.listUniforms()
             loadState = .loaded
+            refreshFailed = false
+            if forceRefresh {
+                await repository.refreshRelatedInBackground(teamId: nil, after: .uniforms)
+            }
         } catch let error as DepthError {
-            loadState = .failed(error)
+            if keepsContent {
+                refreshFailed = true
+            } else {
+                loadState = .failed(error)
+            }
         } catch {
-            loadState = .failed(.server("\(error)"))
+            if keepsContent {
+                refreshFailed = true
+            } else {
+                loadState = .failed(.server("\(error)"))
+            }
         }
     }
 

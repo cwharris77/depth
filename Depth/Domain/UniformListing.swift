@@ -17,6 +17,17 @@ enum UniformArt {
     static func fullURL(for id: String) -> URL? {
         URL(string: "\(baseURL)/\(id)-full.webp")
     }
+
+    /// Drops the HTTP-cached copy of these kits' art so the next load re-fetches it. The art is
+    /// served with a one-hour lifetime and `AsyncImage` reads `URLCache.shared`, so a
+    /// user-initiated refresh has to evict it explicitly.
+    static func removeCachedArt(for ids: [String], from cache: URLCache = .shared) {
+        for id in ids {
+            for url in [jerseyURL(for: id), fullURL(for: id)].compactMap({ $0 }) {
+                cache.removeCachedResponse(for: URLRequest(url: url))
+            }
+        }
+    }
 }
 
 // Mirrors web/lib/roster-source.ts's UniformListing: a kit plus the team context the archive

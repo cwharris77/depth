@@ -141,16 +141,24 @@ final class TeamStatsViewModel {
         selectedSeason = currentSeason
     }
 
-    func load() async {
+    /// `forceRefresh` is the pull-to-refresh path: the stats page and the upcoming schedule
+    /// read through the network instead of the cache window.
+    func load(forceRefresh: Bool = false) async {
         if page == nil { loadState = .loading }
         // Read alongside the page, not after it, so the story renders once with the
         // defense metrics already in play instead of changing its headline a beat later.
         async let history = try? repository.teamStatHistory(teamId: teamId)
         do {
-            let page = try await repository.teamStats(teamId: teamId)
+            let page =
+                forceRefresh
+                ? try await repository.freshTeamStats(teamId: teamId)
+                : try await repository.teamStats(teamId: teamId)
             if let history = await history { statHistory = history }
             self.page = page
             refreshFailed = false
+            if forceRefresh {
+                await repository.refreshRelatedInBackground(teamId: teamId, after: .stats)
+            }
             if selectedSeason == nil {
                 selectedSeason = page.seasons.first?.season ?? page.upcomingSeason
             }
@@ -167,13 +175,17 @@ final class TeamStatsViewModel {
         await withTaskGroup(of: Void.self) { group in
             group.addTask { await self.loadLeaders() }
             group.addTask { await self.loadPriorSchedules() }
-            group.addTask { await self.loadUpcomingSchedule() }
+            group.addTask { await self.loadUpcomingSchedule(forceRefresh: forceRefresh) }
         }
     }
 
-    private func loadUpcomingSchedule() async {
+    private func loadUpcomingSchedule(forceRefresh: Bool) async {
         guard let upcoming = page?.upcomingSeason else { return }
-        if let schedule = try? await repository.teamSchedule(teamId: teamId, season: upcoming) {
+        let schedule =
+            forceRefresh
+            ? try? await repository.freshTeamSchedule(teamId: teamId, season: upcoming)
+            : try? await repository.teamSchedule(teamId: teamId, season: upcoming)
+        if let schedule {
             upcomingSchedule = schedule
         }
     }

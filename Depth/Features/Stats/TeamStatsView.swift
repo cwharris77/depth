@@ -39,7 +39,7 @@ struct TeamStatsView: View {
             // the stats page must match, or it reads as a slightly-navy island between the
             // other two pages. No explicit background here = the same surface they use.
             .task { await viewModel.load() }
-            .refreshable { await viewModel.load() }
+            .refreshable { await viewModel.load(forceRefresh: true) }
             .sheet(isPresented: $showSeasonPicker) {
                 if let selectedSeason = viewModel.selectedSeason {
                     SeasonPickerSheet(

@@ -55,7 +55,7 @@ struct ScheduleView: View {
         }
         .onAppear { DepthEnvironment.onboarding.pageDidAppear(.schedule) }
         .task { await viewModel.load() }
-        .refreshable { await viewModel.load() }
+        .refreshable { await viewModel.load(forceRefresh: true) }
         .sheet(isPresented: $showSeasonPicker) {
             // `defaultSeason != nil` rather than a binding: the value itself is unused here
             // (seasonOptions already derives from it and is empty without it), it is only the
@@ -123,6 +123,7 @@ struct ScheduleView: View {
     private func scheduleContent(_ schedule: TeamSchedule) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                if viewModel.refreshFailed { RefreshFailedBanner() }
                 seasonPicker
                 // Canvas 1a: phase tabs share the roster page's underline row (not the
                 // filled page-switcher pill), so the two levels of navigation read apart.

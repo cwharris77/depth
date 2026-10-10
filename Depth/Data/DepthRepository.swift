@@ -58,9 +58,41 @@ protocol DepthRepository: Sendable {
     /// known value and
     /// fall back to it when this throws.
     func appConfig() async throws -> AppConfig
+
+    /// Network-first variants of the cached reads, for a user-initiated refresh. A caching
+    /// repository fetches from its source regardless of how fresh its stored copy is and
+    /// stores the result; on failure it throws and leaves the stored copy untouched so the
+    /// caller can keep showing it. Repositories with no cache fall back to the ordinary read.
+    func freshTeams() async throws -> [Team]
+    func freshTeamSnapshot(teamId: String) async throws -> TeamSnapshot
+    func freshTeamStats(teamId: String) async throws -> TeamStatsPage
+    func freshTeamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule
+    func freshUniforms() async throws -> [UniformListing]
+    /// Warms the other cached reads after a user-initiated refresh (the team list, the uniform
+    /// archive and, when given, that team's snapshot, stats and schedule) so the next screen
+    /// opens with current data. `refreshed` is the read the caller has just fetched, which is
+    /// skipped. Returns once the work is started, not when it finishes.
+    func refreshRelatedInBackground(teamId: String?, after refreshed: RefreshedRead) async
+}
+
+/// The cached read a user-initiated refresh fetched itself.
+enum RefreshedRead: Sendable {
+    case teams, snapshot, stats, schedule, uniforms
 }
 
 extension DepthRepository {
+    func freshTeams() async throws -> [Team] { try await teams() }
+    func freshTeamSnapshot(teamId: String) async throws -> TeamSnapshot {
+        try await teamSnapshot(teamId: teamId)
+    }
+    func freshTeamStats(teamId: String) async throws -> TeamStatsPage {
+        try await teamStats(teamId: teamId)
+    }
+    func freshTeamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        try await teamSchedule(teamId: teamId, season: season)
+    }
+    func freshUniforms() async throws -> [UniformListing] { try await listUniforms() }
+    func refreshRelatedInBackground(teamId: String?, after refreshed: RefreshedRead) async {}
     func recentParticipation(teamId: String) async throws -> RecentParticipation? { nil }
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { nil }

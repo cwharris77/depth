@@ -244,7 +244,7 @@ struct TeamDetailView: View {
                 if historyViewModel.isHistorical {
                     await historyViewModel.retry()
                 } else {
-                    await viewModel.load()
+                    await viewModel.load(forceRefresh: true)
                     await loadOverrides()
                 }
             }
@@ -834,7 +834,17 @@ struct TeamDetailView: View {
                 rosterStack(snapshot: snapshot, historical: historical)
             }
         } else {
-            rosterStack(snapshot: snapshot, historical: historical)
+            // The field fills the page height exactly (see rosterStack), so it can't sit in a
+            // ScrollView that proposes unbounded height. Pinning the stack to the measured
+            // height keeps that layout while giving `.refreshable` a scroll view to attach to;
+            // `.always` bounce lets the pull start even though the content never overflows.
+            GeometryReader { proxy in
+                ScrollView {
+                    rosterStack(snapshot: snapshot, historical: historical)
+                        .frame(height: proxy.size.height)
+                }
+                .scrollBounceBehavior(.always)
+            }
         }
     }
 
@@ -869,12 +879,11 @@ struct TeamDetailView: View {
             // place when there's genuinely no network to refresh from.
             if !historical && viewModel.isStale && DepthEnvironment.networkMonitor.isOffline {
                 StaleBanner()
-            }
-            if !historical, case .failed = viewModel.loadState {
-                // Only reachable if a refresh failed after we already had data —
-                // last-good snapshot stays on screen (failure-mode
-                // table), this just surfaces that a background refresh didn't land.
-                RefreshFailedBanner()
+            } else if !historical && viewModel.refreshFailed {
+                // A pull-to-refresh failed over a snapshot already on screen: the snapshot
+                // stays, and this says the refresh didn't land. The offline banner above
+                // already covers the no-network case.
+                RefreshFailedBanner().padding(.horizontal)
             }
             // Unit tabs (left) + overflow menu (right) in one row,
             // matching web's FieldHeaderMenu.tsx `justify-between` — previously
@@ -1153,15 +1162,6 @@ private struct StaleBanner: View {
         .foregroundStyle(.secondary)
         .padding(.horizontal)
         .accessibilityIdentifier("stale-banner")
-    }
-}
-
-private struct RefreshFailedBanner: View {
-    var body: some View {
-        Label("Couldn't refresh — showing saved data", systemImage: "exclamationmark.triangle")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal)
     }
 }
 

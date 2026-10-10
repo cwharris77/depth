@@ -44,7 +44,7 @@ struct CompareView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .background(DesignTokens.Colors.bg)
                 .task { await viewModel.load() }
-                .refreshable { await viewModel.load() }
+                .refreshable { await viewModel.load(forceRefresh: true) }
                 .toolbar {
                     depthTopNavToolbar(teamPill: { EmptyView() }) {
                         showAccount = true
@@ -176,6 +176,7 @@ struct CompareView: View {
     private var compareContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm + 6) {
+                if viewModel.refreshFailed { RefreshFailedBanner() }
                 if scheduleMatchup != nil {
                     backToScheduleButton
                 }
