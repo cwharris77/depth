@@ -73,8 +73,8 @@ export function depthChartUnit(label: string, legacy: boolean): DepthChartUnit |
 
 // A sided code keeps its side (`LOT` is `LT`, `LE` is `LDE`); a code whose side or role
 // has no canonical value takes the nearest coarse one (a defensive tackle of either side
-// is `DT`, `MIKE` and the outside/inside linebackers are `LB`); a code with no side at
-// all stays generic (an offensive `T` is `OT`, `G` is `G`). On a special-teams unit only
+// is `DT`, `MIKE` and the outside/inside linebackers are `LB`, a split end or flanker is
+// `WR`); a code with no side at all stays generic (an offensive `T` is `OT`, `G` is `G`). On a special-teams unit only
 // the specialists hold a position there -- a returner or gunner listed by his everyday
 // position is not being charted at it.
 export const DEPTH_CHART_POSITION: Record<DepthChartUnit, Record<string, Position>> = {
@@ -94,6 +94,12 @@ export const DEPTH_CHART_POSITION: Record<DepthChartUnit, Record<string, Positio
     ROT: 'RT',
     T: 'OT',
     G: 'G',
+    SE: 'WR',
+    FL: 'WR',
+    LWR: 'WR',
+    RWR: 'WR',
+    LTE: 'TE',
+    RTE: 'TE',
   },
   defense: {
     DE: 'DE',
@@ -129,6 +135,16 @@ export const DEPTH_CHART_POSITION: Record<DepthChartUnit, Record<string, Positio
     S: 'S',
     SS: 'SS',
     FS: 'FS',
+    NCB: 'NB',
+    NICK: 'NB',
+    NICKE: 'NB',
+    NKL: 'NB',
+    NOSE: 'NT',
+    END: 'DE',
+    LLB: 'LB',
+    RLB: 'LB',
+    MILB: 'LB',
+    WILB: 'LB',
   },
   special: {
     K: 'K',
@@ -172,16 +188,10 @@ export const DEPTH_CHART_UNPLACED: Record<DepthChartUnit, ReadonlySet<string>> =
     'LS/TE',
     // Scheme-specific and alternate labels with no agreed canonical value.
     'F',
-    'FL',
     'H-B',
     'J',
-    'LTE',
-    'LWR',
     'NG',
     'OC',
-    'RTE',
-    'RWR',
-    'SE',
     'WE',
     'WRE',
     // Defensive codes charted on offense.
@@ -213,39 +223,29 @@ export const DEPTH_CHART_UNPLACED: Record<DepthChartUnit, ReadonlySet<string>> =
     'CS',
     'DB',
     'DDE',
-    'END',
     'JACK',
     'JLB',
     'LBE',
     'LCR',
     'LEO',
-    'LLB',
     'LS',
     'LSB',
     'MCB',
     'MIL',
-    'MILB',
     'ML',
     'MO',
     'MOLB',
     'N',
-    'NCB',
     'NDB',
     'NDT',
-    'NICK',
-    'NICKE',
-    'NKL',
-    'NOSE',
     'OE',
     'OTTO',
-    'RLB',
     'RUSH',
     'SL',
     'TED',
     'UT',
     'WE',
     'WIL',
-    'WILB',
     'WL',
     'WS',
     // Special-teams labels charted on defense.
