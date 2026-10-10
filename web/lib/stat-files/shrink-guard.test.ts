@@ -61,6 +61,25 @@ describe('checkSeasonShrink', () => {
     expect(guard(rows(100), rows(99), true).map((v) => v.subject)).toContain('player_rows');
     expect(guard(rows(100), rows(100, 99), true).map((v) => v.subject)).toEqual(['pfr.carries']);
   });
+
+  // A rate is omitted when its summed denominator is not positive, so a player whose season
+  // air yards go negative loses `racr` without any source data going missing.
+  const withRacr = (count: number, withRate: number): PlayerSeasonRow[] =>
+    rows(count).map((row, i) => ({
+      ...row,
+      box: { receiving_yards: 30, ...(i < withRate ? { racr: 1.5 } : {}) },
+    }));
+
+  it('lets a derived rate drop within the threshold in an in-progress season', () => {
+    expect(guard(withRacr(100, 100), withRacr(100, 99), true)).toEqual([]);
+    expect(guard(withRacr(100, 100), withRacr(100, 90), true)).toEqual([]);
+  });
+
+  it('still trips when a derived rate drops past the threshold in an in-progress season', () => {
+    const [violation] = guard(withRacr(100, 100), withRacr(100, 0), true);
+    expect(violation).toMatchObject({ subject: 'box.racr', before: 100, after: 0 });
+    expect(violation.message).toContain('10% drop');
+  });
 });
 
 describe('fieldCounts', () => {
