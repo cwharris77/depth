@@ -848,8 +848,9 @@ struct DepthChartFieldLayout: Equatable {
     ///   correct side of the line."
     ///
     /// So: an on-line slot's y never moves — it's snapped to its row by
-    /// `settingOffLineDepth` and must stay there. When the dot owner is off the line, push
-    /// it deeper (y), clamped to stop short of the on-line row it must not cross. When the
+    /// `settingOffLineDepth` and must stay there. Wing tight ends clear labels sideways
+    /// to preserve their shallow alignment. Other off-line dot owners move deeper (y),
+    /// clamped to stop short of the on-line row they must not cross. When the
     /// dot owner IS on the line and the pair aren't charted at the same x,
     /// push the dot sideways instead, same as `resolvingOverlaps`. A dot owner that's both
     /// on-line and charted at the same x as its tag's owner (the nose-tackle-under-a-
@@ -889,13 +890,29 @@ struct DepthChartFieldLayout: Equatable {
                 let dotRect = CGRect(
                     x: pb.x - dotSize / 2, y: pb.y - dotSize / 2, width: dotSize, height: dotSize)
                 guard tagZone.intersects(dotRect) else { continue }
-                if b.onLine != true {
+                if b.onLine == false && b.label == "TE" && abs(b.x - a.x) >= 1 {
+                    // A wing's shallow depth identifies its alignment. Clear a neighboring
+                    // label horizontally instead of turning it into a backfield player.
+                    let direction: CGFloat = b.x < a.x ? -1 : 1
+                    centers[b.key] = CGPoint(
+                        x: max(0, min(width, pa.x + direction * halfClearance)),
+                        y: centers[b.key]?.y ?? pb.y)
+                } else if b.onLine != true {
                     var targetY = max(centers[b.key]?.y ?? pb.y, pa.y + requiredDy)
                     if let lineY, pb.y < lineY {
                         targetY = min(targetY, lineY - dotSize - gap)
                     }
                     targetY = min(height, targetY)
-                    centers[b.key] = CGPoint(x: centers[b.key]?.x ?? pb.x, y: targetY)
+                    if targetY < pa.y + requiredDy && abs(b.x - a.x) >= 1 {
+                        // At a vertical boundary, differently aligned players can still
+                        // clear sideways. Same-x backfield stacks retain their alignment.
+                        let direction: CGFloat = b.x < a.x ? -1 : 1
+                        centers[b.key] = CGPoint(
+                            x: max(0, min(width, pa.x + direction * halfClearance)),
+                            y: centers[b.key]?.y ?? pb.y)
+                    } else {
+                        centers[b.key] = CGPoint(x: centers[b.key]?.x ?? pb.x, y: targetY)
+                    }
                 } else if abs(pb.x - pa.x) >= 1 {
                     let direction: CGFloat = pb.x < pa.x ? -1 : 1
                     let targetX = max(0, min(width, pa.x + direction * halfClearance))

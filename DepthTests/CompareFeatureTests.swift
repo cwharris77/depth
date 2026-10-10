@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 import Testing
 @testable import Depth
 
@@ -1170,4 +1171,93 @@ private actor SuspendingTeamsRepository: DepthRepository {
     #expect(reads.filter { $0 == "seahawks-qb-0" }.count == 1)
     #expect(reads.filter { $0 == "49ers-qb-0" }.count == 1)
     #expect(reads.filter { $0 == "49ers-qb-1" }.count == 2)
+}
+
+private final class CompareSeasonFixtureProtocol: URLProtocol {
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        guard let url = request.url,
+            let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+            let response = HTTPURLResponse(
+                url: url, statusCode: 200, httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"])
+        else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badURL))
+            return
+        }
+        let query = components.queryItems ?? []
+        let isRankRead = !query.contains { $0.name == "team_id" }
+        let regularOnly = query.contains { $0.name == "season_type" && $0.value == "eq.REG" }
+        let body: String
+        switch url.lastPathComponent {
+        case "teams":
+            body =
+                #"{"id":"bills","abbrev":"BUF","city":"Buffalo","name":"Bills","conference":"AFC","division":"East","uniforms":[]}"#
+        case "team_stats":
+            body =
+                #"[{"team_id":"bills","season":2026,"overall_wins":0,"overall_losses":0},{"team_id":"bills","season":2025,"overall_wins":12,"overall_losses":5}]"#
+        case "team_season_stats":
+            let regular =
+                #"{"team_id":"bills","season":2025,"updated_at":"2026-01-01T00:00:00Z","games":17,"passing_epa":10,"rushing_epa":0,"attempts":100,"carries":100,"sacks_suffered":0}"#
+            let preseason =
+                isRankRead
+                ? #"{"team_id":"jets","season":2025,"updated_at":"2026-01-01T00:00:00Z","games":3,"passing_epa":100,"rushing_epa":0,"attempts":100,"carries":100,"sacks_suffered":0}"#
+                : #"{"team_id":"bills","season":2026,"updated_at":"2026-01-01T00:00:00Z","games":3,"passing_epa":100,"rushing_epa":0,"attempts":100,"carries":100,"sacks_suffered":0}"#
+            body = regularOnly ? "[\(regular)]" : "[\(regular),\(preseason)]"
+        default:
+            body = "[]"
+        }
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data(body.utf8))
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
+}
+
+@Test func compareTeamEvidenceExcludesPreseasonFromValuesAndRanks() async throws {
+    let config = URLSessionConfiguration.ephemeral
+    config.protocolClasses = [CompareSeasonFixtureProtocol.self]
+    let session = URLSession(configuration: config)
+    defer { session.invalidateAndCancel() }
+    let client = SupabaseClient(
+        supabaseURL: try #require(URL(string: "https://compare-fixture.example")),
+        supabaseKey: "fixture-publishable-key",
+        options: SupabaseClientOptions(global: .init(session: session)))
+    let files = StatFilesClient(baseURL: try #require(URL(string: "https://stats.example/v1"))) {
+        _ in throw DepthError.notFound
+    }
+    let repository = SupabaseDepthRepository(client: client, statFiles: files)
+    let page = try await repository.teamStats(teamId: "bills")
+    #expect(page.seasons.first { $0.season == 2026 }?.matchupMetrics == nil)
+    #expect(page.seasons.first { $0.season == 2025 }?.matchupMetrics?.games == 17)
+    #expect(page.leagueRanksBySeason[2025]?.offensiveEPAPerPlay == 1)
+
+    let fake = CompareRepositoryFake(teams: [page.team], snapshots: [:], stats: ["bills": page])
+    let model = await CompareViewModel(repository: fake)
+    await model.load()
+    await model.pickTeam("bills", into: .a)
+    #expect(await model.resolvedSeason == 2025)
+    #expect(await model.effectiveStatsA?.overallWins == 12)
+}
+
+@Test func comparePlayerLineIgnoresPreseasonStatFileRows() async throws {
+    let json =
+        #"{"seasons":[{"season":2025,"season_type":"PRE","team":"bills","box":{"games":3}},{"season":2025,"season_type":"REG","team":"bills","box":{"games":17}}]}"#
+    let file = try JSONDecoder().decode(PlayerSeasonsFileDTO.self, from: Data(json.utf8))
+    let rows = StatFilesMapper.map(file, teamAbbrevs: ["bills": "BUF"])
+    let team = compareTeam("bills", abbrev: "BUF", city: "Buffalo")
+    let snapshot = compareSnapshot(team: team, qbCount: 1)
+    let repo = CompareRepositoryFake(
+        teams: [team], snapshots: [team.id: snapshot],
+        stats: [team.id: statsPage(team: team, wins: 12)],
+        playerSeasons: ["bills-qb-0": rows])
+    let model = await CompareViewModel(repository: repo)
+    await model.load()
+    await model.pickTeam(team.id, into: .a)
+    let player = try #require(await model.positionGroupA.first)
+    await model.loadPlayerStats(for: [player], team: team)
+    #expect(await model.statLine(for: player, team: team)?.figures.map(\.value) == ["17"])
 }

@@ -368,7 +368,18 @@ struct UniformArchiveViewModelTests {
         let model = await loaded(allKits)
         model.filters.kinds = [.away]
         #expect(model.summary == "1 kit · 1 team")
-        #expect(model.applyLabel == "Show 1 kits")
+        #expect(model.applyLabel == "Show 1 kit")
+    }
+
+    @Test func applyLabelUsesSingularForOnePristineKit() async {
+        let model = await loaded([bills])
+        #expect(model.applyLabel == "Show all 1 kit")
+    }
+
+    @Test func applyLabelUsesPluralForNoResults() async {
+        let model = await loaded(allKits)
+        model.query = "no matching team"
+        #expect(model.applyLabel == "Show 0 kits")
     }
 
     @Test func pristineApplyLabelSaysAll() async {

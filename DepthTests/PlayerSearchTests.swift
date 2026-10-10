@@ -1,3 +1,5 @@
+import Foundation
+import SwiftData
 import Testing
 @testable import Depth
 
@@ -145,5 +147,72 @@ private func hit(
     @Test func mapPlayerHitSkipsDanglingTeamAndUnknownPosition() {
         #expect(TeamSnapshotMapper.mapPlayerHit(hitDTO(teams: nil)) == nil)
         #expect(TeamSnapshotMapper.mapPlayerHit(hitDTO(position: "XYZ")) == nil)
+    }
+}
+
+private actor SuspendedPlayerSearchRepository: DepthRepository {
+    private var response: CheckedContinuation<[PlayerHit], any Error>?
+    private var started: CheckedContinuation<Void, Never>?
+
+    func searchPlayers(query: String) async throws -> [PlayerHit] {
+        try await withCheckedThrowingContinuation { continuation in
+            response = continuation
+            started?.resume()
+            started = nil
+        }
+    }
+
+    func waitUntilSearchStarts() async {
+        if response != nil { return }
+        await withCheckedContinuation { started = $0 }
+    }
+
+    func finish(with result: Result<[PlayerHit], any Error>) {
+        response?.resume(with: result)
+        response = nil
+    }
+
+    func teams() async throws -> [Team] { [] }
+    func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
+    func appConfig() async throws -> AppConfig { throw DepthError.notFound }
+}
+
+@Suite @MainActor struct TeamListSearchRaceTests {
+    @Test(arguments: [false, true])
+    func clearingSearchInvalidatesLateResponse(fails: Bool) async throws {
+        let schema = Schema(DepthCacheSchema.models)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: [config])
+        let underlying = SuspendedPlayerSearchRepository()
+        let repository = CachingDepthRepository(
+            underlying: underlying, store: CachedSnapshotStore(modelContainer: container))
+        let events = RecordingAppEventsRecorder()
+        let model = TeamListViewModel(repository: repository, events: events)
+        model.searchText = "Josh"
+        let pending = Task { await model.searchPlayers() }
+        await underlying.waitUntilSearchStarts()
+
+        model.searchText = "  "
+        await model.searchPlayers()
+        await underlying.finish(with: fails ? .failure(DepthError.offline) : .success([hit()]))
+        await pending.value
+
+        #expect(model.playerHits.isEmpty)
+        #expect(events.events().isEmpty)
+
+        model.searchText = "Allen"
+        let next = Task { await model.searchPlayers() }
+        await underlying.waitUntilSearchStarts()
+        await underlying.finish(with: .success([hit(id: "new", name: "Josh Allen")]))
+        await next.value
+        #expect(model.playerHits.map(\.id) == ["new"])
     }
 }

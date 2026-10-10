@@ -200,6 +200,7 @@ Everything in `web/CLAUDE.md` §5's "Any code PR" checklist applies. Additionall
       ```
       scoped to the suites the diff touches — `DepthTests` for data/domain,
       `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed.
+- [ ] **Before push, build Staging once:** `xcodebuild -project Depth.xcodeproj -scheme 'Depth Stage' -destination 'platform=iOS Simulator,id=…' -configuration Staging build-for-testing`. Debug tests can pass while Staging/Release optimization hits different type-checker limits. Inspect `git diff -- Depth.xcodeproj` afterward and regenerate with `xcodegen generate` if Xcode rewrote an unintended scheme.
 - [ ] **Slim the simulator before booting it for anything that doesn't need full system
       services** (UI tests, screenshots, layout checks, manual runs). `simslim` (Homebrew,
       `mobai-app/tap/simslim`) disables background daemons a simulator doesn't need:
