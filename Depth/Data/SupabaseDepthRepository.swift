@@ -303,6 +303,7 @@ actor SupabaseDepthRepository: DepthRepository {
                 client
                 .from("team_season_stats")
                 .select(Self.teamMatchupMetricsSelect)
+                .eq("season_type", value: "REG")
                 .eq("team_id", value: teamId)
                 .order("season", ascending: false)
                 .execute()
@@ -379,10 +380,12 @@ actor SupabaseDepthRepository: DepthRepository {
         var rows: [T] = []
         var offset = 0
         while true {
+            let query = client.from(table).select(select)
+            if table == "team_season_stats" {
+                query.eq("season_type", value: "REG")
+            }
             let page: [T] =
-                try await client
-                .from(table)
-                .select(select)
+                try await query
                 .order("team_id")
                 .order("season")
                 .range(from: offset, to: offset + Self.rankQueryPageSize - 1)

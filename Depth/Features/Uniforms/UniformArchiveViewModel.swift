@@ -114,7 +114,9 @@ final class UniformArchiveViewModel {
 
     /// The Filters sheet's primary button, which states what applying it leaves you with.
     var applyLabel: String {
-        isPristine ? "Show all \(shownKitCount) kits" : "Show \(shownKitCount) kits"
+        let count = shownKitCount
+        let noun = count == 1 ? "kit" : "kits"
+        return isPristine ? "Show all \(count) \(noun)" : "Show \(count) \(noun)"
     }
 
     var hasQuery: Bool { !query.isEmpty }

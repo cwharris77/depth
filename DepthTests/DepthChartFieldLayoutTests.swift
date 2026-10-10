@@ -124,6 +124,24 @@ struct DepthChartFieldLayoutTests {
         }
     }
 
+    @Test(arguments: ["12", "13", "22", "23"], [400.0, 500.0, 650.0])
+    func compactTightEndHeavyFormationsKeepDotsAndTagsClear(code: String, height: Double) {
+        for alignment in ["UNDER CENTER", "SHOTGUN", "PISTOL"] {
+            let slots = buildRealFormation(alignment: alignment, code: code).map {
+                RenderSlot(
+                    key: $0.id, x: $0.x, y: $0.y, label: $0.label,
+                    player: nil, onLine: $0.onLine)
+            }
+            let layout = DepthChartFieldLayout.compute(
+                slots: slots, fieldSize: CGSize(width: 370, height: height),
+                fillWidth: true, zoomToUnit: false)
+            assertNoTouching(slots, layout: layout)
+            assertNoLabelOverlap(
+                slots, layout: layout,
+                context: "\(alignment) \(code) at height \(height)")
+        }
+    }
+
     @Test("phone layouts use one readable dot size across units")
     func offenseDotsNeverTouch() {
         let offense = offenseFormation.map {
@@ -613,6 +631,22 @@ struct FieldYardScaleTests {
                     "\(alignment) \(slot.label): charted \(charted) yd but drawn \(drawn) yd"
                 )
             }
+        }
+    }
+
+    @Test(arguments: ["12", "13", "22", "23"], [400.0, 500.0, 650.0])
+    func wingTightEndsStayCloseToTheirChartedDepth(code: String, height: Double) throws {
+        let s = slots(buildRealFormation(alignment: "UNDER CENTER", code: code))
+        let layout = DepthChartFieldLayout.compute(
+            slots: s, fieldSize: CGSize(width: 370, height: height), fillWidth: true,
+            zoomToUnit: false)
+        for slot in s where slot.label == "TE" && slot.onLine == false {
+            let drawn = try #require(renderedYards(slot.key, s, layout))
+            let charted = FieldYardScale.yards(between: slot.y, and: 51)
+            #expect(drawn > 0)
+            #expect(
+                abs(drawn - charted) < 0.1,
+                "\(code) \(slot.key): charted \(charted) yd but drawn \(drawn) yd")
         }
     }
 
