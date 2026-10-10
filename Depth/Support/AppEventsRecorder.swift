@@ -10,6 +10,7 @@ enum AppEvent: Equatable {
     case depthChartReached
     case authStarted
     case authCompleted
+    case notificationOpened
     case overrideSaved
     /// `category` must be one of `DepthError`/`DepthAuthError`'s `telemetryCategory`
     /// values — the DB CHECK constraint rejects anything else.
@@ -21,6 +22,7 @@ enum AppEvent: Equatable {
         case .depthChartReached: "depth_chart_reached"
         case .authStarted: "auth_started"
         case .authCompleted: "auth_completed"
+        case .notificationOpened: "notification_opened"
         case .overrideSaved: "override_saved"
         case .error: "error"
         }

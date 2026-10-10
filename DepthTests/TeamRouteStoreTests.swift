@@ -1,4 +1,25 @@
 import Testing
+@MainActor
+@Test func teamRouteStoreCarriesAnEventOnce() {
+    let store = TeamRouteStore()
+    store.request(teamId: "bills", event: .event(id: "e1"))
+    let first = store.consume()
+    #expect(first.teamId == "bills")
+    #expect(first.event == .event(id: "e1"))
+    let second = store.consume()
+    #expect(second.teamId == nil)
+    #expect(second.event == nil)
+}
+
+@MainActor
+@Test func aLaterPlainRequestDropsAnEarlierEvent() {
+    let store = TeamRouteStore()
+    store.request(teamId: "bills", event: .feed)
+    store.request(teamId: "chiefs")
+    let consumed = store.consume()
+    #expect(consumed.teamId == "chiefs")
+    #expect(consumed.event == nil)
+}
 @testable import Depth
 
 // TeamRouteStore is the cross-tab handoff for the uniform archive's kit sheet →

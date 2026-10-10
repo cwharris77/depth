@@ -4,7 +4,7 @@ import UserNotifications
 /// the delegate so it can be tested without a delivered notification, and the parsed
 /// value is Sendable so it can cross from the delegate callback to the main actor.
 enum NotificationResponse: Equatable, Sendable {
-    case openTeam(String)
+    case openTeam(teamId: String, eventIds: [String])
     case turnOffEverything
     case ignore
 
@@ -20,7 +20,10 @@ enum NotificationResponse: Equatable, Sendable {
         guard actionIdentifier == UNNotificationDefaultActionIdentifier,
             let teamId = userInfo["team_id"] as? String, !teamId.isEmpty
         else { return .ignore }
-        return .openTeam(teamId)
+        let eventIds = (userInfo["event_ids"] as? [Any] ?? []).compactMap { $0 as? String }.filter {
+            !$0.isEmpty
+        }
+        return .openTeam(teamId: teamId, eventIds: eventIds)
     }
 
     /// Carries the response out. Opening a team parks the request for the Depth Charts
@@ -29,12 +32,15 @@ enum NotificationResponse: Equatable, Sendable {
     @MainActor
     func perform(
         routes: TeamRouteStore, onboarding: OnboardingController,
-        settings: NotificationSettingsStore
+        settings: NotificationSettingsStore, events: any AppEventsRecording
     ) async {
         guard settings.isAvailable else { return }
         switch self {
-        case .openTeam(let teamId):
-            routes.request(teamId: teamId)
+        case .openTeam(let teamId, let eventIds):
+            let route: TeamEventRoute? =
+                eventIds.count == 1 ? .event(id: eventIds[0]) : (eventIds.isEmpty ? nil : .feed)
+            routes.request(teamId: teamId, event: route)
+            events.record(.notificationOpened)
             onboarding.activeTab = .depthCharts
         case .turnOffEverything:
             await settings.turnOffEverything()

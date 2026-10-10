@@ -32,6 +32,8 @@ struct DepthApp: App {
             // A notification choice left by an earlier run would change what the
             // notification control shows first.
             DepthEnvironment.preferences.resetNotificationState()
+            UserDefaults.standard.removeObject(forKey: "preferences.teamFeedSeenAt")
+            UserDefaults.standard.removeObject(forKey: "uiTesting.teamEventsTimestamp")
         }
 
         // UI_TESTING_START_TEAM: an optional test launch arg (`UI_TESTING_START_TEAM=bills`)
@@ -90,7 +92,12 @@ struct DepthApp: App {
             }) {
                 DepthEnvironment.teamRouteStore.request(
                     teamId: routeArgument.replacingOccurrences(
-                        of: "UI_TESTING_ROUTE_TEAM=", with: ""))
+                        of: "UI_TESTING_ROUTE_TEAM=", with: ""),
+                    event: ProcessInfo.processInfo.arguments.first(where: {
+                        $0.hasPrefix("UI_TESTING_ROUTE_EVENT=")
+                    }).map { .event(id: String($0.dropFirst("UI_TESTING_ROUTE_EVENT=".count))) }
+                        ?? (ProcessInfo.processInfo.arguments.contains("UI_TESTING_ROUTE_FEED")
+                            ? .feed : nil))
             }
         #endif
 

@@ -22,6 +22,8 @@ import SwiftUI
 @ToolbarContentBuilder
 func depthTopNavToolbar<TeamPill: View>(
     @ViewBuilder teamPill: @escaping () -> TeamPill,
+    onFeedTap: (() -> Void)? = nil,
+    feedHasUnread: Bool = false,
     onAccountTap: @escaping () -> Void
 ) -> some ToolbarContent {
     if #available(iOS 26.0, *) {
@@ -36,7 +38,9 @@ func depthTopNavToolbar<TeamPill: View>(
         }
         .sharedBackgroundVisibility(.hidden)
         ToolbarItem(placement: .topBarTrailing) {
-            DepthTopNavTrailingGroup(teamPill: teamPill, onAccountTap: onAccountTap)
+            DepthTopNavTrailingGroup(
+                teamPill: teamPill, onFeedTap: onFeedTap, feedHasUnread: feedHasUnread,
+                onAccountTap: onAccountTap)
         }
         .sharedBackgroundVisibility(.hidden)
     } else {
@@ -46,7 +50,9 @@ func depthTopNavToolbar<TeamPill: View>(
                 .accessibilityHidden(true)
         }
         ToolbarItem(placement: .topBarTrailing) {
-            DepthTopNavTrailingGroup(teamPill: teamPill, onAccountTap: onAccountTap)
+            DepthTopNavTrailingGroup(
+                teamPill: teamPill, onFeedTap: onFeedTap, feedHasUnread: feedHasUnread,
+                onAccountTap: onAccountTap)
         }
     }
 }
@@ -57,6 +63,8 @@ func depthTopNavToolbar<TeamPill: View>(
 @MainActor
 private struct DepthTopNavTrailingGroup<TeamPill: View>: View {
     @ViewBuilder let teamPill: () -> TeamPill
+    let onFeedTap: (() -> Void)?
+    let feedHasUnread: Bool
     let onAccountTap: () -> Void
 
     /// Empirically measured gap iOS reserves after trailing toolbar content before the
@@ -68,6 +76,25 @@ private struct DepthTopNavTrailingGroup<TeamPill: View>: View {
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.xs) {
             teamPill()
+            if let onFeedTap {
+                Button(action: onFeedTap) {
+                    Image(systemName: "bell")
+                        .overlay(alignment: .topTrailing) {
+                            if feedHasUnread {
+                                Circle().fill(DesignTokens.Colors.accent)
+                                    .frame(width: 8, height: 8)
+                                    .offset(x: 3, y: -2)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("What's new")
+                .accessibilityValue(feedHasUnread ? "New" : "")
+                .accessibilityIdentifier("team-feed-button")
+            }
             Button(action: onAccountTap) {
                 Image(systemName: "person.crop.circle")
                     .frame(minWidth: 44, minHeight: 44, alignment: .leading)

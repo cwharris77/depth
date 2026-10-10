@@ -44,7 +44,7 @@ final class DepthAppDelegate: NSObject, UIApplicationDelegate {
         await response.perform(
             routes: DepthEnvironment.teamRouteStore,
             onboarding: DepthEnvironment.onboarding,
-            settings: DepthEnvironment.notificationSettings)
+            settings: DepthEnvironment.notificationSettings, events: DepthEnvironment.appEvents)
     }
 }
 

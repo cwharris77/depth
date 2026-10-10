@@ -58,6 +58,8 @@ protocol DepthRepository: Sendable {
     /// cached: its only use is deciding whether there is something new to tell the user.
     /// A default nil keeps unrelated focused test doubles source-compatible.
     func latestBigMoment(teamId: String) async throws -> TeamEvent?
+    /// The newest 50 events for this team, across every tier.
+    func teamEvents(teamId: String) async throws -> [TeamEvent]
     /// The public `app_config` singleton backing the update gate. Callers cache the last
     /// known value and
     /// fall back to it when this throws.
@@ -107,4 +109,5 @@ extension DepthRepository {
     }
     func leagueRecords(stat: RecordStat) async throws -> LeagueRecords? { nil }
     func latestBigMoment(teamId: String) async throws -> TeamEvent? { nil }
+    func teamEvents(teamId: String) async throws -> [TeamEvent] { [] }
 }

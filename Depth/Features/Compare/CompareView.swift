@@ -100,6 +100,12 @@ struct CompareView: View {
         // run `applyPendingCompareRequest`, whose `consume()` makes the second a no-op.
         .onAppear { applyPendingCompareRequest() }
         .onAppear { DepthEnvironment.onboarding.pageDidAppear(.compare) }
+        .onChange(of: DepthEnvironment.onboarding.activeTab) { _, tab in
+            guard tab != .compare else { return }
+            showAccount = false
+            showSeasonPicker = false
+            viewModel.endPicking()
+        }
         .onChange(of: compareRouteStore.pendingRequest) { _, _ in
             applyPendingCompareRequest()
         }

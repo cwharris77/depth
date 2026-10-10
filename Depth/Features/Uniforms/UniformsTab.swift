@@ -73,6 +73,12 @@ struct UniformsTab: View {
                 }
         }
         .task { await viewModel.load() }
+        .onChange(of: DepthEnvironment.onboarding.activeTab) { _, tab in
+            guard tab != .uniforms else { return }
+            showAccount = false
+            showFilterSheet = false
+            selectedKit = nil
+        }
         // Live bindings into both sheets, so a change made in either is visible in the
         // archive behind it immediately — no separate apply step.
         .sheet(isPresented: $showFilterSheet) {

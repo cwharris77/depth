@@ -8,7 +8,7 @@ import UserNotifications
     let response = NotificationResponse.parse(
         actionIdentifier: UNNotificationDefaultActionIdentifier,
         userInfo: ["team_id": "seahawks", "event_ids": ["e1"]])
-    #expect(response == .openTeam("seahawks"))
+    #expect(response == .openTeam(teamId: "seahawks", eventIds: ["e1"]))
 }
 
 @Test func theLeaveEverythingActionDoesNotOpenATeam() {
@@ -41,6 +41,7 @@ import UserNotifications
 
 @MainActor
 private struct ResponseStores {
+    let recorder = RecordingAppEventsRecorder()
     let routes = TeamRouteStore()
     let onboarding: OnboardingController
     let settings: NotificationSettingsStore
@@ -60,7 +61,8 @@ private struct ResponseStores {
     }
 
     func perform(_ response: NotificationResponse) async {
-        await response.perform(routes: routes, onboarding: onboarding, settings: settings)
+        await response.perform(
+            routes: routes, onboarding: onboarding, settings: settings, events: recorder)
     }
 }
 
@@ -68,7 +70,7 @@ private struct ResponseStores {
     let stores = try ResponseStores()
     stores.onboarding.activeTab = .compare
 
-    await stores.perform(.openTeam("bills"))
+    await stores.perform(.openTeam(teamId: "bills", eventIds: []))
 
     #expect(stores.routes.requestedTeamId == "bills")
     #expect(stores.onboarding.activeTab == .depthCharts)
@@ -101,10 +103,46 @@ private struct ResponseStores {
     let stores = try ResponseStores(tier: .everything, isEnabled: false)
     stores.onboarding.activeTab = .compare
 
-    await stores.perform(.openTeam("bills"))
+    await stores.perform(.openTeam(teamId: "bills", eventIds: []))
     await stores.perform(.turnOffEverything)
 
     #expect(stores.settings.tier == .everything)
     #expect(stores.routes.requestedTeamId == nil)
     #expect(stores.onboarding.activeTab == .compare)
+}
+
+@Test func parseTreatsMalformedEventIdsAsNone() {
+    #expect(
+        NotificationResponse.parse(
+            actionIdentifier: UNNotificationDefaultActionIdentifier,
+            userInfo: ["team_id": "bills", "event_ids": "e1"])
+            == .openTeam(teamId: "bills", eventIds: []))
+    #expect(
+        NotificationResponse.parse(
+            actionIdentifier: UNNotificationDefaultActionIdentifier,
+            userInfo: ["team_id": "bills", "event_ids": ["e1", 7, ""]])
+            == .openTeam(teamId: "bills", eventIds: ["e1"]))
+}
+@MainActor @Test func oneEventRoutesAndCountsOneAnonymousOpen() async throws {
+    let stores = try ResponseStores()
+    await stores.perform(.openTeam(teamId: "bills", eventIds: ["e1"]))
+    #expect(stores.routes.consume().event == .event(id: "e1"))
+    #expect(stores.recorder.events() == [.notificationOpened])
+}
+@MainActor @Test func severalEventsOpenTheFeed() async throws {
+    let stores = try ResponseStores()
+    await stores.perform(.openTeam(teamId: "bills", eventIds: ["e1", "e2"]))
+    #expect(stores.routes.consume().event == .feed)
+}
+@MainActor @Test func disabledNotificationsDoNotCountAnOpen() async throws {
+    let stores = try ResponseStores(isEnabled: false)
+    await stores.perform(.openTeam(teamId: "bills", eventIds: ["e1"]))
+    #expect(stores.routes.consume().event == nil)
+    #expect(stores.recorder.events().isEmpty)
+}
+@MainActor @Test func notificationActionsAreNotCountedAsOpens() async throws {
+    let stores = try ResponseStores(tier: .everything)
+    await stores.perform(.turnOffEverything)
+    await stores.perform(.ignore)
+    #expect(stores.recorder.events().isEmpty)
 }
