@@ -131,14 +131,9 @@ export const DEPTH_CHART_POSITION: Record<DepthChartUnit, Record<string, Positio
     CB: 'CB',
     LCB: 'LCB',
     RCB: 'RCB',
-    NB: 'NB',
     S: 'S',
     SS: 'SS',
     FS: 'FS',
-    NCB: 'NB',
-    NICK: 'NB',
-    NICKE: 'NB',
-    NKL: 'NB',
     NOSE: 'NT',
     END: 'DE',
     LLB: 'LB',
@@ -154,18 +149,29 @@ export const DEPTH_CHART_POSITION: Record<DepthChartUnit, Record<string, Positio
   },
 };
 
-// A special-teams job a player holds on top of his field position: returner, holder,
-// kickoff specialist. It never replaces the field position, so it is read separately.
-export type DepthChartSpecialRole = 'kr' | 'pr' | 'h' | 'ko';
+// A job a player holds on top of his position, so it never replaces one and is read
+// separately. The nickel back is a corner or safety who comes on as the fifth defensive
+// back; a returner, holder or kickoff specialist has an everyday position too.
+export type DepthChartRole = 'nb' | 'kr' | 'pr' | 'h' | 'ko';
 
-export const DEPTH_CHART_SPECIAL_ROLE: Record<string, DepthChartSpecialRole> = {
-  KR: 'kr',
-  KOR: 'kr',
-  PR: 'pr',
-  H: 'h',
-  PH: 'h',
-  KO: 'ko',
-  KOS: 'ko',
+export const DEPTH_CHART_ROLE: Record<DepthChartUnit, Record<string, DepthChartRole>> = {
+  offense: {},
+  defense: {
+    NB: 'nb',
+    NCB: 'nb',
+    NICK: 'nb',
+    NICKE: 'nb',
+    NKL: 'nb',
+  },
+  special: {
+    KR: 'kr',
+    KOR: 'kr',
+    PR: 'pr',
+    H: 'h',
+    PH: 'h',
+    KO: 'ko',
+    KOS: 'ko',
+  },
 };
 
 // Codes nflverse has published that name no single canonical position in their unit: a
@@ -300,7 +306,7 @@ export const DEPTH_CHART_UNPLACED: Record<DepthChartUnit, ReadonlySet<string>> =
 
 export type DepthChartCode =
   | { kind: 'position'; position: Position }
-  | { kind: 'special'; role: DepthChartSpecialRole }
+  | { kind: 'role'; role: DepthChartRole }
   | { kind: 'unplaced' }
   | { kind: 'unmapped' };
 
@@ -310,7 +316,7 @@ export function classifyDepthChartCode(unit: DepthChartUnit, code: string): Dept
   const key = code.trim().toUpperCase();
   const position = DEPTH_CHART_POSITION[unit][key];
   if (position) return { kind: 'position', position };
-  const role = unit === 'special' ? DEPTH_CHART_SPECIAL_ROLE[key] : undefined;
-  if (role) return { kind: 'special', role };
+  const role = DEPTH_CHART_ROLE[unit][key];
+  if (role) return { kind: 'role', role };
   return DEPTH_CHART_UNPLACED[unit].has(key) ? { kind: 'unplaced' } : { kind: 'unmapped' };
 }

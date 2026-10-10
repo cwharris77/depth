@@ -3,7 +3,7 @@ import vocabulary from '../../fixtures/positions/nflverse-vocabulary.json';
 import type { Position } from '../types';
 import {
   DEPTH_CHART_POSITION,
-  DEPTH_CHART_SPECIAL_ROLE,
+  DEPTH_CHART_ROLE,
   DEPTH_CHART_UNPLACED,
   ROSTER_POSITION,
   classifyDepthChartCode,
@@ -137,14 +137,9 @@ const DEPTH_CHART_EXPECTED: Record<DepthChartUnit, Record<string, Position>> = {
     CB: 'CB',
     LCB: 'LCB',
     RCB: 'RCB',
-    NB: 'NB',
     S: 'S',
     SS: 'SS',
     FS: 'FS',
-    NCB: 'NB',
-    NICK: 'NB',
-    NICKE: 'NB',
-    NKL: 'NB',
     NOSE: 'NT',
     END: 'DE',
     LLB: 'LB',
@@ -160,14 +155,27 @@ const DEPTH_CHART_EXPECTED: Record<DepthChartUnit, Record<string, Position>> = {
   },
 };
 
-const SPECIAL_ROLE_EXPECTED: Record<string, string> = {
-  KR: 'kr',
-  KOR: 'kr',
-  PR: 'pr',
-  H: 'h',
-  PH: 'h',
-  KO: 'ko',
-  KOS: 'ko',
+// A job held on top of a position, so it never sets one: the nickel back is a corner or
+// safety who comes on as the fifth defensive back, and a returner or holder has an
+// everyday position too.
+const ROLE_EXPECTED: Record<DepthChartUnit, Record<string, string>> = {
+  offense: {},
+  defense: {
+    NB: 'nb',
+    NCB: 'nb',
+    NICK: 'nb',
+    NICKE: 'nb',
+    NKL: 'nb',
+  },
+  special: {
+    KR: 'kr',
+    KOR: 'kr',
+    PR: 'pr',
+    H: 'h',
+    PH: 'h',
+    KO: 'ko',
+    KOS: 'ko',
+  },
 };
 
 describe('depthChartUnit', () => {
@@ -206,6 +214,16 @@ describe('classifyDepthChartCode', () => {
       );
     });
 
+    it.each(Object.entries(ROLE_EXPECTED[unit]))('reads %s as the %s role', (code, role) => {
+      expect(classifyDepthChartCode(unit, code)).toEqual({ kind: 'role', role });
+    });
+
+    it('has an expectation for every code in the role table', () => {
+      expect(Object.keys(DEPTH_CHART_ROLE[unit]).sort()).toEqual(
+        Object.keys(ROLE_EXPECTED[unit]).sort()
+      );
+    });
+
     it.each(vocabulary.depthChartCodes[unit])('accounts for the published code %j', (code) => {
       expect(classifyDepthChartCode(unit, code).kind).not.toBe('unmapped');
     });
@@ -220,21 +238,11 @@ describe('classifyDepthChartCode', () => {
     it('never lists one code in two tables', () => {
       const all = [
         ...Object.keys(DEPTH_CHART_POSITION[unit]),
-        ...(unit === 'special' ? Object.keys(DEPTH_CHART_SPECIAL_ROLE) : []),
+        ...Object.keys(DEPTH_CHART_ROLE[unit]),
         ...DEPTH_CHART_UNPLACED[unit],
       ];
       expect(new Set(all).size).toBe(all.length);
     });
-  });
-
-  it.each(Object.entries(SPECIAL_ROLE_EXPECTED))('reads %s as the %s role', (code, role) => {
-    expect(classifyDepthChartCode('special', code)).toEqual({ kind: 'special', role });
-  });
-
-  it('has an expectation for every code in the special-role table', () => {
-    expect(Object.keys(DEPTH_CHART_SPECIAL_ROLE).sort()).toEqual(
-      Object.keys(SPECIAL_ROLE_EXPECTED).sort()
-    );
   });
 
   it('reads a tackle by the side of the ball he is charted on', () => {
