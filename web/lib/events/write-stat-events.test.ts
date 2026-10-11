@@ -43,6 +43,7 @@ function client(fail: 'names' | 'insert' | null = null) {
                 { id: '1', name: 'Player One' },
                 { id: '2', name: 'Player Two' },
               ]);
+        if (url.pathname.endsWith('/teams')) return reply([{ id: 'seahawks', city: 'Seattle' }]);
         if (url.pathname.endsWith('/team_events')) {
           if (fail === 'insert') return reply({ message: 'insert failed' }, 400);
           written.push(...JSON.parse(String(init?.body)));

@@ -154,9 +154,10 @@ describe('statMomentEvents', () => {
     fromSeason: 1999,
   };
   const names = new Map([['x', 'James Cook']]);
+  const teamCities = new Map([['bills', 'Buffalo']]);
 
   it('renders a historic week', () => {
-    expect(statMomentEvents([week], { playerNames: names, now: NOW })).toEqual([
+    expect(statMomentEvents([week], { playerNames: names, teamCities, now: NOW })).toEqual([
       {
         dedupeKey: 'historic_week:rushing_yards:2026:5:x',
         type: 'historic_week',
@@ -165,6 +166,8 @@ describe('statMomentEvents', () => {
         playerId: 'x',
         headline: 'James Cook had 215 rushing yards in Week 5, the 10th-most in a game since 1999',
         detail: null,
+        notificationTitle: 'Historic performance: Buffalo',
+        notificationBody: 'James Cook had 215 rushing yards in Week 5.',
         payload: {
           stat: 'rushing_yards',
           value: 215,
@@ -181,13 +184,15 @@ describe('statMomentEvents', () => {
   });
 
   it('gives an approach and a broken mark different keys, each stable across runs', () => {
-    const approach = statMomentEvents([chase], { playerNames: names, now: NOW })[0];
+    const approach = statMomentEvents([chase], { playerNames: names, teamCities, now: NOW })[0];
     const later = statMomentEvents([{ ...chase, value: 1950 }], {
       playerNames: names,
+      teamCities,
       now: '2026-10-20T16:00:00.000Z',
     })[0];
     const broken = statMomentEvents([{ ...chase, value: 2110, broken: true }], {
       playerNames: names,
+      teamCities,
       now: NOW,
     })[0];
     expect(approach.dedupeKey).toBe('record_chase:rushing_yards:2026:x:bills:approach');
@@ -199,6 +204,6 @@ describe('statMomentEvents', () => {
   });
 
   it('skips a moment whose player has no name', () => {
-    expect(statMomentEvents([week], { playerNames: new Map(), now: NOW })).toEqual([]);
+    expect(statMomentEvents([week], { playerNames: new Map(), teamCities, now: NOW })).toEqual([]);
   });
 });

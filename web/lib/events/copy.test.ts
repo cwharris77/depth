@@ -36,6 +36,7 @@ describe('starterChangeCopy', () => {
     expect(
       starterChangeCopy({
         teamName: 'Seahawks',
+        teamCity: 'Seattle',
         position: 'QB',
         playerName: 'Sam Darnold',
         previousName: 'Geno Smith',
@@ -43,26 +44,40 @@ describe('starterChangeCopy', () => {
     ).toEqual({
       headline: 'Seahawks: Sam Darnold is the new starter at QB',
       detail: 'Replaces Geno Smith.',
+      notificationTitle: 'Lineup alert: Seattle',
+      notificationBody: 'Sam Darnold is the new starter at QB.',
     });
   });
 });
 
 describe('tradeCopy', () => {
   it('says traded for an outgoing player and acquired for an incoming one', () => {
-    const base = { teamName: 'Eagles', position: 'G', playerName: 'Cam Jurgens' };
+    const base = {
+      teamName: 'Eagles',
+      teamCity: 'Philadelphia',
+      position: 'G',
+      playerName: 'Cam Jurgens',
+    };
     expect(tradeCopy({ ...base, direction: 'out' })).toEqual({
       headline: 'Eagles traded G Cam Jurgens',
       detail: null,
+      notificationTitle: 'Trade alert: Philadelphia',
+      notificationBody: 'Philadelphia traded G Cam Jurgens.',
     });
-    expect(tradeCopy({ ...base, teamName: 'Ravens', direction: 'in' })).toEqual({
+    expect(
+      tradeCopy({ ...base, teamName: 'Ravens', teamCity: 'Baltimore', direction: 'in' })
+    ).toEqual({
       headline: 'Ravens acquired G Cam Jurgens',
       detail: null,
+      notificationTitle: 'Trade alert: Baltimore',
+      notificationBody: 'Baltimore acquired G Cam Jurgens.',
     });
   });
 });
 
 describe('recordChaseCopy', () => {
   const base = {
+    teamCity: 'Philadelphia',
     playerName: 'Saquon Barkley',
     stat: 'rushing_yards' as const,
     record: 2097,
@@ -74,6 +89,8 @@ describe('recordChaseCopy', () => {
       headline:
         'Saquon Barkley has 1,900 rushing yards, 197 short of the most in a season since 1999',
       detail: 'Previous best: 2,097.',
+      notificationTitle: 'Record watch: Philadelphia',
+      notificationBody: 'Saquon Barkley has 1,900 rushing yards.',
     });
   });
 
@@ -98,6 +115,7 @@ describe('recordChaseCopy', () => {
 
 describe('historicWeekCopy', () => {
   const base = {
+    teamCity: 'Cincinnati',
     playerName: "Ja'Marr Chase",
     stat: 'receiving_yards' as const,
     value: 264,
@@ -110,6 +128,8 @@ describe('historicWeekCopy', () => {
       headline:
         "Ja'Marr Chase had 264 receiving yards in Week 10, the 7th-most in a game since 1999",
       detail: null,
+      notificationTitle: 'Historic performance: Cincinnati',
+      notificationBody: "Ja'Marr Chase had 264 receiving yards in Week 10.",
     });
   });
 

@@ -26,6 +26,8 @@ function event(overrides: Partial<PushableEvent> = {}): PushableEvent {
     teamId: 'seahawks',
     headline: 'Seahawks: Sam Darnold is the new starter at QB',
     detail: 'Replaces Geno Smith.',
+    notificationTitle: 'Lineup alert: Seattle',
+    notificationBody: 'Sam Darnold is the new starter at QB.',
     createdAt: '2026-10-10T19:00:00Z',
     ...overrides,
   };
@@ -86,13 +88,13 @@ describe('planSends', () => {
 });
 
 describe('buildNotification', () => {
-  it('uses the stored headline and detail for one event', () => {
+  it('uses the event’s concise notification copy', () => {
     const { payload } = buildNotification(device(), [event()]);
     expect(payload).toEqual({
       aps: {
         alert: {
-          title: 'Seahawks: Sam Darnold is the new starter at QB',
-          body: 'Replaces Geno Smith.',
+          title: 'Lineup alert: Seattle',
+          body: 'Sam Darnold is the new starter at QB.',
         },
         sound: 'default',
         'thread-id': 'seahawks',
@@ -103,9 +105,14 @@ describe('buildNotification', () => {
     });
   });
 
-  it('omits the body when the event has no detail', () => {
-    const { payload } = buildNotification(device(), [event({ detail: null })]);
-    expect(payload.aps.alert).toEqual({ title: 'Seahawks: Sam Darnold is the new starter at QB' });
+  it('falls back to existing event copy for rows written before dedicated notification copy', () => {
+    const { payload } = buildNotification(device(), [
+      event({ notificationTitle: null, notificationBody: null }),
+    ]);
+    expect(payload.aps.alert).toEqual({
+      title: 'Lineup change',
+      body: 'Seahawks: Sam Darnold is the new starter at QB\nReplaces Geno Smith.',
+    });
   });
 
   it('summarizes several events with a fixed template', () => {

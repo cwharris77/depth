@@ -24,11 +24,12 @@ function tierFor(position: string): TeamEventTier {
 export function advanceStarters(args: {
   teamId: string;
   teamName: string;
+  teamCity?: string;
   previous: readonly StarterState[];
   observed: readonly ObservedStarter[];
   now: string;
 }): { next: StarterState[]; events: TeamEvent[] } {
-  const { teamId, teamName, now } = args;
+  const { teamId, teamName, teamCity, now } = args;
   const priorByPosition = new Map(args.previous.map((row) => [row.position, row]));
   const next: StarterState[] = [];
   const events: TeamEvent[] = [];
@@ -61,6 +62,7 @@ export function advanceStarters(args: {
 
     const copy = starterChangeCopy({
       teamName,
+      teamCity,
       position: seen.position,
       playerName: seen.playerName,
       previousName: prior.confirmedPlayerName,
@@ -76,6 +78,8 @@ export function advanceStarters(args: {
       playerId: seen.playerId,
       headline: copy.headline,
       detail: copy.detail,
+      notificationTitle: copy.notificationTitle,
+      notificationBody: copy.notificationBody,
       payload: {
         position: seen.position,
         player_name: seen.playerName,
