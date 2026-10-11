@@ -14,6 +14,9 @@ final class TeamFeedViewModel {
     }
 
     private(set) var state: LoadState = .idle
+    /// True when the latest load failed while a list was already showing. The list is
+    /// kept, so this is the only sign that it may be out of date.
+    private(set) var refreshFailed = false
 
     private let teamId: String
     private let repository: any DepthRepository
@@ -29,14 +32,22 @@ final class TeamFeedViewModel {
     }
 
     func load() async {
+        let previous = state
+        refreshFailed = false
         // Keep showing a loaded list while it refreshes.
         if case .loaded = state {} else { state = .loading }
         do {
             state = .loaded(try await repository.teamEvents(teamId: teamId))
-        } catch let error as DepthError {
-            state = .failed(error)
         } catch {
-            state = .failed(.server("\(error)"))
+            if error is CancellationError || Task.isCancelled {
+                // A cancelled read says nothing about the feed, so it undoes only its own
+                // step into loading. A list that an overlapping load has put up since stays.
+                if case .loading = state, previous != .loading { state = previous }
+            } else if case .loaded = state {
+                refreshFailed = true
+            } else {
+                state = .failed(error as? DepthError ?? .server("\(error)"))
+            }
         }
     }
 

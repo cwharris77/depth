@@ -103,6 +103,11 @@ private struct DepthTopNavTrailingGroup<TeamPill: View>: View {
             .accessibilityLabel("Account")
             .accessibilityIdentifier("account-button")
         }
+        // The bar lays a button out at its own height, shorter than 44 points, and
+        // only passes on touches inside this group's frame. Without a team pill to
+        // stretch the group, touches in the top and bottom of each button's 44-point
+        // target would be dropped.
+        .frame(minHeight: 44)
         .padding(.trailing, DesignTokens.Spacing.screenMargin - Self.toolbarTrailingSystemInset)
     }
 }

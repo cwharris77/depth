@@ -290,4 +290,21 @@ final class TeamFeedUITests: XCTestCase {
         XCTAssertTrue(
             app.descendants(matching: .any)["team-feed-list"].waitForExistence(timeout: 10))
     }
+
+    func testTheFeedButtonAcceptsTapsInBothCornersOfItsTarget() {
+        let app = launch()
+        XCTAssertTrue(app.waitForDepthChart())
+        let bell = app.buttons["team-feed-button"]
+        let list = app.descendants(matching: .any)["team-feed-list"]
+        XCTAssertTrue(bell.waitForExistence(timeout: 10))
+        XCTAssertGreaterThanOrEqual(bell.frame.height, 44)
+        for corner in [CGVector(dx: 0, dy: 0), CGVector(dx: 1, dy: 1)] {
+            let inset = CGVector(dx: corner.dx == 0 ? 4 : -4, dy: corner.dy == 0 ? 4 : -4)
+            bell.coordinate(withNormalizedOffset: corner).withOffset(inset).tap()
+            XCTAssertTrue(
+                list.waitForExistence(timeout: 5), "corner \(corner) of \(bell.frame)")
+            app.buttons["Close"].tap()
+            XCTAssertTrue(list.waitForAbsence(timeout: 10))
+        }
+    }
 }
