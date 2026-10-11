@@ -1,6 +1,11 @@
 import Foundation
 import Observation
 
+enum TeamEventRoute: Equatable, Sendable {
+    case event(id: String)
+    case feed
+}
+
 // A pending "show this team's depth chart" request, handed between tabs. The uniform
 // archive's kit sheet can ask for a team the Depth Charts tab isn't currently on, and the
 // two tabs have no view-tree relationship to pass it through — RootTabView switches the
@@ -15,15 +20,17 @@ import Observation
 final class TeamRouteStore {
     private(set) var requestedTeamId: String?
     private(set) var requestedUniformId: String?
+    private(set) var requestedEvent: TeamEventRoute?
 
-    func request(teamId: String, uniformId: String? = nil) {
+    func request(teamId: String, uniformId: String? = nil, event: TeamEventRoute? = nil) {
         requestedTeamId = teamId
         requestedUniformId = uniformId
+        requestedEvent = event
     }
 
-    /// Returns the pending team id and uniform id once, clearing both.
-    func consume() -> (teamId: String?, uniformId: String?) {
-        defer { requestedTeamId = nil; requestedUniformId = nil }
-        return (requestedTeamId, requestedUniformId)
+    /// Returns the pending team, uniform and event once, clearing the request.
+    func consume() -> (teamId: String?, uniformId: String?, event: TeamEventRoute?) {
+        defer { requestedTeamId = nil; requestedUniformId = nil; requestedEvent = nil }
+        return (requestedTeamId, requestedUniformId, requestedEvent)
     }
 }

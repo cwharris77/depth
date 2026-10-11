@@ -107,6 +107,20 @@ struct UserPreferences: Sendable {
         defaults.set(selections, forKey: Key.uniformSelections)
     }
 
+    func teamFeedSeenAt(for teamId: String) -> Date? {
+        let stored = defaults.dictionary(forKey: "preferences.teamFeedSeenAt") as? [String: Double]
+        return stored?[teamId].map(Date.init(timeIntervalSince1970:))
+    }
+
+    func setTeamFeedSeenAt(_ date: Date, for teamId: String) {
+        var stored =
+            defaults.dictionary(forKey: "preferences.teamFeedSeenAt") as? [String: Double] ?? [:]
+        let seconds = date.timeIntervalSince1970
+        guard seconds > (stored[teamId] ?? -.infinity) else { return }
+        stored[teamId] = seconds
+        defaults.set(stored, forKey: "preferences.teamFeedSeenAt")
+    }
+
     // Local-first custom depth-chart order, literal port of web's
     // web/lib/utils/depth-chart/depth-overrides.ts (localStorage there, UserDefaults here).
     // The always-on cache — works with no account, mirrored to the server only when

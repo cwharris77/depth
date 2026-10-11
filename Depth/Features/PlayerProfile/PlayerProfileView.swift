@@ -33,6 +33,7 @@ struct PlayerProfileView: View {
     /// The historical season the roster is open to, so SEASON STATS highlights that year
     /// rather than the player's latest one. Nil highlights the newest season.
     let highlightedSeason: Int?
+    let event: TeamEvent?
     private let repository: DepthRepository
 
     /// The player on screen. DEPTH CHART row taps replace it in place rather than pushing
@@ -47,7 +48,8 @@ struct PlayerProfileView: View {
         repository: DepthRepository,
         depthContext: PlayerDepthContext? = nil,
         isHistorical: Bool = false,
-        highlightedSeason: Int? = nil
+        highlightedSeason: Int? = nil,
+        event: TeamEvent? = nil
     ) {
         self.team = team
         self.kitColors = kitColors
@@ -55,6 +57,7 @@ struct PlayerProfileView: View {
         self.depthContext = depthContext
         self.isHistorical = isHistorical
         self.highlightedSeason = highlightedSeason
+        self.event = event
         _currentPlayer = State(initialValue: player)
     }
 
@@ -67,6 +70,7 @@ struct PlayerProfileView: View {
             depthContext: depthContext,
             isHistorical: isHistorical,
             highlightedSeason: highlightedSeason,
+            event: event?.playerId == currentPlayer.id ? event : nil,
             onSelectPlayer: { currentPlayer = $0 }
         )
         // A fresh identity per player resets the stats view model, section open state, and
@@ -82,6 +86,7 @@ private struct PlayerProfileScreen: View {
     let depthContext: PlayerDepthContext?
     let isHistorical: Bool
     let highlightedSeason: Int?
+    let event: TeamEvent?
     let onSelectPlayer: (Player) -> Void
 
     @State private var viewModel: PlayerProfileViewModel
@@ -115,6 +120,7 @@ private struct PlayerProfileScreen: View {
         depthContext: PlayerDepthContext?,
         isHistorical: Bool,
         highlightedSeason: Int?,
+        event: TeamEvent?,
         onSelectPlayer: @escaping (Player) -> Void
     ) {
         self.player = player
@@ -123,6 +129,7 @@ private struct PlayerProfileScreen: View {
         self.depthContext = depthContext
         self.isHistorical = isHistorical
         self.highlightedSeason = highlightedSeason
+        self.event = event
         self.onSelectPlayer = onSelectPlayer
         _viewModel = State(
             initialValue: PlayerProfileViewModel(
@@ -153,6 +160,10 @@ private struct PlayerProfileScreen: View {
                     .padding(.top, topInset)
                     .background { bandBackground }
                 VStack(alignment: .leading, spacing: 0) {
+                    if let event {
+                        TeamEventCard(event: event, accent: markColor)
+                            .padding(.top, DesignTokens.Spacing.md)
+                    }
                     identity
                         .padding(.top, 14)
                     vitals

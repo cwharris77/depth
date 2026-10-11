@@ -69,6 +69,7 @@
 
     actor FixtureDepthRepository: DepthRepository {
         private let bundle: UITestFixtureBundle
+        private var failedTeamReads: Set<String> = []
         /// Whether `latestBigMoment` reports an event. Off unless a journey asks for it,
         /// so no other fixture run can meet the notification prompt.
         private let offersBigMoment: Bool
@@ -101,6 +102,11 @@
         }
 
         func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_TEAM_OFFLINE_ONCE"),
+                failedTeamReads.insert(teamId).inserted
+            {
+                throw DepthError.offline
+            }
             guard let snapshot = bundle.snapshots[teamId] else { throw DepthError.notFound }
             return snapshot
         }
@@ -186,6 +192,100 @@
                 teamId: teamId, headline: "\(team.name): a new starter at quarterback",
                 detail: "A sample event from the UI-test fixtures.", source: "fixture",
                 occurredAt: Date().addingTimeInterval(-24 * 60 * 60))
+        }
+
+        enum FixtureEventID {
+            static let starter = "fixture-event-starter"
+            static let historic = "fixture-event-historic"
+            static let departed = "fixture-event-departed"
+        }
+
+        /// Events cover starter changes, a historic week, a record chase and a player
+        /// who has left the roster, so journeys can reach each kind of destination.
+        func teamEvents(teamId: String) async throws -> [TeamEvent] {
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FEED_EMPTY") { return [] }
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FEED_OFFLINE") {
+                throw DepthError.offline
+            }
+            guard let snapshot = bundle.snapshots[teamId] else { return [] }
+            let clockKey = "uiTesting.teamEventsTimestamp"
+            if UserDefaults.standard.object(forKey: clockKey) == nil {
+                UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: clockKey)
+            }
+            let now = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: clockKey))
+            var events: [TeamEvent] = []
+            if let quarterback = snapshot.players.first(where: { $0.position == .qb }) {
+                events.append(
+                    TeamEvent(
+                        id: FixtureEventID.starter, type: "starter_change", tier: "big_moments",
+                        teamId: teamId, playerId: quarterback.id,
+                        headline:
+                            "\(snapshot.team.name): \(quarterback.name) is the new starter at QB",
+                        detail: "Replaces a sample player.",
+                        payload: {
+                            var payload = TeamEventPayload()
+                            payload.position = "QB"
+                            payload.playerName = quarterback.name
+                            return payload
+                        }(),
+                        source: "espn_depth_chart", occurredAt: now.addingTimeInterval(-3600)))
+            }
+            if let back = snapshot.players.first(where: { $0.position == .rb }) {
+                events.append(
+                    TeamEvent(
+                        id: FixtureEventID.historic, type: "historic_week", tier: "big_moments",
+                        teamId: teamId, playerId: back.id,
+                        headline:
+                            "\(back.name) had 251 rushing yards in Week 4, the 9th-most in a game since 1999",
+                        detail: nil,
+                        payload: {
+                            var payload = TeamEventPayload()
+                            payload.stat = "rushing_yards"
+                            payload.value = 251
+                            payload.rank = 9
+                            payload.week = 4
+                            payload.fromSeason = 1999
+                            return payload
+                        }(),
+                        source: "nflverse_stats", occurredAt: now.addingTimeInterval(-86_400)))
+            }
+            events.append(
+                TeamEvent(
+                    id: FixtureEventID.departed, type: "trade", tier: "big_moments",
+                    teamId: teamId, playerId: "fixture-departed-player",
+                    headline: "\(snapshot.team.name) traded WR Sample Player", detail: nil,
+                    payload: {
+                        var payload = TeamEventPayload()
+                        payload.direction = "out"
+                        payload.position = "WR"
+                        return payload
+                    }(),
+                    source: "espn_transactions", occurredAt: now.addingTimeInterval(-172_800)))
+            if let player = snapshot.players.first(where: { $0.position == .qb }) {
+                var payload = TeamEventPayload()
+                payload.value = 4900
+                payload.record = 5000
+                payload.season = 2026
+                events.append(
+                    TeamEvent(
+                        id: "fixture-event-chase", type: "record_chase", tier: "big_moments",
+                        teamId: teamId, playerId: player.id,
+                        headline: "\(player.name) is approaching the passing yards record",
+                        detail: nil, payload: payload, source: "nflverse_stats",
+                        occurredAt: now.addingTimeInterval(-7200)))
+            }
+            if let player = snapshot.players.first(where: { $0.position == .de }) {
+                var payload = TeamEventPayload()
+                payload.position = "DE"
+                events.append(
+                    TeamEvent(
+                        id: "fixture-event-defense", type: "starter_change", tier: "big_moments",
+                        teamId: teamId, playerId: player.id,
+                        headline: "\(player.name) is the new starter at DE", detail: nil,
+                        payload: payload, source: "espn_depth_chart",
+                        occurredAt: now.addingTimeInterval(-4000)))
+            }
+            return events.sorted { $0.occurredAt > $1.occurredAt }
         }
 
         func appConfig() async throws -> AppConfig {

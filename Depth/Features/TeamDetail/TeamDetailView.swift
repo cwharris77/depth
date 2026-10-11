@@ -8,6 +8,7 @@ import SwiftUI
 // the Stats page; Schedule's pushed-destination chrome is suppressed
 // through `isEmbedded`.
 struct TeamDetailView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -27,16 +28,22 @@ struct TeamDetailView: View {
     /// pushed player profile — so the initial load and sign-in merge run once per team
     /// identity. DepthChartsTab's `.id(teamId)` resets this on a team switch; pull-to-refresh
     /// and the requested-player/uniform `onChange` handlers pick up later changes.
-    /// Latched only after a run that finished uncancelled: SwiftUI cancels `.task` when this
-    /// view leaves the screen (a tab switch mid-load), and a latched-but-incomplete run would
-    /// strand the chart on its error state with no overrides merged and a dropped
-    /// requested-player/uniform until a pull-to-refresh. An incomplete run therefore retries
-    /// in full on the next appearance; a completed one never re-runs.
+    /// Latched after the roster and overrides resolve, before navigation can hide this
+    /// root and cancel its task. An interrupted load retries on the next appearance.
     @State private var didInitialLoad = false
     /// The name-presentation style chosen in Settings. Shared with SettingsView
     /// through the same defaults key.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
     @State private var showHistory = false
+    @State private var showFeed = false
+    @State private var feedViewModel: TeamFeedViewModel
+    @State private var chartEvent: TeamEvent?
+    @State private var profileEvent: TeamEvent?
+    @State private var pendingFeedSelection: TeamEvent?
+    @State private var pendingNotificationRoute: TeamEventRoute?
+    @State private var pendingLiveEvent: TeamEvent?
+    @State private var feedSeenAt: Date?
+    @Binding var requestedEventRoute: TeamEventRoute?
     @State private var showUniformPicker = false
     @State private var showFormations = false
     /// Turn 2 of the field-scale design: the offense's true-scale mode, a full-screen
@@ -109,6 +116,7 @@ struct TeamDetailView: View {
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         requestedPlayerID: Binding<String?> = .constant(nil),
         requestedUniformId: Binding<String?> = .constant(nil),
+        requestedEventRoute: Binding<TeamEventRoute?> = .constant(nil),
         currentTeamStore: CurrentTeamStore,
         onOpenTeamSwitcher: @escaping () -> Void,
         onOpenCompare: @escaping (String, String) -> Void = { _, _ in }
@@ -121,6 +129,10 @@ struct TeamDetailView: View {
         self.events = events
         self._requestedPlayerID = requestedPlayerID
         self._requestedUniformId = requestedUniformId
+        self._requestedEventRoute = requestedEventRoute
+        _feedViewModel = State(
+            initialValue: TeamFeedViewModel(teamId: viewModel.teamId, repository: repository))
+        _feedSeenAt = State(initialValue: preferences.teamFeedSeenAt(for: viewModel.teamId))
         self.currentTeamStore = currentTeamStore
         self.onOpenTeamSwitcher = onOpenTeamSwitcher
         self.onOpenCompare = onOpenCompare
@@ -212,6 +224,8 @@ struct TeamDetailView: View {
                 } else {
                     await loadOverrides()
                 }
+                guard !Task.isCancelled else { return }
+                didInitialLoad = true
                 // A cross-team search pick arrives with the snapshot not yet loaded
                 // (the view is recreated via `.id(teamId)`); present once it resolves.
                 presentRequestedPlayer(requestedPlayerID)
@@ -219,14 +233,17 @@ struct TeamDetailView: View {
                 // so the depth chart shows the originating kit, not whatever was
                 // last persisted for this team.
                 presentRequestedUniform(requestedUniformId)
-                // Latch only now, with the whole sequence done: popping back from the pushed
-                // player profile must not re-run the load and the sign-in merge.
-                if !Task.isCancelled { didInitialLoad = true }
+                await presentRequestedEvent(requestedEventRoute)
+                if isFeedAvailable, case .idle = feedViewModel.state { await feedViewModel.load() }
             }
             .onChange(of: requestedPlayerID) { _, id in
                 // Also covers picking a player on the already-current team, where
                 // `.id(teamId)` doesn't change and `.task` won't re-run.
                 presentRequestedPlayer(id)
+            }
+            .onChange(of: requestedEventRoute) { _, route in
+                guard didInitialLoad else { return }
+                Task { await presentRequestedEvent(route) }
             }
             .onChange(of: requestedUniformId) { _, id in
                 presentRequestedUniform(id)
@@ -240,6 +257,22 @@ struct TeamDetailView: View {
                     currentTeamStore.refine(colors: colors)
                 }
             }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active, isFeedAvailable { Task { await feedViewModel.load() } }
+            }
+            .onChange(of: isFeedAvailable) { _, available in
+                if available {
+                    Task { await feedViewModel.load() }
+                } else {
+                    showFeed = false
+                    chartEvent = nil
+                    profileEvent = nil
+                    pendingFeedSelection = nil
+                    pendingNotificationRoute = nil
+                    pendingLiveEvent = nil
+                    requestedEventRoute = nil
+                }
+            }
             .refreshable {
                 if historyViewModel.isHistorical {
                     await historyViewModel.retry()
@@ -247,9 +280,16 @@ struct TeamDetailView: View {
                     await viewModel.load(forceRefresh: true)
                     await loadOverrides()
                 }
+                if isFeedAvailable { await feedViewModel.load() }
             }
             .onChange(of: unit) { _, newValue in
                 preferences.lastUnit = newValue
+                if let event = chartEvent,
+                    case .depthChart(let eventUnit, _) = TeamEventDestination.resolve(
+                        event, rosterPlayerIds: rosterPlayerIds), eventUnit != newValue
+                {
+                    chartEvent = nil
+                }
                 editMode.exitForContextChange()
             }
             .onChange(of: page) { _, _ in
@@ -263,6 +303,8 @@ struct TeamDetailView: View {
                 }
             }
             .onChange(of: historyViewModel.selectedSeason) { _, _ in
+                chartEvent = nil
+                profileEvent = nil
                 // Merge spec (2026-09-11): a season change pops the pushed profile, whose depth
                 // context belongs to the season that pushed it. The spec's other half — a team
                 // change pops it too — needs no code here: DepthChartsTab's `.id(teamId)`
@@ -270,6 +312,10 @@ struct TeamDetailView: View {
                 // different team.
                 selectedPlayer = nil
                 editMode.exitForContextChange()
+                if let event = pendingLiveEvent {
+                    pendingLiveEvent = nil
+                    open(event)
+                }
             }
             .onDisappear {
                 editMode.exitForContextChange()
@@ -292,9 +338,12 @@ struct TeamDetailView: View {
             // see `depthTopNavToolbar` for why this isn't hand-rolled per screen anymore.
             // The team pill is this screen's contribution to the "conditional" half.
             .toolbar {
-                depthTopNavToolbar(teamPill: {
-                    if !dynamicTypeSize.isAccessibilitySize { teamSwitcherPill }
-                }) {
+                depthTopNavToolbar(
+                    teamPill: {
+                        if !dynamicTypeSize.isAccessibilitySize { teamSwitcherPill }
+                    }, onFeedTap: isFeedAvailable ? { showFeed = true } : nil,
+                    feedHasUnread: isFeedAvailable && feedHasUnread
+                ) {
                     showAccount = true
                 }
             }
@@ -314,12 +363,14 @@ struct TeamDetailView: View {
                     ),
                     isHistorical: historyViewModel.isHistorical,
                     highlightedSeason: historyViewModel.isHistorical
-                        ? historyViewModel.selectedSeason.year : nil
+                        ? historyViewModel.selectedSeason.year : profileEvent?.payload.season,
+                    event: isFeedAvailable && profileEvent?.playerId == player.id
+                        ? profileEvent : nil
                 )
             }
             // Reorder is handled in edit mode: a field tap
             // here. Edit mode is disabled for historical seasons, so this is live-roster only.
-            .sheet(item: $reorderPlayer) { player in
+            .sheet(item: $reorderPlayer, onDismiss: presentNotificationAfterDismissal) { player in
                 let position = player.position
                 PositionReorderSheet(
                     position: position,
@@ -336,7 +387,7 @@ struct TeamDetailView: View {
                 // comment. Re-applied so AccessibilityUITests' reorder-sheet reflow is real.
                 .modifier(UITestingDynamicTypeOverride())
             }
-            .sheet(isPresented: $showAccount) {
+            .sheet(isPresented: $showAccount, onDismiss: presentNotificationAfterDismissal) {
                 // SettingsView's content is unchanged from its old tab-bar
                 // home (AccountTab) — it just stops being always-reachable and becomes
                 // a sheet again, opened from the nav-bar icon instead. `onboarding` reads
@@ -354,7 +405,21 @@ struct TeamDetailView: View {
                 )
                 .modifier(UITestingDynamicTypeOverride())
             }
-            .sheet(isPresented: $showHistory) {
+            .sheet(isPresented: $showFeed, onDismiss: presentFeedSelection) {
+                TeamFeedSheet(
+                    viewModel: feedViewModel,
+                    teamName: viewModel.snapshot?.team.name ?? "team",
+                    accent: teamAccentColor, rosterPlayerIds: rosterPlayerIds
+                ) { event in
+                    pendingFeedSelection = event
+                    showFeed = false
+                }
+                .onChange(of: feedViewModel.newestEventDate, initial: true) { _, newest in
+                    markFeedSeen(through: newest)
+                }
+                .modifier(UITestingDynamicTypeOverride())
+            }
+            .sheet(isPresented: $showHistory, onDismiss: presentNotificationAfterDismissal) {
                 HistorySeasonSheet(
                     seasons: historyViewModel.seasons,
                     selectedSeason: historyViewModel.selectedSeason
@@ -373,6 +438,7 @@ struct TeamDetailView: View {
                         preferences.setUniformSelection(previewUniformID, for: viewModel.teamId)
                     }
                     previewUniformID = nil
+                    presentNotificationAfterDismissal()
                 }
             ) {
                 UniformPickerSheet(
@@ -385,7 +451,7 @@ struct TeamDetailView: View {
                 // picker compact like FormationsSheetView; still draggable up to `.large`
                 // for a11y text-size growth.
             }
-            .sheet(isPresented: $showFormations) {
+            .sheet(isPresented: $showFormations, onDismiss: presentNotificationAfterDismissal) {
                 FormationsSheetView(
                     unit: unit,
                     formations: currentUnitFormations,
@@ -395,7 +461,9 @@ struct TeamDetailView: View {
                     onClose: { showFormations = false }
                 )
             }
-            .fullScreenCover(isPresented: $showTrueScale) {
+            .fullScreenCover(
+                isPresented: $showTrueScale, onDismiss: presentNotificationAfterDismissal
+            ) {
                 if let snapshot = displayedSnapshot {
                     TrueScaleFieldView(
                         slots: DepthChartFieldView.resolvedSlots(
@@ -522,12 +590,25 @@ struct TeamDetailView: View {
             .padding(.leading, 12)
             .padding(.trailing, 8)
             .padding(.vertical, 6)
-            .background(Capsule().fill(fill))
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+            .background {
+                if dynamicTypeSize.isAccessibilitySize {
+                    RoundedRectangle(cornerRadius: DesignTokens.Radius.lg).fill(fill)
+                } else {
+                    Capsule().fill(fill)
+                }
+            }
             .overlay {
-                Capsule().strokeBorder(ring, lineWidth: 1)
+                if dynamicTypeSize.isAccessibilitySize {
+                    RoundedRectangle(cornerRadius: DesignTokens.Radius.lg)
+                        .strokeBorder(ring, lineWidth: 1)
+                } else {
+                    Capsule().strokeBorder(ring, lineWidth: 1)
+                }
             }
         }
-        .frame(minHeight: 44)
+        .buttonStyle(.plain)
         .accessibilityIdentifier("team-switcher-button")
         .accessibilityLabel("\(navigationTitleText), change team")
         .accessibilityHint("Opens the team switcher")
@@ -817,7 +898,15 @@ struct TeamDetailView: View {
                 } description: {
                     Text(error.recoveryDescription)
                 } actions: {
-                    Button("Retry") { Task { await viewModel.load() } }
+                    Button("Retry") {
+                        Task {
+                            await viewModel.load()
+                            await presentRequestedEvent(requestedEventRoute)
+                            if isFeedAvailable, case .idle = feedViewModel.state {
+                                await feedViewModel.load()
+                            }
+                        }
+                    }
                 }
             case .loaded:
                 // loaded with no snapshot shouldn't happen (a successful load always
@@ -904,17 +993,26 @@ struct TeamDetailView: View {
                 Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
             }
 
+            if let chartEvent, isFeedAvailable, !editMode.isActive, !historyViewModel.isHistorical {
+                TeamEventCard(event: chartEvent, accent: teamAccentColor) { self.chartEvent = nil }
+                    .padding(.horizontal)
+                    .padding(.top, DesignTokens.Spacing.sm)
+            }
             DepthChartFieldView(
                 snapshot: snapshot,
                 unit: unit,
                 colors: fieldColors,
                 formation: activeFormation,
                 nameMode: fieldNameMode,
-                isEditing: editMode.isActive
+                isEditing: editMode.isActive,
+                highlightedPlayerID: isFeedAvailable && !historyViewModel.isHistorical
+                    && !editMode.isActive
+                    ? chartEvent?.playerId : nil
             ) { player in
                 if editMode.isActive {
                     reorderPlayer = player
                 } else {
+                    profileEvent = nil
                     selectedPlayer = player
                 }
             }
@@ -1064,12 +1162,89 @@ struct TeamDetailView: View {
         confirmedOrders = preferences.teamOverride(for: viewModel.teamId)
     }
 
+    private var isFeedAvailable: Bool {
+        DepthEnvironment.featureFlags.isEnabled(.proactiveNotifications)
+    }
+    private var rosterPlayerIds: Set<String> { Set(viewModel.snapshot?.players.map(\.id) ?? []) }
+    private var feedHasUnread: Bool {
+        TeamFeedUnread.hasUnread(
+            newest: feedViewModel.newestEventDate, lastSeen: feedSeenAt, now: Date())
+    }
+    private func markFeedSeen(through date: Date?) {
+        guard let date else { return }
+        preferences.setTeamFeedSeenAt(date, for: viewModel.teamId)
+        feedSeenAt = preferences.teamFeedSeenAt(for: viewModel.teamId)
+    }
+    private func presentFeedSelection() {
+        presentNotificationAfterDismissal()
+        guard let event = pendingFeedSelection else { return }
+        pendingFeedSelection = nil
+        open(event)
+    }
+    private func open(_ event: TeamEvent) {
+        guard isFeedAvailable, let snapshot = viewModel.snapshot else { return }
+        if historyViewModel.isHistorical {
+            pendingLiveEvent = event
+            historyViewModel.selectImmediately(.current(historyViewModel.currentSeason))
+            return
+        }
+        markFeedSeen(through: event.occurredAt)
+        editMode.exitForContextChange()
+        switch TeamEventDestination.resolve(event, rosterPlayerIds: Set(snapshot.players.map(\.id)))
+        {
+        case .depthChart(let eventUnit, _):
+            selectedPlayer = nil
+            page = .roster
+            unit = eventUnit
+            chartEvent = event
+        case .player(let id):
+            guard let player = snapshot.players.first(where: { $0.id == id }) else {
+                showFeed = true; return
+            }
+            profileEvent = event
+            selectedPlayer = player
+        case .feed: showFeed = true
+        }
+    }
+    private func presentNotificationAfterDismissal() {
+        guard let route = pendingNotificationRoute else { return }
+        pendingNotificationRoute = nil
+        Task { await presentRequestedEvent(route) }
+    }
+    private func presentRequestedEvent(_ route: TeamEventRoute?) async {
+        guard let route, requestedEventRoute == route, isFeedAvailable, viewModel.snapshot != nil
+        else { return }
+        if showFeed || showHistory || showAccount || showUniformPicker || showFormations
+            || showTrueScale || reorderPlayer != nil
+        {
+            pendingNotificationRoute = route
+            pendingFeedSelection = nil
+            showFeed = false
+            showHistory = false
+            showAccount = false
+            showUniformPicker = false
+            showFormations = false
+            showTrueScale = false
+            reorderPlayer = nil
+            return
+        }
+        switch route {
+        case .feed: showFeed = true
+        case .event(let id):
+            let event = await feedViewModel.event(id: id)
+            guard !Task.isCancelled, requestedEventRoute == route else { return }
+            if let event { open(event) } else { showFeed = true }
+        }
+        requestedEventRoute = nil
+    }
+
     private func presentRequestedPlayer(_ id: String?) {
         guard let id,
             let player = displayedSnapshot?.players.first(where: { $0.id == id })
         else {
             return
         }
+        profileEvent = nil
         selectedPlayer = player
         requestedPlayerID = nil
     }

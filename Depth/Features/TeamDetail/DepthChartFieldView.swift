@@ -43,6 +43,7 @@ struct DepthChartFieldView: View {
     /// Active full-team edit mode gently wiggles only the existing solid player
     /// dots. Labels, hit targets, field geometry, and empty special-team slots stay put.
     var isEditing = false
+    var highlightedPlayerID: String? = nil
     let onSelectPlayer: (Player) -> Void
 
     // nameFontSize's 7-9pt clamp was a plain `.system(size:)` literal that never
@@ -96,8 +97,11 @@ struct DepthChartFieldView: View {
                             onSelectPlayer(player)
                         } label: {
                             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-                                Text("\(slot.label) · #\(player.number)")
-                                    .font(.caption.bold())
+                                Text(
+                                    "\(slot.label) · #\(player.number)"
+                                        + (player.id == highlightedPlayerID ? " · New starter" : "")
+                                )
+                                .font(.caption.bold())
                                 Text(player.name)
                                     .font(.body)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -343,6 +347,14 @@ struct DepthChartFieldView: View {
             )
             .accessibilityHint("Opens player detail")
             .accessibilityIdentifier("player-slot-\(slot.key)")
+            .overlay {
+                if player.id == highlightedPlayerID {
+                    Circle().strokeBorder(DesignTokens.Colors.textPrimary, lineWidth: 2)
+                        .frame(width: dotSize + 10, height: dotSize + 10)
+                        .allowsHitTesting(false)
+                }
+            }
+            .accessibilityValue(player.id == highlightedPlayerID ? "New starter" : "")
             .buttonStyle(FieldPlayerButtonStyle())
         } else if unit == .special {
             // Web parity gap, deliberately kept: a special-teams slot exists only because

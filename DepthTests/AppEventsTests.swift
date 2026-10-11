@@ -39,8 +39,16 @@ func appEventOmitsUnavailableOrInvalidVersion(version: String?) throws {
     #expect(AppEvent.depthChartReached.name == "depth_chart_reached")
     #expect(AppEvent.authStarted.name == "auth_started")
     #expect(AppEvent.authCompleted.name == "auth_completed")
+    #expect(AppEvent.notificationOpened.name == "notification_opened")
     #expect(AppEvent.overrideSaved.name == "override_saved")
     #expect(AppEvent.error(category: "offline").name == "error")
+}
+
+@Test func aNotificationOpenEncodesOnlyTheAnonymousCounterAndVersion() throws {
+    let data = try JSONEncoder().encode(
+        AppEventPayload(event: .notificationOpened, appVersion: "1.4.2"))
+    let payload = try #require(JSONSerialization.jsonObject(with: data) as? [String: String])
+    #expect(payload == ["event_name": "notification_opened", "app_version": "1.4.2"])
 }
 
 @Test func onlyTheErrorCaseCarriesAnErrorCategory() {

@@ -18,6 +18,9 @@ struct DepthChartsTab: View {
     /// `teamId` lets the (recreated) TeamDetailView open that player's profile once its
     /// snapshot resolves.
     @State private var pendingPlayerID: String?
+    @State private var pendingEventRoute: TeamEventRoute?
+    @State private var deferredTeamRequest:
+        (teamId: String, uniformId: String?, event: TeamEventRoute?)?
 
     private let repository: CachingDepthRepository
     private let preferences: UserPreferences
@@ -83,6 +86,7 @@ struct DepthChartsTab: View {
                 events: events,
                 requestedPlayerID: $pendingPlayerID,
                 requestedUniformId: $requestedUniformId,
+                requestedEventRoute: $pendingEventRoute,
                 currentTeamStore: currentTeamStore,
                 onOpenTeamSwitcher: { showSwitcher = true },
                 onOpenCompare: { teamAId, teamBId in
@@ -94,7 +98,7 @@ struct DepthChartsTab: View {
             // key-reset idiom, rather than mutating a view model in place.
             .id(teamId)
         }
-        .sheet(isPresented: $showSwitcher) {
+        .sheet(isPresented: $showSwitcher, onDismiss: applyDeferredTeamRequest) {
             TeamSwitcherSheet(
                 repository: repository,
                 events: events,
@@ -148,11 +152,15 @@ struct DepthChartsTab: View {
         // notification tap that cold-starts the app is delivered while the tree is still
         // being built, and a change handler alone would never see a value already set.
         .onChange(of: teamRouteStore.requestedTeamId, initial: true) { _, _ in
-            let (teamId, uniformId) = teamRouteStore.consume()
+            let (teamId, uniformId, event) = teamRouteStore.consume()
+
             if let teamId {
-                self.teamId = teamId
-                self.routedTeamId = teamId
-                self.requestedUniformId = uniformId
+                deferredTeamRequest = (teamId, uniformId, event)
+                if showSwitcher {
+                    showSwitcher = false
+                } else {
+                    applyDeferredTeamRequest()
+                }
             }
         }
         .onChange(of: teamId, initial: true) { _, newValue in
@@ -165,5 +173,15 @@ struct DepthChartsTab: View {
                 currentTeamStore.apply(teamId: newValue, from: teams)
             }
         }
+    }
+
+    private func applyDeferredTeamRequest() {
+        guard let request = deferredTeamRequest else { return }
+        deferredTeamRequest = nil
+        teamId = request.teamId
+        routedTeamId = request.teamId
+        requestedUniformId = request.uniformId
+        pendingEventRoute = request.event
+        pendingPlayerID = nil
     }
 }
