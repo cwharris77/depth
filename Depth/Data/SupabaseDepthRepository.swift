@@ -12,9 +12,17 @@ actor SupabaseDepthRepository: DepthRepository {
     /// Team id -> abbreviation, read once: the stat files name teams by id.
     private var teamAbbrevs: [String: String]?
 
-    init(client: SupabaseClient, statFiles: StatFilesClient = DepthEnvironment.statFilesClient) {
+    /// Whether a historical roster reads its players' roles (nickel seat, returners).
+    private let rosterRolesEnabled: @Sendable () async -> Bool
+
+    init(
+        client: SupabaseClient,
+        statFiles: StatFilesClient = DepthEnvironment.statFilesClient,
+        rosterRolesEnabled: @escaping @Sendable () async -> Bool = { false }
+    ) {
         self.client = client
         self.statFiles = statFiles
+        self.rosterRolesEnabled = rosterRolesEnabled
     }
 
     private static let teamSnapshotSelect = """
@@ -99,7 +107,7 @@ actor SupabaseDepthRepository: DepthRepository {
     private static let rosterLeaderStatsSelect =
         "player_id, season, completions, attempts, passing_yards, passing_tds, carries, rushing_yards, rushing_tds, receptions, receiving_yards, receiving_tds"
     private static let historicalRosterSelect =
-        "season, team_id, gsis_id, name, number, position, college, height, weight, depth_rank, player_order"
+        "season, team_id, gsis_id, name, number, position, college, height, weight, depth_rank, player_order, roles"
     private static let playerSearchSelect = """
         id, name, number, position, college, photo_url, \
         teams(id, abbrev, city, name, conference, division, logo_url, logo_dark_url, \
@@ -262,7 +270,8 @@ actor SupabaseDepthRepository: DepthRepository {
                 .value
             guard !rows.isEmpty else { throw DepthError.notFound }
             return try HistoricalRosterMapper.map(
-                team: TeamSnapshotMapper.mapTeamListRow(team), rows: rows)
+                team: TeamSnapshotMapper.mapTeamListRow(team), rows: rows,
+                includeRoles: await rosterRolesEnabled())
         } catch let error as DepthError {
             throw error
         } catch let error as PostgrestError {

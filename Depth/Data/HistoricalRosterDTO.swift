@@ -15,13 +15,49 @@ struct HistoricalRosterRowDTO: Decodable {
     let weight: Int?
     let depthRank: Int
     let playerOrder: Int
+    /// Jobs held on top of the position. Nil when the player held none, the season has no
+    /// depth chart, or the column was not selected.
+    var roles: HistoricalRoleRanks? = nil
 
     enum CodingKeys: String, CodingKey {
-        case season, name, number, position, college, height, weight
+        case season, name, number, position, college, height, weight, roles
         case teamId = "team_id"
         case gsisId = "gsis_id"
         case depthRank = "depth_rank"
         case playerOrder = "player_order"
+    }
+}
+
+// `roster_history.roles`: a map from role (`nb`, `kr`, `pr`) to the club's depth rank for
+// it, 1 being the starter. Decoding never fails the row: a value that is not a rank of 1
+// or more is skipped, and anything other than an object decodes as no roles, so a role
+// vocabulary this build does not know costs nothing.
+struct HistoricalRoleRanks: Decodable, Equatable {
+    let ranks: [String: Int]
+
+    init(ranks: [String: Int]) {
+        self.ranks = ranks
+    }
+
+    private struct RoleKey: CodingKey {
+        let stringValue: String
+        var intValue: Int? { nil }
+        init?(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { nil }
+    }
+
+    init(from decoder: Decoder) throws {
+        guard let container = try? decoder.container(keyedBy: RoleKey.self) else {
+            ranks = [:]
+            return
+        }
+        var ranks: [String: Int] = [:]
+        for key in container.allKeys {
+            if let rank = try? container.decode(Int.self, forKey: key), rank >= 1 {
+                ranks[key.stringValue] = rank
+            }
+        }
+        self.ranks = ranks
     }
 }
 

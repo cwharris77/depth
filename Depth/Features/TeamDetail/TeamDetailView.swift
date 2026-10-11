@@ -350,7 +350,8 @@ struct TeamDetailView: View {
             // Merge spec (2026-09-11): the player card sheet is gone — a tap pushes the full
             // profile onto DepthChartsTab's stack. The depth context is per-position, so a
             // depth-row swap inside the profile never needs this closure to re-run.
-            .navigationDestination(item: $selectedPlayer) { player in
+            .navigationDestination(item: $selectedPlayer) { selected in
+                let player = profileListing(for: selected)
                 PlayerProfileView(
                     player: player,
                     team: displayedSnapshot?.team,
@@ -365,7 +366,8 @@ struct TeamDetailView: View {
                     highlightedSeason: historyViewModel.isHistorical
                         ? historyViewModel.selectedSeason.year : profileEvent?.payload.season,
                     event: isFeedAvailable && profileEvent?.playerId == player.id
-                        ? profileEvent : nil
+                        ? profileEvent : nil,
+                    listing: { profileListing(for: $0) }
                 )
             }
             // Reorder is handled in edit mode: a field tap
@@ -1007,7 +1009,11 @@ struct TeamDetailView: View {
                 isEditing: editMode.isActive,
                 highlightedPlayerID: isFeedAvailable && !historyViewModel.isHistorical
                     && !editMode.isActive
-                    ? chartEvent?.playerId : nil
+                    ? chartEvent?.playerId : nil,
+                ownPositions: showsRosterRoles
+                    ? Dictionary(
+                        loadedPlayers.map { ($0.id, $0.position) }, uniquingKeysWith: { a, _ in a })
+                    : nil
             ) { player in
                 if editMode.isActive {
                     reorderPlayer = player
@@ -1111,6 +1117,23 @@ struct TeamDetailView: View {
     private func players(for position: Position) -> [Player] {
         guard let snapshot = displayedSnapshot else { return [] }
         return getPlayers(in: roster(of: snapshot), at: position)
+    }
+
+    private var showsRosterRoles: Bool {
+        DepthEnvironment.featureFlags.isEnabled(.rosterRoles)
+    }
+
+    /// The roster as loaded, before a saved reorder rewrites the displayed players with
+    /// the seats they were moved through. A player's own position is read from here.
+    private var loadedPlayers: [Player] {
+        let loaded = historyViewModel.isHistorical ? historyViewModel.snapshot : viewModel.snapshot
+        return loaded?.players ?? []
+    }
+
+    /// A profile opens at the player's own position, whichever seat he was tapped in.
+    private func profileListing(for player: Player) -> Player {
+        guard showsRosterRoles else { return player }
+        return ownListing(of: player, identities: loadedPlayers)
     }
 
     private func roster(of snapshot: TeamSnapshot) -> Roster {

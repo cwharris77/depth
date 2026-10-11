@@ -47,8 +47,10 @@ enum HistoricalRosterMapper {
         category: "historical-roster"
     )
 
-    static func map(team: Team, rows: [HistoricalRosterRowDTO]) throws -> TeamSnapshot {
-        let result = try mapWithDiagnostics(team: team, rows: rows)
+    static func map(
+        team: Team, rows: [HistoricalRosterRowDTO], includeRoles: Bool = false
+    ) throws -> TeamSnapshot {
+        let result = try mapWithDiagnostics(team: team, rows: rows, includeRoles: includeRoles)
         for drop in result.dropped {
             logger.error(
                 "historical roster drop \(drop.gsisId, privacy: .public): \(String(describing: drop.reason), privacy: .public)"
@@ -59,12 +61,17 @@ enum HistoricalRosterMapper {
 
     /// The same mapping, with the dropped rows returned instead of only logged, so the
     /// degrade path is assertable in tests.
+    ///
+    /// `includeRoles` reads each row's roles: the best-ranked returners fill the kick and
+    /// punt return slots.
     static func mapWithDiagnostics(
         team: Team,
-        rows: [HistoricalRosterRowDTO]
+        rows: [HistoricalRosterRowDTO],
+        includeRoles: Bool = false
     ) throws -> (snapshot: TeamSnapshot, dropped: [DroppedRow]) {
         var players: [Player] = []
         var dropped: [DroppedRow] = []
+        var roleRanks: [String: [String: Int]] = [:]
 
         for row in rows {
             guard let position = Position(rawValue: row.position) else {
@@ -77,9 +84,13 @@ enum HistoricalRosterMapper {
                     DroppedRow(gsisId: row.gsisId, reason: .invalidDepthRank(row.depthRank)))
                 continue
             }
+            let id = "gsis:\(row.gsisId)@\(row.season)"
+            if includeRoles, let ranks = row.roles?.ranks, !ranks.isEmpty {
+                roleRanks[id] = ranks
+            }
             players.append(
                 Player(
-                    id: "gsis:\(row.gsisId)@\(row.season)", name: row.name, position: position,
+                    id: id, name: row.name, position: position,
                     depthRank: row.depthRank, number: row.number ?? 0, order: row.playerOrder,
                     status: row.depthRank == 1 ? .starter : .backup, age: 0,
                     college: row.college ?? "",
@@ -96,16 +107,40 @@ enum HistoricalRosterMapper {
         }
 
         let snapshot = TeamSnapshot(
-            team: team, players: players, specialTeams: specialTeams(players), uniforms: []
+            team: team, players: players,
+            specialTeams: specialTeams(players) + returnSlots(players, roleRanks: roleRanks),
+            uniforms: []
         )
         return (snapshot, dropped)
     }
 
-    /// Kicker, punter and long snapper only. nflverse's roster rows say who was on the
-    /// team, never who returned kicks, so a past season has no returner to seat — and a
-    /// permanently empty KR/PR dot reads as a broken player circle rather than as a data
-    /// gap. Omitting the slots keeps history consistent with how the field already treats
-    /// an unresolved offense/defense slot: it draws nothing.
+    /// The kick and punt return slots, each filled by the best-ranked holder on the
+    /// roster. A role nobody holds gets no slot, like every other unseatable slot here.
+    private static func returnSlots(_ players: [Player], roleRanks: [String: [String: Int]])
+        -> [SpecialSlot]
+    {
+        let layout: [(String, String, Double, Double)] = [
+            ("kr", "KR", 30, 18), ("pr", "PR", 70, 18),
+        ]
+        return layout.compactMap { role, label, x, y in
+            let holders = players.compactMap { player in
+                roleRanks[player.id]?[role].map { (player: player, rank: $0) }
+            }
+            guard
+                let best = holders.min(by: {
+                    ($0.rank, $0.player.order ?? 0) < ($1.rank, $1.player.order ?? 0)
+                })
+            else { return nil }
+            return SpecialSlot(
+                id: "st-\(label.lowercased())", playerId: best.player.id, x: x, y: y,
+                label: label)
+        }
+    }
+
+    /// Kicker, punter and long snapper, from the players' own positions. A slot nobody
+    /// can fill is omitted: a permanently empty dot reads as a broken player circle rather
+    /// than as a data gap, and the field already draws nothing for an unresolved
+    /// offense/defense slot. Returners come from roles instead; see `returnSlots`.
     private static func specialTeams(_ players: [Player]) -> [SpecialSlot] {
         let layout: [(Position, String, Double, Double)] = [
             (.ls, "LS", 50, 68), (.k, "K", 38, 80), (.p, "P", 62, 80),
