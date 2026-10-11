@@ -34,6 +34,10 @@ struct PlayerProfileView: View {
     /// rather than the player's latest one. Nil highlights the newest season.
     let highlightedSeason: Int?
     let event: TeamEvent?
+    /// Maps a player seen from a seat to the player as his roster lists him, so a nickel
+    /// slot's holder opens at his own position. Asked per player, because a DEPTH CHART
+    /// row tap swaps the player in place.
+    let listing: (Player) -> Player
     private let repository: DepthRepository
 
     /// The player on screen. DEPTH CHART row taps replace it in place rather than pushing
@@ -49,16 +53,18 @@ struct PlayerProfileView: View {
         depthContext: PlayerDepthContext? = nil,
         isHistorical: Bool = false,
         highlightedSeason: Int? = nil,
-        event: TeamEvent? = nil
+        event: TeamEvent? = nil,
+        listing: @escaping (Player) -> Player = { $0 }
     ) {
         self.team = team
+        self.listing = listing
         self.kitColors = kitColors
         self.repository = repository
         self.depthContext = depthContext
         self.isHistorical = isHistorical
         self.highlightedSeason = highlightedSeason
         self.event = event
-        _currentPlayer = State(initialValue: player)
+        _currentPlayer = State(initialValue: listing(player))
     }
 
     var body: some View {
@@ -71,7 +77,7 @@ struct PlayerProfileView: View {
             isHistorical: isHistorical,
             highlightedSeason: highlightedSeason,
             event: event?.playerId == currentPlayer.id ? event : nil,
-            onSelectPlayer: { currentPlayer = $0 }
+            onSelectPlayer: { currentPlayer = listing($0) }
         )
         // A fresh identity per player resets the stats view model, section open state, and
         // scroll position — the same reset the old card got from `.id(player.id)`.

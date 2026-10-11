@@ -89,7 +89,8 @@ enum DepthEnvironment {
         #endif
         return CachingDepthRepository(
             underlying: SupabaseDepthRepository(
-                client: supabaseClient, statFiles: statFilesClient),
+                client: supabaseClient, statFiles: statFilesClient,
+                rosterRolesEnabled: { await featureFlags.isEnabled(.rosterRoles) }),
             store: CachedSnapshotStore(modelContainer: modelContainer)
         )
     }()

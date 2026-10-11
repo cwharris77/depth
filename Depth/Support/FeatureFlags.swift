@@ -11,6 +11,9 @@ import Observation
 enum FeatureFlag: CaseIterable, Sendable {
     /// Team notifications and the team feed.
     case proactiveNotifications
+    /// Roles a player holds on top of his position: the nickel back's on-field mark, and
+    /// past-season kick and punt returners.
+    case rosterRoles
 
     var definition: FeatureFlagDefinition {
         switch self {
@@ -20,6 +23,13 @@ enum FeatureFlag: CaseIterable, Sendable {
                 summary: "Team notifications and the team feed",
                 kind: .release,
                 added: "2026-10-09",
+                launched: false)
+        case .rosterRoles:
+            FeatureFlagDefinition(
+                key: "rosterRoles",
+                summary: "Nickel mark and past-season returners",
+                kind: .release,
+                added: "2026-10-10",
                 launched: false)
         }
     }

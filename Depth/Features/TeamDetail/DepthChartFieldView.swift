@@ -44,6 +44,9 @@ struct DepthChartFieldView: View {
     /// dots. Labels, hit targets, field geometry, and empty special-team slots stay put.
     var isEditing = false
     var highlightedPlayerID: String? = nil
+    /// Each player's own position, by id. When given, a nickel slot's dot prints its
+    /// holder's own position and wears the nickel patch; nil keeps the slot's label.
+    var ownPositions: [String: Position]? = nil
     let onSelectPlayer: (Player) -> Void
 
     // nameFontSize's 7-9pt clamp was a plain `.system(size:)` literal that never
@@ -67,6 +70,17 @@ struct DepthChartFieldView: View {
 
     private var slots: [RenderSlot] {
         Self.resolvedSlots(snapshot: snapshot, unit: unit, formation: formation)
+    }
+
+    /// The holder's own position for a nickel slot, nil for every other slot.
+    private func nickelLabel(_ slot: RenderSlot) -> String? {
+        guard unit == .defense, let ownPositions else { return nil }
+        return nickelHolderLabel(
+            slotLabel: slot.label, playerId: slot.player?.id, ownPositions: ownPositions)
+    }
+
+    private var showsNickelKey: Bool {
+        slots.contains { nickelLabel($0) != nil }
     }
 
     /// Shared with `TrueScaleFieldView` so the true-scale mode draws exactly the players
@@ -98,7 +112,8 @@ struct DepthChartFieldView: View {
                         } label: {
                             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
                                 Text(
-                                    "\(slot.label) · #\(player.number)"
+                                    (nickelLabel(slot).map { "\($0) · Nickel · #\(player.number)" }
+                                        ?? "\(slot.label) · #\(player.number)")
                                         + (player.id == highlightedPlayerID ? " · New starter" : "")
                                 )
                                 .font(.caption.bold())
@@ -239,6 +254,11 @@ struct DepthChartFieldView: View {
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
                     .strokeBorder(DesignTokens.Colors.borderStrong, lineWidth: 1)
             }
+            .overlay(alignment: .bottomLeading) {
+                if showsNickelKey {
+                    nickelKey.padding(DesignTokens.Spacing.sm)
+                }
+            }
         }
         .accessibilityElement(children: .contain)
     }
@@ -324,12 +344,14 @@ struct DepthChartFieldView: View {
         fieldHeight: CGFloat
     ) -> some View {
         if let player = slot.player {
+            let nickel = nickelLabel(slot)
             Button {
                 onSelectPlayer(player)
             } label: {
                 slotDot(
-                    label: slot.label,
+                    label: nickel ?? slot.label,
                     number: player.number,
+                    isNickel: nickel != nil,
                     wiggleIndex: index,
                     dotSize: dotSize,
                     playerName: player.name,
@@ -343,7 +365,7 @@ struct DepthChartFieldView: View {
                 .contentShape(Rectangle())
             }
             .accessibilityLabel(
-                "\(slot.label), \(player.name.isEmpty ? "number \(player.number)" : player.name)"
+                "\(nickel.map { "\($0), nickel back" } ?? slot.label), \(player.name.isEmpty ? "number \(player.number)" : player.name)"
             )
             .accessibilityHint("Opens player detail")
             .accessibilityIdentifier("player-slot-\(slot.key)")
@@ -385,6 +407,7 @@ struct DepthChartFieldView: View {
     private func slotDot(
         label: String,
         number: Int?,
+        isNickel: Bool = false,
         wiggleIndex: Int?,
         dotSize: CGFloat,
         playerName: String?,
@@ -419,6 +442,14 @@ struct DepthChartFieldView: View {
                 }
             }
             .frame(width: dotSize, height: dotSize)
+            .overlay(alignment: .topTrailing) {
+                if isNickel {
+                    // Centred on the dot's shoulder, so it reads as worn by the dot and
+                    // stays inside the 44-point hit area.
+                    NickelPatch(size: dotSize * 0.5)
+                        .offset(x: dotSize * 0.15, y: -dotSize * 0.15)
+                }
+            }
             .modifier(
                 PlayerDotWiggleModifier(
                     isEditing: isEditing && wiggleIndex != nil,
@@ -452,6 +483,24 @@ struct DepthChartFieldView: View {
             }
     }
 
+    /// Names the patch for anyone who has not met it. Drawn only while a dot wears one.
+    private var nickelKey: some View {
+        HStack(spacing: DesignTokens.Spacing.xs) {
+            NickelPatch(size: 14)
+            Text("Nickel back")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+        }
+        .padding(.leading, 4)
+        .padding(.trailing, DesignTokens.Spacing.sm)
+        .padding(.vertical, 3)
+        .background(Color.black.opacity(0.5), in: Capsule())
+        .overlay(Capsule().strokeBorder(Color.white.opacity(0.16)))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("N marks the nickel back")
+        .accessibilityIdentifier("field-nickel-key")
+    }
+
     /// Web parity (web/components/PlayerDot.tsx): the name size is clamped to the field's
     /// height (`clamp(7px, 1.3dvh, 9px)` — dvh proxies to the field's own height here)
     /// so labels shrink ahead of colliding when the field's available height shrinks
@@ -460,6 +509,25 @@ struct DepthChartFieldView: View {
     /// applies, but the whole range grows at larger accessibility text sizes.
     private func nameFontSize(fieldHeight: CGFloat) -> CGFloat {
         min(maxNameFontSize, max(minNameFontSize, fieldHeight * 1.3 / 100))
+    }
+}
+
+/// The mark a dot wears while its player is the formation's nickel back. The same glyph
+/// appears in the field's key, so the two read as one sign.
+private struct NickelPatch: View {
+    let size: CGFloat
+
+    var body: some View {
+        Circle()
+            .fill(DesignTokens.Colors.textPrimary)
+            .overlay {
+                Text(verbatim: "N")
+                    .font(.system(size: size * 0.68, weight: .heavy))
+                    .foregroundStyle(DesignTokens.Colors.bg)
+            }
+            .overlay { Circle().strokeBorder(DesignTokens.Colors.surfaceField1, lineWidth: 1.5) }
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
     }
 }
 
