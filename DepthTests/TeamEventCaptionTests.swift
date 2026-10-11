@@ -88,3 +88,7 @@ private let october9 = Date(timeIntervalSince1970: 1_791_568_800)
         detail: nil, payload: payload, source: "nflverse_stats", occurredAt: october9)
     #expect(TeamEventCaption.progress(for: historic) == nil)
 }
+
+@Test func injurySourceHasReadableCaption() {
+    #expect(TeamEventCaption.sourceLabel("espn_injuries") == "ESPN injury report")
+}

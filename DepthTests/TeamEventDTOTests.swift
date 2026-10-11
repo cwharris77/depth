@@ -106,3 +106,16 @@ private func decode(_ json: String) throws -> TeamEventDTO {
     #expect(dto.toDomain().type == "injury_designation")
     #expect(dto.toDomain().detail == "D")
 }
+
+@Test func everythingEventFamiliesDecodeWithoutRequiringNewPayloadFields() throws {
+    for type in ["depth_change", "signing", "cut", "injury_change", "good_week"] {
+        let event = try decodeEvent(
+            """
+            {"id":"everything","event_type":"\(type)","tier":"everything","team_id":"bills",
+             "headline":"h","source":"espn_injuries","occurred_at":"2026-10-09T18:00:00Z",
+             "payload":{"position":"WR","depth_rank":7,"designation":"Out","new_field":true}}
+            """)
+        #expect(event.type == type)
+        #expect(event.payload.position == "WR")
+    }
+}

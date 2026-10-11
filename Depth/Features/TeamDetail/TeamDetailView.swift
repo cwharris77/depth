@@ -1008,6 +1008,8 @@ struct TeamDetailView: View {
                 highlightedPlayerID: isFeedAvailable && !historyViewModel.isHistorical
                     && !editMode.isActive
                     ? chartEvent?.playerId : nil,
+                highlightedPlayerLabel: chartEvent?.type == "depth_change"
+                    ? "Depth change" : "New starter",
                 ownPositions: showsRosterRoles
                     ? Dictionary(
                         loadedPlayers.map { ($0.id, $0.position) }, uniquingKeysWith: { a, _ in a })

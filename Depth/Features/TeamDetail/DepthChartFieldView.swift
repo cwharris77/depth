@@ -44,6 +44,7 @@ struct DepthChartFieldView: View {
     /// dots. Labels, hit targets, field geometry, and empty special-team slots stay put.
     var isEditing = false
     var highlightedPlayerID: String? = nil
+    var highlightedPlayerLabel: String = "New starter"
     /// Each player's own position, by id. When given, a nickel slot's dot prints its
     /// holder's own position and wears the nickel patch; nil keeps the slot's label.
     var ownPositions: [String: Position]? = nil
@@ -114,7 +115,8 @@ struct DepthChartFieldView: View {
                                 Text(
                                     (nickelLabel(slot).map { "\($0) · Nickel · #\(player.number)" }
                                         ?? "\(slot.label) · #\(player.number)")
-                                        + (player.id == highlightedPlayerID ? " · New starter" : "")
+                                        + (player.id == highlightedPlayerID
+                                            ? " · \(highlightedPlayerLabel)" : "")
                                 )
                                 .font(.caption.bold())
                                 Text(player.name)
@@ -376,7 +378,7 @@ struct DepthChartFieldView: View {
                         .allowsHitTesting(false)
                 }
             }
-            .accessibilityValue(player.id == highlightedPlayerID ? "New starter" : "")
+            .accessibilityValue(player.id == highlightedPlayerID ? highlightedPlayerLabel : "")
             .buttonStyle(FieldPlayerButtonStyle())
         } else if unit == .special {
             // Web parity gap, deliberately kept: a special-teams slot exists only because

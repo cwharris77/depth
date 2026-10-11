@@ -8,6 +8,7 @@ enum TeamEventCaption {
         switch source {
         case "espn_depth_chart": "ESPN depth chart"
         case "espn_transactions": "ESPN transactions"
+        case "espn_injuries": "ESPN injury report"
         case "nflverse_stats": "nflverse"
         default: nil
         }

@@ -285,6 +285,32 @@
                         payload: payload, source: "espn_depth_chart",
                         occurredAt: now.addingTimeInterval(-4000)))
             }
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_EVERYTHING_EVENTS"),
+                let player = snapshot.players.first(where: { $0.position == .qb })
+            {
+                var payload = TeamEventPayload()
+                payload.position = "QB"
+                for (type, headline, source) in [
+                    (
+                        "depth_change", "\(snapshot.team.name): \(player.name) is now #2 at QB",
+                        "espn_depth_chart"
+                    ),
+                    (
+                        "injury_change", "\(snapshot.team.name): \(player.name) is listed as Out",
+                        "espn_injuries"
+                    ),
+                    (
+                        "good_week", "\(player.name) had 300 passing yards in Week 4",
+                        "nflverse_stats"
+                    ),
+                ] {
+                    events.append(
+                        TeamEvent(
+                            id: "fixture-event-\(type)", type: type, tier: "everything",
+                            teamId: teamId, playerId: player.id, headline: headline, detail: nil,
+                            payload: payload, source: source, occurredAt: now))
+                }
+            }
             return events.sorted { $0.occurredAt > $1.occurredAt }
         }
 
