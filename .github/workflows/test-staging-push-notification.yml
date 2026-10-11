@@ -1,0 +1,82 @@
+name: Test staging push notification
+
+# Creates one run-scoped fixture, optionally sends it to the staging build, and always
+# removes that fixture. This workflow never references production secrets or variables.
+on:
+  workflow_dispatch:
+    inputs:
+      team:
+        description: "Team registered by the staging device."
+        type: string
+        default: seahawks
+      delivery:
+        description: "Leave paused by default; choose send_staging_fixture to send once."
+        type: choice
+        default: paused
+        options: [paused, send_staging_fixture]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-staging-push-notification
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: staging
+    defaults:
+      run:
+        working-directory: web
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - id: fixture
+        name: Create scoped fixture event (staging)
+        run: npm run events:replay-fixture -- --team "$TEAM" --fixture-id "$FIXTURE_ID" --github-output "$GITHUB_OUTPUT"
+        env:
+          TEAM: ${{ inputs.team }}
+          FIXTURE_ID: staging-push-${{ github.run_id }}
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
+      - name: Send exactly the fixture event (staging)
+        if: ${{ inputs.delivery == 'send_staging_fixture' }}
+        run: npm run push:send
+        env:
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
+          APNS_KEY_P8: ${{ secrets.STAGING_APNS_KEY_P8 }}
+          APNS_KEY_ID: ${{ secrets.STAGING_APNS_KEY_ID }}
+          APNS_TEAM_ID: ${{ secrets.STAGING_APNS_TEAM_ID }}
+          PUSH_SENDER_ENABLED: "true"
+          PUSH_SENDER_TARGET: staging
+          PUSH_EVENT_ID: ${{ steps.fixture.outputs.fixture_event_id }}
+      - name: Confirm the fixture cannot redeliver
+        if: ${{ inputs.delivery == 'send_staging_fixture' }}
+        run: npm run push:send
+        env:
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
+          APNS_KEY_P8: ${{ secrets.STAGING_APNS_KEY_P8 }}
+          APNS_KEY_ID: ${{ secrets.STAGING_APNS_KEY_ID }}
+          APNS_TEAM_ID: ${{ secrets.STAGING_APNS_TEAM_ID }}
+          PUSH_SENDER_ENABLED: "true"
+          PUSH_SENDER_TARGET: staging
+          PUSH_EVENT_ID: ${{ steps.fixture.outputs.fixture_event_id }}
+      - name: Confirm paused run
+        if: ${{ inputs.delivery == 'paused' }}
+        run: echo 'Push delivery is paused; the fixture was created and will be removed.'
+      - name: Remove scoped fixture event (staging)
+        if: ${{ always() }}
+        run: npm run events:replay-fixture -- --cleanup --fixture-id "$FIXTURE_ID"
+        env:
+          FIXTURE_ID: staging-push-${{ github.run_id }}
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}

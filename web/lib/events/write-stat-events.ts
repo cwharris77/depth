@@ -15,6 +15,7 @@ export async function writeStatEvents(
     rowsBySeason: ReadonlyMap<number, readonly RecordGameRow[]>;
     currentSeason: number;
     now: string;
+    dedupeKeySuffix?: string;
   }
 ): Promise<number> {
   const moments = findStatMoments({
@@ -36,9 +37,13 @@ export async function writeStatEvents(
     now: args.now,
   });
   if (events.length === 0) return 0;
+  const rows = events.map((event) => ({
+    ...toTeamEventRow(event),
+    dedupe_key: `${event.dedupeKey}${args.dedupeKeySuffix ?? ''}`,
+  }));
   const { error } = await supabase
     .from('team_events')
-    .upsert(events.map(toTeamEventRow), { onConflict: 'dedupe_key', ignoreDuplicates: true });
+    .upsert(rows, { onConflict: 'dedupe_key', ignoreDuplicates: true });
   if (error) throw new Error(`team_events upsert: ${error.message}`);
   return events.length;
 }
