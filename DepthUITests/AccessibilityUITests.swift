@@ -10,68 +10,95 @@ import XCTest
 // fixture-backed journey.
 @MainActor
 final class AccessibilityUITests: XCTestCase {
-    func testCompleteCoachmarkTourVisitsScheduleAndCompareOnce() throws {
-        continueAfterFailure = false
+    private func launchFirstRun(setupSteps: Bool) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments =
             XCUIApplication.hermeticLaunchArguments + [
                 "UI_TESTING_START_TEAM=bills", "UI_TESTING_SHOW_ONBOARDING",
                 "UI_TESTING_REDUCE_MOTION",
+                "-featureFlag.proactiveNotifications", setupSteps ? "YES" : "NO",
             ]
         app.launch()
+        return app
+    }
 
-        let takeTour = app.buttons["Take the Tour"]
-        XCTAssertTrue(takeTour.waitForExistence(timeout: 30))
-        takeTour.tap()
+    private func waitForNoCoachmark(in app: XCUIApplication, timeout: TimeInterval = 10) -> Bool {
+        app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: timeout)
+    }
 
+    func testFirstRunPicksATeamOffersNotificationsThenToursTheRoster() throws {
+        continueAfterFailure = false
+        let app = launchFirstRun(setupSteps: true)
+
+        // The welcome screen's own identifier covers its buttons, so they go by label.
+        let start = app.buttons["Get Started"]
+        XCTAssertTrue(start.waitForExistence(timeout: 30))
+        start.tap()
+
+        // Pick a team: nothing to continue with until one is chosen.
+        let proceed = app.buttons["onboarding-team-continue"]
+        XCTAssertTrue(proceed.waitForExistence(timeout: 10))
+        XCTAssertFalse(proceed.isEnabled)
+        let dolphins = app.buttons["onboarding-team-row-dolphins"]
+        XCTAssertTrue(dolphins.waitForExistence(timeout: 15))
+        reveal(dolphins, in: app)
+        // The row accepts a tap in its empty trailing stretch, not only on its text.
+        dolphins.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+            .withOffset(CGVector(dx: -4, dy: 0)).tap()
+        XCTAssertTrue(dolphins.waitForSelected())
+        attachScreenshot(app, named: "first-run-pick-team")
+        XCTAssertTrue(proceed.isEnabled)
+        proceed.tap()
+
+        // The notification step is about that team. Nothing grants permission in a UI
+        // test, so enabling goes on to the tour as a refusal would.
+        let enable = app.buttons["onboarding-notifications-enable"]
+        XCTAssertTrue(enable.waitForExistence(timeout: 10))
+        XCTAssertTrue(
+            app.staticTexts["Turn on Dolphins notifications"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["onboarding-notifications-not-now"].exists)
+        XCTAssertGreaterThanOrEqual(enable.frame.height, 44)
+        XCTAssertGreaterThanOrEqual(
+            app.buttons["onboarding-notifications-not-now"].frame.height, 44)
+        attachScreenshot(app, named: "first-run-notifications")
+        enable.tap()
+
+        // The tour is the two roster steps, on the team that was picked.
         let next = app.buttons["coachmark-next"]
         XCTAssertTrue(next.waitForExistence(timeout: 15))
-        XCTAssertTrue(app.staticTexts["Switch teams anytime"].exists)
-        for title in ["Tap any player", "More lives in here", "Explore the app"] {
-            next.tap()
-            XCTAssertTrue(app.staticTexts[title].waitForExistence(timeout: 10))
-        }
-        XCTAssertTrue(app.staticTexts["4 of 8"].exists)
+        XCTAssertTrue(app.staticTexts["Tap any player"].exists)
+        XCTAssertTrue(app.staticTexts["1 of 2"].exists)
+        XCTAssertTrue(
+            app.buttons["team-switcher-button"].waitForLabel(containing: "Dolphins"))
+        attachScreenshot(app, named: "first-run-tour")
         next.tap()
+        XCTAssertTrue(app.staticTexts["More lives in here"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["2 of 2"].exists)
+        next.tap()
+        XCTAssertTrue(waitForNoCoachmark(in: app))
 
-        XCTAssertTrue(app.staticTexts["Compare a matchup"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["5 of 8"].exists)
-        XCTAssertTrue(app.buttons["page-switcher-schedule"].exists)
-        let scheduleSurface = app.descendants(matching: .any).matching(
-            NSPredicate(
-                format: "identifier IN %@",
-                ["schedule-content", "schedule-empty", "schedule-error", "schedule-loading"]
-            )
-        ).firstMatch
-        XCTAssertTrue(scheduleSurface.waitForExistence(timeout: 10))
-        attachScreenshot(app, named: "tutorial-schedule")
+        // The other pages show their one hint on the first visit, and only then.
+        app.buttons["page-switcher-schedule"].tap()
+        XCTAssertTrue(app.staticTexts["Compare a matchup"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["1 of 1"].exists)
         next.tap()
-
-        XCTAssertTrue(app.staticTexts["Pick two teams"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.staticTexts["6 of 8"].exists)
-        XCTAssertTrue(app.buttons["compare-slot-a"].exists)
-        attachScreenshot(app, named: "tutorial-compare")
-        next.tap()
-        XCTAssertTrue(app.staticTexts["Choose a view"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["7 of 8"].exists)
-        XCTAssertTrue(app.buttons["compare-tab-matchup"].exists)
+        XCTAssertTrue(waitForNoCoachmark(in: app))
+        app.tabBars.buttons["Compare"].tap()
+        XCTAssertTrue(app.staticTexts["Choose a view"].waitForExistence(timeout: 15))
         attachScreenshot(app, named: "tutorial-compare-switcher")
         next.tap()
-        XCTAssertTrue(app.staticTexts["Read the comparison"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["8 of 8"].exists)
-        XCTAssertTrue(app.scrollViews["compare-content"].exists)
-        attachScreenshot(app, named: "tutorial-compare-content")
-        next.tap()
-
-        XCTAssertTrue(
-            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 10))
-        XCTAssertTrue(app.buttons["compare-slot-a"].waitForExistence(timeout: 10))
+        XCTAssertTrue(waitForNoCoachmark(in: app))
         app.tabBars.buttons["Depth Charts"].tap()
+        app.buttons["page-switcher-roster"].tap()
         app.buttons["page-switcher-schedule"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
+        XCTAssertTrue(waitForNoCoachmark(in: app, timeout: 5))
 
-        app.buttons["account-button"].tap()
+        // The pick is the favorite team.
+        app.openSettings()
+        XCTAssertTrue(
+            app.buttons["settings-favorite-team"].waitForLabel(containing: "Miami Dolphins"))
+
+        // Replaying from Settings goes straight to the tour, with no setup steps.
         let replay = app.buttons["settings-take-the-tour"]
         XCTAssertTrue(replay.waitForExistence(timeout: 10))
         reveal(replay, in: app)
@@ -79,13 +106,63 @@ final class AccessibilityUITests: XCTestCase {
         let replayTour = app.buttons["Take the Tour"]
         XCTAssertTrue(replayTour.waitForExistence(timeout: 10))
         replayTour.tap()
-        XCTAssertTrue(app.staticTexts["Switch teams anytime"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Tap any player"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["page-switcher-roster"].isSelected)
         app.buttons["coachmark-skip"].tap()
+        XCTAssertTrue(waitForNoCoachmark(in: app, timeout: 5))
+    }
 
-        app.buttons["page-switcher-schedule"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
+    func testSkippingTheTeamStepGoesStraightToTheTour() throws {
+        continueAfterFailure = false
+        let app = launchFirstRun(setupSteps: true)
+        let start = app.buttons["Get Started"]
+        XCTAssertTrue(start.waitForExistence(timeout: 30))
+        start.tap()
+
+        let skip = app.buttons["onboarding-team-skip"]
+        XCTAssertTrue(skip.waitForExistence(timeout: 10))
+        skip.tap()
+        XCTAssertTrue(app.staticTexts["Tap any player"].waitForExistence(timeout: 15))
+        XCTAssertFalse(app.buttons["onboarding-notifications-enable"].exists)
+        app.buttons["coachmark-skip"].tap()
+        XCTAssertTrue(waitForNoCoachmark(in: app, timeout: 5))
+        app.openSettings()
+        XCTAssertTrue(app.buttons["settings-favorite-team"].waitForLabel(containing: "None"))
+    }
+
+    func testDecliningNotificationsAtFirstRunLeavesThemOff() throws {
+        continueAfterFailure = false
+        let app = launchFirstRun(setupSteps: true)
+        let start = app.buttons["Get Started"]
+        XCTAssertTrue(start.waitForExistence(timeout: 30))
+        start.tap()
+        let bills = app.buttons["onboarding-team-row-bills"]
+        XCTAssertTrue(bills.waitForExistence(timeout: 15))
+        reveal(bills, in: app)
+        bills.tap()
+        app.buttons["onboarding-team-continue"].tap()
+
+        let notNow = app.buttons["onboarding-notifications-not-now"]
+        XCTAssertTrue(notNow.waitForExistence(timeout: 10))
+        notNow.tap()
+        XCTAssertTrue(app.staticTexts["Tap any player"].waitForExistence(timeout: 15))
+        app.buttons["coachmark-skip"].tap()
+
+        // Declining spent nothing: the switch is still there to turn on.
+        app.openSettings()
+        let toggle = app.switches["settings-notifications-toggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10))
+        XCTAssertEqual(toggle.value as? String, "0")
+    }
+
+    func testWithoutTheSetupStepsWelcomeLeadsStraightToTheTour() throws {
+        continueAfterFailure = false
+        let app = launchFirstRun(setupSteps: false)
+        let takeTour = app.buttons["Take the Tour"]
+        XCTAssertTrue(takeTour.waitForExistence(timeout: 30))
+        takeTour.tap()
+        XCTAssertTrue(app.staticTexts["Tap any player"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["1 of 2"].exists)
     }
 
     func testLegacyPageTutorialRunsOnceAcrossRelaunchAndSkip() throws {
@@ -106,7 +183,7 @@ final class AccessibilityUITests: XCTestCase {
             app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
 
         app.tabBars.buttons["Compare"].tap()
-        XCTAssertTrue(app.staticTexts["Pick two teams"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Choose a view"].waitForExistence(timeout: 15))
         app.buttons["coachmark-skip"].tap()
         XCTAssertTrue(
             app.descendants(matching: .any)["coachmark-bubble"].waitForAbsence(timeout: 5))
@@ -198,8 +275,12 @@ final class AccessibilityUITests: XCTestCase {
         app.buttons.matching(identifier: "Close").element(
             boundBy: app.buttons.matching(identifier: "Close").count - 1
         ).tap()
-        for _ in 0..<5 { app.swipeDown() }
+        // Sign In is at the bottom of the page and the tour row just above it. Scroll
+        // back only as far as needed: a swipe down on a sheet already at its top
+        // dismisses the sheet.
         let tour = app.buttons["settings-take-the-tour"]
+        XCTAssertTrue(tour.waitForExistence(timeout: 10))
+        for _ in 0..<5 where !tour.isHittable { app.swipeDown() }
         reveal(tour, in: app)
         tour.tap()
         XCTAssertTrue(app.buttons["Skip"].waitForExistence(timeout: 10))

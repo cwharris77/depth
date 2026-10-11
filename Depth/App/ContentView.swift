@@ -15,7 +15,7 @@ struct ContentView: View {
     /// tab's content, and the welcome screen has to cover the whole app, not just one
     /// tab's stack.
     @State private var onboarding = DepthEnvironment.onboarding
-    /// Mirrors `onboarding.phase == .welcome`, synced by the `.onChange` below. A
+    /// Mirrors whether `onboarding.phase` is one of the full-screen steps, synced by the `.onChange` below. A
     /// `Binding` computed directly from an `@Observable` property doesn't reliably
     /// re-trigger `.fullScreenCover`'s presentation (its `get` closure runs outside the
     /// tracked-property access SwiftUI's observation needs to know to re-render this
@@ -63,11 +63,26 @@ struct ContentView: View {
             }
         }
         .fullScreenCover(isPresented: $isWelcomeShowing) {
-            WelcomeView(controller: onboarding)
-                .modifier(UITestingDynamicTypeOverride())
+            Group {
+                switch onboarding.phase {
+                case .pickTeam:
+                    PickTeamStepView(
+                        controller: onboarding, repository: DepthEnvironment.repository,
+                        settingsStore: DepthEnvironment.userSettingsStore,
+                        teamRouteStore: DepthEnvironment.teamRouteStore)
+                case .notifications:
+                    NotificationStepView(
+                        controller: onboarding, repository: DepthEnvironment.repository,
+                        favoriteTeamId: DepthEnvironment.userSettingsStore.favoriteTeamId,
+                        store: DepthEnvironment.notificationSettings)
+                default:
+                    WelcomeView(controller: onboarding)
+                }
+            }
+            .modifier(UITestingDynamicTypeOverride())
         }
         .onChange(of: onboarding.phase, initial: true) { _, phase in
-            isWelcomeShowing = phase == .welcome
+            isWelcomeShowing = phase.isFullScreen
         }
         .onChange(of: bigMomentPrompt.event) { _, event in
             promptEvent = event

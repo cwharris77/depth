@@ -192,7 +192,13 @@ enum DepthEnvironment {
     /// First-run tutorial state — owns the welcome/coachmark sequence, shared
     /// between ContentView (mounts the overlay + fires the first-launch trigger) and
     /// SettingsView ("Take the tour" row).
-    @MainActor static let onboarding = OnboardingController(preferences: preferences)
+    @MainActor static let onboarding = OnboardingController(
+        preferences: preferences,
+        setup: OnboardingSetup(
+            isAvailable: { featureFlags.isEnabled(.proactiveNotifications) },
+            hasFavoriteTeam: { userSettingsStore.favoriteTeamId != nil },
+            canAskForNotifications: { notificationSettings.authorization == .notDetermined }
+        ))
     /// Live reachability, shared app-wide so the stale-data banner can tell "offline" apart
     /// from "online but just hasn't refreshed yet" (see NetworkMonitor's header comment).
     @MainActor static let networkMonitor = NetworkMonitor()
