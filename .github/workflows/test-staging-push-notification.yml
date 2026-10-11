@@ -9,6 +9,11 @@ on:
         description: "Team registered by the staging device."
         type: string
         default: seahawks
+      kind:
+        description: "Fixture family: historic moment or Everything good week."
+        type: choice
+        default: historic
+        options: [historic, everything]
       delivery:
         description: "Leave paused by default; choose send_staging_fixture to send once."
         type: choice
@@ -40,9 +45,10 @@ jobs:
       - run: npm ci
       - id: fixture
         name: Create scoped fixture event (staging)
-        run: npm run events:replay-fixture -- --team "$TEAM" --fixture-id "$FIXTURE_ID" --github-output "$GITHUB_OUTPUT"
+        run: npm run events:replay-fixture -- --team "$TEAM" --kind "$KIND" --fixture-id "$FIXTURE_ID" --github-output "$GITHUB_OUTPUT"
         env:
           TEAM: ${{ inputs.team }}
+          KIND: ${{ inputs.kind }}
           FIXTURE_ID: staging-push-${{ github.run_id }}
           SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
