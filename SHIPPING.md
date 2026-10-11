@@ -32,6 +32,12 @@ Bug fixes, copy changes and small self-contained changes finished in one PR are 
 - **Launch:** a PR that sets `launched: true`, merged before the cut of the release it ships in.
 - **Remove:** in the next release, delete the case and the dead code path. `everyFeatureFlagIsWithinItsLifetime()` fails eight weeks after `added`, so a stale flag blocks CI until it is gone.
 
+## Notification sender environments
+
+**Send team notifications** uses the selected GitHub environment's `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `APNS_KEY_P8`, `APNS_KEY_ID`, and `APNS_TEAM_ID` secrets, plus its `PUSH_SENDER_ENABLED` variable. Staging uses the existing `STAGING_` prefix for all five secret names; production uses the unprefixed names. Manual runs choose `production` or `staging`; successful ESPN or nflverse ingestion on `main` automatically runs only production. Set `PUSH_SENDER_ENABLED` to exactly `true` to send; missing or other values pause delivery. Missing required credentials fail the enabled sender before it claims deliveries. Repository secrets and variables can supply fallback values, so remove obsolete repository-level copies after configuring both environments if credentials must be environment-only.
+
+Synthetic test sends use only **Test staging push notification**, never **Send team notifications**.
+
 ## Staging push-notification proof
 
 Use **Test staging push notification** from the Actions tab only after the physical iPhone has the Staging build installed, has granted notification permission, and has registered its chosen team and notification tier in Settings. The workflow's default `paused` mode creates and removes a synthetic fixture without sending. For one delivery test, choose `send_staging_fixture`; it uses only the `staging` environment's staging Supabase and APNs secrets, sends the one run-scoped fixture event, reruns the sender to show that the delivery ledger prevents a second send, and removes the fixture plus its cascaded delivery records even if the send step fails. Inspect the notification on the iPhone, confirm it opens the selected team's depth chart, and retain the Actions log showing the second sender run reported zero sends. Do not use the shared **Send team notifications** workflow for this proof.

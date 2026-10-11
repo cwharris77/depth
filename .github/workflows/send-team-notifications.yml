@@ -3,8 +3,8 @@ name: Send team notifications
 # Pushes each new team event to the devices subscribed to that team. Runs after either
 # ingest finishes, because the ingests are what write team events, and on demand.
 #
-# Sending is off unless the repository variable for that target is exactly "true":
-# PUSH_SENDER_ENABLED for production, PUSH_SENDER_ENABLED_STAGING for staging. A paused
+# Sending is off unless the environment variable for that target is exactly "true":
+# PUSH_SENDER_ENABLED in production or staging. A paused
 # run still reports how many notifications are owed. Pausing never stops detection.
 
 on:
@@ -12,11 +12,20 @@ on:
     workflows: ['Ingest ESPN data', 'Ingest nflverse data']
     types: [completed]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Notification environment
+        type: choice
+        required: true
+        default: production
+        options:
+          - production
+          - staging
 
 # Two ingests can finish close together. Runs queue rather than overlap; the delivery
 # table would keep overlapping runs correct, this just keeps the logs readable.
 concurrency:
-  group: send-team-notifications
+  group: send-team-notifications-${{ inputs.environment || 'production' }}
   cancel-in-progress: false
 
 permissions:
@@ -24,6 +33,8 @@ permissions:
 
 jobs:
   send:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    environment: ${{ inputs.environment || 'production' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,24 +48,12 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-      - name: Send team notifications (production)
+      - name: Send team notifications
         run: npm run push:send
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_URL: ${{ secrets[format('{0}SUPABASE_URL', inputs.environment == 'staging' && 'STAGING_' || '')] }}
+          SUPABASE_SECRET_KEY: ${{ secrets[format('{0}SUPABASE_SECRET_KEY', inputs.environment == 'staging' && 'STAGING_' || '')] }}
           PUSH_SENDER_ENABLED: ${{ vars.PUSH_SENDER_ENABLED }}
-          APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}
-          APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
-          APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
-      # Staging runs even when the production step fails, so one target's failure never
-      # hides the other's result.
-      - name: Send team notifications (staging)
-        if: ${{ !cancelled() }}
-        run: npm run push:send
-        env:
-          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
-          PUSH_SENDER_ENABLED: ${{ vars.PUSH_SENDER_ENABLED_STAGING }}
-          APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}
-          APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
-          APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
+          APNS_KEY_P8: ${{ secrets[format('{0}APNS_KEY_P8', inputs.environment == 'staging' && 'STAGING_' || '')] }}
+          APNS_KEY_ID: ${{ secrets[format('{0}APNS_KEY_ID', inputs.environment == 'staging' && 'STAGING_' || '')] }}
+          APNS_TEAM_ID: ${{ secrets[format('{0}APNS_TEAM_ID', inputs.environment == 'staging' && 'STAGING_' || '')] }}
