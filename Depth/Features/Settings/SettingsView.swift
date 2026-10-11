@@ -1,33 +1,17 @@
 import SwiftUI
 
-// Account settings surface shared by anonymous and authenticated users. Sign-in is a
-// sheet rather than a navigation replacement, preserving public browsing continuity.
-// The About section includes the non-affiliation disclaimer and links to the privacy
-// policy from within the app — the row links to the live production /privacy page
-// (AppBuildInfo.privacyPolicyURL) via the system browser. Terms of Service links the
-// same way (AppBuildInfo.termsOfServiceURL) — sign-in already presents it at the point
-// of consent (AuthSheet), but signed-out browsing has no other path to it, so it's
-// mirrored here for parity with Privacy Policy. A "Send Feedback" row opens a
-// pre-addressed mailto (AppBuildInfo.feedbackMailtoURL) — the app's only feedback
-// channel, since there's no in-app form or analytics dashboard to otherwise surface
-// user-reported issues.
+// Settings, shared by signed-out and signed-in users. Sign-in is a sheet rather than a
+// navigation replacement, preserving public browsing continuity.
 //
-// The Settings card also carries the favorite-team picker and the
-// "open this team when I start the app" toggle, mirroring web's AccountView (the picker
-// is where the web puts favorites — the settings surface, not a per-team control). Both
-// are account-gated by RLS (rows surface only while signed in; signing out hides them
-// entirely, like web's signed-out sign-in prompt), setting a favorite opts into
-// auto-opening, and the toggle row appears only once a favorite is set.
+// Layout: plain rows on the page background under small section labels, with no card,
+// separator or leading icon. Spacing carries the grouping: tight inside a section, wide
+// between sections. The accent appears only on a switch that is on and on the selected
+// option. Each kind of choice has one control: a switch for on or off, visible option
+// rows for one of a few, and the team picker sheet for one of 32.
 //
-// Layout: Account / Preferences / About cards, each
-// under its own section label, with Sign Out and Delete Account demoted out of the
-// cards entirely — Sign Out as a full-width secondary button, Delete Account as a
-// centered text link below it — so the two routine-vs-destructive account actions read
-// at their own weight instead of living inside a settings card. Tight spacing within
-// each card, generous spacing between tiers, so the grouping is visible at a glance
-// rather than one repeated gap value flattening everything.
+// Account actions sit at the bottom: the signed-in address directly above Sign Out, and
+// Delete Account as a quieter link below it.
 struct SettingsView: View {
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Bindable var sessionStore: AuthSessionStore
 
     let authService: any DepthAuthServicing
@@ -51,6 +35,7 @@ struct SettingsView: View {
     @State private var teams: [Team] = []
 
     @State private var showAuth = false
+    @State private var showFavoritePicker = false
     @State private var showDeletion = false
     @State private var signOutError: DepthAuthError?
     #if INTERNAL_BUILD
@@ -83,33 +68,34 @@ struct SettingsView: View {
             closeIdentifier: "account-close-button"
         ) {
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xl) {
+                    if settingsStore.canHoldFavorite { teamSection }
+                    if DepthEnvironment.featureFlags.isEnabled(.proactiveNotifications) {
+                        SettingsSection("Notifications") {
+                            NotificationSettingsRows(
+                                store: DepthEnvironment.notificationSettings,
+                                favoriteTeam: favoriteTeam,
+                                onChooseFavorite: { showFavoritePicker = true })
+                        }
+                    }
+                    playerNamesSection
+                    aboutSection
                     if let user = sessionStore.user {
-                        accountTier(email: user.email)
-                        settingsTier
-                        aboutTier
-                        signOutButton
-                        dangerLink
+                        accountSection(email: user.email)
                     } else {
-                        // The name-presentation preference is a local, account-independent
-                        // choice, so it stays reachable whether or not the user is signed in.
-                        settingsTier
-                        aboutTier
-                        // Sign In sits where Sign Out sits in the signed-in branch above —
-                        // same bottom-of-page position in both states, after the settings
-                        // cards and before the destructive action.
                         signInPrompt
                     }
                 }
-                .padding(DesignTokens.Spacing.md)
+                .padding(.horizontal, DesignTokens.Spacing.screenMargin)
+                .padding(.vertical, DesignTokens.Spacing.md)
             }
             .scrollIndicators(.hidden)
         }
         .tint(DesignTokens.Colors.accent)
         .task {
             // Refresh the favorite/toggle from the server row on every sheet
-            // presentation (idempotent; remote is nil while signed out, so this is a
-            // no-op there) and resolve the 32-team list for the picker once.
+            // presentation (idempotent; a no-op read while signed out) and resolve the
+            // 32-team list once.
             await settingsStore.load()
             if let teams = try? await DepthEnvironment.repository.teams() {
                 self.teams = teams
@@ -119,9 +105,17 @@ struct SettingsView: View {
             await DepthEnvironment.notificationSettings.refresh()
         }
         .sheet(isPresented: $showAuth) {
-            // DepthSheet owns each sheet's background — no explicit
-            // `.presentationBackground(bg)` at nesting call sites.
             AuthSheet(service: authService, sessionStore: sessionStore, events: events)
+        }
+        .sheet(isPresented: $showFavoritePicker) {
+            TeamListPickerSheet(
+                repository: DepthEnvironment.repository,
+                events: events,
+                title: "Favorite Team",
+                selectedTeamId: settingsStore.favoriteTeamId ?? ""
+            ) { teamId in
+                settingsStore.selectTeam(teamId)
+            }
         }
         #if INTERNAL_BUILD
             .sheet(isPresented: $showFeatureFlags) {
@@ -142,35 +136,161 @@ struct SettingsView: View {
         }
     }
 
-    // Account card — every row starts with a tinted rounded-square icon badge so the
-    // account, preference, and About rows share the same visual structure.
-    private func accountTier(email: String) -> some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            sectionLabel("Account", tint: DesignTokens.Colors.accent)
-            HStack(spacing: DesignTokens.Spacing.md) {
-                iconBadge("envelope.fill", tint: DesignTokens.Colors.accent)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("SIGNED IN AS")
-                        .font(.caption2.weight(.bold))
-                        .tracking(0.8)
-                        .foregroundStyle(DesignTokens.Colors.textFaint)
-                    Text(email)
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
-                        .truncationMode(.middle)
+    private var favoriteTeam: Team? {
+        guard let id = settingsStore.favoriteTeamId else { return nil }
+        return teams.first { $0.id == id }
+    }
+
+    // MARK: - Your team
+
+    private var teamSection: some View {
+        SettingsSection("Your team") {
+            if settingsStore.isLoading, settingsStore.favoriteTeamId == nil {
+                SettingsRowSkeleton()
+                    .accessibilityIdentifier("settings-favorite-loading")
+            } else {
+                Button {
+                    showFavoritePicker = true
+                } label: {
+                    SettingsValueRow(
+                        title: "Favorite team",
+                        value: favoriteTeam.map { "\($0.city) \($0.name)" } ?? "None",
+                        symbol: "chevron.right")
                 }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings-favorite-team")
             }
-            .accessibilityElement(children: .combine)
-            .padding(.horizontal, DesignTokens.Spacing.md)
-            .padding(.vertical, DesignTokens.Spacing.sm)
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .depthCard(padded: false)
+            if let favoriteTeamId = settingsStore.favoriteTeamId, !favoriteTeamId.isEmpty {
+                Toggle("Open on launch", isOn: startOnFavoriteBinding)
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    .frame(minHeight: SettingsMetrics.rowHeight)
+                    .accessibilityIdentifier("settings-start-on-favorite")
+                Button("Remove Favorite") { settingsStore.selectTeam(nil) }
+                    .font(.subheadline)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings-favorite-remove")
+            }
+            if let updateError = settingsStore.updateError {
+                Text(updateError)
+                    .font(.footnote)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .accessibilityIdentifier("settings-favorite-update-error")
+            }
         }
     }
 
-    // No card wrapper — mirrors web's bare "Sign in" heading + copy + button rather
-    // than boxing the page's primary call-to-action.
+    private var startOnFavoriteBinding: Binding<Bool> {
+        Binding(
+            get: { settingsStore.startOnFavorite },
+            set: { settingsStore.setStartOnFavorite($0) }
+        )
+    }
+
+    // MARK: - Player names
+
+    private var playerNamesSection: some View {
+        SettingsSection("Player names on the field") {
+            ForEach(FieldNameMode.allCases) { mode in
+                SettingsOptionRow(
+                    title: mode.title, detail: mode.summary, isSelected: mode == fieldNameMode
+                ) {
+                    fieldNameMode = mode
+                }
+                .accessibilityIdentifier("settings-field-name-mode-\(mode.rawValue)")
+            }
+        }
+    }
+
+    // MARK: - About
+
+    private var aboutSection: some View {
+        SettingsSection("About") {
+            if let url = AppBuildInfo.privacyPolicyURL {
+                Link(destination: url) {
+                    SettingsValueRow(title: "Privacy Policy", symbol: "arrow.up.right")
+                }
+                .accessibilityIdentifier("settings-about-privacy")
+            }
+            if let url = AppBuildInfo.termsOfServiceURL {
+                Link(destination: url) {
+                    SettingsValueRow(title: "Terms of Service", symbol: "arrow.up.right")
+                }
+                .accessibilityIdentifier("settings-about-terms")
+            }
+            if let url = AppBuildInfo.feedbackMailtoURL {
+                Link(destination: url) {
+                    SettingsValueRow(title: "Send Feedback", symbol: "arrow.up.right")
+                }
+                .accessibilityIdentifier("settings-about-feedback")
+            }
+            // Dismisses this sheet first: the coachmark targets live on the page
+            // underneath it, and a sheet left presented would resurface mid-tour.
+            Button {
+                dismiss()
+                onboarding.replay()
+            } label: {
+                SettingsValueRow(title: "Take the Tour", symbol: "chevron.right")
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("settings-take-the-tour")
+            #if INTERNAL_BUILD
+                Button {
+                    showFeatureFlags = true
+                } label: {
+                    SettingsValueRow(title: "Feature Flags", symbol: "chevron.right")
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings-feature-flags")
+            #endif
+            LabeledContent("Version", value: AppBuildInfo.version)
+                .frame(minHeight: SettingsMetrics.linkRowHeight)
+                .accessibilityIdentifier("settings-about-version")
+
+            Text(AppBuildInfo.nonAffiliationDisclaimer)
+                .font(.footnote)
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+                .padding(.top, DesignTokens.Spacing.sm)
+                .accessibilityIdentifier("settings-about-disclaimer")
+        }
+    }
+
+    // MARK: - Account
+
+    private func accountSection(email: String) -> some View {
+        VStack(spacing: DesignTokens.Spacing.sm) {
+            (Text("Signed in as ").foregroundStyle(DesignTokens.Colors.textMuted)
+                + Text(email).foregroundStyle(DesignTokens.Colors.textPrimary))
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("settings-signed-in-as")
+
+            Button {
+                Task { await signOut() }
+            } label: {
+                Text("Sign Out")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(DesignTokens.Colors.textPrimary)
+            .frame(minHeight: 44)
+
+            if let signOutError {
+                errorChip(signOutError.message, identifier: "settings-sign-out-error")
+            }
+
+            Button("Delete Account", role: .destructive) {
+                showDeletion = true
+            }
+            .font(.footnote)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .accessibilityIdentifier("settings-delete-account")
+        }
+    }
+
     private var signInPrompt: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
             Text("Sign in")
@@ -190,317 +310,6 @@ struct SettingsView: View {
             .frame(minHeight: 44)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var settingsTier: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            sectionLabel("Preferences", tint: DesignTokens.Colors.accent)
-            // `padded: false` + per-row horizontal padding (not padding on the outer
-            // card) — the default `padded: true` insets everything including the row
-            // dividers below, which then stop short of the card's edges instead of
-            // spanning the full card width.
-            VStack(alignment: .leading, spacing: 0) {
-                if sessionStore.user != nil {
-                    // Favorite-team picker, mirroring web's AccountView select.
-                    // Rendered only while signed in — settingsTier itself is shown to both
-                    // signed-in and signed-out visitors, but Player Names is
-                    // always-visible, but the favorite row is still RLS-gated, so it needs
-                    // its own explicit guard here rather than inheriting one from the tier.
-                    favoriteTeamPicker
-                    if let favoriteTeamId = settingsStore.favoriteTeamId, !favoriteTeamId.isEmpty {
-                        Divider().overlay(DesignTokens.Colors.borderSubtle)
-                        startOnFavoriteToggle
-                            .padding(.horizontal, DesignTokens.Spacing.md)
-                    }
-                    if let updateError = settingsStore.updateError {
-                        Divider().overlay(DesignTokens.Colors.borderSubtle)
-                        Text(updateError)
-                            .font(.footnote)
-                            .foregroundStyle(DesignTokens.Colors.textMuted)
-                            .padding(.horizontal, DesignTokens.Spacing.md)
-                            .accessibilityIdentifier("settings-favorite-update-error")
-                    }
-                    Divider().overlay(DesignTokens.Colors.borderSubtle)
-                }
-                playerNamesRow
-                if DepthEnvironment.featureFlags.isEnabled(.proactiveNotifications) {
-                    Divider().overlay(DesignTokens.Colors.borderSubtle)
-                        .padding(.top, DesignTokens.Spacing.sm)
-                    NotificationSettingsCard(
-                        store: DepthEnvironment.notificationSettings,
-                        teams: teams,
-                        candidateTeamId: settingsStore.favoriteTeamId
-                            ?? DepthEnvironment.preferences.lastTeamId)
-                }
-            }
-            .padding(.vertical, DesignTokens.Spacing.sm)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .depthCard(padded: false)
-        }
-    }
-
-    // A menu rather than DepthSegmentedControl: three labels this long do not fit a
-    // segmented track at phone width, and shortening them to fit ("Lines"/"Fit"/"Off")
-    // would leave users guessing what they picked. A custom-label `Menu` (not
-    // `Picker(.menu)`, which wraps its own system-rendered value text onto multiple
-    // lines with no truncation control outside a List) keeps the row's value on one line.
-    private var playerNamesRow: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            Menu {
-                ForEach(FieldNameMode.allCases) { mode in
-                    Button(mode.title) { fieldNameMode = mode }
-                }
-            } label: {
-                let layout =
-                    dynamicTypeSize.isAccessibilitySize
-                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
-                    : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
-                layout {
-                    iconBadge("textformat", tint: DesignTokens.Colors.accent)
-                    Text("Player Names")
-                        .foregroundStyle(DesignTokens.Colors.textPrimary)
-                    Spacer()
-                    Text(fieldNameMode.title)
-                        .font(.subheadline)
-                        .foregroundStyle(DesignTokens.Colors.textMuted)
-                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
-                        .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.75)
-                    Image(systemName: "chevron.up.chevron.down")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(DesignTokens.Colors.textFaint)
-                }
-                .frame(maxWidth: .infinity, minHeight: 44)
-                .contentShape(Rectangle())
-            }
-            .accessibilityIdentifier("settings-field-name-mode")
-
-            Text(
-                "How player names appear on the depth chart. Names under the dot are "
-                    + "easiest to read; leader lines keep every name on screen when the "
-                    + "field gets crowded."
-            )
-            .font(.caption)
-            .foregroundStyle(DesignTokens.Colors.textMuted)
-        }
-        .padding(.horizontal, DesignTokens.Spacing.md)
-    }
-
-    // Mirrors web's favorite-team select (web/components/AccountView.tsx) — the
-    // menu lists "No favorite" plus every team, alphabetized like the sign-in page's
-    // options list. Renders a redacted placeholder while the row is still loading so it
-    // never flashes the wrong value before the server read lands.
-    private var favoriteTeamPicker: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            if settingsStore.isLoading {
-                FavoriteTeamPickerSkeleton()
-                    .accessibilityIdentifier("settings-favorite-loading")
-            } else {
-                // Custom-label `Menu`, not `Picker(.menu)` — see the Player Names row's
-                // comment above for why (multi-line value wrap with no truncation control
-                // outside a List).
-                Menu {
-                    Button("No favorite") { settingsStore.selectTeam(nil) }
-                    ForEach(teams, id: \.id) { team in
-                        Button("\(team.city) \(team.name)") { settingsStore.selectTeam(team.id) }
-                    }
-                } label: {
-                    let layout =
-                        dynamicTypeSize.isAccessibilitySize
-                        ? AnyLayout(
-                            VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
-                        : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
-                    layout {
-                        iconBadge("star.fill", tint: DesignTokens.Colors.accent)
-                        Text("Favorite Team")
-                            .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        Spacer()
-                        Text(favoriteTeamValueLabel)
-                            .font(.subheadline)
-                            .foregroundStyle(DesignTokens.Colors.textMuted)
-                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
-                            .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.75)
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(DesignTokens.Colors.textFaint)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .contentShape(Rectangle())
-                }
-                .accessibilityIdentifier("settings-favorite-team")
-            }
-        }
-        .padding(.horizontal, DesignTokens.Spacing.md)
-    }
-
-    private var favoriteTeamValueLabel: String {
-        guard let id = settingsStore.favoriteTeamId,
-            let team = teams.first(where: { $0.id == id })
-        else { return "No favorite" }
-        return "\(team.city) \(team.name)"
-    }
-
-    // The "open this team when I start the app" toggle. Shown only once a
-    // favorite is set (web parity) and only consulted by startup resolution when one is.
-    private var startOnFavoriteToggle: some View {
-        Toggle(isOn: startOnFavoriteBinding) {
-            HStack(spacing: DesignTokens.Spacing.md) {
-                iconBadge("bolt.fill", tint: DesignTokens.Colors.accent)
-                Text("Open Favorite Team on Launch")
-                    .font(.body)
-                    .foregroundStyle(DesignTokens.Colors.textPrimary)
-            }
-        }
-        .tint(DesignTokens.Colors.accent)
-        .frame(minHeight: 44)
-        .accessibilityIdentifier("settings-start-on-favorite")
-    }
-
-    private var startOnFavoriteBinding: Binding<Bool> {
-        Binding(
-            get: { settingsStore.startOnFavorite },
-            set: { settingsStore.setStartOnFavorite($0) }
-        )
-    }
-
-    // A 44pt hit target on every account action. Full-width secondary button
-    // rather than a card row — Sign Out is routine
-    // enough to stand on its own, not bundled into the preferences card.
-    private var signOutButton: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            Button {
-                Task { await signOut() }
-            } label: {
-                Text("Sign Out")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(DesignTokens.Colors.textPrimary)
-            .frame(minHeight: 44)
-
-            if let signOutError {
-                errorChip(signOutError.message, identifier: "settings-sign-out-error")
-            }
-        }
-    }
-
-    // Plain centered text link, not a card + button —
-    // reads at a lower, more deliberate weight than Sign Out so a permanently
-    // destructive action never competes visually with a routine one.
-    private var dangerLink: some View {
-        Button("Delete Account", role: .destructive) {
-            showDeletion = true
-        }
-        .font(.footnote)
-        .frame(maxWidth: .infinity, minHeight: 44)
-        .accessibilityIdentifier("settings-delete-account")
-    }
-
-    private var aboutTier: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            sectionLabel("About", tint: DesignTokens.Colors.textMuted)
-            // `padded: false` + per-row horizontal padding — see settingsTier's comment
-            // above for why (full-width row dividers).
-            VStack(alignment: .leading, spacing: 0) {
-                if let url = AppBuildInfo.privacyPolicyURL {
-                    Link(destination: url) {
-                        aboutRow("Privacy Policy", icon: "shield.fill")
-                    }
-                    .accessibilityIdentifier("settings-about-privacy")
-                    Divider().overlay(DesignTokens.Colors.borderSubtle)
-                }
-                if let url = AppBuildInfo.termsOfServiceURL {
-                    Link(destination: url) {
-                        aboutRow("Terms of Service", icon: "doc.text.fill")
-                    }
-                    .accessibilityIdentifier("settings-about-terms")
-                    Divider().overlay(DesignTokens.Colors.borderSubtle)
-                }
-                if let url = AppBuildInfo.feedbackMailtoURL {
-                    Link(destination: url) {
-                        aboutRow("Send Feedback", icon: "questionmark.circle.fill")
-                    }
-                    .accessibilityIdentifier("settings-about-feedback")
-                    Divider().overlay(DesignTokens.Colors.borderSubtle)
-                }
-                // Replays the first-run welcome + coachmark sequence independently of the
-                // persisted "seen" flag; this always starts the flow from the top.
-                // Dismissing this sheet first (rather than leaving TeamDetailView's
-                // `showAccount` stale) matters: the coachmark targets live on the roster
-                // page underneath this sheet, and leaving `showAccount` true here caused
-                // Settings to resurface mid-tour once the welcome cover's own dismissal
-                // reconciled — reading as the tour "exiting" right after the first step.
-                Button {
-                    dismiss()
-                    onboarding.replay()
-                } label: {
-                    aboutRow("Take the Tour", icon: "sparkles")
-                }
-                .accessibilityIdentifier("settings-take-the-tour")
-                Divider().overlay(DesignTokens.Colors.borderSubtle)
-                #if INTERNAL_BUILD
-                    Button {
-                        showFeatureFlags = true
-                    } label: {
-                        aboutRow("Feature Flags", icon: "flag.fill")
-                    }
-                    .accessibilityIdentifier("settings-feature-flags")
-                    Divider().overlay(DesignTokens.Colors.borderSubtle)
-                #endif
-                LabeledContent("Version", value: AppBuildInfo.version)
-                    .padding(.horizontal, DesignTokens.Spacing.md)
-                    .frame(minHeight: 44)
-                    .accessibilityIdentifier("settings-about-version")
-            }
-            .padding(.vertical, DesignTokens.Spacing.sm)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .depthCard(padded: false)
-
-            Text(AppBuildInfo.nonAffiliationDisclaimer)
-                .font(.footnote)
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-                .padding(.top, DesignTokens.Spacing.sm)
-                .accessibilityIdentifier("settings-about-disclaimer")
-        }
-    }
-
-    // All About actions share the same full-width wrapping treatment.
-    private func aboutRow(_ title: String, icon: String) -> some View {
-        let layout =
-            dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.sm))
-            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.md))
-        return layout {
-            iconBadge(
-                icon, tint: DesignTokens.Colors.textMuted,
-                background: DesignTokens.Colors.surfaceChip)
-            Text(title)
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
-                .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
-            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(DesignTokens.Colors.textFaint)
-        }
-        .padding(.horizontal, DesignTokens.Spacing.md)
-        .frame(minHeight: 44)
-        .contentShape(Rectangle())
-    }
-
-    // Icon-badge row leading element.
-    // (28pt tinted rounded square + centered glyph). `background` defaults to the
-    // tint at 16% for the accent-tinted rows; the About tier's neutral rows pass
-    // `DesignTokens.Colors.surfaceChip` explicitly (About icons use a
-    // plain white-at-7% fill rather than a colored tint).
-    private func iconBadge(_ systemName: String, tint: Color, background: Color? = nil) -> some View
-    {
-        SettingsIconBadge(systemName: systemName, tint: tint, background: background)
-    }
-
-    private func sectionLabel(_ title: String, tint: Color) -> some View {
-        Text(title.uppercased())
-            .font(.caption.weight(.bold))
-            .tracking(0.6)
-            .foregroundStyle(tint)
     }
 
     private func errorChip(_ message: String, identifier: String) -> some View {
@@ -531,51 +340,134 @@ struct SettingsView: View {
     }
 }
 
-/// The leading badge of a Settings row: a tinted rounded square with a centered glyph.
-/// A type rather than a private helper so rows defined in other files match exactly.
-struct SettingsIconBadge: View {
-    let systemName: String
-    let tint: Color
-    var background: Color?
+// MARK: - Row primitives
+
+enum SettingsMetrics {
+    /// Rows that hold a control or a value.
+    static let rowHeight: CGFloat = 52
+    /// Rows that only lead somewhere.
+    static let linkRowHeight: CGFloat = 48
+}
+
+/// A small label over a group of rows. The gap inside a section is tight; the caller
+/// spaces sections apart.
+struct SettingsSection<Content: View>: View {
+    private let title: String
+    private let content: Content
+
+    init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
-                .fill(background ?? tint.opacity(0.16))
-            Image(systemName: systemName)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(tint)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            Text(title)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+                .accessibilityAddTraits(.isHeader)
+            content
         }
-        .frame(width: 28, height: 28)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-// MARK: - Loading skeleton
+/// A row's label: a title, an optional current value, and a trailing symbol saying where
+/// a tap leads. Stacks at accessibility sizes, where a title and a value no longer fit
+/// on one line. The frame and content shape are part of the label so the whole row
+/// accepts taps.
+struct SettingsValueRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    let title: String
+    var value: String?
+    let symbol: String
 
-/// Skeleton for the favorite-team picker row while the server row
-/// is loading. Mirrors the loaded row's layout (icon badge, label, value,
-/// chevron) so the transition to the real content is smooth with no layout
-/// shift. Uses the shared `surfacePlaceholder` fill and `redacted` pattern
-/// from `TeamRowSkeleton`.
-private struct FavoriteTeamPickerSkeleton: View {
+    var body: some View {
+        let stacks = dynamicTypeSize.isAccessibilitySize && value != nil
+        let layout =
+            stacks
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.xs))
+            : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.sm))
+        layout {
+            Text(title)
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            if !stacks { Spacer(minLength: DesignTokens.Spacing.sm) }
+            if let value {
+                Text(value)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
+                    .lineLimit(stacks ? nil : 1)
+                    .minimumScaleFactor(stacks ? 1 : 0.75)
+            }
+            if !stacks {
+                Image(systemName: symbol)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textFaint)
+                    .accessibilityHidden(true)
+            }
+        }
+        .frame(
+            maxWidth: .infinity,
+            minHeight: value == nil ? SettingsMetrics.linkRowHeight : SettingsMetrics.rowHeight,
+            alignment: .leading
+        )
+        .contentShape(Rectangle())
+    }
+}
+
+/// One choice out of a few, shown with what it means so the choice can be read before
+/// it is made. The selected row carries the only accent in its group.
+struct SettingsOptionRow: View {
+    let title: String
+    let detail: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: DesignTokens.Spacing.md) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.body.weight(isSelected ? .semibold : .regular))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary)
+                    Text(detail)
+                        .font(.subheadline)
+                        .foregroundStyle(DesignTokens.Colors.textMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(
+                        isSelected ? DesignTokens.Colors.onAccent : DesignTokens.Colors.textFaint,
+                        DesignTokens.Colors.accent
+                    )
+                    .accessibilityHidden(true)
+            }
+            .padding(.vertical, DesignTokens.Spacing.sm)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+/// Stands in for a value row while its value is loading, with the same height so the
+/// rows below do not move when it arrives.
+private struct SettingsRowSkeleton: View {
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.md) {
-            Circle()
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                 .fill(DesignTokens.Colors.surfacePlaceholder)
-                .frame(width: 28, height: 28)
-            RoundedRectangle(cornerRadius: 4)
-                .fill(DesignTokens.Colors.surfacePlaceholder)
-                .frame(maxWidth: 100, maxHeight: 14)
+                .frame(maxWidth: 110, maxHeight: 14)
             Spacer()
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
                 .fill(DesignTokens.Colors.surfacePlaceholder)
-                .frame(maxWidth: 60, maxHeight: 14)
-            RoundedRectangle(cornerRadius: 4)
-                .fill(DesignTokens.Colors.surfacePlaceholder)
-                .frame(width: 16, height: 16)
+                .frame(maxWidth: 90, maxHeight: 14)
         }
-        .frame(maxWidth: .infinity, minHeight: 44)
-        .redacted(reason: .placeholder)
+        .frame(maxWidth: .infinity, minHeight: SettingsMetrics.rowHeight)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Loading favorite team")
     }

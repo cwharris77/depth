@@ -32,107 +32,148 @@ final class NotificationSettingsUITests: XCTestCase {
         add(screenshot)
     }
 
-    func testNotificationControlOffersThreeValuesAndKeepsTheChoice() throws {
-        let app = launch(flagOn: true, extraArguments: ["UI_TESTING_NOTIFICATIONS_AUTHORIZED"])
+    private static let favoriteBills = "UI_TESTING_FAVORITE_TEAM=bills"
+
+    /// A SwiftUI toggle's switch sits at its trailing edge; a tap on the label does not
+    /// flip it.
+    private func flip(_ toggle: XCUIElement) {
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+            .withOffset(CGVector(dx: -24, dy: 0)).tap()
+    }
+
+    private func waitForValue(_ element: XCUIElement, _ value: String) -> Bool {
+        let predicate = NSPredicate(format: "value == %@", value)
+        return XCTWaiter.wait(
+            for: [XCTNSPredicateExpectation(predicate: predicate, object: element)], timeout: 10)
+            == .completed
+    }
+
+    func testNotificationsFollowTheFavoriteTeamAndKeepTheChoice() throws {
+        let app = launch(
+            flagOn: true,
+            extraArguments: ["UI_TESTING_NOTIFICATIONS_AUTHORIZED", Self.favoriteBills])
         XCTAssertTrue(app.waitForDepthChart())
         app.openSettings()
 
-        let tier = app.buttons["settings-notifications-tier"]
-        let team = app.buttons["settings-notifications-team"]
-        XCTAssertTrue(tier.waitForExistence(timeout: 10))
-        XCTAssertTrue(tier.label.contains("Big moments"), "got \"\(tier.label)\"")
-        // Until a team is chosen the control shows the one that would be adopted.
-        XCTAssertTrue(team.waitForLabel(containing: "Buffalo Bills"), "got \"\(team.label)\"")
-        XCTAssertGreaterThanOrEqual(tier.frame.height, 44)
-        XCTAssertGreaterThanOrEqual(team.frame.height, 44)
+        let toggle = app.switches["settings-notifications-toggle"]
+        let bigMoments = app.buttons["settings-notifications-tier-big_moments"]
+        let everything = app.buttons["settings-notifications-tier-everything"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10))
+        XCTAssertTrue(toggle.label.contains("Bills"), "got \"\(toggle.label)\"")
+        XCTAssertTrue(waitForValue(toggle, "1"))
+        XCTAssertTrue(bigMoments.waitForExistence(timeout: 5))
+        XCTAssertTrue(bigMoments.isSelected)
+        XCTAssertFalse(
+            app.buttons["settings-notifications-team"].exists,
+            "notifications have no team of their own")
         attachScreenshot(app, named: "settings-notifications-big-moments")
 
-        tier.tap()
-        for title in ["Big moments", "Everything", "Off"] {
-            XCTAssertTrue(app.buttons[title].waitForExistence(timeout: 5), title)
-        }
-        app.buttons["Off"].tap()
-        XCTAssertTrue(tier.waitForLabel(containing: "Off"), "got \"\(tier.label)\"")
-        XCTAssertTrue(team.waitForAbsence(timeout: 5), "Off has no team to choose")
-
-        // The row has to accept a tap anywhere it is drawn, so tap in the gutter between
-        // the card's edge and the row's icon, where there is no text or glyph.
-        let card = app.buttons["settings-notifications-system-settings"].frame
-        XCTAssertEqual(tier.frame.minX, card.minX, accuracy: 1, "the row should span the card")
-        XCTAssertEqual(tier.frame.maxX, card.maxX, accuracy: 1, "the row should span the card")
-        tier.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
-            .withOffset(CGVector(dx: 4, dy: 0)).tap()
-        XCTAssertTrue(app.buttons["Everything"].waitForExistence(timeout: 5))
-        app.buttons["Everything"].tap()
-        XCTAssertTrue(tier.waitForLabel(containing: "Everything"), "got \"\(tier.label)\"")
-        XCTAssertTrue(team.waitForExistence(timeout: 5))
-
-        team.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+        // An option has to accept a tap anywhere it is drawn, so tap inside its trailing
+        // edge and then inside its leading edge, away from its text.
+        everything.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
             .withOffset(CGVector(dx: -4, dy: 0)).tap()
-        XCTAssertTrue(app.buttons["Chicago Bears"].waitForExistence(timeout: 5))
-        app.buttons["Chicago Bears"].tap()
-        XCTAssertTrue(team.waitForLabel(containing: "Chicago Bears"), "got \"\(team.label)\"")
-
-        let systemSettings = app.buttons["settings-notifications-system-settings"]
-        XCTAssertTrue(systemSettings.exists)
-        XCTAssertGreaterThanOrEqual(systemSettings.frame.height, 44)
-        XCTAssertFalse(
-            app.staticTexts["settings-notifications-denied"].exists,
-            "an allowed device should not be told notifications are off")
+        XCTAssertTrue(everything.waitForSelected())
+        bigMoments.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.9))
+            .withOffset(CGVector(dx: 4, dy: 0)).tap()
+        XCTAssertTrue(bigMoments.waitForSelected())
+        everything.tap()
+        XCTAssertTrue(everything.waitForSelected())
+        XCTAssertGreaterThanOrEqual(everything.frame.height, 44)
         attachScreenshot(app, named: "settings-notifications-everything")
 
-        // The choice outlives the sheet and the process.
+        // Off hides the choice; on brings back the level it was at.
+        flip(toggle)
+        XCTAssertTrue(waitForValue(toggle, "0"))
+        XCTAssertTrue(everything.waitForAbsence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["settings-notifications-summary"].exists)
+        flip(toggle)
+        XCTAssertTrue(waitForValue(toggle, "1"))
+        XCTAssertTrue(everything.waitForSelected())
+
+        // A new favorite is the team notifications are about.
+        let favorite = app.buttons["settings-favorite-team"]
+        XCTAssertTrue(favorite.label.contains("Buffalo Bills"), "got \"\(favorite.label)\"")
+        favorite.tap()
+        let dolphins = app.buttons["team-row-dolphins"]
+        XCTAssertTrue(dolphins.waitForExistence(timeout: 10))
+        dolphins.tap()
+        XCTAssertTrue(favorite.waitForLabel(containing: "Miami Dolphins"))
+        XCTAssertTrue(toggle.waitForLabel(containing: "Dolphins"), "got \"\(toggle.label)\"")
+
+        // The choices outlive the sheet and the process.
         app.terminate()
         let relaunched = launch(
             flagOn: true, resettingState: false,
             extraArguments: ["UI_TESTING_NOTIFICATIONS_AUTHORIZED"])
-        XCTAssertTrue(relaunched.waitForDepthChart())
         relaunched.openSettings()
-        let restoredTier = relaunched.buttons["settings-notifications-tier"]
-        XCTAssertTrue(restoredTier.waitForExistence(timeout: 10))
-        XCTAssertTrue(restoredTier.label.contains("Everything"), "got \"\(restoredTier.label)\"")
+        let restored = relaunched.switches["settings-notifications-toggle"]
+        XCTAssertTrue(restored.waitForExistence(timeout: 10))
+        XCTAssertTrue(restored.waitForLabel(containing: "Dolphins"), "got \"\(restored.label)\"")
         XCTAssertTrue(
-            relaunched.buttons["settings-notifications-team"]
-                .waitForLabel(containing: "Chicago Bears"))
+            relaunched.buttons["settings-notifications-tier-everything"].waitForSelected())
     }
 
-    func testNotificationControlIsHiddenWhenTheFlagIsOff() throws {
-        // Even a launch that asks for the prompt gets neither it nor the control.
-        let app = launch(flagOn: false, extraArguments: [Self.promptArgument])
+    func testNotificationRowsAreHiddenWhenTheFlagIsOff() throws {
+        // Even a launch that asks for the prompt gets neither it nor the rows.
+        let app = launch(
+            flagOn: false, extraArguments: [Self.promptArgument, Self.favoriteBills])
         XCTAssertTrue(app.waitForDepthChart())
         XCTAssertFalse(app.buttons["big-moment-prompt-accept"].waitForExistence(timeout: 3))
         app.openSettings()
         XCTAssertTrue(app.buttons["settings-take-the-tour"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.buttons["settings-notifications-tier"].exists)
-        XCTAssertFalse(app.buttons["settings-notifications-system-settings"].exists)
+        XCTAssertFalse(app.switches["settings-notifications-toggle"].exists)
+        XCTAssertFalse(app.buttons["settings-notifications-choose-favorite"].exists)
+        XCTAssertFalse(
+            app.buttons["settings-favorite-team"].exists,
+            "without the feature a favorite needs an account")
     }
 
-    func testAnUnansweredPermissionReadsOffUntilATierIsPicked() throws {
+    func testAnUnansweredPermissionReadsOffUntilTurnedOn() throws {
         // No authorized argument: the permission question has never been answered.
-        let app = launch(flagOn: true)
+        let app = launch(flagOn: true, extraArguments: [Self.favoriteBills])
         XCTAssertTrue(app.waitForDepthChart())
         app.openSettings()
 
-        let tier = app.buttons["settings-notifications-tier"]
-        let team = app.buttons["settings-notifications-team"]
-        XCTAssertTrue(tier.waitForExistence(timeout: 10))
-        XCTAssertTrue(tier.label.contains("Off"), "got \"\(tier.label)\"")
-        XCTAssertFalse(tier.label.contains("Big moments"), "got \"\(tier.label)\"")
-        XCTAssertFalse(team.exists, "nothing is on, so there is no team to choose")
-        let summary = app.staticTexts["settings-notifications-summary"]
-        XCTAssertEqual(summary.label, "Choose what you want to hear about your team.")
+        let toggle = app.switches["settings-notifications-toggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10))
+        XCTAssertTrue(waitForValue(toggle, "0"))
+        XCTAssertTrue(app.staticTexts["settings-notifications-summary"].exists)
+        XCTAssertFalse(app.buttons["settings-notifications-tier-big_moments"].exists)
         attachScreenshot(app, named: "settings-notifications-unanswered")
 
-        // Picking a tier asks for permission. In a UI test nothing grants it, so the
-        // row lands on the chosen tier with the note that the system has it switched off.
-        tier.tap()
-        XCTAssertTrue(app.buttons["Big moments"].waitForExistence(timeout: 5))
-        app.buttons["Big moments"].tap()
-        XCTAssertTrue(tier.waitForLabel(containing: "Big moments"), "got \"\(tier.label)\"")
-        XCTAssertTrue(app.staticTexts["settings-notifications-denied"].waitForExistence(timeout: 5))
-        XCTAssertTrue(team.waitForLabel(containing: "Buffalo Bills"), "got \"\(team.label)\"")
+        // Turning it on asks for permission. In a UI test nothing grants it, so the rows
+        // give way to the one step that fixes a refused permission.
+        flip(toggle)
+        let systemSettings = app.buttons["settings-notifications-system-settings"]
+        XCTAssertTrue(systemSettings.waitForExistence(timeout: 5))
+        XCTAssertGreaterThanOrEqual(systemSettings.frame.height, 44)
+        XCTAssertTrue(toggle.waitForAbsence(timeout: 5))
         XCTAssertTrue(app.buttons["account-close-button"].isHittable)
         attachScreenshot(app, named: "settings-notifications-denied")
+    }
+
+    func testWithoutAFavoriteTheRowsLeadToChoosingOne() throws {
+        let app = launch(flagOn: true, extraArguments: ["UI_TESTING_NOTIFICATIONS_AUTHORIZED"])
+        XCTAssertTrue(app.waitForDepthChart())
+        app.openSettings()
+
+        let choose = app.buttons["settings-notifications-choose-favorite"]
+        XCTAssertTrue(choose.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.switches["settings-notifications-toggle"].exists)
+        XCTAssertTrue(app.buttons["settings-favorite-team"].label.contains("None"))
+        attachScreenshot(app, named: "settings-notifications-no-favorite")
+
+        choose.tap()
+        let bills = app.buttons["team-row-bills"]
+        XCTAssertTrue(bills.waitForExistence(timeout: 10))
+        bills.tap()
+        let toggle = app.switches["settings-notifications-toggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10))
+        XCTAssertTrue(toggle.label.contains("Bills"), "got \"\(toggle.label)\"")
+
+        // Removing the favorite leaves nothing to notify about.
+        app.buttons["settings-favorite-remove"].tap()
+        XCTAssertTrue(choose.waitForExistence(timeout: 5))
     }
 
     private func waitForPrompt(in app: XCUIApplication) -> XCUIElement {

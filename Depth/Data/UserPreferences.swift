@@ -22,6 +22,9 @@ struct UserPreferences: Sendable {
         static let lastSyncedRegistration = "preferences.lastSyncedRegistration"
         static let hasFinishedFirstSession = "preferences.hasFinishedFirstSession"
         static let bigMomentPromptShown = "preferences.bigMomentPromptShown"
+        static let favoriteTeamId = "preferences.favoriteTeamId"
+        static let startOnFavorite = "preferences.startOnFavorite"
+        static let lastActiveNotificationTier = "preferences.lastActiveNotificationTier"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -36,6 +39,29 @@ struct UserPreferences: Sendable {
     var lastUnit: Unit? {
         get { (defaults.string(forKey: Key.lastUnit)).flatMap(Unit.init(rawValue:)) }
         nonmutating set { defaults.set(newValue?.rawValue, forKey: Key.lastUnit) }
+    }
+
+    /// The favorite team kept on this device, so it exists without an account.
+    var favoriteTeamId: String? {
+        get { defaults.string(forKey: Key.favoriteTeamId) }
+        nonmutating set { defaults.set(newValue, forKey: Key.favoriteTeamId) }
+    }
+
+    /// Whether the app opens on the favorite team. Absent means on.
+    var startOnFavorite: Bool {
+        get { defaults.object(forKey: Key.startOnFavorite) as? Bool ?? true }
+        nonmutating set { defaults.set(newValue, forKey: Key.startOnFavorite) }
+    }
+
+    /// The level notifications were last on at, restored when they are turned back on.
+    var lastActiveNotificationTier: NotificationTier? {
+        get {
+            defaults.string(forKey: Key.lastActiveNotificationTier)
+                .flatMap(NotificationTier.init(rawValue:))
+        }
+        nonmutating set {
+            defaults.set(newValue?.rawValue, forKey: Key.lastActiveNotificationTier)
+        }
     }
 
     /// The chosen notification level. Absent means the default, Big moments.
@@ -84,6 +110,7 @@ struct UserPreferences: Sendable {
         for key in [
             Key.notificationTier, Key.notificationTeamId, Key.pushToken,
             Key.lastSyncedRegistration, Key.bigMomentPromptShown,
+            Key.lastActiveNotificationTier,
         ] {
             defaults.removeObject(forKey: key)
         }

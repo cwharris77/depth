@@ -64,7 +64,11 @@ final class AuthUITests: XCTestCase {
     @MainActor
     func testSignedOutSettingsHideTheFavoriteControls() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING_RESET_STATE"]
+        // With the notifications feature on, the favorite is kept on the device and is
+        // offered signed out; this is the account-only behavior without it.
+        app.launchArguments = [
+            "UI_TESTING_RESET_STATE", "-featureFlag.proactiveNotifications", "NO",
+        ]
         app.launch()
 
         let accountButton = app.buttons["account-button"]

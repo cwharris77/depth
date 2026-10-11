@@ -72,24 +72,49 @@ final class NotificationSettingsStore {
             authorization = await authorizer.request() ? .authorized : .denied
         }
         guard authorization == .authorized else { return false }
-        if teamId == nil { adopt(teamId: candidate) }
+        if teamId != candidate { adopt(teamId: candidate) }
         if tier == .off { adopt(tier: .bigMoments) }
         authorizer.registerForRemoteNotifications()
         await sync()
         return true
     }
 
-    /// `candidateTeamId` is used only when no team has been chosen yet.
+    /// Whether notifications are chosen, whatever the system permission says.
+    var isOn: Bool { tier != .off }
+
+    /// Turns notifications on at the level they were last on at, or off. `teamId` is the
+    /// team to notify about.
+    func setOn(_ on: Bool, teamId: String?) async {
+        await setTier(
+            on ? preferences.lastActiveNotificationTier ?? .bigMoments : .off,
+            candidateTeamId: teamId)
+    }
+
+    /// Keeps the notification team on the favorite team. Without a favorite there is
+    /// no team to notify about, so notifications go off.
+    func followFavorite(_ favoriteTeamId: String?) async {
+        guard isAvailable else { return }
+        if let favoriteTeamId {
+            guard teamId != favoriteTeamId else { return }
+            adopt(teamId: favoriteTeamId)
+        } else {
+            guard tier != .off else { return }
+            adopt(tier: .off)
+        }
+        await sync()
+    }
+
+    /// `candidateTeamId` is the team to notify about; without one the stored team stays.
     func setTier(_ newTier: NotificationTier, candidateTeamId: String?) async {
         guard isAvailable else { return }
         adopt(tier: newTier)
         if newTier != .off {
             authorization = await authorizer.status()
-            if authorization == .notDetermined, let team = teamId ?? candidateTeamId {
+            if authorization == .notDetermined, let team = candidateTeamId ?? teamId {
                 await enable(teamId: team)
                 return
             }
-            if teamId == nil, let candidateTeamId { adopt(teamId: candidateTeamId) }
+            if let candidateTeamId, teamId != candidateTeamId { adopt(teamId: candidateTeamId) }
             if authorization == .authorized { authorizer.registerForRemoteNotifications() }
         }
         await sync()
@@ -118,6 +143,7 @@ final class NotificationSettingsStore {
     private func adopt(tier newTier: NotificationTier) {
         tier = newTier
         preferences.notificationTier = newTier
+        if newTier != .off { preferences.lastActiveNotificationTier = newTier }
     }
 
     private func adopt(teamId newTeamId: String) {
