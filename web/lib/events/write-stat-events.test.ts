@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { buildRecordFiles, type RecordGameRow } from '@/lib/stat-files/records';
@@ -59,6 +59,19 @@ function client(fail: 'names' | 'insert' | null = null) {
   return { supabase, written };
 }
 describe('finished stat build event writing', () => {
+  it('reports a qualifying game whose source team is missing', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const f = client();
+      const rows = new Map(rowsBySeason);
+      rows.set(2026, [{ ...row('1', 2026, 100), team: null }]);
+      await writeStatEvents(f.supabase, { ...args, rowsBySeason: rows });
+      expect(f.written).toEqual([]);
+      expect(warning).toHaveBeenCalledWith('team events: missing source team: 1/2026/1');
+    } finally {
+      warning.mockRestore();
+    }
+  });
   it('writes good weeks when there are no Big moments', async () => {
     const f = client();
     expect(await writeStatEvents(f.supabase, args)).toBe(1);

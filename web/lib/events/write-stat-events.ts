@@ -56,6 +56,16 @@ export async function writeStatEvents(
           Number.isFinite(row.stats[stat]) && (row.stats[stat] ?? 0) >= GOOD_WEEK_THRESHOLDS[stat]
       )
   );
+  for (const row of goodRows) {
+    if (
+      !row.team &&
+      RECORD_STATS.some(
+        (stat) =>
+          Number.isFinite(row.stats[stat]) && (row.stats[stat] ?? 0) >= GOOD_WEEK_THRESHOLDS[stat]
+      )
+    )
+      console.warn(`team events: missing source team: ${row.player_id}/${row.season}/${row.week}`);
+  }
   const ids = [
     ...new Set([
       ...moments.map((moment) => moment.playerId),
