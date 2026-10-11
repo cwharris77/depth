@@ -77,7 +77,17 @@ struct ContentView: View {
         .sheet(item: $promptEvent, onDismiss: { bigMomentPrompt.decline() }) { event in
             BigMomentPromptSheet(
                 event: event,
-                onAccept: { Task { await bigMomentPrompt.accept() } },
+                onAccept: {
+                    Task {
+                        await bigMomentPrompt.accept()
+                        // Notifications are about the favorite team, so the team the
+                        // prompt was about becomes it when there is none yet.
+                        let settings = DepthEnvironment.userSettingsStore
+                        if settings.favoriteTeamId == nil, settings.canHoldFavorite {
+                            settings.selectTeam(event.teamId)
+                        }
+                    }
+                },
                 onDecline: { bigMomentPrompt.decline() }
             )
             .modifier(UITestingDynamicTypeOverride())

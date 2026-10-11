@@ -167,12 +167,17 @@ enum DepthEnvironment {
     }()
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)
     /// Shared favorite/start-on-favorite state. Backed by the user_settings row
-    /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale
-    /// favorite never applies after a sign-out.
+    /// (RLS-scoped to auth.uid()) and, while notifications are available, kept on the
+    /// device too. The notification team follows it.
     @MainActor static let userSettingsStore: UserSettingsStore = {
         let remote: (any UserSettingsServicing)? = SupabaseUserSettingsService(
             client: supabaseClient)
-        return UserSettingsStore(remote: remote, sessionStore: authSessionStore)
+        return UserSettingsStore(
+            remote: remote, sessionStore: authSessionStore, preferences: preferences,
+            keepsOnDevice: { featureFlags.isEnabled(.proactiveNotifications) },
+            onFavoriteChange: { favorite in
+                Task { await notificationSettings.followFavorite(favorite) }
+            })
     }()
     /// The current team's accent, published by DepthChartsTab and read by the root tab
     /// bar for its `.tint` — app chrome adopts the team color via TeamSurfaces.ring.

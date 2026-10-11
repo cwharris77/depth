@@ -120,6 +120,15 @@ extension XCUIElement {
     /// built-in "wait until a property changes" API for plain string properties (only for
     /// status/hittable-style predicates), so this is a short manual retry loop.
     @discardableResult
+    func waitForSelected(timeout: TimeInterval = 10) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if exists, isSelected { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        return exists && isSelected
+    }
+
     func waitForLabel(containing substring: String, timeout: TimeInterval = 10) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {

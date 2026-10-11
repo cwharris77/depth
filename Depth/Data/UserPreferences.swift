@@ -22,6 +22,9 @@ struct UserPreferences: Sendable {
         static let lastSyncedRegistration = "preferences.lastSyncedRegistration"
         static let hasFinishedFirstSession = "preferences.hasFinishedFirstSession"
         static let bigMomentPromptShown = "preferences.bigMomentPromptShown"
+        static let favoriteTeamId = "preferences.favoriteTeamId"
+        static let startOnFavorite = "preferences.startOnFavorite"
+        static let lastActiveNotificationTier = "preferences.lastActiveNotificationTier"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -38,6 +41,29 @@ struct UserPreferences: Sendable {
         nonmutating set { defaults.set(newValue?.rawValue, forKey: Key.lastUnit) }
     }
 
+    /// The favorite team kept on this device, so it exists without an account.
+    var favoriteTeamId: String? {
+        get { defaults.string(forKey: Key.favoriteTeamId) }
+        nonmutating set { defaults.set(newValue, forKey: Key.favoriteTeamId) }
+    }
+
+    /// Whether the app opens on the favorite team. Absent means on.
+    var startOnFavorite: Bool {
+        get { defaults.object(forKey: Key.startOnFavorite) as? Bool ?? true }
+        nonmutating set { defaults.set(newValue, forKey: Key.startOnFavorite) }
+    }
+
+    /// The level notifications were last on at, restored when they are turned back on.
+    var lastActiveNotificationTier: NotificationTier? {
+        get {
+            defaults.string(forKey: Key.lastActiveNotificationTier)
+                .flatMap(NotificationTier.init(rawValue:))
+        }
+        nonmutating set {
+            defaults.set(newValue?.rawValue, forKey: Key.lastActiveNotificationTier)
+        }
+    }
+
     /// The chosen notification level. Absent means the default, Big moments.
     var notificationTier: NotificationTier {
         get {
@@ -47,8 +73,8 @@ struct UserPreferences: Sendable {
         nonmutating set { defaults.set(newValue.rawValue, forKey: Key.notificationTier) }
     }
 
-    /// The team this device is notified about. Set when the user opts in and changed only
-    /// from the notification control; it does not follow the team being viewed.
+    /// The team this device is notified about. It follows the favorite team, not the
+    /// team being viewed.
     var notificationTeamId: String? {
         get { defaults.string(forKey: Key.notificationTeamId) }
         nonmutating set { defaults.set(newValue, forKey: Key.notificationTeamId) }
@@ -84,6 +110,7 @@ struct UserPreferences: Sendable {
         for key in [
             Key.notificationTier, Key.notificationTeamId, Key.pushToken,
             Key.lastSyncedRegistration, Key.bigMomentPromptShown,
+            Key.lastActiveNotificationTier,
         ] {
             defaults.removeObject(forKey: key)
         }

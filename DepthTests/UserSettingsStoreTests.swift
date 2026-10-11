@@ -164,3 +164,98 @@ private struct StubAuthService: DepthAuthServicing {
     #expect(store.startOnFavorite == false)
     #expect(store.isLoading == false)
 }
+
+// MARK: - Kept on the device
+
+private func isolatedPreferences() throws -> UserPreferences {
+    let suite = "UserSettingsStoreTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defaults.removePersistentDomain(forName: suite)
+    return UserPreferences(defaults: defaults)
+}
+
+@Test @MainActor func aSignedOutFavoriteIsKeptOnTheDevice() async throws {
+    let preferences = try isolatedPreferences()
+    let service = RecordingSettingsService()
+    let session = await settledSession(user: nil)
+    let store = UserSettingsStore(
+        remote: service, sessionStore: session, preferences: preferences,
+        keepsOnDevice: { true })
+    #expect(store.canHoldFavorite)
+
+    store.selectTeam("bills")
+    store.setStartOnFavorite(false)
+    await store.awaitPendingWrites()
+    #expect(await service.recordedPatches().isEmpty)
+
+    let relaunched = UserSettingsStore(
+        remote: service, sessionStore: session, preferences: preferences,
+        keepsOnDevice: { true })
+    #expect(relaunched.favoriteTeamId == "bills")
+    #expect(!relaunched.startOnFavorite)
+    await relaunched.load()
+    #expect(relaunched.favoriteTeamId == "bills")
+}
+
+@Test @MainActor func nothingIsKeptOnTheDeviceWhileThatIsOff() async throws {
+    let preferences = try isolatedPreferences()
+    preferences.favoriteTeamId = "bills"
+    let session = await settledSession(user: nil)
+    let store = UserSettingsStore(
+        remote: RecordingSettingsService(), sessionStore: session, preferences: preferences)
+    #expect(store.favoriteTeamId == nil)
+    #expect(!store.canHoldFavorite)
+    store.selectTeam("dolphins")
+    #expect(preferences.favoriteTeamId == "bills")
+}
+
+@Test @MainActor func signingInToAnAccountWithoutAFavoriteGivesItTheDevices() async throws {
+    let preferences = try isolatedPreferences()
+    preferences.favoriteTeamId = "bills"
+    preferences.startOnFavorite = false
+    let service = RecordingSettingsService()
+    let store = UserSettingsStore(
+        remote: service, sessionStore: await settledSession(), preferences: preferences,
+        keepsOnDevice: { true })
+
+    await store.load()
+    await store.awaitPendingWrites()
+
+    #expect(store.favoriteTeamId == "bills")
+    #expect(await service.recordedPatches() == [.favorite("bills", startOnFavorite: false)])
+}
+
+@Test @MainActor func theAccountsFavoriteReplacesTheDevices() async throws {
+    let preferences = try isolatedPreferences()
+    preferences.favoriteTeamId = "bills"
+    let service = RecordingSettingsService()
+    await service.store(favorite: "dolphins", startOnFavorite: false)
+    let store = UserSettingsStore(
+        remote: service, sessionStore: await settledSession(), preferences: preferences,
+        keepsOnDevice: { true })
+
+    await store.load()
+    await store.awaitPendingWrites()
+
+    #expect(store.favoriteTeamId == "dolphins")
+    #expect(preferences.favoriteTeamId == "dolphins")
+    #expect(!preferences.startOnFavorite)
+    #expect(await service.recordedPatches().isEmpty)
+}
+
+@Test @MainActor func theFavoriteIsAnnouncedWhenKnownSetAndCleared() async throws {
+    let preferences = try isolatedPreferences()
+    preferences.favoriteTeamId = "bills"
+    var announced: [String?] = []
+    let store = UserSettingsStore(
+        remote: RecordingSettingsService(), sessionStore: await settledSession(user: nil),
+        preferences: preferences, keepsOnDevice: { true },
+        onFavoriteChange: { announced.append($0) })
+
+    await store.load()
+    store.selectTeam("bills")
+    store.selectTeam("dolphins")
+    store.selectTeam(nil)
+
+    #expect(announced == ["bills", "dolphins", nil])
+}

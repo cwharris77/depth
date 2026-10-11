@@ -1,25 +1,22 @@
 import Foundation
 import Observation
 
-// Favorite-team + start-on-favorite state for the Settings sheet and startup resolution
-// mirroring web's AccountView favorite controls (web/components/AccountView.tsx):
+// Favorite-team + start-on-favorite state for Settings and startup resolution.
 //
-//   - load() fetches the signed-in user's settings row (missing row → defaults). It is a
-//     no-op while signed out — the row is account-gated by RLS, so there is nothing to
-//     read — which is also what keeps a stale favorite from ever applying after a
-//     sign-out (the store never persists to disk; it is server-backed only).
-//   - selectTeam() writes the favorite optimistically to local state, then fire-and-
-//     forgets the server mirror. Setting a favorite for the *first* time opts into
-//     start-on-favorite, exactly like web's changeFavorite (`if (next && !prev) {
-//     setStartOnFavorite(true); putSettings({favoriteTeamId, startOnFavorite: true}) }`).
-//   - setStartOnFavorite() writes just the toggle, the same single-field partial upsert
-//     as web's `putSettings({ startOnFavorite: next })`.
+//   - While it is kept on the device, the favorite is read from UserPreferences at
+//     launch and exists without an account. Otherwise it lives only on the signed-in
+//     user's settings row and there is none while signed out.
+//   - load() fetches the signed-in user's settings row. The account's favorite replaces
+//     the device's; an account without one takes the device's. Signed out it reads
+//     nothing: the row is account-gated by RLS.
+//   - selectTeam() writes the favorite to local state first, then mirrors it to the
+//     server without waiting. Setting a favorite for the first time opts into
+//     start-on-favorite.
+//   - setStartOnFavorite() writes just the toggle, as a single-field partial upsert.
 //
-// The optimistic local value renders immediately (selectTeam flips state before awaiting
-// the server), and the startup resolver reads the same store — so a favorite picked this
-// session already wins the next DepthChartsTab resolution, and a server write that fails
-// surfaces as a non-fatal hint under the settings card, exactly web's fire-and-forget
-// putSettings.
+// The local value renders immediately and the startup resolver reads the same store, so
+// a favorite picked this session already wins the next resolution. A server write that
+// fails surfaces as a non-fatal hint in Settings.
 @Observable
 @MainActor
 final class UserSettingsStore {
@@ -39,15 +36,38 @@ final class UserSettingsStore {
     /// Server sink; consulted only while signed in (RLS-gated row — a signed-out write
     /// could never succeed, and web's `if (user)` guard skips it entirely).
     private let remote: (any UserSettingsServicing)?
-    /// The live session; remote access is gated on this so a stale favorite never
-    /// survives a sign-out (the store itself is ephemeral — server-backed only, never
-    /// persisted to disk).
+    /// The live session; remote access is gated on this.
     private let sessionStore: AuthSessionStore
+    /// Where the favorite is kept on the device, and whether it is kept there at all.
+    /// While it is, the favorite exists without an account and survives a sign-out.
+    private let preferences: UserPreferences?
+    private let keepsOnDevice: @MainActor () -> Bool
+    /// Told the favorite whenever it is set, cleared or first known.
+    private let onFavoriteChange: (@MainActor (String?) -> Void)?
 
-    init(remote: (any UserSettingsServicing)?, sessionStore: AuthSessionStore) {
+    init(
+        remote: (any UserSettingsServicing)?,
+        sessionStore: AuthSessionStore,
+        preferences: UserPreferences? = nil,
+        keepsOnDevice: @escaping @MainActor () -> Bool = { false },
+        onFavoriteChange: (@MainActor (String?) -> Void)? = nil
+    ) {
         self.remote = remote
         self.sessionStore = sessionStore
+        self.preferences = preferences
+        self.keepsOnDevice = keepsOnDevice
+        self.onFavoriteChange = onFavoriteChange
+        if let device {
+            favoriteTeamId = device.favoriteTeamId
+            startOnFavorite = device.startOnFavorite
+        }
     }
+
+    /// The device copy, while the favorite is kept on the device.
+    private var device: UserPreferences? { keepsOnDevice() ? preferences : nil }
+
+    /// True when a favorite can be held: on the device, or on a signed-in account.
+    var canHoldFavorite: Bool { device != nil || isSignedIn }
 
     /// True while there is a signed-in user whose row is readable/writable.
     private var isSignedIn: Bool {
@@ -66,11 +86,21 @@ final class UserSettingsStore {
         // the wait when signed out: `user` is nil for the whole restore window, so
         // "signed out" is not knowable until this returns.
         await sessionStore.waitForRestore()
+        // A favorite already known, from the device, is announced whatever the account
+        // read below comes to.
+        defer { if let favoriteTeamId { onFavoriteChange?(favoriteTeamId) } }
         guard isSignedIn else { return }
         do {
             let settings = try await remote.settings()
+            if device != nil, settings.favoriteTeamId == nil, let local = favoriteTeamId {
+                // The account has no favorite yet, so it takes the device's.
+                mirror(.favorite(local, startOnFavorite: startOnFavorite))
+                return
+            }
             favoriteTeamId = settings.favoriteTeamId
             startOnFavorite = settings.startOnFavorite
+            device?.favoriteTeamId = settings.favoriteTeamId
+            device?.startOnFavorite = settings.startOnFavorite
         } catch {
             // Best-effort: keep the current (or default) values rather than blanking the
             // controls when the read fails (offline, auth hiccup) — the sheet opens on
@@ -83,6 +113,8 @@ final class UserSettingsStore {
         let previous = favoriteTeamId
         favoriteTeamId = id
         updateError = nil
+        device?.favoriteTeamId = id
+        if previous != id { onFavoriteChange?(id) }
 
         guard let id else {
             // Clears the favorite. startOnFavorite stays whatever it was — the toggle
@@ -94,6 +126,7 @@ final class UserSettingsStore {
             // First favorite ever set opts into open-at-startup (web parity: the one
             // two-field body web sends).
             startOnFavorite = true
+            device?.startOnFavorite = true
             mirror(.favorite(id, startOnFavorite: true))
         } else {
             mirror(.favorite(id))
@@ -103,6 +136,7 @@ final class UserSettingsStore {
     func setStartOnFavorite(_ on: Bool) {
         startOnFavorite = on
         updateError = nil
+        device?.startOnFavorite = on
         mirror(.startOnFavorite(on))
     }
 

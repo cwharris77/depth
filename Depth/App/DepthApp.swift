@@ -21,6 +21,8 @@ struct DepthApp: App {
         if ProcessInfo.processInfo.arguments.contains("UI_TESTING_RESET_STATE") {
             DepthEnvironment.preferences.lastTeamId = nil
             DepthEnvironment.preferences.lastUnit = nil
+            DepthEnvironment.preferences.favoriteTeamId = nil
+            DepthEnvironment.preferences.startOnFavorite = true
             for teamId in DepthEnvironment.preferences.allOverrides().keys {
                 DepthEnvironment.preferences.clearTeamOverride(teamId: teamId)
             }
@@ -82,6 +84,15 @@ struct DepthApp: App {
             // that covers it starts as a returning user.
             if DepthEnvironment.isBigMomentPromptRequested {
                 DepthEnvironment.preferences.hasFinishedFirstSession = true
+            }
+
+            // UI_TESTING_FAVORITE_TEAM=<id> starts with a favorite team already on the
+            // device, as if it had been picked in an earlier session.
+            if let favoriteArgument = ProcessInfo.processInfo.arguments.first(where: {
+                $0.hasPrefix("UI_TESTING_FAVORITE_TEAM=")
+            }) {
+                DepthEnvironment.preferences.favoriteTeamId = String(
+                    favoriteArgument.dropFirst("UI_TESTING_FAVORITE_TEAM=".count))
             }
 
             // UI_TESTING_ROUTE_TEAM=<id> asks for a team's depth chart here, before any

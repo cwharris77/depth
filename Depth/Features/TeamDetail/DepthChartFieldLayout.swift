@@ -36,6 +36,15 @@ enum FieldNameMode: String, CaseIterable, Identifiable, Sendable {
         case .off: return "No Names"
         }
     }
+
+    /// What the mode does, for the place it is chosen.
+    var summary: String {
+        switch self {
+        case .callouts: return "Every name stays on screen when the field gets crowded."
+        case .inlineOnly: return "Easiest to read. A name with no room is left off."
+        case .off: return "Jersey numbers and positions only."
+        }
+    }
 }
 
 /// Maps the shared charted coordinate space onto the card in real yards.

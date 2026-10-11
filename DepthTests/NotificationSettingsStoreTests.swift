@@ -162,8 +162,8 @@ private func makeStore(
     await store.setTier(.everything, candidateTeamId: "bills")
 
     #expect(await service.registrations.map(\.tier) == [.bigMoments, .everything])
-    // An explicit team is never replaced by the candidate.
-    #expect(await service.registrations.last?.teamId == "seahawks")
+    // The team named with the choice is the one notified about.
+    #expect(await service.registrations.last?.teamId == "bills")
 }
 
 @MainActor @Test func anUnchangedRegistrationIsNotSentAgain() async throws {
@@ -297,12 +297,58 @@ private func makeStore(
     #expect(store.tier == .bigMoments)
 }
 
-@MainActor @Test func enablingLeavesAnAlreadyChosenTeamAlone() async throws {
+@MainActor @Test func enablingMovesToTheTeamItIsGiven() async throws {
     let store = try makeStore(authorizer: FakeAuthorizer(.authorized))
     await store.setTeam("seahawks")
 
     #expect(await store.enable(teamId: "bills"))
-    #expect(store.teamId == "seahawks")
+    #expect(store.teamId == "bills")
+}
+
+@MainActor @Test func aNewFavoriteMovesTheRegistrationToIt() async throws {
+    let service = RecordingSubscriptionService()
+    let store = try makeStore(authorizer: FakeAuthorizer(.authorized), service: service)
+    await store.setTeam("seahawks")
+    await store.handleDeviceToken(token)
+
+    await store.followFavorite("bills")
+    await store.followFavorite("bills")
+
+    #expect(store.teamId == "bills")
+    #expect(await service.registrations.map(\.teamId) == ["seahawks", "bills"])
+}
+
+@MainActor @Test func losingTheFavoriteTurnsNotificationsOff() async throws {
+    let service = RecordingSubscriptionService()
+    let store = try makeStore(authorizer: FakeAuthorizer(.authorized), service: service)
+    await store.setTeam("seahawks")
+    await store.handleDeviceToken(token)
+
+    await store.followFavorite(nil)
+
+    #expect(!store.isOn)
+    #expect(await service.registrations.last?.tier == .off)
+}
+
+@MainActor @Test func turningBackOnRestoresTheLastLevel() async throws {
+    let store = try makeStore(authorizer: FakeAuthorizer(.authorized))
+    await store.setTier(.everything, candidateTeamId: "bills")
+
+    await store.setOn(false, teamId: "bills")
+    #expect(store.tier == .off)
+    await store.setOn(true, teamId: "bills")
+    #expect(store.tier == .everything)
+}
+
+@MainActor @Test func turningOnForTheFirstTimeChoosesBigMoments() async throws {
+    let preferences = try isolatedPreferences()
+    preferences.notificationTier = .off
+    let store = try makeStore(authorizer: FakeAuthorizer(.authorized), preferences: preferences)
+
+    await store.setOn(true, teamId: "bills")
+
+    #expect(store.tier == .bigMoments)
+    #expect(store.teamId == "bills")
 }
 
 @MainActor @Test func turningOffEverythingBeforeAnyRefreshSendsBigMoments() async throws {
