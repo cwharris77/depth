@@ -7,18 +7,6 @@ import UIKit
 // ContentView's root via `.coachmarkOverlay`, which resolves every `.coachmarkAnchor`
 // tag anywhere in the tree into a screen rect and hands it here alongside the root's own
 // GeometryProxy.
-//
-// `.bottomTabs` has no tracked target — SwiftUI's TabView doesn't expose a per-tab frame
-// through the public API — so that step's rect is computed directly from the overlay's
-// GeometryProxy (a fixed band at the screen's bottom) instead of a lookup.
-//
-// The proxy here comes from `.coachmarkOverlay`'s `GeometryReader`, which wraps
-// `RootTabView` — and measured directly, `proxy.size` is the TabView's *content* area,
-// already shrunk to exclude the floating tab bar's own reserved band (iOS 26: ~96pt on
-// an iPhone 17 Pro) rather than the full screen. `.bottomTabs`' band starts exactly
-// where that reservation begins (`proxy.size.height`) and runs to the screen's real
-// bottom edge, which `proxy` itself can't report (its own frame stops short of it) — so
-// this step alone reads `UIScreen.main.bounds` for that one number.
 struct CoachmarkOverlayView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -31,29 +19,15 @@ struct CoachmarkOverlayView: View {
     /// *below* a target requires knowing its own height; a fixed clearance can undershoot
     /// for taller bubbles and
     /// the bubble ends up overlapping the very target it's introducing (measured
-    /// directly on the `.teamPill` step). Defaults to a plausible size so the first frame
+    /// directly). Defaults to a plausible size so the first frame
     /// (before the `GeometryReader` below reports the real one) is already close.
     @State private var bubbleSize = CGSize(width: 320, height: 200)
 
     private var targetRect: CGRect? {
-        guard let step = controller.currentStep else { return nil }
-        switch step.id {
-        case .bottomTabs:
-            let screenHeight = UIScreen.main.bounds.height
-            let barTop = proxy.size.height
-            return CGRect(
-                x: 0, y: barTop,
-                width: proxy.size.width, height: max(screenHeight - barTop, 49)
-            )
-        default:
-            return anchors[step.id]
-        }
+        controller.currentStep.flatMap { anchors[$0.id] }
     }
 
-    private var hasTarget: Bool {
-        guard let step = controller.currentStep else { return false }
-        return step.id == .bottomTabs || anchors[step.id] != nil
-    }
+    private var hasTarget: Bool { targetRect != nil }
 
     var body: some View {
         if let step = controller.currentStep {

@@ -128,10 +128,8 @@ struct DepthApp: App {
         if ProcessInfo.processInfo.arguments.contains("UI_TESTING_APPSTORE_SCREENSHOTS") {
             DepthEnvironment.preferences.lastTeamId = nil
             DepthEnvironment.preferences.lastUnit = nil
-            // Without this, the first coachmark step (.teamPill, "Tap here to jump to
-            // any of the 32 teams' depth charts") sits on top of team-switcher-button
-            // on a genuinely first launch and swallows the test's tap on it — the tap
-            // dismisses the coachmark instead of opening the switcher sheet, so the
+            // Without this, the welcome screen and its tour sit on top of the app on a
+            // genuinely first launch and swallow the test's taps, so the
             // search field the test waits on next never appears. UI_TESTING_RESET_STATE
             // already avoids this (line ~30); this block needs the same call.
             DepthEnvironment.preferences.markOnboardingSeen()

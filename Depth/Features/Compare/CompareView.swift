@@ -195,7 +195,6 @@ struct CompareView: View {
 
                 tabContent
                     .id(viewModel.tab)
-                    .coachmarkAnchor(.compareContent)
                     .transition(.opacity)
                     .animation(
                         DesignTokens.Motion.selection.respectingReduceMotion(reduceMotion),
@@ -281,7 +280,6 @@ struct CompareView: View {
                 .accessibilityHidden(true)
             teamSlotButton(viewModel.teamB, slot: .b)
         }
-        .coachmarkAnchor(.compareTeams)
     }
 
     @ViewBuilder

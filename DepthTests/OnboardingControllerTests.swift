@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import Depth
 
 @MainActor
@@ -10,6 +11,21 @@ struct OnboardingControllerTests {
         return UserPreferences(defaults: defaults)
     }
 
+    /// Setup steps whose answers a test can change as the flow goes on.
+    @MainActor
+    private final class SetupState {
+        var isAvailable = true
+        var hasFavoriteTeam = false
+        var canAskForNotifications = true
+
+        var setup: OnboardingSetup {
+            OnboardingSetup(
+                isAvailable: { self.isAvailable },
+                hasFavoriteTeam: { self.hasFavoriteTeam },
+                canAskForNotifications: { self.canAskForNotifications })
+        }
+    }
+
     @Test func isIdleOnlyWhileNoWelcomeOrCoachmarkIsUp() {
         let controller = OnboardingController(preferences: freshPreferences())
         #expect(controller.isIdle)
@@ -18,7 +34,7 @@ struct OnboardingControllerTests {
         #expect(controller.phase == .welcome)
         #expect(controller.isIdle == false)
 
-        controller.beginCoachmarks()
+        controller.continueFromWelcome()
         #expect(controller.activeTutorial != nil)
         #expect(controller.isIdle == false)
 
@@ -40,136 +56,190 @@ struct OnboardingControllerTests {
         #expect(laterLaunch.currentStep == nil)
     }
 
-    @Test func completeTourRunsRosterScheduleCompareAndPersistsAllPages() {
+    @Test func theWelcomeTourIsTheTwoRosterStepsAndNothingElse() {
         let preferences = freshPreferences()
         let controller = OnboardingController(preferences: preferences)
         controller.startIfNeeded()
-        controller.beginCoachmarks()
+        controller.continueFromWelcome()
 
         #expect(controller.activeTutorial == .roster)
-        #expect(controller.currentStep?.id == .teamPill)
-        for _ in CoachmarkStep.roster.indices { controller.advance() }
+        #expect(controller.currentStep?.id == .playerDot)
+        #expect(controller.stepNumber == 1)
+        #expect(controller.totalStepCount == 2)
+        controller.advance()
+        #expect(controller.currentStep?.id == .overflowMenu)
+        #expect(controller.isLastStep)
+        controller.advance()
 
-        #expect(controller.activeTutorial == .schedule)
-        #expect(controller.activeTab == .depthCharts)
-        for _ in CoachmarkStep.schedule.indices { controller.advance() }
-
-        #expect(controller.activeTutorial == .compare)
-        #expect(controller.activeTab == .compare)
-        for _ in CoachmarkStep.compare.indices { controller.advance() }
-
-        #expect(controller.phase == .hidden)
+        #expect(controller.isIdle)
         #expect(preferences.hasSeenOnboarding)
-        #expect(TutorialID.allCases.allSatisfy { preferences.hasSeenTutorial($0.id) })
+        #expect(preferences.hasSeenTutorial(TutorialID.roster.id))
+        // The other pages keep their hint for the first visit.
+        #expect(!preferences.hasSeenTutorial(TutorialID.schedule.id))
+        #expect(!preferences.hasSeenTutorial(TutorialID.compare.id))
     }
 
-    @Test func skippingCompleteTourSuppressesEveryPageTutorial() {
+    @Test func aPageHintShowsOnItsFirstVisitAfterTheTour() {
         let preferences = freshPreferences()
         let controller = OnboardingController(preferences: preferences)
         controller.startIfNeeded()
-        controller.beginCoachmarks()
+        controller.continueFromWelcome()
         controller.advance()
-        controller.skipCoachmarks()
+        controller.advance()
 
-        #expect(TutorialID.allCases.allSatisfy { preferences.hasSeenTutorial($0.id) })
-        controller.pageDidAppear(.schedule)
-        #expect(controller.phase == .hidden)
+        controller.pageDidAppear(.compare)
+        #expect(controller.activeTutorial == .compare)
+        #expect(controller.currentStep?.id == .compareSwitcher)
+        #expect(controller.totalStepCount == 1)
+        controller.advance()
+        #expect(controller.isIdle)
+
+        controller.pageDidAppear(.compare)
+        #expect(controller.isIdle)
     }
 
-    @Test func skippingWelcomeSuppressesEveryPageTutorial() {
+    @Test func aPageHintDoesNotInterruptTheWelcomeTour() {
+        let controller = OnboardingController(preferences: freshPreferences())
+        controller.startIfNeeded()
+        controller.pageDidAppear(.schedule)
+        #expect(controller.phase == .welcome)
+        controller.continueFromWelcome()
+        controller.pageDidAppear(.schedule)
+        #expect(controller.activeTutorial == .roster)
+    }
+
+    @Test func skippingTheWelcomeTourSuppressesEveryPageHint() {
+        let preferences = freshPreferences()
+        let controller = OnboardingController(preferences: preferences)
+        controller.startIfNeeded()
+        controller.continueFromWelcome()
+        controller.skipCoachmarks()
+
+        #expect(preferences.hasSeenOnboarding)
+        for tutorial in TutorialID.allCases {
+            #expect(preferences.hasSeenTutorial(tutorial.id))
+        }
+        controller.pageDidAppear(.schedule)
+        #expect(controller.isIdle)
+    }
+
+    @Test func skippingWelcomeSuppressesEveryPageHint() {
         let preferences = freshPreferences()
         let controller = OnboardingController(preferences: preferences)
         controller.startIfNeeded()
         controller.skipWelcome()
 
-        #expect(TutorialID.allCases.allSatisfy { preferences.hasSeenTutorial($0.id) })
-        controller.pageDidAppear(.compare)
-        #expect(controller.phase == .hidden)
+        #expect(controller.isIdle)
+        #expect(preferences.hasSeenOnboarding)
+        for tutorial in TutorialID.allCases {
+            #expect(preferences.hasSeenTutorial(tutorial.id))
+        }
     }
 
-    @Test func legacyOnboardingUsersCanSeeAndPersistPageTutorials() {
+    @Test func usersFromBeforePageHintsStillSeeThemOnce() {
         let preferences = freshPreferences()
         preferences.markOnboardingSeen()
         let controller = OnboardingController(preferences: preferences)
         controller.startIfNeeded()
         #expect(preferences.hasSeenTutorial(TutorialID.roster.id))
+
+        controller.pageDidAppear(.roster)
+        #expect(controller.isIdle)
         controller.pageDidAppear(.schedule)
-
         #expect(controller.activeTutorial == .schedule)
-        #expect(controller.currentStep?.id == .scheduleGame)
-        controller.advance()
-        #expect(preferences.hasSeenTutorial(TutorialID.schedule.id))
-
-        let nextLaunch = OnboardingController(preferences: preferences)
-        nextLaunch.startIfNeeded()
-        nextLaunch.pageDidAppear(.schedule)
-        #expect(nextLaunch.phase == .hidden)
-
-        nextLaunch.pageDidAppear(.compare)
-        #expect(nextLaunch.activeTutorial == .compare)
-        #expect(nextLaunch.stepNumber == 1)
-        #expect(nextLaunch.totalStepCount == 3)
-        #expect(nextLaunch.isLastStep == false)
-        nextLaunch.advance()
-        nextLaunch.advance()
-        #expect(nextLaunch.isLastStep)
-    }
-
-    @Test func skippingPageTutorialMarksOnlyThatPageSeen() {
-        let preferences = freshPreferences()
-        preferences.markOnboardingSeen()
-        let controller = OnboardingController(preferences: preferences)
-        controller.startIfNeeded()
-        controller.pageDidAppear(.compare)
         controller.skipCoachmarks()
-
-        #expect(preferences.hasSeenTutorial(TutorialID.compare.id))
-        #expect(!preferences.hasSeenTutorial(TutorialID.schedule.id))
-        #expect(controller.phase == .hidden)
-    }
-
-    @Test func replayStartsTheCompleteTour() {
-        let preferences = freshPreferences()
-        preferences.markOnboardingSeen()
-        let controller = OnboardingController(preferences: preferences)
-        controller.replay()
-        controller.beginCoachmarks()
-
-        #expect(controller.activeTutorial == .roster)
-        #expect(controller.totalStepCount == 8)
-    }
-
-    @Test func replayFromScheduleRequestsRosterPageBeforeShowingTour() {
-        let controller = OnboardingController(preferences: freshPreferences())
-        controller.replay()
-
-        #expect(controller.activeTab == .depthCharts)
-        #expect(controller.requestedTeamPage == .roster)
-        #expect(controller.teamPageRouteToken == 1)
-        #expect(controller.consumeTeamPageRequest() == .roster)
-        #expect(controller.consumeTeamPageRequest() == nil)
-
-        controller.beginCoachmarks()
-        #expect(controller.activeTutorial == .roster)
-        #expect(controller.requestedTeamPage == .roster)
+        #expect(preferences.hasSeenTutorial(TutorialID.schedule.id))
+        #expect(!preferences.hasSeenTutorial(TutorialID.compare.id))
     }
 
     @Test func pageAppearanceBeforeLaunchGateDoesNotRaceWelcome() {
         let controller = OnboardingController(preferences: freshPreferences())
-        controller.pageDidAppear(.compare)
-        #expect(controller.phase == .hidden)
-        controller.startIfNeeded()
-        #expect(controller.phase == .welcome)
+        controller.pageDidAppear(.roster)
+        #expect(controller.isIdle)
     }
 
-    @Test func legacyPageVisitAfterLaunchGateCanStart() {
+    @Test func replayGoesStraightToTheTourAndBringsPageHintsBack() {
         let preferences = freshPreferences()
         preferences.markOnboardingSeen()
-        let controller = OnboardingController(preferences: preferences)
-        controller.pageDidAppear(.compare)
+        preferences.markAllTutorialsSeen()
+        let state = SetupState()
+        let controller = OnboardingController(preferences: preferences, setup: state.setup)
         controller.startIfNeeded()
-        controller.pageDidAppear(.compare)
 
-        #expect(controller.activeTutorial == .compare)
+        controller.replay()
+        #expect(controller.phase == .welcome)
+        #expect(!controller.offersSetup)
+        #expect(controller.consumeTeamPageRequest() == .roster)
+        controller.continueFromWelcome()
+        #expect(controller.activeTutorial == .roster)
+        controller.advance()
+        controller.advance()
+
+        controller.pageDidAppear(.schedule)
+        #expect(controller.activeTutorial == .schedule)
+    }
+
+    // MARK: - Setup steps
+
+    @Test func firstRunAsksForATeamThenNotificationsThenTours() {
+        let state = SetupState()
+        let controller = OnboardingController(preferences: freshPreferences(), setup: state.setup)
+        controller.startIfNeeded()
+        #expect(controller.offersSetup)
+
+        controller.continueFromWelcome()
+        #expect(controller.phase == .pickTeam)
+        #expect(controller.phase.isFullScreen)
+        #expect(!controller.isIdle)
+
+        state.hasFavoriteTeam = true
+        controller.continueFromTeam()
+        #expect(controller.phase == .notifications)
+
+        controller.continueFromNotifications()
+        #expect(controller.activeTutorial == .roster)
+        #expect(controller.phase == .coachmark(0))
+    }
+
+    @Test func skippingTheTeamSkipsNotificationsToo() {
+        let state = SetupState()
+        let controller = OnboardingController(preferences: freshPreferences(), setup: state.setup)
+        controller.startIfNeeded()
+        controller.continueFromWelcome()
+
+        controller.continueFromTeam()
+        #expect(controller.phase == .coachmark(0))
+    }
+
+    @Test func aKnownFavoriteSkipsTheTeamStep() {
+        let state = SetupState()
+        state.hasFavoriteTeam = true
+        let controller = OnboardingController(preferences: freshPreferences(), setup: state.setup)
+        controller.startIfNeeded()
+
+        controller.continueFromWelcome()
+        #expect(controller.phase == .notifications)
+    }
+
+    @Test func anAnsweredPermissionSkipsTheNotificationStep() {
+        let state = SetupState()
+        state.hasFavoriteTeam = true
+        state.canAskForNotifications = false
+        let controller = OnboardingController(preferences: freshPreferences(), setup: state.setup)
+        controller.startIfNeeded()
+
+        controller.continueFromWelcome()
+        #expect(controller.phase == .coachmark(0))
+    }
+
+    @Test func withoutTheSetupStepsWelcomeLeadsToTheTour() {
+        let state = SetupState()
+        state.isAvailable = false
+        let controller = OnboardingController(preferences: freshPreferences(), setup: state.setup)
+        controller.startIfNeeded()
+        #expect(!controller.offersSetup)
+
+        controller.continueFromWelcome()
+        #expect(controller.phase == .coachmark(0))
     }
 }

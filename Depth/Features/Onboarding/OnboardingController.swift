@@ -21,13 +21,33 @@ enum TutorialTeamPage: Equatable {
     case schedule
 }
 
+/// What the first run needs to know to offer its two setup steps, picking a team and
+/// turning on notifications about it. The defaults offer neither.
+struct OnboardingSetup {
+    /// Whether the setup steps exist at all.
+    var isAvailable: @MainActor () -> Bool = { false }
+    var hasFavoriteTeam: @MainActor () -> Bool = { false }
+    /// True while the system has never been asked for notification permission.
+    var canAskForNotifications: @MainActor () -> Bool = { false }
+}
+
 @MainActor
 @Observable
 final class OnboardingController {
     enum Phase: Equatable {
         case hidden
         case welcome
+        case pickTeam
+        case notifications
         case coachmark(Int)
+
+        /// The full-screen steps shown before the app itself.
+        var isFullScreen: Bool {
+            switch self {
+            case .welcome, .pickTeam, .notifications: true
+            case .hidden, .coachmark: false
+            }
+        }
     }
 
     private(set) var phase: Phase = .hidden
@@ -37,11 +57,18 @@ final class OnboardingController {
     var activeTab: RootTab = .depthCharts
 
     private let preferences: UserPreferences
-    private var isCompleteTour = false
+    private let setup: OnboardingSetup
+    /// True from the welcome screen until the tour it leads to ends. Skipping during it
+    /// turns off every page's hints, not just the one on screen.
+    private var isWelcomeTour = false
+    /// True when the welcome screen was reopened from Settings, which goes straight to
+    /// the tour.
+    private var isReplay = false
     private var hasEvaluatedLaunch = false
 
-    init(preferences: UserPreferences) {
+    init(preferences: UserPreferences, setup: OnboardingSetup = OnboardingSetup()) {
         self.preferences = preferences
+        self.setup = setup
     }
 
     var currentStep: CoachmarkStep? {
@@ -51,30 +78,25 @@ final class OnboardingController {
     }
 
     var stepNumber: Int {
-        guard let activeTutorial, case .coachmark(let index) = phase else { return 0 }
-        guard isCompleteTour else { return index + 1 }
-        let prior = TutorialID.allCases.prefix { $0 != activeTutorial }
-            .reduce(0) { $0 + Self.steps(for: $1).count }
-        return prior + index + 1
+        guard case .coachmark(let index) = phase else { return 0 }
+        return index + 1
     }
 
     var totalStepCount: Int {
-        if !isCompleteTour, let activeTutorial {
-            return Self.steps(for: activeTutorial).count
-        }
-        return TutorialID.allCases.reduce(0) { $0 + Self.steps(for: $1).count }
+        activeTutorial.map { Self.steps(for: $0).count } ?? 0
     }
 
     var isLastStep: Bool {
         guard let activeTutorial, case .coachmark(let index) = phase else { return false }
-        if isCompleteTour {
-            return activeTutorial == .compare && index == Self.steps(for: .compare).count - 1
-        }
         return index == Self.steps(for: activeTutorial).count - 1
     }
 
-    /// True while neither the welcome screen nor a coachmark tour is up.
+    /// True while no welcome step and no coachmark tour is up.
     var isIdle: Bool { phase == .hidden && activeTutorial == nil }
+
+    /// Whether the welcome screen leads into the setup steps rather than straight to the
+    /// tour.
+    var offersSetup: Bool { !isReplay && setup.isAvailable() }
 
     func startIfNeeded() {
         hasEvaluatedLaunch = true
@@ -82,31 +104,63 @@ final class OnboardingController {
             preferences.markTutorialSeen(TutorialID.roster.id)
             return
         }
-        isCompleteTour = true
+        isWelcomeTour = true
+        isReplay = false
         activeTab = .depthCharts
         phase = .welcome
     }
 
+    /// Reopens the welcome screen and the roster tour, and lets the other pages' hints
+    /// show again on the next visit.
     func replay() {
         hasEvaluatedLaunch = true
-        isCompleteTour = true
+        isWelcomeTour = true
+        isReplay = true
+        preferences.clearTutorialsSeen()
         activeTab = .depthCharts
         requestTeamPage(.roster)
         phase = .welcome
     }
 
     func skipWelcome() {
-        if isCompleteTour { preferences.markAllTutorialsSeen() }
+        preferences.markAllTutorialsSeen()
         finish()
     }
 
+    /// The welcome screen's main action.
+    func continueFromWelcome() {
+        guard offersSetup else {
+            beginCoachmarks()
+            return
+        }
+        if setup.hasFavoriteTeam() {
+            continueFromTeam()
+        } else {
+            phase = .pickTeam
+        }
+    }
+
+    /// The team step ended, with a team picked or not. Notifications are about the
+    /// favorite team, so without one there is nothing to offer.
+    func continueFromTeam() {
+        if setup.isAvailable(), setup.hasFavoriteTeam(), setup.canAskForNotifications() {
+            phase = .notifications
+        } else {
+            beginCoachmarks()
+        }
+    }
+
+    func continueFromNotifications() {
+        beginCoachmarks()
+    }
+
     func beginCoachmarks() {
-        isCompleteTour = true
+        isWelcomeTour = true
         beginTutorial(.roster)
     }
 
     func pageDidAppear(_ tutorial: TutorialID) {
-        guard hasEvaluatedLaunch, phase == .hidden, !isCompleteTour,
+        guard hasEvaluatedLaunch, phase == .hidden, !isWelcomeTour,
             !preferences.hasSeenTutorial(tutorial.id)
         else { return }
         beginTutorial(tutorial)
@@ -119,24 +173,16 @@ final class OnboardingController {
 
     func advance() {
         guard let tutorial = activeTutorial, case .coachmark(let index) = phase else { return }
-        let steps = Self.steps(for: tutorial)
-        if index + 1 < steps.count {
+        if index + 1 < Self.steps(for: tutorial).count {
             phase = .coachmark(index + 1)
             return
         }
-
         preferences.markTutorialSeen(tutorial.id)
-        guard isCompleteTour,
-            let next = TutorialID.allCases.drop(while: { $0 != tutorial }).dropFirst().first
-        else {
-            finish()
-            return
-        }
-        beginTutorial(next)
+        finish()
     }
 
     func skipCoachmarks() {
-        if isCompleteTour {
+        if isWelcomeTour {
             preferences.markAllTutorialsSeen()
         } else if let activeTutorial {
             preferences.markTutorialSeen(activeTutorial.id)
@@ -165,7 +211,8 @@ final class OnboardingController {
         phase = .hidden
         activeTutorial = nil
         preferences.markOnboardingSeen()
-        isCompleteTour = false
+        isWelcomeTour = false
+        isReplay = false
     }
 
     private static func steps(for tutorial: TutorialID) -> [CoachmarkStep] {
@@ -194,11 +241,6 @@ struct CoachmarkStep: Identifiable {
 
     static let roster: [CoachmarkStep] = [
         CoachmarkStep(
-            id: .teamPill,
-            title: "Switch teams anytime",
-            message: "Tap here to jump to any of the 32 teams' depth charts."
-        ),
-        CoachmarkStep(
             id: .playerDot,
             title: "Tap any player",
             message: "Every dot on the field opens that player's stats and spot on the depth chart."
@@ -208,11 +250,6 @@ struct CoachmarkStep: Identifiable {
             title: "More lives in here",
             message:
                 "Uniforms, past seasons, formations, and edit mode are all one tap away in this menu."
-        ),
-        CoachmarkStep(
-            id: .bottomTabs,
-            title: "Explore the app",
-            message: "Switch between Depth Charts, Compare, and Uniforms down here."
         ),
     ]
 
@@ -228,20 +265,9 @@ struct CoachmarkStep: Identifiable {
 
     static let compare: [CoachmarkStep] = [
         CoachmarkStep(
-            id: .compareTeams,
-            title: "Pick two teams",
-            message: "Tap either slot to choose the teams you want to compare."
-        ),
-        CoachmarkStep(
             id: .compareSwitcher,
             title: "Choose a view",
             message: "By team lines up unit metrics. By position compares depth at each spot."
-        ),
-        CoachmarkStep(
-            id: .compareContent,
-            title: "Read the comparison",
-            message:
-                "Browse offense, defense, and special teams metrics, or switch to a position for the depth chart."
-        ),
+        )
     ]
 }

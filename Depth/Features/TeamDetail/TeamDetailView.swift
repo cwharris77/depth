@@ -614,8 +614,6 @@ struct TeamDetailView: View {
         .accessibilityIdentifier("team-switcher-button")
         .accessibilityLabel("\(navigationTitleText), change team")
         .accessibilityHint("Opens the team switcher")
-        // First-run tutorial's first coachmark target.
-        .coachmarkAnchor(.teamPill)
     }
 
     /// Web parity (web/components/TeamPageHeader.tsx PAGE_TABS): the ROSTER/SCHEDULE/STATS

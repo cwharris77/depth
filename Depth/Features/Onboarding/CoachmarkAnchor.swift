@@ -4,28 +4,18 @@ import SwiftUI
 // coachmark step should point at tags itself with `.coachmarkAnchor(_:)`; the target's
 // on-screen frame bubbles up through SwiftUI's preference system to a single overlay
 // mounted at ContentView's root (`.coachmarkOverlay`), which hands the resolved rects
-// (plus its own GeometryProxy, needed for the anchor-less `.bottomTabs` step) to
-// `content`. This degrades safely (the overlay just has no rect for that step) if the
+// (plus its own GeometryProxy) to `content`. This degrades safely (the overlay just has no rect for that step) if the
 // target view isn't currently mounted (a different tab, a closed sheet).
 //
 // Target frames use a plain `CGRect` preference instead of
 // `anchorPreference(value: .bounds)` + `proxy[anchor]`. Reading each target's global frame
 // with `GeometryReader` keeps coordinates correct through scrolling content and
 // `NavigationStack`-hosted toolbar items.
-//
-// `.bottomTabs` deliberately has no case here — SwiftUI's TabView doesn't expose a
-// per-tab frame through the public API, so that step's rect is computed directly from
-// the overlay's GeometryProxy (a fixed band at the screen's bottom) instead of an
-// anchor lookup. See CoachmarkOverlayView.targetRect.
 enum CoachmarkID: CaseIterable {
-    case teamPill
     case playerDot
     case overflowMenu
-    case bottomTabs
     case scheduleGame
-    case compareTeams
     case compareSwitcher
-    case compareContent
 }
 
 private struct CoachmarkFrameKey: PreferenceKey {
@@ -65,8 +55,7 @@ extension View {
     }
 
     /// Mounted once at the root: hands every registered target's screen-space `CGRect`
-    /// (plus the root's own GeometryProxy, needed for the anchor-less `.bottomTabs`
-    /// step) to `content`.
+    /// (plus the root's own GeometryProxy) to `content`.
     func coachmarkOverlay<Overlay: View>(
         @ViewBuilder content: @escaping ([CoachmarkID: CGRect], GeometryProxy) -> Overlay
     ) -> some View {
