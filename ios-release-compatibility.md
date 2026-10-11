@@ -55,6 +55,7 @@ one rule mechanically: published data stays decodable by every supported app bui
     clients and no build reads it, so the wider list changes nothing build 764 decodes
     or writes. The check constraint is dropped and re-added in one migration, which is
     why that migration carries an annotation.
+  - `team_events` accepts five additional Everything event types (`depth_change`, `signing`, `cut`, `injury_change`, `good_week`) and the `espn_injuries` source. All existing values, columns and public read grants remain supported; the new detector state and commit function are service-role-only. Clients that read team events decode type and source as strings and ignore unknown payload keys.
   - The canonical `player_season_stats` table has **not** landed; build 764
     still reads the legacy `player_stats` table exclusively.
   - `app_config` is frozen by contract — the gate reads exactly two columns
@@ -77,6 +78,7 @@ one rule mechanically: published data stays decodable by every supported app bui
 | 764 | 2026-10-10 | `app_events.event_name` check widened to also allow `notification_opened` (`20261011120000_allow_notification_opened_event.sql`). Expand-only: all six names build 764 inserts stay allowed, and no client reads the table. Grants, RLS and columns unchanged. | Yes (764) |
 | 764 | 2026-10-10 | 2012–2025 `roster_history` re-ingested with nickel-back depth-chart codes (`NB`, `NCB`, `NICK`, `NICKE`, `NKL`) read as a role rather than a position: a player charted at nickel keeps his other charted position or his roster position (`CB`, `FS`, `SS`, `DB`) instead of being stored as `NB`. About 230 player-seasons change. No schema change; `DB` rows were already hidden on build 764, and this can add at most two more. | Yes (764) |
 | 764 | 2026-10-10 | `roster_history.roles` added (nullable `jsonb`, role → depth rank for `nb`/`kr`/`pr`), filled by the rosters ingest from nflverse depth charts for 2001 onward. Additive: build 764 selects its `roster_history` columns by name and never reads it. A build that selects `roles` must ship after this migration is applied. | Yes (764) |
+| 764 | 2026-10-10 | `team_events` checks widened for Everything event types and injury source; service-only snapshot state and atomic commit function added. Existing accepted values and reader contracts preserved. | Yes (764) |
 <!-- add a row per release that changes the client/backend contract -->
 
 ## Release sequencing checklist

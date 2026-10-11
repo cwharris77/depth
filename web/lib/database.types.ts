@@ -2454,6 +2454,36 @@ export type Database = {
           },
         ]
       }
+      team_event_snapshot_state: {
+        Row: {
+          observed_at: string
+          revision: number
+          state: NonNullable<Json>
+          team_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          observed_at: string
+          revision?: number
+          state: NonNullable<Json>
+          team_id: string
+        }
+        Update: {
+          observed_at?: string
+          revision?: number
+          state?: NonNullable<Json>
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_event_snapshot_state_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_events: {
         Row: {
           created_at: string
@@ -3329,6 +3359,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      commit_team_event_snapshot: {
+        Args: {
+          p_events: Json
+          p_expected_revision: number
+          p_observed_at: string
+          p_starter_state: Json
+          p_state: Json
+          p_team_id: string
+        }
+        Returns: boolean
+      }
       register_push_device: {
         Args: {
           p_bundle_id: string

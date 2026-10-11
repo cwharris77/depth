@@ -1,7 +1,7 @@
 // Headline and detail text for every team event. One template per event type, so the
 // same event always renders the same words wherever it is shown.
 
-import type { RecordStat } from '@/lib/stat-files/records';
+import { RECORD_STATS, type RecordStat } from '@/lib/stat-files/records';
 
 export interface EventCopy {
   headline: string;
@@ -94,6 +94,67 @@ export function historicWeekCopy(args: {
     headline:
       `${args.playerName} had ${formatCount(args.value)} ${STAT_LABELS[args.stat]} ` +
       `in Week ${args.week}, ${place} in a game since ${args.fromSeason}`,
+    detail: null,
+  };
+}
+
+export function depthChangeCopy(args: {
+  teamName: string;
+  playerName: string;
+  position: string;
+  rank: number | null;
+  previousRank: number | null;
+}): EventCopy {
+  return {
+    headline:
+      args.rank === null
+        ? `${args.teamName}: ${args.playerName} is no longer listed at ${args.position}`
+        : `${args.teamName}: ${args.playerName} is now #${args.rank} at ${args.position}`,
+    detail:
+      args.previousRank === null
+        ? 'Not previously listed here.'
+        : `Previously #${args.previousRank}.`,
+  };
+}
+export function injuryChangeCopy(args: {
+  teamName: string;
+  playerName: string;
+  designations: readonly string[];
+  previous: readonly string[];
+}): EventCopy {
+  return {
+    headline:
+      args.designations.length === 0
+        ? `${args.teamName}: ${args.playerName} is no longer listed on the injury report`
+        : `${args.teamName}: ${args.playerName} is listed as ${args.designations.join(', ')}`,
+    detail:
+      args.previous.length === 0
+        ? 'Previously not listed on the injury report.'
+        : `Previously ${args.previous.join(', ')}.`,
+  };
+}
+export function rosterTransactionCopy(args: {
+  teamName: string;
+  playerName: string;
+  position: string;
+  verb: string;
+  scope: string | null;
+}): EventCopy {
+  return {
+    headline: `${args.teamName} ${args.verb} ${args.position} ${args.playerName}`,
+    detail: args.scope ? `${args.scope[0].toUpperCase()}${args.scope.slice(1)}.` : null,
+  };
+}
+export function goodWeekCopy(args: {
+  playerName: string;
+  week: number;
+  stats: Partial<Record<RecordStat, number>>;
+}): EventCopy {
+  const facts = RECORD_STATS.flatMap((stat) =>
+    args.stats[stat] === undefined ? [] : [`${formatCount(args.stats[stat])} ${STAT_LABELS[stat]}`]
+  );
+  return {
+    headline: `${args.playerName} had ${facts.join(' and ')} in Week ${args.week}`,
     detail: null,
   };
 }

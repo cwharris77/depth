@@ -1,9 +1,19 @@
 // The in-memory shape of a team event and of the starter detector's working state, plus
 // the mappers to and from the Postgres rows.
 
-export type TeamEventType = 'starter_change' | 'trade' | 'record_chase' | 'historic_week';
+export type TeamEventType =
+  | 'starter_change'
+  | 'trade'
+  | 'record_chase'
+  | 'historic_week'
+  | 'depth_change'
+  | 'signing'
+  | 'cut'
+  | 'injury_change'
+  | 'good_week';
 export type TeamEventTier = 'big_moments' | 'everything';
-export type TeamEventSource = 'espn_depth_chart' | 'espn_transactions' | 'nflverse_stats';
+export type TeamEventSource =
+  'espn_depth_chart' | 'espn_transactions' | 'nflverse_stats' | 'espn_injuries';
 export type TeamEventPayload = Record<string, string | number | boolean | null>;
 
 export interface TeamEvent {
@@ -94,4 +104,40 @@ export function fromStarterStateRow(row: StarterStateRow): StarterState {
     candidatePlayerName: row.candidate_player_name,
     candidateSeenAt: row.candidate_seen_at,
   };
+}
+
+export interface ObservedDepthSlot {
+  position: string;
+  depthRank: number;
+  playerId: string;
+  playerName: string;
+}
+export interface ObservedInjury {
+  playerId: string;
+  playerName: string;
+  designations: readonly string[] | null;
+}
+export interface TeamObservation {
+  teamId: string;
+  teamName: string;
+  observedAt: string;
+  slots: readonly ObservedDepthSlot[];
+  coveredPositions: readonly string[];
+  injuries: readonly ObservedInjury[];
+}
+export interface ChartCandidate {
+  slots: ObservedDepthSlot[];
+  firstSeenAt: string;
+}
+export interface SnapshotState {
+  schemaVersion: 1;
+  confirmedSlots: ObservedDepthSlot[];
+  coveredPositions: string[];
+  candidates: Record<string, ChartCandidate>;
+  injuries: ObservedInjury[];
+}
+export interface StoredSnapshot {
+  revision: number;
+  observedAt: string;
+  state: SnapshotState;
 }
