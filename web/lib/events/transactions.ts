@@ -12,7 +12,7 @@
 // The text is untrusted: anything that does not parse yields no event rather than a
 // guess.
 
-import { tradeCopy } from './copy';
+import { tradeCopy, rosterTransactionCopy } from './copy';
 import type { TeamEvent } from './types';
 
 export interface EspnTransaction {
@@ -220,6 +220,69 @@ export function tradeEvents(args: {
             { ...player, direction: player.direction === 'out' ? 'in' : 'out' },
             occurredAt
           );
+        }
+      }
+    }
+  }
+  return [...events.values()];
+}
+
+export function rosterTransactionEvents(args: Parameters<typeof tradeEvents>[0]): TeamEvent[] {
+  const nowMs = Date.parse(args.now);
+  if (!Number.isFinite(nowMs)) return [];
+  const teamById = new Map(args.teams.map((team) => [team.id, team]));
+  const events = new Map<string, TeamEvent>();
+  const positionPattern = new RegExp(`\\b(${POSITIONS})s?\\s+`, 'g');
+  const namePattern = new RegExp(`^${NAME_TOKEN}(?:\\s+${NAME_TOKEN})*$`);
+  for (const transaction of args.transactions) {
+    const team = teamById.get(args.teamIdByEspnId.get(transaction.team?.id ?? '') ?? '');
+    const ms = Date.parse(transaction.date);
+    if (!team || !Number.isFinite(ms) || ms > nowMs || nowMs - ms > (args.windowDays ?? 7) * DAY_MS)
+      continue;
+    const occurredAt = new Date(ms).toISOString();
+    for (const sentence of splitSentences(transaction.description ?? '')) {
+      const opening = /^(Signed|Re-signed|Waived|Released|Cut|Terminated the contract of)\s+/i.exec(
+        sentence
+      );
+      if (!opening) continue;
+      const verb = opening[1].toLowerCase();
+      const type = verb === 'signed' || verb === 're-signed' ? 'signing' : 'cut';
+      const tail = sentence.slice(opening[0].length);
+      const scopeAt = tail.search(/\s+(?:to|from|with|for|on)\s+/);
+      const namesText = scopeAt === -1 ? tail : tail.slice(0, scopeAt);
+      const scope = scopeAt === -1 ? null : tail.slice(scopeAt).trim();
+      const positions = [...namesText.matchAll(positionPattern)];
+      // No position at the start means staff, draft picks or an unnamed move.
+      if (positions[0]?.index !== 0) continue;
+      for (const [index, match] of positions.entries()) {
+        const end = positions[index + 1]?.index ?? namesText.length;
+        const names = namesText
+          .slice(match.index + match[0].length, end)
+          .replace(/[,\s]+(?:and\s*)?$/, '')
+          .split(/,\s*(?:and\s+)?|\s+and\s+/);
+        for (const raw of names) {
+          const name = raw.trim();
+          if (!namePattern.test(name)) continue;
+          const key = normalizeName(name);
+          const dedupeKey = `${type}:${team.id}:${key}:${occurredAt.slice(0, 10)}`;
+          const copy = rosterTransactionCopy({
+            teamName: team.name,
+            position: match[1],
+            playerName: name,
+            verb,
+            scope,
+          });
+          events.set(dedupeKey, {
+            dedupeKey,
+            type,
+            tier: 'everything',
+            teamId: team.id,
+            playerId: args.playerIdByName.get(key) ?? null,
+            ...copy,
+            payload: { player_name: name, position: match[1], verb, scope },
+            source: 'espn_transactions',
+            occurredAt,
+          });
         }
       }
     }
