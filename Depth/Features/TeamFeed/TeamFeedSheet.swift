@@ -32,6 +32,7 @@ struct TeamFeedSheet: View {
         case .loaded(let events):
             ScrollView {
                 LazyVStack(spacing: DesignTokens.Spacing.sm) {
+                    if viewModel.refreshFailed { RefreshFailedBanner() }
                     ForEach(events) { event in row(event) }
                 }
                 .padding(.horizontal, DesignTokens.Spacing.screenMargin)

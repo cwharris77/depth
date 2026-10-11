@@ -115,3 +115,139 @@ private func sampleEvent(_ id: String) -> TeamEvent {
     await model.load()
     #expect(model.newestEventDate == Date(timeIntervalSince1970: 900))
 }
+
+/// Holds every `teamEvents` read open until the test answers it, so two loads can be
+/// made to overlap and finish in a chosen order.
+private actor GatedFeedRepository: DepthRepository {
+    private var waiting: [CheckedContinuation<Result<[TeamEvent], any Error>, Never>] = []
+
+    func teamEvents(teamId: String) async throws -> [TeamEvent] {
+        try await withCheckedContinuation { waiting.append($0) }.get()
+    }
+
+    /// Answers the oldest read still open, once `count` reads are open.
+    func answerOldest(whenWaiting count: Int, with result: Result<[TeamEvent], any Error>) async {
+        while waiting.count < count { await Task.yield() }
+        waiting.removeFirst().resume(returning: result)
+    }
+
+    func teams() async throws -> [Team] { [] }
+    func teamSnapshot(teamId: String) async throws -> TeamSnapshot { throw DepthError.notFound }
+    func teamSeason(teamId: String, season: Int) async throws -> TeamSnapshot {
+        throw DepthError.notFound
+    }
+    func teamSchedule(teamId: String, season: Int?) async throws -> TeamSchedule {
+        throw DepthError.notFound
+    }
+    func teamStats(teamId: String) async throws -> TeamStatsPage { throw DepthError.notFound }
+    func playerStats(playerId: String, teamId: String?) async throws -> [PlayerSeasonStats] { [] }
+    func appConfig() async throws -> AppConfig { throw DepthError.notFound }
+}
+
+@MainActor
+@Test func aLoadCancelledAfterAnOverlappingOneLandedKeepsItsList() async {
+    let repository = GatedFeedRepository()
+    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let first = Task { await model.load() }
+    let second = Task { await model.load() }
+    await repository.answerOldest(whenWaiting: 2, with: .success([sampleEvent("a")]))
+    await first.value
+    await repository.answerOldest(whenWaiting: 1, with: .failure(CancellationError()))
+    await second.value
+    #expect(model.state == .loaded([sampleEvent("a")]))
+    #expect(!model.refreshFailed)
+}
+
+@MainActor
+@Test func aLoadThatFailsAfterAnOverlappingOneLandedKeepsItsList() async {
+    let repository = GatedFeedRepository()
+    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let first = Task { await model.load() }
+    let second = Task { await model.load() }
+    await repository.answerOldest(whenWaiting: 2, with: .success([sampleEvent("a")]))
+    await first.value
+    await repository.answerOldest(whenWaiting: 1, with: .failure(DepthError.offline))
+    await second.value
+    #expect(model.state == .loaded([sampleEvent("a")]))
+    #expect(model.refreshFailed)
+}
+
+@MainActor
+@Test func aCancelledFirstLoadLeavesTheFeedIdle() async {
+    let model = TeamFeedViewModel(
+        teamId: "bills", repository: FeedFakeRepository(result: .failure(CancellationError())))
+    await model.load()
+    #expect(model.state == .idle)
+    #expect(!model.refreshFailed)
+}
+
+@MainActor
+@Test func aCancelledRefreshKeepsTheLoadedFeed() async {
+    let repository = FeedFakeRepository(result: .success([sampleEvent("a")]))
+    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    await model.load()
+    await repository.setResult(.failure(CancellationError()))
+    await model.load()
+    #expect(model.state == .loaded([sampleEvent("a")]))
+    #expect(!model.refreshFailed)
+}
+
+@MainActor
+@Test func aCancelledRetryGoesBackToTheEarlierFailure() async {
+    let repository = FeedFakeRepository(result: .failure(DepthError.offline))
+    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    await model.load()
+    await repository.setResult(.failure(CancellationError()))
+    await model.load()
+    #expect(model.state == .failed(.offline))
+}
+
+@MainActor
+@Test func aReadThatFailsInACancelledTaskRestoresTheEarlierState() async {
+    let model = TeamFeedViewModel(
+        teamId: "bills", repository: FeedFakeRepository(result: .failure(DepthError.offline)))
+    let task = Task { @MainActor in
+        withUnsafeCurrentTask { $0?.cancel() }
+        await model.load()
+    }
+    await task.value
+    #expect(model.state == .idle)
+}
+
+@MainActor
+@Test func aFailedRefreshKeepsTheLoadedFeedAndSaysSo() async {
+    let repository = FeedFakeRepository(result: .success([sampleEvent("a")]))
+    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    await model.load()
+    #expect(!model.refreshFailed)
+    await repository.setResult(.failure(DepthError.offline))
+    await model.load()
+    #expect(model.state == .loaded([sampleEvent("a")]))
+    #expect(model.refreshFailed)
+    // The kept list still answers a lookup, without another read.
+    let reads = await repository.requestedTeamIds.count
+    #expect(await model.event(id: "a") == sampleEvent("a"))
+    #expect(await repository.requestedTeamIds.count == reads)
+}
+
+@MainActor
+@Test func aLaterSuccessfulRefreshClearsTheRefreshFailure() async {
+    let repository = FeedFakeRepository(result: .success([sampleEvent("a")]))
+    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    await model.load()
+    await repository.setResult(.failure(DepthError.offline))
+    await model.load()
+    await repository.setResult(.success([sampleEvent("b")]))
+    await model.load()
+    #expect(model.state == .loaded([sampleEvent("b")]))
+    #expect(!model.refreshFailed)
+}
+
+@MainActor
+@Test func aFailureWithNothingLoadedIsNotARefreshFailure() async {
+    let model = TeamFeedViewModel(
+        teamId: "bills", repository: FeedFakeRepository(result: .failure(DepthError.offline)))
+    await model.load()
+    #expect(model.state == .failed(.offline))
+    #expect(!model.refreshFailed)
+}
