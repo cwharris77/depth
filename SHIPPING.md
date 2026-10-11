@@ -32,6 +32,10 @@ Bug fixes, copy changes and small self-contained changes finished in one PR are 
 - **Launch:** a PR that sets `launched: true`, merged before the cut of the release it ships in.
 - **Remove:** in the next release, delete the case and the dead code path. `everyFeatureFlagIsWithinItsLifetime()` fails eight weeks after `added`, so a stale flag blocks CI until it is gone.
 
+## Staging push-notification proof
+
+Use **Test staging push notification** from the Actions tab only after the physical iPhone has the Staging build installed, has granted notification permission, and has registered its chosen team and notification tier in Settings. The workflow's default `paused` mode creates and removes a synthetic fixture without sending. For one delivery test, choose `send_staging_fixture`; it uses only the `staging` environment's staging Supabase and APNs secrets, sends the one run-scoped fixture event, reruns the sender to show that the delivery ledger prevents a second send, and removes the fixture plus its cascaded delivery records even if the send step fails. Inspect the notification on the iPhone, confirm it opens the selected team's depth chart, and retain the Actions log showing the second sender run reported zero sends. Do not use the shared **Send team notifications** workflow for this proof.
+
 ## Commit (skill step 5)
 
 Scope comes from the list in `CLAUDE.md` §3; a new scope only if the area is genuinely new (no `feat(misc):`).

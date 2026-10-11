@@ -12,6 +12,7 @@ import type { Database } from '@/lib/database.types';
 import { createApnsJwt, createHttp2ApnsClient } from '@/lib/push/apns';
 import { deliveryKey } from '@/lib/push/plan-sends';
 import { formatSummary, runSender, type DeliveryPair, type PushStore } from '@/lib/push/send-run';
+import { stagingE2EConfig } from '@/lib/push/staging-e2e';
 import {
   fromPushDeviceRow,
   fromTeamEventRow,
@@ -30,7 +31,7 @@ function chunk<T>(items: readonly T[], size: number): T[][] {
   return out;
 }
 
-function supabaseStore(supabase: SupabaseClient<Database>): PushStore {
+function supabaseStore(supabase: SupabaseClient<Database>, eventId?: string): PushStore {
   return {
     async listDevices() {
       const devices: PushDevice[] = [];
@@ -49,12 +50,12 @@ function supabaseStore(supabase: SupabaseClient<Database>): PushStore {
     async listEventsSince(iso) {
       const events: PushableEvent[] = [];
       for (let from = 0; ; from += PAGE) {
-        const { data, error } = await supabase
+        let query = supabase
           .from('team_events')
           .select('id, event_type, tier, team_id, headline, detail, created_at')
-          .gt('created_at', iso)
-          .order('id')
-          .range(from, from + PAGE - 1);
+          .gt('created_at', iso);
+        if (eventId) query = query.eq('id', eventId);
+        const { data, error } = await query.order('id').range(from, from + PAGE - 1);
         if (error) throw new Error(`team_events read: ${error.message}`);
         events.push(...(data ?? []).map(fromTeamEventRow));
         if (!data || data.length < PAGE) return events;
@@ -122,6 +123,7 @@ async function main() {
     { auth: { persistSession: false } }
   );
   const enabled = process.env.PUSH_SENDER_ENABLED === 'true';
+  const staging = process.env.PUSH_SENDER_TARGET ? stagingE2EConfig(process.env) : null;
   const client = enabled
     ? createHttp2ApnsClient({
         jwt: createApnsJwt({
@@ -134,7 +136,12 @@ async function main() {
       })
     : null;
   try {
-    const summary = await runSender({ store: supabaseStore(supabase), client, enabled, now });
+    const summary = await runSender({
+      store: supabaseStore(supabase, staging?.eventId),
+      client,
+      enabled,
+      now,
+    });
     console.log(formatSummary(summary));
     if (summary.fatal || summary.aborted || summary.failed > 0) process.exitCode = 1;
   } finally {

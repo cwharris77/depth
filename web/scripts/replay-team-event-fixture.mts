@@ -8,10 +8,11 @@
  * and `--cleanup` can remove exactly what this script wrote.
  *
  * Usage:
- *   npm run events:replay-fixture -- --team seahawks
- *   npm run events:replay-fixture -- --cleanup
+ *   npm run events:replay-fixture -- --team seahawks --fixture-id run-123
+ *   npm run events:replay-fixture -- --cleanup --fixture-id run-123
  */
 import { createClient } from '@supabase/supabase-js';
+import { appendFileSync } from 'node:fs';
 import type { Database } from '@/lib/database.types';
 import { writeStatEvents } from '@/lib/events/write-stat-events';
 import { buildRecordFiles, type RecordGameRow } from '@/lib/stat-files/records';
@@ -22,11 +23,28 @@ const ALLOWED_HOSTS = new Set(['127.0.0.1', 'localhost', 'djwrecczgudktgsooxti.s
 // No real season: the weekly source starts in 1999.
 const FIXTURE_SEASON = 1900;
 const FIXTURE_WEEK = 1;
-const KEY_PREFIX = `historic_week:rushing_yards:${FIXTURE_SEASON}:`;
+const FIXTURE_ID = /^[a-z0-9-]+$/;
 
 function arg(name: string): string | undefined {
   const index = process.argv.indexOf(name);
   return index === -1 ? undefined : process.argv[index + 1];
+}
+
+function fixtureId(): string {
+  const value = arg('--fixture-id');
+  if (!value || !FIXTURE_ID.test(value)) {
+    throw new Error('--fixture-id must contain lowercase letters, digits, and hyphens');
+  }
+  return value;
+}
+
+function fixtureKeySuffix(id: string): string {
+  return `:${id}`;
+}
+
+function writeOutput(name: string, value: string): void {
+  const output = arg('--github-output');
+  if (output) appendFileSync(output, `${name}=${value}\n`);
 }
 
 function row(playerId: string, season: number, team: string, yards: number): RecordGameRow {
@@ -49,12 +67,14 @@ async function main() {
     throw new Error(`refusing to write fixture events to ${host}`);
   }
   const supabase = createClient<Database>(url, key, { auth: { persistSession: false } });
+  const id = fixtureId();
+  const keySuffix = fixtureKeySuffix(id);
 
   if (process.argv.includes('--cleanup')) {
     const { data, error } = await supabase
       .from('team_events')
       .delete()
-      .like('dedupe_key', `${KEY_PREFIX}%`)
+      .like('dedupe_key', `%${keySuffix}`)
       .select('id');
     if (error) throw new Error(`team_events delete: ${error.message}`);
     console.log(`fixture replay: removed ${data?.length ?? 0} events`);
@@ -89,17 +109,19 @@ async function main() {
     rowsBySeason,
     currentSeason: FIXTURE_SEASON,
     now: new Date().toISOString(),
+    dedupeKeySuffix: keySuffix,
   });
   console.log(`team events: ${written} detected (fixture replay)`);
 
-  const dedupeKey = `${KEY_PREFIX}${FIXTURE_WEEK}:${player.id}`;
+  const dedupeKey = `historic_week:rushing_yards:${FIXTURE_SEASON}:${FIXTURE_WEEK}:${player.id}:${id}`;
   const { data: stored, error: readError } = await supabase
     .from('team_events')
-    .select('headline, tier, source, team_id')
+    .select('id, headline, tier, source, team_id')
     .eq('dedupe_key', dedupeKey)
     .maybeSingle();
   if (readError) throw new Error(`team_events read: ${readError.message}`);
   if (!stored) throw new Error(`the event was not stored under ${dedupeKey}`);
+  writeOutput('fixture_event_id', stored.id);
   console.log(`stored: ${JSON.stringify(stored)}`);
 }
 
