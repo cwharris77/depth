@@ -307,4 +307,33 @@ final class TeamFeedUITests: XCTestCase {
             XCTAssertTrue(list.waitForAbsence(timeout: 10))
         }
     }
+
+    func testAnEverythingDepthChangeOpensTheChartWithoutCallingThePlayerANewStarter() {
+        let app = launch([
+            "UI_TESTING_EVERYTHING_EVENTS", "UI_TESTING_ROUTE_TEAM=bills",
+            "UI_TESTING_ROUTE_EVENT=fixture-event-depth_change",
+        ])
+        XCTAssertTrue(
+            app.descendants(matching: .any)["team-event-card"].waitForExistence(timeout: 15))
+        XCTAssertEqual(
+            app.buttons.matching(NSPredicate(format: "value == 'Depth change'")).count, 1)
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "value == 'New starter'")).count, 0)
+        keepScreenshot(app, name: "everything-depth-change")
+    }
+
+    func testAnEverythingInjuryEventOpensTheProfileWithItsSource() {
+        let app = launch([
+            "UI_TESTING_EVERYTHING_EVENTS", "UI_TESTING_ROUTE_TEAM=bills",
+            "UI_TESTING_ROUTE_EVENT=fixture-event-injury_change",
+        ])
+        XCTAssertTrue(
+            app.descendants(matching: .any)["player-profile-full-content"].waitForExistence(
+                timeout: 15))
+        XCTAssertTrue(app.descendants(matching: .any)["team-event-card"].exists)
+        XCTAssertTrue(
+            app.staticTexts.matching(
+                NSPredicate(format: "label BEGINSWITH 'ESPN injury report · '")
+            ).firstMatch.exists)
+        keepScreenshot(app, name: "everything-injury-profile")
+    }
 }

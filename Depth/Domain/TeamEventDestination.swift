@@ -13,7 +13,15 @@ enum TeamEventDestination: Equatable {
         -> TeamEventDestination
     {
         let listedPlayerId = event.playerId.flatMap { rosterPlayerIds.contains($0) ? $0 : nil }
-        if event.type == "starter_change" {
+        if event.type == "starter_change" || event.type == "depth_change" {
+            if event.payload.position == "KR" || event.payload.position == "PR" {
+                return .depthChart(unit: .special, playerId: listedPlayerId)
+            }
+            if event.type == "depth_change",
+                event.payload.position == "LDT" || event.payload.position == "RDT"
+            {
+                return .depthChart(unit: .defense, playerId: listedPlayerId)
+            }
             guard let position = event.payload.position.flatMap(Position.init(rawValue:))
             else { return .feed }
             return .depthChart(unit: position.unit, playerId: listedPlayerId)

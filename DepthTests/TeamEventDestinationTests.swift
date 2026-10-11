@@ -55,3 +55,32 @@ func playerEventsLeadToTheFeedWhenHeIsNotOnTheRoster(type: String) {
         TeamEventDestination.resolve(event(type: type, playerId: nil), rosterPlayerIds: ["p2"])
             == .feed)
 }
+
+@Test func depthChangesOpenTheSourceUnitAndReturnersOpenSpecialTeams() {
+    #expect(
+        TeamEventDestination.resolve(
+            event(type: "depth_change", position: "WR"), rosterPlayerIds: ["p1"])
+            == .depthChart(unit: .offense, playerId: "p1"))
+    #expect(
+        TeamEventDestination.resolve(
+            event(type: "depth_change", position: "WR"), rosterPlayerIds: [])
+            == .depthChart(unit: .offense, playerId: nil))
+    for position in ["KR", "PR"] {
+        #expect(
+            TeamEventDestination.resolve(
+                event(type: "depth_change", position: position), rosterPlayerIds: ["p1"])
+                == .depthChart(unit: .special, playerId: "p1"))
+    }
+    #expect(
+        TeamEventDestination.resolve(
+            event(type: "depth_change", position: "XX"), rosterPlayerIds: ["p1"]) == .feed)
+}
+
+@Test func sidedTackleDepthChangesOpenDefense() {
+    for position in ["LDT", "RDT"] {
+        #expect(
+            TeamEventDestination.resolve(
+                event(type: "depth_change", position: position), rosterPlayerIds: ["p1"])
+                == .depthChart(unit: .defense, playerId: "p1"))
+    }
+}
