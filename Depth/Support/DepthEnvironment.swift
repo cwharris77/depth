@@ -166,8 +166,8 @@ enum DepthEnvironment {
     }()
     @MainActor static let authSessionStore = AuthSessionStore(service: authService)
     /// Shared favorite/start-on-favorite state. Backed by the user_settings row
-    /// (RLS-scoped to auth.uid()); reads/writes are gated on the live session so a stale
-    /// favorite never applies after a sign-out.
+    /// (RLS-scoped to auth.uid()) and, while notifications are available, kept on the
+    /// device too. The notification team follows it.
     @MainActor static let userSettingsStore: UserSettingsStore = {
         let remote: (any UserSettingsServicing)? = SupabaseUserSettingsService(
             client: supabaseClient)

@@ -73,8 +73,8 @@ struct UserPreferences: Sendable {
         nonmutating set { defaults.set(newValue.rawValue, forKey: Key.notificationTier) }
     }
 
-    /// The team this device is notified about. Set when the user opts in and changed only
-    /// from the notification control; it does not follow the team being viewed.
+    /// The team this device is notified about. It follows the favorite team, not the
+    /// team being viewed.
     var notificationTeamId: String? {
         get { defaults.string(forKey: Key.notificationTeamId) }
         nonmutating set { defaults.set(newValue, forKey: Key.notificationTeamId) }
