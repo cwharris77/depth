@@ -8,7 +8,14 @@ const sam: ObservedStarter = { position: 'QB', playerId: '2', playerName: 'Sam D
 const drew: ObservedStarter = { position: 'QB', playerId: '3', playerName: 'Drew Lock' };
 
 function run(previous: StarterState[], observed: ObservedStarter[], now = NOW) {
-  return advanceStarters({ teamId: 'seahawks', teamName: 'Seahawks', previous, observed, now });
+  return advanceStarters({
+    teamId: 'seahawks',
+    teamName: 'Seahawks',
+    teamCity: 'Seattle',
+    previous,
+    observed,
+    now,
+  });
 }
 
 function confirmed(
@@ -59,6 +66,8 @@ describe('advanceStarters', () => {
         playerId: '2',
         headline: 'Seahawks: Sam Darnold is the new starter at QB',
         detail: 'Replaces Geno Smith.',
+        notificationTitle: 'Lineup alert: Seattle',
+        notificationBody: 'Sam Darnold is the new starter at QB.',
         payload: {
           position: 'QB',
           player_name: 'Sam Darnold',

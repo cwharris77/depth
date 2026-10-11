@@ -180,6 +180,7 @@ export function tradeEvents(args: {
     if (events.has(dedupeKey)) return;
     const copy = tradeCopy({
       teamName: team.name,
+      teamCity: team.city,
       direction: player.direction,
       position: player.position,
       playerName: player.name,
@@ -192,6 +193,8 @@ export function tradeEvents(args: {
       playerId: args.playerIdByName.get(nameKey) ?? null,
       headline: copy.headline,
       detail: copy.detail,
+      notificationTitle: copy.notificationTitle,
+      notificationBody: copy.notificationBody,
       payload: {
         direction: player.direction,
         position: player.position,

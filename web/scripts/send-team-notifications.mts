@@ -52,7 +52,9 @@ function supabaseStore(supabase: SupabaseClient<Database>, eventId?: string): Pu
       for (let from = 0; ; from += PAGE) {
         let query = supabase
           .from('team_events')
-          .select('id, event_type, tier, team_id, headline, detail, created_at')
+          .select(
+            'id, event_type, tier, team_id, headline, detail, notification_title, notification_body, created_at'
+          )
           .gt('created_at', iso);
         if (eventId) query = query.eq('id', eventId);
         const { data, error } = await query.order('id').range(from, from + PAGE - 1);

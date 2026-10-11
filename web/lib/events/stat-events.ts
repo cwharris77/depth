@@ -105,12 +105,17 @@ export function findStatMoments(args: {
 
 export function statMomentEvents(
   moments: readonly StatMoment[],
-  args: { playerNames: ReadonlyMap<string, string>; now: string }
+  args: {
+    playerNames: ReadonlyMap<string, string>;
+    teamCities: ReadonlyMap<string, string>;
+    now: string;
+  }
 ): TeamEvent[] {
   const events: TeamEvent[] = [];
   for (const moment of moments) {
     const playerName = args.playerNames.get(moment.playerId);
-    if (!playerName) continue;
+    const teamCity = args.teamCities.get(moment.teamId);
+    if (!playerName || !teamCity) continue;
     const shared = {
       tier: 'big_moments' as const,
       teamId: moment.teamId,
@@ -119,13 +124,15 @@ export function statMomentEvents(
       occurredAt: args.now,
     };
     if (moment.kind === 'historic_week') {
-      const copy = historicWeekCopy({ ...moment, playerName });
+      const copy = historicWeekCopy({ ...moment, playerName, teamCity });
       events.push({
         ...shared,
         dedupeKey: `historic_week:${moment.stat}:${moment.season}:${moment.week}:${moment.playerId}`,
         type: 'historic_week',
         headline: copy.headline,
         detail: copy.detail,
+        notificationTitle: copy.notificationTitle,
+        notificationBody: copy.notificationBody,
         payload: {
           stat: moment.stat,
           value: moment.value,
@@ -137,7 +144,7 @@ export function statMomentEvents(
         },
       });
     } else {
-      const copy = recordChaseCopy({ ...moment, playerName });
+      const copy = recordChaseCopy({ ...moment, playerName, teamCity });
       // One key while approaching and another once broken, so each is reported once per
       // season however many runs see it.
       const phase = moment.broken ? 'broken' : 'approach';
@@ -147,6 +154,8 @@ export function statMomentEvents(
         type: 'record_chase',
         headline: copy.headline,
         detail: copy.detail,
+        notificationTitle: copy.notificationTitle,
+        notificationBody: copy.notificationBody,
         payload: {
           stat: moment.stat,
           value: moment.value,

@@ -25,6 +25,8 @@ export interface PushableEvent {
   teamId: string;
   headline: string;
   detail: string | null;
+  notificationTitle: string | null;
+  notificationBody: string | null;
   // ISO 8601, when the detector wrote the row.
   createdAt: string;
 }
@@ -58,6 +60,8 @@ export interface PushableEventRow {
   team_id: string;
   headline: string;
   detail: string | null;
+  notification_title: string | null;
+  notification_body: string | null;
   created_at: string;
 }
 
@@ -69,6 +73,8 @@ export function fromTeamEventRow(row: PushableEventRow): PushableEvent {
     teamId: row.team_id,
     headline: row.headline,
     detail: row.detail,
+    notificationTitle: row.notification_title,
+    notificationBody: row.notification_body,
     createdAt: row.created_at,
   };
 }

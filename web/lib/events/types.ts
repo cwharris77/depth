@@ -25,6 +25,8 @@ export interface TeamEvent {
   playerId: string | null;
   headline: string;
   detail: string | null;
+  notificationTitle?: string;
+  notificationBody?: string;
   payload: TeamEventPayload;
   source: TeamEventSource;
   // ISO 8601.
@@ -39,6 +41,8 @@ export interface TeamEventRow {
   player_id: string | null;
   headline: string;
   detail: string | null;
+  notification_title: string | null;
+  notification_body: string | null;
   payload: TeamEventPayload;
   source: TeamEventSource;
   occurred_at: string;
@@ -53,6 +57,8 @@ export function toTeamEventRow(event: TeamEvent): TeamEventRow {
     player_id: event.playerId,
     headline: event.headline,
     detail: event.detail,
+    notification_title: event.notificationTitle ?? null,
+    notification_body: event.notificationBody ?? null,
     payload: event.payload,
     source: event.source,
     occurred_at: event.occurredAt,

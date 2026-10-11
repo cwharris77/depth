@@ -82,8 +82,18 @@ export async function writeStatEvents(
   const playerNames = new Map((data ?? []).map((player) => [player.id, player.name]));
   const missing = ids.filter((id) => !playerNames.has(id));
   if (missing.length) console.warn(`team events: missing player names: ${missing.join(', ')}`);
+  const teamIds = [...new Set(moments.map((moment) => moment.teamId))];
+  const { data: teams, error: teamsError } = await supabase
+    .from('teams')
+    .select('id, city')
+    .in('id', teamIds);
+  if (teamsError) throw new Error(`teams read: ${teamsError.message}`);
   const events = [
-    ...statMomentEvents(moments, { playerNames, now: args.now }),
+    ...statMomentEvents(moments, {
+      playerNames,
+      teamCities: new Map((teams ?? []).map((team) => [team.id, team.city])),
+      now: args.now,
+    }),
     ...goodWeekEvents({
       currentSeason: args.currentSeason,
       currentRows: goodRows,

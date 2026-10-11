@@ -34,6 +34,8 @@ function event(id: string, overrides: Partial<PushableEvent> = {}): PushableEven
     teamId: 'seahawks',
     headline: `Headline ${id}`,
     detail: null,
+    notificationTitle: null,
+    notificationBody: null,
     createdAt: '2026-10-10T19:00:00Z',
     ...overrides,
   };

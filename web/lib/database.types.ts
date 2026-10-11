@@ -2492,6 +2492,8 @@ export type Database = {
           event_type: string
           headline: string
           id: string
+          notification_body: string | null
+          notification_title: string | null
           occurred_at: string
           payload: NonNullable<Json>
           player_id: string | null
@@ -2507,6 +2509,8 @@ export type Database = {
           event_type: string
           headline: string
           id?: string
+          notification_body?: string | null
+          notification_title?: string | null
           occurred_at: string
           payload?: NonNullable<Json>
           player_id?: string | null
@@ -2521,6 +2525,8 @@ export type Database = {
           event_type?: string
           headline?: string
           id?: string
+          notification_body?: string | null
+          notification_title?: string | null
           occurred_at?: string
           payload?: NonNullable<Json>
           player_id?: string | null

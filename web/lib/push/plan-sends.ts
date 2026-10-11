@@ -40,6 +40,29 @@ export interface PlannedSend {
   events: PushableEvent[];
 }
 
+function eventTitle(event: PushableEvent): string {
+  switch (event.type) {
+    case 'starter_change':
+      return 'Lineup change';
+    case 'trade':
+      return 'Trade';
+    case 'record_chase':
+      return 'Record watch';
+    case 'historic_week':
+      return 'Historic performance';
+    case 'depth_change':
+      return 'Depth chart update';
+    case 'signing':
+      return 'Signing';
+    case 'cut':
+      return 'Roster move';
+    case 'injury_change':
+      return 'Injury update';
+    case 'good_week':
+      return 'Game performance';
+  }
+}
+
 function wants(device: PushDevice, event: PushableEvent): boolean {
   if (device.tier === 'off') return false;
   if (device.teamId !== event.teamId) return false;
@@ -87,7 +110,10 @@ export function buildNotification(
   const [first] = events;
   const alert =
     events.length === 1
-      ? { title: first.headline, ...(first.detail ? { body: first.detail } : {}) }
+      ? {
+          title: first.notificationTitle ?? eventTitle(first),
+          body: first.notificationBody ?? [first.headline, first.detail].filter(Boolean).join('\n'),
+        }
       : {
           title: `${events.length} updates on your team`,
           body: [

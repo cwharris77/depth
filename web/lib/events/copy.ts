@@ -6,6 +6,8 @@ import { RECORD_STATS, type RecordStat } from '@/lib/stat-files/records';
 export interface EventCopy {
   headline: string;
   detail: string | null;
+  notificationTitle?: string;
+  notificationBody?: string;
 }
 
 const STAT_LABELS: Record<RecordStat, string> = {
@@ -38,6 +40,7 @@ export function formatCount(n: number): string {
 
 export function starterChangeCopy(args: {
   teamName: string;
+  teamCity?: string;
   position: string;
   playerName: string;
   previousName: string;
@@ -45,11 +48,14 @@ export function starterChangeCopy(args: {
   return {
     headline: `${args.teamName}: ${args.playerName} is the new starter at ${args.position}`,
     detail: `Replaces ${args.previousName}.`,
+    notificationTitle: `Lineup alert: ${args.teamCity ?? args.teamName}`,
+    notificationBody: `${args.playerName} is the new starter at ${args.position}.`,
   };
 }
 
 export function tradeCopy(args: {
   teamName: string;
+  teamCity: string;
   direction: 'in' | 'out';
   position: string;
   playerName: string;
@@ -58,12 +64,15 @@ export function tradeCopy(args: {
   return {
     headline: `${args.teamName} ${verb} ${args.position} ${args.playerName}`,
     detail: null,
+    notificationTitle: `Trade alert: ${args.teamCity}`,
+    notificationBody: `${args.teamCity} ${verb} ${args.position} ${args.playerName}.`,
   };
 }
 
 // `fromSeason` is the first season the ranking covers. The claim is always scoped to it;
 // a wider one would need a source that reaches further back.
 export function recordChaseCopy(args: {
+  teamCity: string;
   playerName: string;
   stat: RecordStat;
   value: number;
@@ -78,10 +87,16 @@ export function recordChaseCopy(args: {
       : args.value === args.record
         ? `tied for ${scope}`
         : `${formatCount(args.record - args.value)} short of ${scope}`;
-  return { headline: `${lead}, ${tail}`, detail: `Previous best: ${formatCount(args.record)}.` };
+  return {
+    headline: `${lead}, ${tail}`,
+    detail: `Previous best: ${formatCount(args.record)}.`,
+    notificationTitle: `Record watch: ${args.teamCity}`,
+    notificationBody: `${lead}.`,
+  };
 }
 
 export function historicWeekCopy(args: {
+  teamCity: string;
   playerName: string;
   stat: RecordStat;
   value: number;
@@ -95,6 +110,8 @@ export function historicWeekCopy(args: {
       `${args.playerName} had ${formatCount(args.value)} ${STAT_LABELS[args.stat]} ` +
       `in Week ${args.week}, ${place} in a game since ${args.fromSeason}`,
     detail: null,
+    notificationTitle: `Historic performance: ${args.teamCity}`,
+    notificationBody: `${args.playerName} had ${formatCount(args.value)} ${STAT_LABELS[args.stat]} in Week ${args.week}.`,
   };
 }
 
