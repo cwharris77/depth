@@ -76,6 +76,11 @@ jobs:
           PUSH_SENDER_ENABLED: "true"
           PUSH_SENDER_TARGET: staging
           PUSH_EVENT_ID: ${{ steps.fixture.outputs.fixture_event_id }}
+      - name: Allow time to verify the notification tap
+        if: ${{ inputs.delivery == 'send_staging_fixture' }}
+        run: |
+          echo 'Tap the staging notification within two minutes; its event remains available until cleanup.'
+          sleep 120
       - name: Confirm paused run
         if: ${{ inputs.delivery == 'paused' }}
         run: echo 'Push delivery is paused; the fixture was created and will be removed.'
