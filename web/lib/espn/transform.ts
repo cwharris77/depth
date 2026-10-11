@@ -63,6 +63,7 @@ export function parseTeamId(ref: string | undefined): string | null {
 export function missingRosterAthleteIds(args: {
   roster: EspnRoster;
   depthcharts: EspnDepthcharts;
+  maxRank?: number;
 }): string[] {
   const { roster, depthcharts } = args;
   const onRoster = new Set<string>();
@@ -73,11 +74,11 @@ export function missingRosterAthleteIds(args: {
   const missing: string[] = [];
   const seen = new Set<string>();
   for (const item of depthcharts.items ?? []) {
-    for (const posData of Object.values(item.positions ?? {})) {
+    for (const [key, posData] of Object.entries(item.positions ?? {})) {
+      if (key.toLowerCase() === 'h') continue;
       for (const entry of posData.athletes ?? []) {
-        // Mirror the cap the transform applies, so we never fetch an athlete the
-        // transform would discard anyway.
-        if ((entry.rank ?? entry.slot ?? 1) > 3) continue;
+        // The app uses three ranks; event observations can request the entire chart.
+        if ((entry.rank ?? entry.slot ?? 1) > (args.maxRank ?? 3)) continue;
         const id = parseAthleteId(entry.athlete.$ref);
         if (!id || onRoster.has(id) || seen.has(id)) continue;
         seen.add(id);

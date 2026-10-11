@@ -460,6 +460,12 @@ describe('depth-chart athletes the site roster omits (DEP-585)', () => {
     ]);
   });
 
+  it('can hydrate every rank for event observations', () => {
+    expect(
+      missingRosterAthleteIds({ roster: thinRoster, depthcharts: thinCharts, maxRank: Infinity })
+    ).toEqual([CHART_ONLY, TOO_DEEP]);
+  });
+
   it('ignores athletes ranked past the top-3 cap the transform applies', () => {
     const missing = missingRosterAthleteIds({ roster: thinRoster, depthcharts: thinCharts });
     expect(missing).not.toContain(TOO_DEEP);

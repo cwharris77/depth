@@ -55,15 +55,10 @@ import { currentSeasonOf, nflSeasonState } from '@/lib/utils/team/season-state';
 import { TEAMS } from '@/lib/teams/index';
 import { parseSeasonsArg } from '@/lib/utils/ingest/seasons-arg';
 import { assertConserved, countByReason, countValues, type Drop } from '@/lib/utils/ingest/drops';
-import { advanceStarters, type ObservedStarter } from '@/lib/events/starter-changes';
-import { buildNameIndex, tradeEvents, type EspnTransaction } from '@/lib/events/transactions';
-import {
-  fromStarterStateRow,
-  toStarterStateRow,
-  toTeamEventRow,
-  type StarterState,
-  type TeamEvent,
-} from '@/lib/events/types';
+import { observeTeamEvents } from '@/lib/espn/event-observation';
+import { writeCompleteTeamEvents } from '@/lib/events/write-team-events';
+import type { EspnTransaction } from '@/lib/events/transactions';
+import type { TeamObservation } from '@/lib/events/types';
 import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from '@/lib/espn/types';
 import type { TeamRoster, TeamStats } from '@/lib/types';
 import type { Database } from '@/lib/database.types';
@@ -202,6 +197,8 @@ async function main() {
   }
 
   const built: Record<string, BuiltRoster> = {};
+  const observations: TeamObservation[] = [];
+  const observationErrors: string[] = [];
   const coachByTeamId: Record<string, Coach | null> = {};
   const statsByTeamId: Record<string, TeamStats[]> = {};
   // Two separate channels, deliberately.
@@ -245,7 +242,11 @@ async function main() {
       );
       // Pull in any depth-chart athlete the site roster omits before transforming, so
       // toTeamRoster stays pure and unchanged.
-      const missingIds = missingRosterAthleteIds({ roster: espnRoster, depthcharts });
+      const missingIds = missingRosterAthleteIds({
+        roster: espnRoster,
+        depthcharts,
+        maxRank: Infinity,
+      });
       const {
         athletes: hydrated,
         elsewhere,
@@ -272,6 +273,18 @@ async function main() {
         });
       }
 
+      const eventObservation = observeTeamEvents({
+        teamId: meta.id,
+        teamName: meta.name,
+        observedAt: startedAt,
+        roster: fullRoster,
+        depthcharts,
+      });
+      observations.push(eventObservation.observation);
+      observationErrors.push(...eventObservation.errors.map((message) => `${meta.id}: ${message}`));
+      diagnostics.push(
+        ...eventObservation.diagnostics.map((message) => ({ team: meta.id, message }))
+      );
       const roster2 = toTeamRoster({ meta, roster: fullRoster, depthcharts, teamInfo: info });
       // A run must never report success while dropping a player it was told about.
       if (roster2.unseatedAthleteIds.length) {
@@ -331,8 +344,7 @@ async function main() {
   if (!supabase) return; // unreachable (seedOut handled above); narrows the type below
 
   let teamsWritten = 0;
-  // Only a team whose roster wrote this run is diffed for events: a team that failed is
-  // unobserved, so its starter state stays exactly as the last good run left it.
+  // Snapshot events wait for the complete source and write cohort.
   const writtenRosters: BuiltRoster[] = [];
   for (const roster of Object.values(built)) {
     try {
@@ -394,13 +406,27 @@ async function main() {
     });
   }
   try {
-    const written = await writeTeamEvents(supabase, {
-      rosters: writtenRosters,
+    const written = await writeCompleteTeamEvents(supabase, {
+      observations,
+      teams: Object.values(TEAMS).map(({ team }) => team),
+      cohort: {
+        expectedTeams: Object.keys(TEAMS),
+        builtTeams: Object.keys(built),
+        writtenTeams: writtenRosters.map((roster) => roster.team.id),
+        errors,
+        observationErrors,
+      },
       transactions,
       teamIdByEspnId,
       now: startedAt,
     });
     console.log(`team events: ${written} detected`);
+    if (observationErrors.length) {
+      errors.push({
+        team: 'team events',
+        message: `incomplete observations; event phase skipped: ${observationErrors.join('; ')}`,
+      });
+    }
   } catch (e) {
     errors.push({ team: 'team events', message: (e as Error).message });
   }
@@ -586,77 +612,6 @@ async function writeTeamStats(
     { onConflict: 'team_id,season' }
   );
   if (error) throw new Error(`team_stats upsert: ${error.message}`);
-}
-
-// Starter changes and trades for the teams written this run. Events are inserted before
-// the starter state advances: if the state write then fails, the next run detects the
-// same change again and the unique dedupe key drops the repeat, whereas the other order
-// would lose the event. Returns how many events were detected (new or already stored).
-async function writeTeamEvents(
-  supabase: SupabaseClient<Database>,
-  args: {
-    rosters: BuiltRoster[];
-    transactions: EspnTransaction[];
-    teamIdByEspnId: ReadonlyMap<string, string>;
-    now: string;
-  }
-): Promise<number> {
-  const events: TeamEvent[] = [];
-  const nextState: StarterState[] = [];
-
-  for (const roster of args.rosters) {
-    const names = new Map(roster.players.map((p) => [p.id, p.name]));
-    const observed: ObservedStarter[] = [];
-    for (const slot of roster.depthChartSlots) {
-      const playerName = names.get(slot.playerId);
-      if (slot.depthRank === 1 && playerName) {
-        observed.push({ position: slot.position, playerId: slot.playerId, playerName });
-      }
-    }
-    // One query per team: the whole table is close to the API's default row cap.
-    const { data, error } = await supabase
-      .from('team_starter_state')
-      .select(
-        'team_id, position, confirmed_player_id, confirmed_player_name, candidate_player_id, candidate_player_name, candidate_seen_at'
-      )
-      .eq('team_id', roster.team.id);
-    if (error) throw new Error(`team_starter_state read: ${error.message}`);
-
-    const result = advanceStarters({
-      teamId: roster.team.id,
-      teamName: roster.team.name,
-      previous: (data ?? []).map(fromStarterStateRow),
-      observed,
-      now: args.now,
-    });
-    events.push(...result.events);
-    nextState.push(...result.next);
-  }
-
-  events.push(
-    ...tradeEvents({
-      transactions: args.transactions,
-      teamIdByEspnId: args.teamIdByEspnId,
-      teams: Object.values(TEAMS).map(({ team }) => team),
-      playerIdByName: buildNameIndex(args.rosters.flatMap((roster) => roster.players)),
-      now: args.now,
-    })
-  );
-
-  if (events.length) {
-    const { error } = await supabase
-      .from('team_events')
-      .upsert(events.map(toTeamEventRow), { onConflict: 'dedupe_key', ignoreDuplicates: true });
-    if (error) throw new Error(`team_events upsert: ${error.message}`);
-  }
-  if (nextState.length) {
-    const { error } = await supabase.from('team_starter_state').upsert(
-      nextState.map((state) => toStarterStateRow(state, args.now)),
-      { onConflict: 'team_id,position' }
-    );
-    if (error) throw new Error(`team_starter_state upsert: ${error.message}`);
-  }
-  return events.length;
 }
 
 // The current season's `team_coach_seasons` row for every team ESPN gave us a coach for
