@@ -77,6 +77,7 @@ describe('pants branding in catalog combinations', () => {
     const outliers: Record<string, string[]> = {
       bengals: ['home', 'away', 'orange-alt'],
       chargers: ['home', 'away', 'powder-blue', 'charger-power', 'super-chargers'],
+      cowboys: ['home'],
       rams: ['home', 'away', 'rivalries-2025'],
     };
     for (const { catalog } of getAllTeamCatalogs()) {

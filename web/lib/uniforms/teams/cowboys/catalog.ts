@@ -9,6 +9,7 @@ export const COWBOYS_CATALOG: TeamCatalog = {
       id: 'cowboys-home-1964',
       slug: 'home',
       sleeveNike: 'white',
+      sleeveNikePlacement: 'lower',
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
