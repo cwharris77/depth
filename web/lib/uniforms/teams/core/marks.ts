@@ -121,7 +121,7 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
   // logo reads mirrored there and native on the left.
   'sleeve-logo-left': {
     surface: 'sleeve-left',
-    x0: 33,
+    x0: -4,
     w: 78,
     cy: 506,
     mirror: false,
@@ -129,7 +129,7 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
   },
   'sleeve-logo-right': {
     surface: 'sleeve-right',
-    x0: 503,
+    x0: 514,
     w: 78,
     cy: 506,
     mirror: true,
