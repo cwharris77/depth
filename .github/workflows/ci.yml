@@ -40,6 +40,9 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: web/package-lock.json
+      - name: Test ingest cadence
+        working-directory: .
+        run: python3 -m unittest discover -s scripts -p 'test_*ingest*.py' -v
       - run: npm ci
       - name: Check public source comments
         env:

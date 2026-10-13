@@ -30,10 +30,33 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
-  send:
+  imported:
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      run: ${{ steps.imported.outputs.run }}
+    steps:
+      - name: Check completed import
+        id: imported
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          if [ "$EVENT" = 'workflow_dispatch' ]; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+          else
+            IMPORTED=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/jobs?per_page=100" --jq '[.jobs[] | select(.name == "ingest" and .conclusion == "success")] | length > 0')
+            echo "run=$IMPORTED" >> "$GITHUB_OUTPUT"
+          fi
+
+  send:
+    needs: imported
+    if: ${{ needs.imported.outputs.run == 'true' }}
     environment: ${{ inputs.environment || 'production' }}
     runs-on: ubuntu-latest
     defaults:
