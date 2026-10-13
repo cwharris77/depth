@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { BEARS_NUMBER_THREE } from '../marks/numbers';
 
 // Navy-orange-navy sleeve stripes and navy numerals with a thin orange outline.
 export const BEARS_JERSEY_WHITE: CompleteJerseySpec = {
@@ -26,6 +27,12 @@ export const BEARS_JERSEY_WHITE: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'navy', outline: 'orange', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'navy',
+    outline: 'orange',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: BEARS_NUMBER_THREE,
+  },
   marks: [],
 };

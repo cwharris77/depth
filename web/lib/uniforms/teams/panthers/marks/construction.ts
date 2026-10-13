@@ -16,7 +16,7 @@ import {
 } from './paths';
 import { boundsOf, placed, type PlacedMark } from '../../core/marks';
 import { NIKE_MARK } from '../../core/pants-logos';
-import { JERSEY_NUMBER_THREE } from '../../../jersey-art';
+import { PANTHERS_NUMBER_THREE } from './numbers';
 import { fromGeneric, type PartLayer } from '../../core/parts';
 
 // Paint order is the whole trick: silhouette, body, the body's interior gaps back in blue, fangs.
@@ -63,9 +63,9 @@ export const PANTHERS_BLACK_HELMET = placed([
 ]);
 
 export function panthersShoulderNumbers(fill: string, outline: string): PlacedMark {
-  const box = boundsOf(JERSEY_NUMBER_THREE);
+  const box = boundsOf(PANTHERS_NUMBER_THREE);
   const scale = 45 / (box[3] - box[1]);
-  const coordinates = (JERSEY_NUMBER_THREE.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+  const coordinates = (PANTHERS_NUMBER_THREE.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
   const layers: PartLayer[] = [];
   for (const side of ['left', 'right'] as const) {
     const rotated: number[] = [];
@@ -75,7 +75,7 @@ export function panthersShoulderNumbers(fill: string, outline: string): PlacedMa
       rotated.push(side === 'left' ? x : 588 - x, y);
     }
     let i = 0;
-    const d = JERSEY_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, () =>
+    const d = PANTHERS_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, () =>
       String(Math.round(rotated[i++] * 100) / 100)
     );
     layers.push(

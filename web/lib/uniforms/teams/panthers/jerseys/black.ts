@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { PANTHERS_NUMBER_THREE } from '../marks/numbers';
 import {
   panthersShoulderFan,
   panthersSleeveMarks,
@@ -23,7 +24,13 @@ export const PANTHERS_JERSEY_BLACK: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'blue', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'blue',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: PANTHERS_NUMBER_THREE,
+  },
   marks: [
     { paint: 'over', mark: panthersShoulderFan('silver', 'blue') },
     { paint: 'over', mark: panthersSleeveMarks('white') },

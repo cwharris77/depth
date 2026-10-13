@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "6389d0f193fcca5b2a5f22c27e2700522558768cd22632a6d5c9b4b992c819fa",
-  "revision": "cd7db9b26d49f952",
+  "sourceDigest": "519b8da16e393f14f783d1261fc4f9856d2de9373a5da24381886439b6314075",
+  "revision": "51ff58428936acf7",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -51,30 +51,30 @@
     {
       "catalogId": "bears-away-2012",
       "constructionKey": "away",
-      "revision": "f5034f9ec681ff14",
+      "revision": "d6f8b0e6127a233a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-away-2012.webp",
-          "sha256": "b9115308399d866db0b63c74f5a86ee6e9d365319d3107d56983743f0b50ef1b"
+          "sha256": "ab17c07ce0dfa78e939999d75977422ed0cb9905b9a105eace89817d249ba879"
         },
         "full": {
           "path": "/uniforms/bears-away-2012-full.webp",
-          "sha256": "e40971bb3aa61de0ff23493cfb2442122490bce70fbc16aed9af433a66979485"
+          "sha256": "b3c26db01ba8275a873a8b910ff5ae03910d78eebb8324f37cda92a4812c37e5"
         }
       }
     },
     {
       "catalogId": "bears-home-2012",
       "constructionKey": "home",
-      "revision": "ed082190ef9a0934",
+      "revision": "82027605b3e3f5b8",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-home-2012.webp",
-          "sha256": "e91dac988a8e0c220137f2c596ae954c5fbaacb24a89573ae4a33de9de3a3c02"
+          "sha256": "f38ab88e4d1cc9328de76454b3196fdcad4456d175b8ea93ff2d792aa3ded2be"
         },
         "full": {
           "path": "/uniforms/bears-home-2012-full.webp",
-          "sha256": "d10752551ab669df8c31c10f08e222d93e561bd695dba55bcc1a4d2c9379490c"
+          "sha256": "7745a54c05931572dc7aee193eb1e3ea6dfdc48737389a5d993ad9aac3e5ddab"
         }
       },
       "combinations": [
@@ -83,7 +83,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/bears-home-2012--white-pants-full.webp",
-            "sha256": "e61060d54f2f9d473d7b8e2533af9ae370ffb53f97dcb7193d151377fd1a89a2"
+            "sha256": "9873298f8df92bfb6f08556d6775bcc1e4d6920f6e82c4d6acf0e3633506d123"
           }
         }
       ]
@@ -91,15 +91,15 @@
     {
       "catalogId": "bears-orange-alternate-2005",
       "constructionKey": "orange-alternate",
-      "revision": "379373fca61d3b84",
+      "revision": "ac9cf8ddbadea87d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-orange-alternate-2005.webp",
-          "sha256": "d04bf7cd85458bce4978925904d4e45251bf7654a90335d1f861fdcacf81a5de"
+          "sha256": "993fbd224adba3d24d4d6d92c7a2f05b11d19a902a85d964944250febf936cf3"
         },
         "full": {
           "path": "/uniforms/bears-orange-alternate-2005-full.webp",
-          "sha256": "3e3c9542f3675e76e8008042d4b050922b2e2d9ea98eb718e955087fd034e6b5"
+          "sha256": "c1dd00ef9ecd4e06b2e48aaa174719fc1a29aa53b3101c3aad72e3767c90abc4"
         }
       }
     },
@@ -603,15 +603,15 @@
     {
       "catalogId": "chargers-away-2020",
       "constructionKey": "away",
-      "revision": "f5b723e016923651",
+      "revision": "6588e4f1c82315fe",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-away-2020.webp",
-          "sha256": "15f86ad1ea50cc0d527aae54735f8589ca1a23eadd5c78bb0e9c9034fc37eae8"
+          "sha256": "859d5520b86feb7e843fc7fa33b0002d698e73fbad6cdb520bd2e41db4168990"
         },
         "full": {
           "path": "/uniforms/chargers-away-2020-full.webp",
-          "sha256": "71c69b08029c798a9f5696303fa2d32488c49852279ef55db3c955ac9376897b"
+          "sha256": "5f5bb609a1b0e1f1ed934c2bdd622e871c81c8009de4ee96468113fa74da3cff"
         }
       },
       "combinations": [
@@ -620,7 +620,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/chargers-away-2020--white-pants-full.webp",
-            "sha256": "bce893865779ce4452ba25a89895bef929e2faed5a7f7bd8ecc492f8fa3dc906"
+            "sha256": "409a7c00137ee5e2358eeb4f7d1e6cdba8f31f0344ae8a3887c3a489d3df6b15"
           }
         },
         {
@@ -628,7 +628,7 @@
           "label": "Powder pants, white socks",
           "full": {
             "path": "/uniforms/chargers-away-2020--powder-pants-full.webp",
-            "sha256": "f7cdc318b7033ec9de35e51aa8e38d2c4394a4f63cc50a8ceb3e15af316c3155"
+            "sha256": "a015f561a57f7e0a4f4a4c03c578f5bd68789ef6f4e2c61d1b07bdcc072769f9"
           }
         },
         {
@@ -636,7 +636,7 @@
           "label": "Powder pants, powder socks",
           "full": {
             "path": "/uniforms/chargers-away-2020--powder-out-full.webp",
-            "sha256": "beca5cb92b3a1843805064c61988424ef5ff24591fab50129c12c6065c4a1b77"
+            "sha256": "b9fc44414a7a8910a33a84a8c5b7dac27486384d853089ee3492de3570167170"
           }
         },
         {
@@ -644,7 +644,7 @@
           "label": "White pants, white socks",
           "full": {
             "path": "/uniforms/chargers-away-2020--white-out-full.webp",
-            "sha256": "14c0df8b1bf6d5ecca60f0b161055c69237dcfdb760c8ef64e4b9b7ad083333d"
+            "sha256": "cca3645205dff699077e0059030ed28d4fabf00a5ad2a77aeed2c051719fdffd"
           }
         }
       ]
@@ -652,30 +652,30 @@
     {
       "catalogId": "chargers-charger-power-2025",
       "constructionKey": "charger-power",
-      "revision": "026b98243829ccff",
+      "revision": "0e3935d9ec36ac2a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-charger-power-2025.webp",
-          "sha256": "c5504a0e7a88dfda663d555c81c7317a9927b20813ce4430b1f131a8d93c120a"
+          "sha256": "e80c29afb151e2bdf0d7415a613e208eb95c3cca152424cbde74db55144c7d2c"
         },
         "full": {
           "path": "/uniforms/chargers-charger-power-2025-full.webp",
-          "sha256": "7b6b6cf046a460bd738ca9dc81e88a93c01d2b4c6a622180bc9c55838355f70c"
+          "sha256": "e9fd5f28ddd23e7761ceaa378299386d7f6bd8ca68a770ee309e05dc5e0f1d30"
         }
       }
     },
     {
       "catalogId": "chargers-home-2020",
       "constructionKey": "home",
-      "revision": "9b562bbb1e8659f8",
+      "revision": "977ff5cc69bf3ea5",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-home-2020.webp",
-          "sha256": "3951f15ae72e49a0ddedad409a0e781a45cccefb380a612f21a2370accc78763"
+          "sha256": "73ed6ad88db81f31763974da230b7a85701ac04f74647ad65276782f2a56c2d3"
         },
         "full": {
           "path": "/uniforms/chargers-home-2020-full.webp",
-          "sha256": "4b99754ff31f06aa2bc844ce5425022db1f21289c8b87161094125735e605913"
+          "sha256": "75adfcf653d36ee5ae80cc8dc7de83f11ad6585d2557eec30c21cdcad2dc898d"
         }
       },
       "combinations": [
@@ -684,7 +684,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/chargers-home-2020--white-pants-full.webp",
-            "sha256": "899392240db11e49f8789618e9ed9ef512039072a257071f3b5fa36cfca34c53"
+            "sha256": "0b93d414eb7900ce63a85fccc3c629f4f1a31c12f94b9a1aa188c8c9a2792d9b"
           }
         },
         {
@@ -692,7 +692,7 @@
           "label": "Powder pants, white socks",
           "full": {
             "path": "/uniforms/chargers-home-2020--powder-pants-full.webp",
-            "sha256": "a53dd6f38d8d9559c39a4bd14e54a9ab7513fac19d01cab828947ecd1272ba6b"
+            "sha256": "0612d30e65e72efadebea3ada3946881c8b22241a1bca526fbd023c7b7e680aa"
           }
         },
         {
@@ -700,7 +700,7 @@
           "label": "Powder pants, powder socks",
           "full": {
             "path": "/uniforms/chargers-home-2020--powder-out-full.webp",
-            "sha256": "e23cb167c69d231e384c7f460f21badf57b3b2e7213d8c56ab027ecbfac4ae88"
+            "sha256": "0c4354589d76ee730c27a7898047803df99503867728410c1f440ea24cd006af"
           }
         }
       ]
@@ -708,30 +708,30 @@
     {
       "catalogId": "chargers-powder-blue-1960",
       "constructionKey": "powder-blue",
-      "revision": "584eb8d10da54b0d",
+      "revision": "039e9437f10bd2c0",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-powder-blue-1960.webp",
-          "sha256": "3951f15ae72e49a0ddedad409a0e781a45cccefb380a612f21a2370accc78763"
+          "sha256": "73ed6ad88db81f31763974da230b7a85701ac04f74647ad65276782f2a56c2d3"
         },
         "full": {
           "path": "/uniforms/chargers-powder-blue-1960-full.webp",
-          "sha256": "4b99754ff31f06aa2bc844ce5425022db1f21289c8b87161094125735e605913"
+          "sha256": "75adfcf653d36ee5ae80cc8dc7de83f11ad6585d2557eec30c21cdcad2dc898d"
         }
       }
     },
     {
       "catalogId": "chargers-super-chargers-2025",
       "constructionKey": "super-chargers",
-      "revision": "1183d0618bd2da27",
+      "revision": "bc1fa0070abdc563",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-super-chargers-2025.webp",
-          "sha256": "7fbb3975495a92e1b93eb7a1fcc9ad1bffe3c66b4d847322a7fed2105de63014"
+          "sha256": "df4648843cc7ab814f5aca3caaf4b212b6f1f5f9418decef6faac80ae8f0c7fa"
         },
         "full": {
           "path": "/uniforms/chargers-super-chargers-2025-full.webp",
-          "sha256": "b6560d1b6404ae80e06f097147cdc8a1118a66da5bc367c548ee52afb04ae126"
+          "sha256": "d867ccb80802d0fefbb037ece247434723b9ed100d0d7db3bf35ce2bb5d3d411"
         }
       }
     },
@@ -983,15 +983,15 @@
     {
       "catalogId": "eagles-away-1996",
       "constructionKey": "away",
-      "revision": "b4616a30b2df999e",
+      "revision": "2e590ccbc78851ea",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-away-1996.webp",
-          "sha256": "f453c6e97f8b82d181839c4a3b94d7c81d104d47e34a3e99eab993551c6cc2b9"
+          "sha256": "e3f21435a553ba9744d577f198a4d6073fe8bd1b85cbace37117cf2d0fa3db88"
         },
         "full": {
           "path": "/uniforms/eagles-away-1996-full.webp",
-          "sha256": "b0eb1299680c7ed0cf468e6a7f91ae5061e5120fcabda98754b6b9a74d4d8f8b"
+          "sha256": "f3ae4cac0b29ab09f24c50c7e3d6b4f9d7ac018205625667d2bedacc87ec98f3"
         }
       },
       "combinations": [
@@ -1000,7 +1000,7 @@
           "label": "Green pants",
           "full": {
             "path": "/uniforms/eagles-away-1996--green-pants-full.webp",
-            "sha256": "e8ec918aec103a0ee138daa6f8be113ab0fab473639db3111d3869732f443f42"
+            "sha256": "c214f2ef4f48196b5d1206dc7afb1ddd6ae8737f37afa1b4e66c8d4ad9c0f0ac"
           }
         },
         {
@@ -1008,7 +1008,7 @@
           "label": "Black pants",
           "full": {
             "path": "/uniforms/eagles-away-1996--black-pants-full.webp",
-            "sha256": "cdb0214262ecf44cb04856771126c9aae3a922a6fc7cb35a0b88b9862b966f1f"
+            "sha256": "46cf1bfc8bdc19c72f2c8ae809d3f9485d245ff1191e7b5268c22efdbf43e92d"
           }
         }
       ]
@@ -1016,30 +1016,30 @@
     {
       "catalogId": "eagles-black-alt-2003",
       "constructionKey": "black-alt",
-      "revision": "73b6074644c3b0f1",
+      "revision": "73a597722b36956e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-black-alt-2003.webp",
-          "sha256": "1552dea55813206bc430b2be91666d026b0b534b98cc0ba06be887c1cb13ccd3"
+          "sha256": "67b101b5436f7198723ce36998ef936fae2315a1dbc5476fdc033b8f6eadd8d9"
         },
         "full": {
           "path": "/uniforms/eagles-black-alt-2003-full.webp",
-          "sha256": "b03a03e200f178f27d48537f1008327e675dcc7a2a12a2ba9f5be54d59bc3b63"
+          "sha256": "d2192a844a42b4dc7cea4f0944b9e3b04fb73bc623c6144651da036fdb1c93e1"
         }
       }
     },
     {
       "catalogId": "eagles-home-1996",
       "constructionKey": "home",
-      "revision": "5f43d295ce23c431",
+      "revision": "84116c16d6e74d1a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-home-1996.webp",
-          "sha256": "9ac6d34a90524023251fe4f41fc81f264d691a7de7fa12709e94ed7b3d8aa611"
+          "sha256": "87a05e09790545cb02042aa681791a31e9c21be6b843d86472078a918714633f"
         },
         "full": {
           "path": "/uniforms/eagles-home-1996-full.webp",
-          "sha256": "83c9cf435e9e160b23d459a78474dc6080b04a4f00fea61ce020332ffa987628"
+          "sha256": "c40dc9bb2f2a1c3dc25f74bf1172c959c72bf8cd6844334280c6b4ff527c069e"
         }
       }
     },
@@ -1541,15 +1541,15 @@
     {
       "catalogId": "panthers-away-2012",
       "constructionKey": "away",
-      "revision": "59dbe28ce6e1c797",
+      "revision": "054a386f1f622fde",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/panthers-away-2012.webp",
-          "sha256": "10a00c77a40e2ec01f7a6ead7ace7c95151dc8069f1a3c63ef13d32242d715b2"
+          "sha256": "54cbfa6f4fd1ff2da01a516ca7d3161a6c5efe8379a724b99809f7b93f01e448"
         },
         "full": {
           "path": "/uniforms/panthers-away-2012-full.webp",
-          "sha256": "f65bf7a5dd47ccb1d2c3fc30175dba810280fdf52cce3aeeac1ebfeb133ba0eb"
+          "sha256": "2be3eaa5e3a83723c85ce08f03c199813a429434d488cb1161b256eb331b06c2"
         }
       },
       "combinations": [
@@ -1558,7 +1558,7 @@
           "label": "White pants, black socks",
           "full": {
             "path": "/uniforms/panthers-away-2012--white-pants-black-socks-full.webp",
-            "sha256": "5e26ddf11d7eb0c1308f3961f0775083b8d4917e062839ba509082618ba3a699"
+            "sha256": "56286992b1a01b04b7a7bb14cac23046445bf7e082feec2ca42d0020e9fe1d10"
           }
         },
         {
@@ -1566,7 +1566,7 @@
           "label": "White pants, blue socks",
           "full": {
             "path": "/uniforms/panthers-away-2012--white-pants-blue-socks-full.webp",
-            "sha256": "dafb225c1c3c35f9b1fe5bd0b9a55adbaf23e9e8575651fb483cddf9ee91ef6a"
+            "sha256": "a36169173f322d685b87ef887916e0a76871bc780b533be7e4e006d4777d7c90"
           }
         },
         {
@@ -1574,7 +1574,7 @@
           "label": "Blue pants, white socks",
           "full": {
             "path": "/uniforms/panthers-away-2012--blue-pants-white-socks-full.webp",
-            "sha256": "6a4ea1fc396552c6f288f850f778be8cd23ad831d02f47a11570277013a3c4d1"
+            "sha256": "d8b312b3456e3d36337bb46dff36d5656a55368db6e07b42af7d7ce1bef5bc8e"
           }
         },
         {
@@ -1582,7 +1582,7 @@
           "label": "Blue pants, blue socks",
           "full": {
             "path": "/uniforms/panthers-away-2012--blue-pants-blue-socks-full.webp",
-            "sha256": "731c6620f97f5aff6500524fc54a0c84f9ccd0674e2dc3cb9341ac63d6110fe5"
+            "sha256": "7a2ff2a6cea6ee0d41d2684ba91737ebd88002136ee70e3b121c17cb38ba9e0f"
           }
         },
         {
@@ -1590,7 +1590,7 @@
           "label": "Silver pants",
           "full": {
             "path": "/uniforms/panthers-away-2012--silver-pants-full.webp",
-            "sha256": "12baa41aeb40475e53abd75a4cdebf225627e6aba3651c14e612c4f4366962a1"
+            "sha256": "954105fbf32e7338b88ab19c46c59ac317fd7f4965f7d69833b66fe7869e9a46"
           }
         }
       ]
@@ -1598,15 +1598,15 @@
     {
       "catalogId": "panthers-black-alt-2012",
       "constructionKey": "black-alt",
-      "revision": "8b3c2ecd752ea226",
+      "revision": "9a638f3fdc22e43c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/panthers-black-alt-2012.webp",
-          "sha256": "0033046aa649dfb561286f31efe2614ea8d4e37bfcb97670c91b9d4eedcdfd0b"
+          "sha256": "7014e95aa792e5d240c683d82474c98d0da1c748a6f3c88b93492d85998b6ab5"
         },
         "full": {
           "path": "/uniforms/panthers-black-alt-2012-full.webp",
-          "sha256": "c529b8d2af4034906a53b37c2258b965147a3011ccb1a1ad55ca63b9e22c4209"
+          "sha256": "9e0356ced2716bd0855759f98fd63e12d97782866d4ac1e949395f5e44ddc733"
         }
       },
       "combinations": [
@@ -1615,7 +1615,7 @@
           "label": "Black helmet",
           "full": {
             "path": "/uniforms/panthers-black-alt-2012--black-helmet-full.webp",
-            "sha256": "7658e53f8518ab74dbe74696c180d33597fa5d9d0dfa98e0e1ddd741e26eee51"
+            "sha256": "9cd0a7d9d981d7c7c413751573f2e16730ec7cf3d974a441caf0e060cf725eeb"
           }
         },
         {
@@ -1623,7 +1623,7 @@
           "label": "Silver pants",
           "full": {
             "path": "/uniforms/panthers-black-alt-2012--silver-pants-full.webp",
-            "sha256": "e96e790efd0b947ea8ade3f5ca0de2040bc1d3e261e62c5a6606586f194de1d0"
+            "sha256": "1361bb5090a0540914b9c7710d9aa4b877dda719d98ab669ee8ddb67c03634ed"
           }
         }
       ]
@@ -1631,15 +1631,15 @@
     {
       "catalogId": "panthers-home-2012",
       "constructionKey": "home",
-      "revision": "261a0a5ddf4c3f82",
+      "revision": "a1a055ef2eb1d244",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/panthers-home-2012.webp",
-          "sha256": "e3757b0ec59bc2208958fe1bc64667eb48d787617e6e6f1368de53446625a331"
+          "sha256": "db6ab0652b45540fe82c521bea1410c2221c03db8c8587ccce408b30f50d2db9"
         },
         "full": {
           "path": "/uniforms/panthers-home-2012-full.webp",
-          "sha256": "33f64eff36218bfa2c5c52b1f30f4e16e046f1667b695295b7d03312a86dbdb0"
+          "sha256": "5d37670b630d5f7fb3561d86f9c62d1def36bfb848ad85b4ab81c2ffbac3e8ac"
         }
       },
       "combinations": [
@@ -1648,7 +1648,7 @@
           "label": "Blue pants",
           "full": {
             "path": "/uniforms/panthers-home-2012--blue-pants-full.webp",
-            "sha256": "d07915bc25e2f106ac874864038b5624072adcb80ea09517a6d26b6a75d20a2a"
+            "sha256": "9c8157555a744c3fdd217a1dc4df9811cabd3db116eb424179155fd73f9f7563"
           }
         }
       ]
@@ -2133,15 +2133,15 @@
     {
       "catalogId": "steelers-away-1997",
       "constructionKey": "away",
-      "revision": "10957af0b959a793",
+      "revision": "d7a389714c069eeb",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/steelers-away-1997.webp",
-          "sha256": "0176d0a6f9706ad4e42067fd58849cdf8403a90406231f65cdd5153900b6c782"
+          "sha256": "d1d030a9fc51a4f725200b009b3af82bcab86d676de8fc2a52ba929baf63e09e"
         },
         "full": {
           "path": "/uniforms/steelers-away-1997-full.webp",
-          "sha256": "9a4079c94990a3afa92d5c2135c0ced9f188e17db2f978780c8ea483a374edf8"
+          "sha256": "f5231f6609d07fb28d22543c0700011e444df08c3824cb347e9f10f0c8d79df2"
         }
       }
     },
@@ -2163,15 +2163,15 @@
     {
       "catalogId": "steelers-home-1997",
       "constructionKey": "home",
-      "revision": "df2774cf3e53b0d9",
+      "revision": "aa5e9d2e1f88fdd7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/steelers-home-1997.webp",
-          "sha256": "c38332e6d5198c7d715e67452f595b70338596306a0167351347ae98bd7fbedf"
+          "sha256": "2d2b36cf1e71990bb70eac5d709be1cc594902986ce100077f2257513042e8a7"
         },
         "full": {
           "path": "/uniforms/steelers-home-1997-full.webp",
-          "sha256": "fa819783c2b5027023f5ed8ae20c21615bdd46ec0904402280385adc9e173987"
+          "sha256": "543f723fafc1143880991e43a9f4b8b0847edcff4c0f91ae6a185d08e260cb65"
         }
       }
     },
@@ -2393,15 +2393,15 @@
     {
       "catalogId": "vikings-away-2013",
       "constructionKey": "away",
-      "revision": "a287a0c982c65dca",
+      "revision": "17b60a9d705f3ec4",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/vikings-away-2013.webp",
-          "sha256": "322de1cd94dc6b533e195894bf256ab8ae8a95c69c4a598e174876a6e59f0589"
+          "sha256": "51b770173e0defc748b2d85b9a6dbb931790e2050bd8c443467d22198e25fd03"
         },
         "full": {
           "path": "/uniforms/vikings-away-2013-full.webp",
-          "sha256": "0adfe39c59d591b4d8b077d76b6a6185823d7ced568b0cb9d295d1776b88124a"
+          "sha256": "aa0efc3b3fe2745d632a6855b247442b9e054120db906134cb992b3985d5522d"
         }
       },
       "combinations": [
@@ -2410,7 +2410,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/vikings-away-2013--white-pants-full.webp",
-            "sha256": "d8db24983c4d117404d398372da227a5ea76edd272f90ae98c32b6ee91e3ec30"
+            "sha256": "aa2963d1375af375b95888290c153e5bb820640875acb617230fa4ea0ad36fb4"
           }
         }
       ]
@@ -2418,15 +2418,15 @@
     {
       "catalogId": "vikings-home-2013",
       "constructionKey": "home",
-      "revision": "f7399e77dee8ebf6",
+      "revision": "9953f8c27425c31e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/vikings-home-2013.webp",
-          "sha256": "89da423387aa6b8ac308d97854f82ae8292e8071f51504a80ad778f334e63e39"
+          "sha256": "d772fcc89588074ac38193220dc86cd0f9d4c0a336f12d75f175cc1af42b0f75"
         },
         "full": {
           "path": "/uniforms/vikings-home-2013-full.webp",
-          "sha256": "3dedd5d8c0b190f7ed817b51859fc77c27ac48c4a614eeedc10f290164fa4827"
+          "sha256": "c125fe1a236c9a44525a5566daf50bcbd7ad5fcb8fed5d1e04631d7b625b9f3b"
         }
       },
       "combinations": [
@@ -2435,7 +2435,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/vikings-home-2013--white-pants-full.webp",
-            "sha256": "fae75249ec3c3cba249afd950f697992102fec4b64647123bb823c9d74299a5a"
+            "sha256": "2c8c0351736ee7d39b89148628be2fa5a8bfde079e5473a6a0a5e23b76615132"
           }
         }
       ]
@@ -2458,15 +2458,15 @@
     {
       "catalogId": "vikings-winter-warrior-2024",
       "constructionKey": "winter-warrior",
-      "revision": "bcff6b441b358025",
+      "revision": "4cdbe13ba8796a22",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/vikings-winter-warrior-2024.webp",
-          "sha256": "be4b88ccfe11a3bc060b8d2497e7bc776ee0172dd4dc47d71bf894c5cdac0d8b"
+          "sha256": "0d6185cd104aea38c12b6c2a272d82923744573e4a8730ae01f44611ac0a0ed6"
         },
         "full": {
           "path": "/uniforms/vikings-winter-warrior-2024-full.webp",
-          "sha256": "f3344f11f0be69637594742eaeddd8a81eb12be11f1f3509c27da44f2a0ed037"
+          "sha256": "cfc65e91a44d3dfa09f6900bff80f76d0569fe6994f529d16ed14974878b934c"
         }
       }
     }

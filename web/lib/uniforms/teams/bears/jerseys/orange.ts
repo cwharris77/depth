@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { BEARS_NUMBER_THREE } from '../marks/numbers';
 
 // White-piped navy stripes, a white V collar with a navy inset, and white numerals with a heavy
 // navy outline.
@@ -27,6 +28,12 @@ export const BEARS_JERSEY_ORANGE: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'navy', outlineWeight: 'heavy', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'navy',
+    outlineWeight: 'heavy',
+    texture: 'mesh',
+    glyphPath: BEARS_NUMBER_THREE,
+  },
   marks: [],
 };
