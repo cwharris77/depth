@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { TEXANS_NUMBER_THREE } from '../marks/numbers';
 import { anchoredMark } from '../../core/jersey-spec';
 import { TEXANS_LOGO } from '../marks/logo';
 
@@ -19,7 +20,13 @@ export const TEXANS_JERSEY_H_TOWN: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'red', outline: 'hTownBlue', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'red',
+    outline: 'hTownBlue',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: TEXANS_NUMBER_THREE,
+  },
   marks: [
     anchoredMark({
       paint: 'over',
