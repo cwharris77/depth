@@ -17,22 +17,22 @@ export const COWBOYS_STAR_DECAL = placed(
 );
 
 // The sleeve star: a navy star inside a white keyline and a navy edge, drawn in mannequin space
-// for the right sleeve, centred on the sleeve stripe at the outer edge, which trims it. The box is
-// the sleeve anchor's span, so the star places unchanged.
+// for the right sleeve, centred on the sleeve stripe at the outer edge, which trims it to about
+// half. The box is the sleeve anchor's span, so the star places unchanged.
 export const COWBOYS_SLEEVE_STAR: Mark<'edge' | 'keyline' | 'star'> = {
   box: [490, 440, 564, 570],
   paths: [
     {
       slot: 'edge',
-      d: 'M543.0,459.0 L549.7,479.7 L571.5,479.7 L553.9,492.5 L560.6,513.3 L543.0,500.5 L525.4,513.3 L532.1,492.5 L514.5,479.7 L536.3,479.7 Z',
+      d: 'M558.0,449.0 L567.0,476.6 L596.0,476.6 L572.5,493.7 L581.5,521.4 L558.0,504.3 L534.5,521.4 L543.5,493.7 L520.0,476.6 L549.0,476.6 Z',
     },
     {
       slot: 'keyline',
-      d: 'M543.0,463.0 L548.8,481.0 L567.7,481.0 L552.4,492.1 L558.3,510.0 L543.0,498.9 L527.7,510.0 L533.6,492.1 L518.3,481.0 L537.2,481.0 Z',
+      d: 'M558.0,454.0 L565.9,478.2 L591.3,478.2 L570.7,493.1 L578.6,517.3 L558.0,502.4 L537.4,517.3 L545.3,493.1 L524.7,478.2 L550.1,478.2 Z',
     },
     {
       slot: 'star',
-      d: 'M543.0,470.5 L547.2,483.3 L560.6,483.3 L549.7,491.2 L553.9,504.0 L543.0,496.1 L532.1,504.0 L536.3,491.2 L525.4,483.3 L538.8,483.3 Z',
+      d: 'M558.0,464.0 L563.6,481.3 L581.8,481.3 L567.1,492.0 L572.7,509.2 L558.0,498.6 L543.3,509.2 L548.9,492.0 L534.2,481.3 L552.4,481.3 Z',
     },
   ],
 };

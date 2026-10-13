@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "c7df48b576f9edd4dd6cd0316dc67cda00b59f27eb6ed76aa743daa1ec643b52",
-  "revision": "4c31d12c699519a4",
+  "sourceDigest": "5178d0f1f762e151180ba92f2526d8a675388cd01f365a35bcf3e1fe9507d111",
+  "revision": "83148b256e102810",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -898,15 +898,15 @@
     {
       "catalogId": "cowboys-home-1964",
       "constructionKey": "home",
-      "revision": "d7a32ec11b2447ff",
+      "revision": "30ab13ddcc87300c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cowboys-home-1964.webp",
-          "sha256": "7f7d4b6852ea3459b77a8a489f99a0d3abc49c1510f1d7be866d64190b4409d3"
+          "sha256": "b9cdc20fb4002a8b76bb85980f47f9832176bdfade8107c8b63c20e4e8c36df0"
         },
         "full": {
           "path": "/uniforms/cowboys-home-1964-full.webp",
-          "sha256": "204b3be688c4de008f3315f331d09d58b95ad95a2523424210926a8e80c0f88d"
+          "sha256": "5a05f4ad788cd002cf4ed8c43f099738d9346a882452c521ca71245a47deb8b0"
         }
       }
     },

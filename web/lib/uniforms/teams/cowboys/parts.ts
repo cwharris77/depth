@@ -9,7 +9,7 @@ import { COWBOYS_JERSEY_WHITE } from './jerseys/white';
 export const COWBOYS_PALETTE = {
   navy: '#003594',
   white: '#FFFFFF',
-  // The dark navy of the sleeve star and the away stripes' edges.
+  // The navy jersey's body, the sleeve star and the away stripes' edges.
   deepNavy: '#041E42',
   // The star decal's own navy and white, kept apart from the jersey navy and white.
   sourceNavy: '#032343',
