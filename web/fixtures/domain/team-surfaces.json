@@ -322,16 +322,16 @@
   {
     "id": "cowboys-home-1964",
     "colors": {
-      "primary": "#003594",
+      "primary": "#041E42",
       "secondary": "#869397",
       "accent": "#869397"
     },
     "expected": {
-      "fill": "#003594",
+      "fill": "#041E42",
       "ring": "#869397",
       "mark": "#869397",
-      "textOnFill": "#ffffff",
-      "numeralFill": "#003594",
+      "textOnFill": "#869397",
+      "numeralFill": "#041E42",
       "numeralStroke": "#869397"
     }
   },
