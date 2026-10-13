@@ -441,7 +441,7 @@ export default function UniformFigure({
             {numberLayers.map((layer) => (
               <UniformLayerPath key={layer.id} layer={layer} uid={uid} />
             ))}
-            <g data-number="3">
+            <g data-number={model.number.glyphLabel ?? '3'}>
               <path
                 clipPath={`url(#${uid}-jersey)`}
                 d={numberPath}
@@ -453,10 +453,14 @@ export default function UniformFigure({
               <path
                 clipPath={`url(#${uid}-jersey)`}
                 d={numberPath}
-                fill={model.number.fill}
+                fill={
+                  model.number.fill.startsWith('pattern:')
+                    ? `url(#${uid}-pattern-${model.number.fill.slice('pattern:'.length)})`
+                    : model.number.fill
+                }
                 stroke="none"
               />
-              {!model.number.glyphPath && (
+              {(model.number.texture === 'mesh' || !model.number.glyphPath) && (
                 <path
                   clipPath={`url(#${uid}-jersey)`}
                   d={numberPath}

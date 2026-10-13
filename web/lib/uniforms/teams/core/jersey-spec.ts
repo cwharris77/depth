@@ -56,6 +56,8 @@ export interface JerseyNumber {
   outlineWeight: 'none' | 'thin' | 'regular' | 'heavy' | 'x-heavy';
   // 'mesh' overlays the numeral with the shared mesh texture; 'plain' draws it flat.
   texture?: 'mesh' | 'plain';
+  glyphPath?: string;
+  glyphLabel?: string;
 }
 
 export interface JerseySpec {
@@ -357,8 +359,10 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
       fill: spec.number.fill,
       outline: spec.number.outline,
       outlineWidth: OUTLINE_PX[spec.number.outlineWeight],
-      // The renderer overlays the mesh only on the default glyph, so naming the glyph draws it flat.
-      ...(spec.number.texture === 'plain' && { glyphPath: JERSEY_NUMBER_THREE }),
+      ...(spec.number.glyphPath
+        ? { glyphPath: spec.number.glyphPath, texture: spec.number.texture ?? 'mesh' }
+        : spec.number.texture === 'plain' && { glyphPath: JERSEY_NUMBER_THREE }),
+      ...(spec.number.glyphLabel && { glyphLabel: spec.number.glyphLabel }),
     },
   };
 

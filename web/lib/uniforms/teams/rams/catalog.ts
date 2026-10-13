@@ -65,7 +65,7 @@ export const RAMS_CATALOG: TeamCatalog = {
     {
       slug: 'rivalries-2025',
       sleeveNike: 'white',
-      sleeveNikePlacement: 'lower',
+      sleeveNikePlacement: 'middle',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',

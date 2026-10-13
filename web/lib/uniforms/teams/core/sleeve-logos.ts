@@ -1,7 +1,7 @@
 import { NIKE_MARK } from './pants-logos';
 import type { PartLayer } from './parts';
 
-export type SleeveNikePlacement = 'upper' | 'lower';
+export type SleeveNikePlacement = 'upper' | 'middle' | 'lower';
 
 // The outer sleeve wraps away from the front view; surface clipping hides the far end.
 export function sleeveNike(
@@ -11,7 +11,7 @@ export function sleeveNike(
 ): PartLayer[] {
   const [x0, y0, x1, y1] = NIKE_MARK.box;
   const scale = 40 / (x1 - x0);
-  const cy = placement === 'lower' ? 540 : 442;
+  const cy = placement === 'lower' ? 540 : placement === 'middle' ? 490 : 442;
   return ['left', 'right'].map((side) => {
     let coordinate = 0;
     const d = NIKE_MARK.paths[0].d.replace(/-?\d+(?:\.\d+)?/g, (n) => {

@@ -83,8 +83,9 @@ describe('pants branding in catalog combinations', () => {
     for (const { catalog } of getAllTeamCatalogs()) {
       for (const design of catalog.designs) {
         const lower = outliers[catalog.teamId]?.includes(design.slug) ?? false;
+        const middle = catalog.teamId === 'rams' && design.slug === 'rivalries-2025';
         expect(design.sleeveNikePlacement, `${catalog.teamId}/${design.slug}`).toBe(
-          lower ? 'lower' : undefined
+          middle ? 'middle' : lower ? 'lower' : undefined
         );
         if (!lower) continue;
         for (const [index, combination] of design.combinations.entries()) {
@@ -98,8 +99,8 @@ describe('pants branding in catalog combinations', () => {
           expect(marks, `${catalog.teamId}/${key}`).toHaveLength(2);
           for (const mark of marks) {
             const box = boundsOf(mark.d);
-            expect(box[1]).toBeGreaterThan(526);
-            expect(box[3]).toBeLessThan(560);
+            expect(box[1]).toBeGreaterThan(middle ? 476 : 526);
+            expect(box[3]).toBeLessThan(middle ? 510 : 560);
           }
         }
       }

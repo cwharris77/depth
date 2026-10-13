@@ -2,7 +2,9 @@
 // fill rule (its two subpaths are a union, and an evenodd rule would punch the crescent hollow),
 // and the pant and sock pairings each kit is worn with.
 import { describe, expect, it } from 'vitest';
-import { RAMS_PARTS } from '../rams';
+import { RAMS_PARTS, RAMS_UNIFORMS_FROM_PARTS } from '../rams';
+import { JERSEY_NUMBER_THREE } from '../../jersey-art';
+import { boundsOf } from '../core/marks';
 import { RAMS_CATALOG } from '../rams/catalog';
 
 describe('Rams helmet parts', () => {
@@ -66,6 +68,31 @@ describe('Rams pants parts', () => {
 });
 
 describe('Rams jerseys', () => {
+  it('places Midnight Mode Nike marks midway down the blue sleeve panels', () => {
+    const marks = RAMS_UNIFORMS_FROM_PARTS.kits['rivalries-2025'].layers?.filter((l) =>
+      l.id.includes('sleeve-nike')
+    );
+    expect(marks).toHaveLength(2);
+    for (const mark of marks ?? []) {
+      const box = boundsOf(mark.d);
+      expect((box[1] + box[3]) / 2).toBeCloseTo(490);
+    }
+  });
+  it('uses the Rams numeral construction instead of the shared athletic three', () => {
+    for (const name of ['royal', 'white', 'rivalries'] as const) {
+      const number = RAMS_PARTS.jerseys[name].number;
+      expect(number?.glyphPath).toBeDefined();
+      expect(number?.glyphPath).not.toBe(JERSEY_NUMBER_THREE);
+    }
+  });
+
+  it('fades royal numerals from yellow to white and keeps the away cuff yellow', () => {
+    expect(RAMS_UNIFORMS_FROM_PARTS.kits.home.number?.fill).toBe('pattern:rams-number-fade');
+    const cuff = RAMS_UNIFORMS_FROM_PARTS.kits.away.layers?.filter((l) => l.id.includes('cuff'));
+    expect(cuff?.length).toBeGreaterThan(0);
+    expect(cuff?.every((l) => l.kind === 'fill' && l.fill === '#FFD100')).toBe(true);
+  });
+
   it('draws a collar on every jersey', () => {
     for (const jersey of Object.values(RAMS_PARTS.jerseys)) {
       expect(jersey.layers.some((l) => l.id.includes('collar'))).toBe(true);
