@@ -73,8 +73,8 @@ export const TEXANS_SPEC: TeamSpec = {
       stripes: {
         position: 'leg-edge',
         bands: [
-          { color: 'red', size: 'm' },
           { color: 'hTownBlue', size: 's' },
+          { color: 'red', size: 'm' },
         ],
         gap: 'none',
         edge: 'none',

@@ -42,6 +42,8 @@ export type AnchorName =
   | 'pants-nike'
   | 'sleeve-top-left'
   | 'sleeve-top-right'
+  | 'sleeve-logo-left'
+  | 'sleeve-logo-right'
   | 'collar-narrow-v';
 
 interface Anchor {
@@ -112,6 +114,25 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
     w: 29,
     cy: 438.5,
     mirror: false,
+    idSuffix: '-right',
+  },
+  // A team logo worn small on the lower outer sleeve: its far side runs past the sleeve's outer
+  // edge and the jersey clip crops it, leaving the near horn. Drawn for the right sleeve, so the
+  // logo reads mirrored there and native on the left.
+  'sleeve-logo-left': {
+    surface: 'sleeve-left',
+    x0: -4,
+    w: 78,
+    cy: 506,
+    mirror: false,
+    idSuffix: '-left',
+  },
+  'sleeve-logo-right': {
+    surface: 'sleeve-right',
+    x0: 514,
+    w: 78,
+    cy: 506,
+    mirror: true,
     idSuffix: '-right',
   },
 };
@@ -277,12 +298,13 @@ export function placeMark<S extends string>(
   });
 }
 
-export type AnchorPair = 'sleeves' | 'shoulders' | 'sleeve-tops';
+export type AnchorPair = 'sleeves' | 'shoulders' | 'sleeve-tops' | 'sleeve-logos';
 
 const PAIR_SIDE = {
   sleeves: 'sleeve',
   shoulders: 'shoulder',
   'sleeve-tops': 'sleeve-top',
+  'sleeve-logos': 'sleeve-logo',
 } as const;
 
 // Both sleeves, both shoulders or both sleeve tops, interleaved left then right for each slot, the

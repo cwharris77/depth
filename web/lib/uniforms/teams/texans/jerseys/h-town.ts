@@ -1,16 +1,16 @@
-import { TEXANS_H_TOWN_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
+import { TEXANS_NUMBER_THREE } from '../marks/numbers';
 import { anchoredMark } from '../../core/jersey-spec';
-import { TEXANS_HOME_SLEEVE_HORN } from '../marks/construction';
+import { TEXANS_LOGO } from '../marks/logo';
 
 export const TEXANS_JERSEY_H_TOWN: CompleteJerseySpec = {
   body: 'navy',
   collar: {
     style: 'inset-v',
-    color: 'red',
+    color: 'navy',
     trim: 'none',
     inside: 'body',
-    lining: 'none',
+    lining: 'red',
     backBar: 'none',
     outline: true,
   },
@@ -25,15 +25,15 @@ export const TEXANS_JERSEY_H_TOWN: CompleteJerseySpec = {
     outline: 'hTownBlue',
     outlineWeight: 'regular',
     texture: 'mesh',
-    glyphPath: TEXANS_H_TOWN_NUMBER_THREE,
+    glyphPath: TEXANS_NUMBER_THREE,
   },
   marks: [
     anchoredMark({
       paint: 'over',
-      mark: TEXANS_HOME_SLEEVE_HORN,
-      anchor: 'sleeves',
-      slots: { red: 'hTownBlue' },
-      id: 'h-town-sleeve-horn',
+      mark: TEXANS_LOGO,
+      anchor: 'sleeve-logos',
+      slots: { keyline: 'hTownBlue', head: 'navy', horn: 'navy' },
+      id: 'h-town-sleeve-logo',
     }),
   ],
 };
