@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "c825695fab507d4c3878b79a020ee78780680bc8e0a777c29c8278001034e63f",
-  "revision": "76194619d3779130",
+  "sourceDigest": "55f2a536572f2c703cbddb0c19b75d49f0e7d76e9204ad99be02a70fca49c0c2",
+  "revision": "875e9cc9e4c99f21",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -823,15 +823,15 @@
     {
       "catalogId": "commanders-away-2022",
       "constructionKey": "away",
-      "revision": "1cc25c10b721ec84",
+      "revision": "b82aa106f1b64673",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/commanders-away-2022.webp",
-          "sha256": "1682c3ecc387c30bfa7a9aa44a0042fbccd4e31abb88c86d7df8a81d86d6926c"
+          "sha256": "7801a7f16f04a89aa16c7f1b59f8b6be45076570983a7ec90a2ada43f5a33444"
         },
         "full": {
           "path": "/uniforms/commanders-away-2022-full.webp",
-          "sha256": "f1b478b686d1bb6f96a782b4620bf68844843dc8c1f2889b22446a85913011b7"
+          "sha256": "ff2919b38a1f2a8fd7d8fb3942c841b4d17315479abe7712f4521b9226f46235"
         }
       }
     },

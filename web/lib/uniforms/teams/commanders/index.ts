@@ -3,10 +3,12 @@ import { catalogKits } from '../core/catalog';
 import { expandTeamSpec } from '../core/team-spec';
 import { COMMANDERS_PALETTE, COMMANDERS_SPEC } from './parts';
 import { COMMANDERS_CATALOG } from './catalog';
+import { COMMANDERS_NUMBER_PATTERNS } from './marks/numbers';
 
 export const COMMANDERS_PARTS: TeamPartsDefinition = {
   teamId: 'commanders',
   palette: COMMANDERS_PALETTE,
+  patterns: COMMANDERS_NUMBER_PATTERNS,
   ...expandTeamSpec('commanders', COMMANDERS_SPEC),
   kits: catalogKits(COMMANDERS_CATALOG),
 };
