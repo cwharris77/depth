@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "d68b1bced56890e9bfc303c9c9f4e8a18933ba3aeb095a208fddb6af67fb6745",
-  "revision": "12250ee63c51a046",
+  "sourceDigest": "e5f4902cf5b069ebe22852f5fc901b20df7f289b490d8249959cb7f049ec9a7a",
+  "revision": "9a7424fadedda0ae",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1706,15 +1706,15 @@
     {
       "catalogId": "rams-away-2020",
       "constructionKey": "away",
-      "revision": "31bc88f07b3b7431",
+      "revision": "5483f602eae7dbc8",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-away-2020.webp",
-          "sha256": "0774e6fb777cd8cf69a37e29bc2eb4de7b383b284b51f62519012ddd35925169"
+          "sha256": "bcb3d5adc1d98b4492dde2196c5460a2275ae208750c0a5259ee9a4a128f425d"
         },
         "full": {
           "path": "/uniforms/rams-away-2020-full.webp",
-          "sha256": "7ea472eacf6892e2824b0b21866bbc958ec0c580b8dcb353fbbde36326a7ceb2"
+          "sha256": "f02700ba4cc66cd2da13e3dcb9bb0df66f04213222ae300a0d594ce53d61d959"
         }
       },
       "combinations": [
@@ -1723,7 +1723,7 @@
           "label": "Gold pants",
           "full": {
             "path": "/uniforms/rams-away-2020--gold-pants-full.webp",
-            "sha256": "81cbf75c14373f68fee22494cd201d426085908f1f2c0651dc81a603f4561f99"
+            "sha256": "3d969b6a9597e5a50da7c284fac348059f29a36f426e03d30a49208ec6dc2768"
           }
         }
       ]
@@ -1731,30 +1731,30 @@
     {
       "catalogId": "rams-bone-2020",
       "constructionKey": "bone",
-      "revision": "71c7fffb8dd73e83",
+      "revision": "d356de8e9e9f17d3",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-bone-2020.webp",
-          "sha256": "a03d0dd1e2d06ef5c40eccf8fe3b5ac3b5d7b45c391cc13a4d5d10daf6ce93c1"
+          "sha256": "95108a9233ec7db8de19a0a1cf821438b509e09157046161220ed94a8e19b8b2"
         },
         "full": {
           "path": "/uniforms/rams-bone-2020-full.webp",
-          "sha256": "4c8ccb014eaee6de7404ec9c1d2e49e10b2fb0ddf5c20e72b03838ae15deb5fc"
+          "sha256": "42c22a8ae27971280780e7d448395edf44b0bea555e6d89fefa3c326d97fd415"
         }
       }
     },
     {
       "catalogId": "rams-home-2020",
       "constructionKey": "home",
-      "revision": "ab621cdcc08c0716",
+      "revision": "88580c0b0c221dff",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-home-2020.webp",
-          "sha256": "f201c33e9e755660b5ddecde4b1ca55f99b024f26b17ea466fd9c4d141e28e01"
+          "sha256": "bef3ccefa84a303f86ce90c98c460e45e3086aaddccbbb5f6e38bb7ec9cc4071"
         },
         "full": {
           "path": "/uniforms/rams-home-2020-full.webp",
-          "sha256": "9d7cec2bee50017df6b4cac1a8a80677948862bf5f0a14616e1f65b951ed01c2"
+          "sha256": "c73ad5851b906c21bcf4e52c9fccbe79bbd6bf324deb0cd698db415227858f71"
         }
       },
       "combinations": [
@@ -1763,7 +1763,7 @@
           "label": "Bone pants",
           "full": {
             "path": "/uniforms/rams-home-2020--bone-pants-full.webp",
-            "sha256": "afaace18f129e187cbb76c80f82f8f4ff1a964fadb01412c6c3b8e69cadec71b"
+            "sha256": "4e60c1b16343411a53d3836c7d81b030b847b2c51527d598890cbf58d46d6d05"
           }
         }
       ]
@@ -1771,15 +1771,15 @@
     {
       "catalogId": "rams-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "a931419c55d09ff7",
+      "revision": "9140100a46cef0df",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-rivalries-2025-2025.webp",
-          "sha256": "996435cd7c71038f2f9e8cc2a722b7617b0b80d39f1ba81dd1d412a95b899a2d"
+          "sha256": "aa42d3786a6568b24f38994cf6d1c1dc00017761a3c710e261e1f3f7212dd8a5"
         },
         "full": {
           "path": "/uniforms/rams-rivalries-2025-2025-full.webp",
-          "sha256": "0143d94c575e960e18cd8f1e1c1eab1308482e7faf92c859ae6a1dca2772bfd6"
+          "sha256": "59901204789d04b204e522a1fab5901505aefa4061a787d5e45ed4ab8889aac5"
         }
       }
     },
