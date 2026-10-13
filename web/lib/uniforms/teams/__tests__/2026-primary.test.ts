@@ -47,7 +47,8 @@ describe('worn replacement primary designs', () => {
         'full',
         row.constructionKey
       );
-      expect(svg).toContain(`${teamId}-2026`);
+      // The Rams' front view keeps the seam horn band; the other teams carry art of their own.
+      expect(svg).toContain(teamId === 'rams' ? 'rams-capped-horn-band' : `${teamId}-2026`);
     });
   }
 

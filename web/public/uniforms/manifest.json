@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "524a91033e7e15833bb46f20bdf6709f6306bababde44fc5a96a99a0a681767f",
-  "revision": "d3287e3f4297c03d",
+  "sourceDigest": "0b95978a3f2337356b820ffb00bb22634f5973838b55f032533f23b66909af17",
+  "revision": "4111d5f7d6fa1b48",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1791,15 +1791,15 @@
     {
       "catalogId": "rams-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "8b258cac38e276eb",
+      "revision": "57218efe626c3cac",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-away-2026-2026.webp",
-          "sha256": "0c137995f3697a87c7f6bdf6d21f55377ed98397eb156277092bdb8597d56152"
+          "sha256": "b43da73eafc7db1d562feee9ce3e73761ca2898ea64bade0e2fcf17ccc52392e"
         },
         "full": {
           "path": "/uniforms/rams-away-2026-2026-full.webp",
-          "sha256": "e09ae63966d1fb18cc86c2da3b1f0ca96e583b5c73ad74b7d1e7ccceef93e94d"
+          "sha256": "b87be94ee8e7eab321a3090e1f56d9cb9280d4b654d4216f95ed4b0e8455dcb2"
         }
       }
     },
@@ -1846,15 +1846,15 @@
     {
       "catalogId": "rams-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "d0ce221cba71b386",
+      "revision": "a03c2e1962260847",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-home-2026-2026.webp",
-          "sha256": "ad76349eaccadc1d46d7247edcfce515559576c16672a01ae6f4bc17a92440e5"
+          "sha256": "0b7fd0f9818ffe1955691bb6a23b20e161812417749d25b98166aee056b10a35"
         },
         "full": {
           "path": "/uniforms/rams-home-2026-2026-full.webp",
-          "sha256": "9db4fdd8299fa12287469025aea0987832ec21b3cea94163074cb528c11a65af"
+          "sha256": "68eba800f2b28fba143b4de8d2f8f50a53d4fd27570ea7029e80a6dd71ee3452"
         }
       }
     },

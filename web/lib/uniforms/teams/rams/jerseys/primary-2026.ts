@@ -1,8 +1,10 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { RAMS_JERSEY_ROYAL } from './royal';
+import { RAMS_JERSEY_WHITE } from './white';
 import { RAMS_NUMBER_THREE } from '../marks/numbers';
-import { RAMS_2026_HOME_HORNS, RAMS_2026_AWAY_HORNS } from '../marks/primary-2026';
 
+// Seen from the front the sleeve horn is the same tapering seam band as before; the numerals
+// lose their fade.
 export const RAMS_JERSEY_ROYAL_2026: CompleteJerseySpec = {
   ...RAMS_JERSEY_ROYAL,
   number: {
@@ -13,21 +15,12 @@ export const RAMS_JERSEY_ROYAL_2026: CompleteJerseySpec = {
     glyphPath: RAMS_NUMBER_THREE,
     glyphLabel: '3',
   },
-  marks: [{ paint: 'over', mark: RAMS_2026_HOME_HORNS }],
 };
+
+// The white jersey keeps its royal seam band over the yellow outer sleeve; the numerals gain a
+// yellow keyline.
 export const RAMS_JERSEY_WHITE_2026: CompleteJerseySpec = {
-  ...RAMS_JERSEY_ROYAL_2026,
-  body: 'white',
-  collar: {
-    style: 'inset-v',
-    color: 'royal',
-    trim: 'none',
-    inside: 'body',
-    lining: 'none',
-    backBar: 'none',
-    outline: true,
-  },
-  shoulderPanel: 'none',
+  ...RAMS_JERSEY_WHITE,
   number: {
     fill: 'royal',
     outline: 'yellow',
@@ -36,5 +29,4 @@ export const RAMS_JERSEY_WHITE_2026: CompleteJerseySpec = {
     glyphPath: RAMS_NUMBER_THREE,
     glyphLabel: '3',
   },
-  marks: [{ paint: 'over', mark: RAMS_2026_AWAY_HORNS }],
 };
