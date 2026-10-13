@@ -6,6 +6,7 @@ export const COWBOYS_CATALOG: TeamCatalog = {
   teamId: 'cowboys',
   designs: [
     {
+      id: 'cowboys-home-1964',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -13,7 +14,14 @@ export const COWBOYS_CATALOG: TeamCatalog = {
       jersey: 'navy',
       colors: { primary: '#003594', secondary: '#869397', accent: '#869397' },
       legacyAccent: SILVER_ACCENT,
-      periods: [{ from: 1964 }],
+      periods: [
+        {
+          from: 1996,
+          startSource:
+            'https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=DAL&year=1996',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -25,6 +33,7 @@ export const COWBOYS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'cowboys-away-1964',
       slug: 'away',
       sleeveNike: 'navy',
       name: 'Away',
@@ -32,7 +41,14 @@ export const COWBOYS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#003594', accent: '#869397' },
       legacyAccent: SILVER_ACCENT,
-      periods: [{ from: 1964 }],
+      periods: [
+        {
+          from: 1964,
+          startSource:
+            'https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=DAL&year=1964',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

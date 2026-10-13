@@ -55,10 +55,9 @@ describe('every catalog.ts on disk is registered', () => {
   });
 });
 
-const rowId = (row: { teamId: string; slug: string; yearStart: number }) =>
-  `${row.teamId}-${row.slug}-${row.yearStart}`;
-const byId = <T extends { teamId: string; slug: string; yearStart: number }>(rows: T[]) =>
-  [...rows].sort((a, b) => rowId(a).localeCompare(rowId(b)));
+const rowId = (row: { teamId: string; slug: string }) => `${row.teamId}-${row.slug}`;
+const byId = <T extends { teamId: string; slug: string; id?: string }>(rows: T[]) =>
+  [...rows].sort((a, b) => rowId(a).localeCompare(rowId(b))).map(({ id: _id, ...row }) => row);
 
 // A converted team's accent pairs live only in its catalog. A hand-written pair left behind
 // under the same id would be silently overridden by the catalog spread, so check the
@@ -246,7 +245,7 @@ describe('Seahawks catalog conversion', () => {
           constructionKey: '1976-throwback',
           kind: 'throwback',
           name: 'Throwback',
-          yearStart: 1976,
+          yearStart: 2023,
           yearEnd: null,
           isCurrent: true,
           colors: { primary: '#0248B3', secondary: '#0E8329', accent: '#A7B0BA' },
@@ -382,7 +381,7 @@ describe('Bears catalog conversion', () => {
           constructionKey: 'orange-alternate',
           kind: 'alternate',
           name: 'Orange Alternate',
-          yearStart: 2005,
+          yearStart: 2018,
           yearEnd: null,
           isCurrent: true,
           colors: { primary: '#C83803', secondary: '#0B162A', accent: '#FFFFFF' },
@@ -527,7 +526,7 @@ describe('Chargers catalog conversion', () => {
           secondary: '#0080C6',
           accent: '#FFC20E',
         }),
-        row('powder-blue', 'alternate', 'Powder Blue', 1960, {
+        row('powder-blue', 'alternate', 'Powder Blue', 2020, {
           primary: '#0080C6',
           secondary: '#FFC20E',
           accent: '#FFFFFF',
@@ -589,7 +588,7 @@ describe('Colts catalog conversion', () => {
           constructionKey: 'home',
           kind: 'home',
           name: 'Home',
-          yearStart: 2004,
+          yearStart: 2020,
           yearEnd: null,
           isCurrent: true,
           colors: { primary: '#002C5F', secondary: '#A2AAAD', accent: '#A2AAAD' },
@@ -600,7 +599,7 @@ describe('Colts catalog conversion', () => {
           constructionKey: 'away',
           kind: 'away',
           name: 'Away',
-          yearStart: 2004,
+          yearStart: 2020,
           yearEnd: null,
           isCurrent: true,
           colors: { primary: '#FFFFFF', secondary: '#002C5F', accent: '#A2AAAD' },
@@ -655,7 +654,7 @@ describe('Jets catalog conversion', () => {
           secondary: '#FFFFFF',
           accent: '#FFFFFF',
         }),
-        row('away', 'away', 'Away', 2024, {
+        row('away', 'away', 'Away', 2023, {
           primary: '#FFFFFF',
           secondary: '#125740',
           accent: '#125740',
@@ -778,6 +777,7 @@ describe('Bengals catalog conversion', () => {
       yearEnd: number | null,
       colors: UniformSeed['colors']
     ): UniformSeed => ({
+      id: `bengals-${slug}-${yearStart}`,
       teamId: 'bengals',
       slug,
       constructionKey: slug,
@@ -849,6 +849,7 @@ describe('Buccaneers catalog conversion', () => {
       yearStart: number,
       colors: UniformSeed['colors']
     ): UniformSeed => ({
+      id: `buccaneers-${slug}-${yearStart}`,
       teamId: 'buccaneers',
       slug,
       constructionKey: slug,
@@ -871,7 +872,7 @@ describe('Buccaneers catalog conversion', () => {
           secondary: '#D50A0A',
           accent: '#34302B',
         }),
-        row('creamsicle', 'throwback', 'Creamsicle', 1976, {
+        row('creamsicle', 'throwback', 'Creamsicle', 2023, {
           primary: '#FF8200',
           secondary: '#C8102E',
           accent: '#FFFFFF',
@@ -961,7 +962,13 @@ describe('Commanders catalog conversion', () => {
   if (!catalog) throw new Error('Commanders catalog is not registered');
 
   it('reproduces the archived rows', () => {
-    expect(byId(catalogRows(catalog))).toEqual(
+    expect(
+      byId(
+        catalogRows(catalog).filter((row) =>
+          ['home', 'away', 'red-alt', '70s-burgundy'].includes(row.slug)
+        )
+      )
+    ).toEqual(
       byId([
         {
           teamId: 'commanders',
@@ -970,8 +977,8 @@ describe('Commanders catalog conversion', () => {
           kind: 'home',
           name: 'Home',
           yearStart: 2022,
-          yearEnd: null,
-          isCurrent: true,
+          yearEnd: 2025,
+          isCurrent: false,
           colors: { primary: '#5A1414', secondary: '#FFB612', accent: '#FFB612' },
         },
         {
@@ -981,8 +988,8 @@ describe('Commanders catalog conversion', () => {
           kind: 'away',
           name: 'Away',
           yearStart: 2022,
-          yearEnd: null,
-          isCurrent: true,
+          yearEnd: 2025,
+          isCurrent: false,
           colors: { primary: '#FFFFFF', secondary: '#5A1414', accent: '#FFB612' },
         },
         {
@@ -992,8 +999,8 @@ describe('Commanders catalog conversion', () => {
           kind: 'throwback',
           name: '70s Burgundy',
           yearStart: 1972,
-          yearEnd: null,
-          isCurrent: true,
+          yearEnd: 2019,
+          isCurrent: false,
           colors: { primary: '#5A1414', secondary: '#FFB612', accent: '#FFFFFF' },
         },
       ])
@@ -1001,7 +1008,7 @@ describe('Commanders catalog conversion', () => {
   });
 
   it('reproduces the frozen legacy accents', () => {
-    expect(catalogAccents(catalog)).toEqual({
+    expect(catalogAccents(catalog)).toMatchObject({
       'commanders-home-2022': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       'commanders-away-2022': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       'commanders-70s-burgundy-1972': { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
@@ -1009,7 +1016,7 @@ describe('Commanders catalog conversion', () => {
   });
 
   it('pairs each jersey with its pants and leaves the socks in the pants colour', () => {
-    expect(pairings(catalog)).toEqual({
+    expect(pairings(catalog)).toMatchObject({
       home: { helmet: 'burgundy', jersey: 'burgundy', pants: 'burgundy' },
       away: { helmet: 'burgundy', jersey: 'white', pants: 'white' },
       '70s-burgundy': { helmet: 'burgundy', jersey: 'burgundy', pants: 'burgundy' },
@@ -1031,7 +1038,7 @@ describe('Cowboys catalog conversion', () => {
           constructionKey: 'home',
           kind: 'home',
           name: 'Home',
-          yearStart: 1964,
+          yearStart: 1996,
           yearEnd: null,
           isCurrent: true,
           colors: { primary: '#003594', secondary: '#869397', accent: '#869397' },
@@ -1107,7 +1114,7 @@ describe('Dolphins catalog conversion', () => {
           secondary: '#008E97',
           accent: '#FC4C02',
         }),
-        row('1972-throwback', 'throwback', '1972 Throwback', 1966, {
+        row('1972-throwback', 'throwback', '1972 Throwback', 2015, {
           primary: '#008E97',
           secondary: '#FC4C02',
           accent: '#FFFFFF',
@@ -1163,8 +1170,8 @@ describe('Eagles catalog conversion', () => {
           kind: 'throwback',
           name: 'Kelly Green',
           yearStart: 1987,
-          yearEnd: null,
-          isCurrent: true,
+          yearEnd: 1995,
+          isCurrent: false,
           colors: { primary: '#046A38', secondary: '#A5ACAF', accent: '#FFFFFF' },
         },
         {
@@ -1313,7 +1320,13 @@ describe('Falcons catalog conversion', () => {
   if (!catalog) throw new Error('Falcons catalog is not registered');
 
   it('reproduces the archived rows', () => {
-    expect(byId(catalogRows(catalog))).toEqual(
+    expect(
+      byId(
+        catalogRows(catalog).filter((row) =>
+          ['home', 'away', 'red-alt', '70s-burgundy'].includes(row.slug)
+        )
+      )
+    ).toEqual(
       byId([
         {
           teamId: 'falcons',
@@ -1322,8 +1335,8 @@ describe('Falcons catalog conversion', () => {
           kind: 'home',
           name: 'Home',
           yearStart: 2020,
-          yearEnd: null,
-          isCurrent: true,
+          yearEnd: 2025,
+          isCurrent: false,
           colors: { primary: '#A71930', secondary: '#000000', accent: '#000000' },
         },
         {
@@ -1333,8 +1346,8 @@ describe('Falcons catalog conversion', () => {
           kind: 'away',
           name: 'Away',
           yearStart: 2020,
-          yearEnd: null,
-          isCurrent: true,
+          yearEnd: 2025,
+          isCurrent: false,
           colors: { primary: '#FFFFFF', secondary: '#A71930', accent: '#A71930' },
         },
         {
@@ -1353,7 +1366,7 @@ describe('Falcons catalog conversion', () => {
   });
 
   it('reproduces the frozen legacy accents', () => {
-    expect(catalogAccents(catalog)).toEqual({
+    expect(catalogAccents(catalog)).toMatchObject({
       'falcons-home-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
       'falcons-away-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
       'falcons-red-alt-2020': { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
@@ -1361,7 +1374,7 @@ describe('Falcons catalog conversion', () => {
   });
 
   it('pairs each jersey with its verified helmet, pants and socks', () => {
-    expect(pairings(catalog)).toEqual({
+    expect(pairings(catalog)).toMatchObject({
       home: { helmet: 'black-falcon', jersey: 'black', pants: 'black', socks: 'black' },
       'home--white-pants': {
         helmet: 'black-falcon',

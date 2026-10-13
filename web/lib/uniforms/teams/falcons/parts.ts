@@ -1,3 +1,4 @@
+import { FALCONS_JERSEY_RED_2026, FALCONS_JERSEY_WHITE_2026 } from './jerseys/primary-2026';
 // Atlanta as a complete team spec: every helmet, jersey, pants and socks part, with its own art
 // drawn by the marks in ./marks.
 import type { TeamSpec } from '../core/team-spec';
@@ -27,12 +28,42 @@ export const FALCONS_SPEC: TeamSpec = {
     },
   },
   jerseys: {
+    'red-2026': FALCONS_JERSEY_RED_2026,
+    'white-2026': FALCONS_JERSEY_WHITE_2026,
     black: FALCONS_JERSEY_BLACK,
     white: FALCONS_JERSEY_WHITE,
     red: FALCONS_JERSEY_RED,
   },
   // The same red leg stripe, framed in black, on both pants.
   pants: {
+    'white-2026': {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'black', size: 's' },
+          { color: 'silver', size: 's' },
+          { color: 'red', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    'black-2026': {
+      body: 'black',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'white', size: 's' },
+          { color: 'silver', size: 's' },
+          { color: 'red', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
     black: {
       body: 'black',
       stripes: 'none',

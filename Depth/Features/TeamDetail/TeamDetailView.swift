@@ -445,6 +445,7 @@ struct TeamDetailView: View {
             ) {
                 UniformPickerSheet(
                     uniforms: displayedSnapshot?.uniforms ?? [],
+                    teamName: displayedSnapshot.map { "\($0.team.city) \($0.team.name)" } ?? "",
                     selectedID: selectedUniformID
                 ) { uniformID in
                     previewUniformID = uniformID

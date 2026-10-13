@@ -16348,6 +16348,19 @@
             "primary" : "#FFFFFF",
             "secondary" : "#00338D"
           },
+          "id" : "bills-undated-fixture",
+          "imagePath" : null,
+          "isCurrent" : true,
+          "kind" : "alternate",
+          "name" : "Undated sample",
+          "teamId" : "bills"
+        },
+        {
+          "colors" : {
+            "accent" : "#C60C30",
+            "primary" : "#FFFFFF",
+            "secondary" : "#00338D"
+          },
           "id" : "bills-away-2011",
           "imagePath" : "/uniforms/bills-away-2011.webp",
           "isCurrent" : true,
@@ -19832,6 +19845,24 @@
       "teamName" : "Buffalo Bills",
       "teamShortName" : "Bills",
       "yearStart" : 2025
+    },
+    {
+      "colors" : {
+        "accent" : "#C60C30",
+        "primary" : "#FFFFFF",
+        "secondary" : "#00338D"
+      },
+      "conference" : "AFC",
+      "division" : "East",
+      "id" : "bills-undated-fixture",
+      "imagePath" : null,
+      "isCurrent" : true,
+      "kind" : "alternate",
+      "name" : "Undated sample",
+      "teamAbbrev" : "BUF",
+      "teamId" : "bills",
+      "teamName" : "Buffalo Bills",
+      "teamShortName" : "Bills"
     },
     {
       "colors" : {

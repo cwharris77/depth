@@ -4,6 +4,7 @@ export const COLTS_CATALOG: TeamCatalog = {
   teamId: 'colts',
   designs: [
     {
+      id: 'colts-home-2004',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -11,7 +12,9 @@ export const COLTS_CATALOG: TeamCatalog = {
       jersey: 'navy',
       colors: { primary: '#002C5F', secondary: '#A2AAAD', accent: '#A2AAAD' },
       legacyAccent: { uiAccent: '#A2AAAD', onAccent: '#0a0e1a' },
-      periods: [{ from: 2004 }],
+      periods: [
+        { from: 2020, startSource: 'https://www.colts.com/team/brand/', verifiedOn: '2026-10-12' },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -24,6 +27,7 @@ export const COLTS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'colts-away-2004',
       slug: 'away',
       sleeveNike: 'black',
       name: 'Away',
@@ -31,7 +35,9 @@ export const COLTS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#002C5F', accent: '#A2AAAD' },
       legacyAccent: { uiAccent: '#A2AAAD', onAccent: '#0a0e1a' },
-      periods: [{ from: 2004 }],
+      periods: [
+        { from: 2020, startSource: 'https://www.colts.com/team/brand/', verifiedOn: '2026-10-12' },
+      ],
       combinations: [
         {
           key: 'standard',

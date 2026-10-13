@@ -6,6 +6,7 @@ export const BILLS_CATALOG: TeamCatalog = {
   teamId: 'bills',
   designs: [
     {
+      id: 'bills-home-2011',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -13,7 +14,14 @@ export const BILLS_CATALOG: TeamCatalog = {
       jersey: 'blue',
       colors: { primary: '#00338D', secondary: '#C60C30', accent: '#C60C30' },
       legacyAccent,
-      periods: [{ from: 2011 }],
+      periods: [
+        {
+          from: 2011,
+          startSource:
+            'https://www.buffalobills.com/photos/photos-buffalo-bills-uniforms-through-the-years',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -34,6 +42,7 @@ export const BILLS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'bills-away-2011',
       slug: 'away',
       sleeveNike: 'navy',
       name: 'Away',
@@ -41,7 +50,14 @@ export const BILLS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#00338D', accent: '#C60C30' },
       legacyAccent,
-      periods: [{ from: 2011 }],
+      periods: [
+        {
+          from: 2011,
+          startSource:
+            'https://www.buffalobills.com/photos/photos-buffalo-bills-uniforms-through-the-years',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -62,6 +78,7 @@ export const BILLS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'bills-rivalries-2025-2025',
       slug: 'rivalries-2025',
       sleeveNike: 'rivalriesNumber',
       name: 'Rivalries',
@@ -69,7 +86,13 @@ export const BILLS_CATALOG: TeamCatalog = {
       jersey: 'rivalries',
       colors: { primary: '#FFFFFF', secondary: '#00338D', accent: '#C60C30' },
       legacyAccent,
-      periods: [{ from: 2025 }],
+      periods: [
+        {
+          from: 2025,
+          startSource: 'https://www.buffalobills.com/fans/rivalries-uniform',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

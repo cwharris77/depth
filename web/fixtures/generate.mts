@@ -731,7 +731,7 @@ write(
 );
 
 // Team surface resolvers, over every kit in the curated archive. Swift's TeamSurfaces must
-// return identical strings for all 105 — this is what keeps the two implementations from
+// return identical strings for every row — this is what keeps the two implementations from
 // drifting once views on both sides start asking for surfaces instead of a stored hex.
 write(
   'team-surfaces',
@@ -739,7 +739,7 @@ write(
     const colors = u.colors;
     const numeral = numeralColors(colors);
     return {
-      id: `${u.teamId}-${u.slug}-${u.yearStart}`,
+      id: u.id,
       colors,
       expected: {
         fill: teamFill(colors),

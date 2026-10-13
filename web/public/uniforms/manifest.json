@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "e5f4902cf5b069ebe22852f5fc901b20df7f289b490d8249959cb7f049ec9a7a",
-  "revision": "9a7424fadedda0ae",
+  "sourceDigest": "e96ce52c480148e34f8566677a36083aba9352f74a94b0644c5c4085c89a2bf3",
+  "revision": "13aba1de55645420",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -851,6 +851,36 @@
       }
     },
     {
+      "catalogId": "commanders-home-2026-2026",
+      "constructionKey": "home-2026",
+      "revision": "f54e945d6dcd2e5c",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/commanders-home-2026-2026.webp",
+          "sha256": "fb5b3d578f32e7f68d3e0f83183e891d4045f9b7ff46393db7b105352d78ebde"
+        },
+        "full": {
+          "path": "/uniforms/commanders-home-2026-2026-full.webp",
+          "sha256": "3b8ff2e85cc4370537bdef7cd05dd76aa57bbf0272a0dc74118adf7ef8746ddd"
+        }
+      }
+    },
+    {
+      "catalogId": "commanders-super-bowl-away-2025",
+      "constructionKey": "super-bowl-away",
+      "revision": "ee2ad24a902bc8d8",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/commanders-super-bowl-away-2025.webp",
+          "sha256": "b5204fb3aef694f8c5ef871be0786ee542e4b0f3d036f08ce8bfe314b05e7fe7"
+        },
+        "full": {
+          "path": "/uniforms/commanders-super-bowl-away-2025-full.webp",
+          "sha256": "932811e14197dfd4c465ab52a8c88fb299350efc72eb50895dff921ec6a12d6c"
+        }
+      }
+    },
+    {
       "catalogId": "cowboys-away-1964",
       "constructionKey": "away",
       "revision": "ac0f2bc50ebf9673",
@@ -1069,6 +1099,21 @@
       ]
     },
     {
+      "catalogId": "falcons-away-2026-2026",
+      "constructionKey": "away-2026",
+      "revision": "2efd42354366c767",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/falcons-away-2026-2026.webp",
+          "sha256": "05a3343111602dcd1b4d4dd0eb5af8fc35943a369ed1b8f34b71e909fa4cb2c4"
+        },
+        "full": {
+          "path": "/uniforms/falcons-away-2026-2026-full.webp",
+          "sha256": "2e5d18867e11aa867755d0e29cd827804c5e5799d0391d1ad082d664561ab98c"
+        }
+      }
+    },
+    {
       "catalogId": "falcons-home-2020",
       "constructionKey": "home",
       "revision": "e58571a1ccfb3a67",
@@ -1092,6 +1137,21 @@
           }
         }
       ]
+    },
+    {
+      "catalogId": "falcons-home-2026-2026",
+      "constructionKey": "home-2026",
+      "revision": "597d9421e387009b",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/falcons-home-2026-2026.webp",
+          "sha256": "d243454bd95552eb848b0dd3e709a4b3168df54073286df2d7e952c522a734c5"
+        },
+        "full": {
+          "path": "/uniforms/falcons-home-2026-2026-full.webp",
+          "sha256": "2299f2b3b076851ead6fdf3deaa4a781f4d7d69a36dc091068fa59b6146e4146"
+        }
+      }
     },
     {
       "catalogId": "falcons-red-alt-2020",
@@ -1729,6 +1789,21 @@
       ]
     },
     {
+      "catalogId": "rams-away-2026-2026",
+      "constructionKey": "away-2026",
+      "revision": "84c0fc816f6ee5d1",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/rams-away-2026-2026.webp",
+          "sha256": "725f62cc272ce81f2e3707621d642154c4a371d9f5cdbc0a87d63048456c799a"
+        },
+        "full": {
+          "path": "/uniforms/rams-away-2026-2026-full.webp",
+          "sha256": "7dfc1d7426b95be44a9409ea6898cfdc3de5754b37f363697dc24aba2811b370"
+        }
+      }
+    },
+    {
       "catalogId": "rams-bone-2020",
       "constructionKey": "bone",
       "revision": "d356de8e9e9f17d3",
@@ -1769,6 +1844,21 @@
       ]
     },
     {
+      "catalogId": "rams-home-2026-2026",
+      "constructionKey": "home-2026",
+      "revision": "fa4343c8cd94f914",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/rams-home-2026-2026.webp",
+          "sha256": "f96916758ec5fe37b8862b20bdff55271a2b1a01820dd6675a8cbb093a62dcc0"
+        },
+        "full": {
+          "path": "/uniforms/rams-home-2026-2026-full.webp",
+          "sha256": "11e02133c9a3761fb31a61623e217564291c371a4baff02b013bd21edd2b31a9"
+        }
+      }
+    },
+    {
       "catalogId": "rams-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
       "revision": "9140100a46cef0df",
@@ -1799,6 +1889,21 @@
       }
     },
     {
+      "catalogId": "ravens-away-2026-2026",
+      "constructionKey": "away-2026",
+      "revision": "b98a081289cdd806",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/ravens-away-2026-2026.webp",
+          "sha256": "f2a5bf5d02f06fe832d69f0ff337e26bae7f919aba24ad06ce0bd0c6cc0e23d8"
+        },
+        "full": {
+          "path": "/uniforms/ravens-away-2026-2026-full.webp",
+          "sha256": "849aee1053eee5414f2996c424c05d4bb96d8cb8356f0195b2afa781402300a7"
+        }
+      }
+    },
+    {
       "catalogId": "ravens-black-alt-2004",
       "constructionKey": "black-alt",
       "revision": "b51212c2d2fd3bb0",
@@ -1825,6 +1930,21 @@
         "full": {
           "path": "/uniforms/ravens-home-1996-full.webp",
           "sha256": "bdb441fee2633d1c477e9eb795d2d75f984d47f29d6e393caf7f5bf79c3d538d"
+        }
+      }
+    },
+    {
+      "catalogId": "ravens-home-2026-2026",
+      "constructionKey": "home-2026",
+      "revision": "d191b099760118e5",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/ravens-home-2026-2026.webp",
+          "sha256": "8ce3c889fbfe958517fcd39b51e42fd7c3e5cd31e76f0cbeeb811eb51779fd8e"
+        },
+        "full": {
+          "path": "/uniforms/ravens-home-2026-2026-full.webp",
+          "sha256": "aafaf51e374931902af6978f3f54b78f61bfc37e17549a026180727cc62b06fb"
         }
       }
     },

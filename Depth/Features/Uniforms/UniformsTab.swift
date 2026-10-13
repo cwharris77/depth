@@ -399,13 +399,17 @@ struct UniformsTab: View {
                 Text(kit.teamAbbrev)
                     .font(.caption2.weight(.bold).monospaced())
                     .foregroundStyle(DesignTokens.Colors.textSecondary)
-                Text(UniformArchive.shortKitName(kit.name))
+                Text(kit.presentation.title)
                     .font(.caption2)
                     .foregroundStyle(DesignTokens.Colors.textMuted)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
-                Text(UniformArchive.years(kit))
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(kit.presentation.dates)
                     .font(.caption2.monospacedDigit())
-                    .foregroundStyle(DesignTokens.Colors.textFaint)
+                    .foregroundStyle(DesignTokens.Colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(kit.presentation.status)
+                    .font(.caption2)
+                    .foregroundStyle(DesignTokens.Colors.textMuted)
             }
             .padding(.horizontal, DesignTokens.Spacing.xs)
             .padding(.top, DesignTokens.Spacing.sm)
@@ -416,7 +420,7 @@ struct UniformsTab: View {
         .buttonStyle(.plain)
         .depthCard(dense: true, padded: false, radius: DesignTokens.Radius.sm)
         .accessibilityIdentifier("uniforms-era-kit-\(kit.id)")
-        .accessibilityLabel("\(kit.teamName), \(kit.name), \(UniformArchive.yearsLong(kit))")
+        .accessibilityLabel("\(kit.teamName), \(kit.presentation.accessibilityLabel)")
     }
 
     private var emptyState: some View {

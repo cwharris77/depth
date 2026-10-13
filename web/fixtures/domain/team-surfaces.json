@@ -1806,5 +1806,133 @@
       "numeralFill": "#03202F",
       "numeralStroke": "#0072CE"
     }
+  },
+  {
+    "id": "falcons-home-2026-2026",
+    "colors": {
+      "primary": "#A71930",
+      "secondary": "#FFFFFF",
+      "accent": "#000000"
+    },
+    "expected": {
+      "fill": "#A71930",
+      "ring": "#FFFFFF",
+      "mark": "#FFFFFF",
+      "textOnFill": "#FFFFFF",
+      "numeralFill": "#A71930",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "falcons-away-2026-2026",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#A71930",
+      "accent": "#000000"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#A71930",
+      "mark": "#FFFFFF",
+      "textOnFill": "#A71930",
+      "numeralFill": "#A71930",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "ravens-home-2026-2026",
+    "colors": {
+      "primary": "#241773",
+      "secondary": "#FFFFFF",
+      "accent": "#4B327A"
+    },
+    "expected": {
+      "fill": "#241773",
+      "ring": "#FFFFFF",
+      "mark": "#FFFFFF",
+      "textOnFill": "#FFFFFF",
+      "numeralFill": "#241773",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "ravens-away-2026-2026",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#241773",
+      "accent": "#4B327A"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#241773",
+      "mark": "#FFFFFF",
+      "textOnFill": "#241773",
+      "numeralFill": "#241773",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "commanders-home-2026-2026",
+    "colors": {
+      "primary": "#5A1414",
+      "secondary": "#FFFFFF",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#5A1414",
+      "ring": "#FFFFFF",
+      "mark": "#FFFFFF",
+      "textOnFill": "#FFFFFF",
+      "numeralFill": "#5A1414",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "commanders-super-bowl-away-2025",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#5A1414",
+      "accent": "#FFB612"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#5A1414",
+      "mark": "#FFB612",
+      "textOnFill": "#5A1414",
+      "numeralFill": "#5A1414",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "rams-home-2026-2026",
+    "colors": {
+      "primary": "#003594",
+      "secondary": "#FFD100",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#003594",
+      "ring": "#FFD100",
+      "mark": "#FFD100",
+      "textOnFill": "#FFD100",
+      "numeralFill": "#003594",
+      "numeralStroke": "#FFD100"
+    }
+  },
+  {
+    "id": "rams-away-2026-2026",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#003594",
+      "accent": "#FFD100"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#003594",
+      "mark": "#FFD100",
+      "textOnFill": "#003594",
+      "numeralFill": "#003594",
+      "numeralStroke": "#FFFFFF"
+    }
   }
 ]

@@ -214,6 +214,7 @@ describe('combinationRenders', () => {
       teamId: 'seahawks',
       designs: [
         {
+          id: 'seahawks-home-2012',
           slug: 'home',
           name: 'Home',
           kind: 'home',

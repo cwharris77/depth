@@ -48,9 +48,9 @@ import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 // their frozen values live in lib/uniforms/legacy-accents.ts and are read only by the seed
 // generator.
 //
-// The row id is `${teamId}-${slug}-${yearStart}`.
+// Row IDs are pinned in the team catalog and do not depend on corrected dates.
 //
-// year_start/year_end describe the kit's primary era; is_current marks whether it's in a
+// year_start/year_end describe the kit's latest wearing period; is_current marks whether it's in a
 // team's active rotation today. The database invariant requires isCurrent exactly when
 // yearEnd is null.
 //
@@ -58,6 +58,7 @@ import { SEAHAWKS_CATALOG } from './teams/seahawks/catalog';
 // their original positions so the generated seed is unchanged.
 
 export interface UniformSeed {
+  id: string;
   teamId: string;
   slug: string;
   constructionKey: string;
@@ -108,14 +109,10 @@ export const UNIFORMS: UniformSeed[] = [
 
   catalogRow(SEAHAWKS_CATALOG, '1976-throwback'),
 
-  // Buccaneers 1976–1996 "Creamsicle" — reintroduced as an active alternate in 2023, so
-  // is_current: true despite the historical era. Orange already reads on dark, so
-  // uiAccent is the brand orange itself.
+  // Modern Creamsicle reproduction, distinct from its historical inspiration.
   catalogRow(BUCCANEERS_CATALOG, 'creamsicle'),
 
-  // Eagles Kelly Green (1987–1995 era) — reintroduced as an active throwback in 2023, so
-  // is_current: true. uiAccent brightens the era's deep kelly (#046A38) to clear the dark
-  // UI.
+  // Original Kelly Green construction and its separate modern reproduction.
   catalogRow(EAGLES_CATALOG, 'kelly-green'),
   catalogRow(EAGLES_CATALOG, 'kelly-green-modern'),
 
@@ -211,12 +208,12 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(TITANS_CATALOG, 'away-2026'),
   catalogRow(BRONCOS_CATALOG, 'orange-alt'),
   catalogRow(GIANTS_CATALOG, '1980s-throwback'),
-  // Eagles black alternate (2020+). Black base, midnight-green/silver trim.
+  // Black alternate with midnight-green and silver trim.
   catalogRow(EAGLES_CATALOG, 'black-alt'),
   // Lions 'Gridiron Gray' alternate. Silver-gray base, Honolulu-blue trim.
   catalogRow(LIONS_CATALOG, 'gridiron-gray'),
   catalogRow(VIKINGS_CATALOG, 'winter-warrior'),
-  // Packers 'Winter Warning' all-white alternate (verified 2025 reveal). White base + helmet, green/gold trim.
+  // All-white alternate with the white helmet.
   catalogRow(PACKERS_CATALOG, 'winter-warning'),
   catalogRow(FALCONS_CATALOG, 'red-alt'),
   // Panthers black alternate. Black base, blue/silver trim.
@@ -225,4 +222,12 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(CARDINALS_CATALOG, 'black-alt'),
   catalogRow(RAMS_CATALOG, 'bone'),
   catalogRow(TEXANS_CATALOG, 'h-town'),
+  catalogRow(FALCONS_CATALOG, 'home-2026'),
+  catalogRow(FALCONS_CATALOG, 'away-2026'),
+  catalogRow(RAVENS_CATALOG, 'home-2026'),
+  catalogRow(RAVENS_CATALOG, 'away-2026'),
+  catalogRow(COMMANDERS_CATALOG, 'home-2026'),
+  catalogRow(COMMANDERS_CATALOG, 'super-bowl-away'),
+  catalogRow(RAMS_CATALOG, 'home-2026'),
+  catalogRow(RAMS_CATALOG, 'away-2026'),
 ];

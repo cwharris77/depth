@@ -1,3 +1,4 @@
+import { RAMS_JERSEY_ROYAL_2026, RAMS_JERSEY_WHITE_2026 } from './jerseys/primary-2026';
 // Los Angeles as a complete team spec: every helmet, jersey, pants and socks part. The 2020
 // jerseys carry a capped-sleeve horn, while Midnight Mode shows a tapered front horn and blue sleeve.
 // Every kit shares the shell horn and a keylined stripe on each pant leg.
@@ -22,6 +23,12 @@ export const RAMS_PALETTE = {
 
 export const RAMS_SPEC: TeamSpec = {
   helmets: {
+    'royal-2026': {
+      shell: 'royal',
+      facemask: 'royal',
+      decal: ramsHelmetHorn('yellow'),
+      number: 'none',
+    },
     // The royal shell with the gold horn and a royal cage, worn with the royal, white and bone
     // jerseys.
     'royal-horn': {
@@ -39,6 +46,8 @@ export const RAMS_SPEC: TeamSpec = {
     },
   },
   jerseys: {
+    'royal-2026': RAMS_JERSEY_ROYAL_2026,
+    'white-2026': RAMS_JERSEY_WHITE_2026,
     royal: RAMS_JERSEY_ROYAL,
     white: RAMS_JERSEY_WHITE,
     bone: RAMS_JERSEY_BONE,
@@ -47,6 +56,16 @@ export const RAMS_SPEC: TeamSpec = {
   // Every leg carries the keylined stripe: an outer keyline with an inboard band, ending at the hem. Royal legs carry
   // a single white stripe, so keyline and band take the same colour.
   pants: {
+    'sol-2026': {
+      body: 'yellow',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ramsLegStripe('white', 'royal') }],
+    },
+    'white-2026': {
+      body: 'white',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ramsLegStripe('yellow', 'royal') }],
+    },
     gold: {
       body: 'gold',
       stripes: 'none',
@@ -69,6 +88,7 @@ export const RAMS_SPEC: TeamSpec = {
     },
   },
   socks: {
+    white: { color: 'white', stripes: 'none' },
     royal: { color: 'royal', stripes: 'none' },
     bone: { color: 'bone', stripes: 'none' },
     navy: { color: 'navy', stripes: 'none' },

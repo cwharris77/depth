@@ -36,7 +36,7 @@ final class DepthUITests: XCTestCase {
                 ], timeout: 5), .completed)
         XCTAssertFalse(first.isSelected)
         let awayCard = app.otherElements["uniform-bills-away-2011"]
-        XCTAssertTrue(awayCard.waitForLabel(containing: "Away, selected"))
+        XCTAssertTrue(awayCard.waitForLabel(containing: "Away, 2011–present, Current, selected"))
         XCTAssertEqual(second.value as? String, "2 of \(dots.count)")
         first.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)).tap()
         XCTAssertEqual(
@@ -49,6 +49,75 @@ final class DepthUITests: XCTestCase {
         screenshot.name = "uniform-picker-padding-and-selection"
         screenshot.lifetime = .keepAlways
         add(screenshot)
+    }
+
+    func testUniformNamesAndDatesAcrossArchiveAndPicker() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"))
+        app.tabBars.buttons["Uniforms"].tap()
+        let bills = app.buttons["uniforms-team-bills"]
+        XCTAssertTrue(bills.waitForExistence(timeout: 15))
+        bills.tap()
+        let home = app.buttons["uniform-kit-row-bills-home-2011"]
+        XCTAssertTrue(home.waitForExistence(timeout: 10))
+        XCTAssertEqual(home.label, "Home, 2011–present, Current")
+        saveUniformScreenshot(app, named: "uniform-archive-names-dates")
+        let undated = app.buttons["uniform-kit-row-bills-undated-fixture"]
+        for _ in 0..<6 where !undated.isHittable { app.swipeUp() }
+        XCTAssertTrue(undated.isHittable)
+        XCTAssertEqual(undated.label, "Undated sample, Alternate, Dates unknown, Current")
+        undated.tap()
+        XCTAssertTrue(app.staticTexts["Dates unknown"].waitForExistence(timeout: 5))
+        saveUniformScreenshot(app, named: "uniform-detail-unknown-dates")
+        let openChart = app.buttons["uniform-kit-open-depth-chart"]
+        for _ in 0..<6 where !openChart.isHittable { app.swipeUp() }
+        openChart.tap()
+        XCTAssertTrue(app.waitForDepthChart())
+        app.buttons["depth-chart-overflow"].tap()
+        app.buttons["choose-uniform"].tap()
+        let card = app.otherElements["uniform-bills-undated-fixture"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        XCTAssertEqual(card.label, "Undated sample, Alternate, Dates unknown, Current, selected")
+        saveUniformScreenshot(app, named: "uniform-picker-unknown-dates")
+        app.buttons["uniform-dot-bills-home-2011"].tap()
+        XCTAssertTrue(
+            app.otherElements["uniform-bills-home-2011"].waitForLabel(
+                containing: "Home, 2011–present, Current, selected"))
+        saveUniformScreenshot(app, named: "uniform-picker-current-dates")
+    }
+
+    func testHistoricalUniformDatesAndEraLabels() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"))
+        app.tabBars.buttons["Uniforms"].tap()
+        let search = app.textFields["uniforms-search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        search.typeTextAfterFocusing("Orange Crush", in: app)
+        if app.buttons["Continue"].exists { app.buttons["Continue"].tap() }
+        search.typeText("\n")
+        XCTAssertTrue(app.keyboards.firstMatch.waitForAbsence(timeout: 5))
+        let team = app.buttons["uniforms-team-broncos"]
+        XCTAssertTrue(team.waitForExistence(timeout: 10))
+        team.tap()
+        let row = app.buttons["uniform-kit-row-broncos-orange-crush-1968"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        XCTAssertEqual(row.label, "Orange Crush, Throwback, 1968–1996, Retired")
+        saveUniformScreenshot(app, named: "uniform-archive-historical-dates")
+        app.navigationBars.buttons.firstMatch.tap()
+        app.buttons["uniforms-view-era"].tap()
+        let era = app.buttons["uniforms-era-kit-broncos-orange-crush-1968"]
+        XCTAssertTrue(era.waitForExistence(timeout: 10))
+        XCTAssertEqual(era.label, "Denver Broncos, Orange Crush, Throwback, 1968–1996, Retired")
+        saveUniformScreenshot(app, named: "uniform-era-historical-dates")
+    }
+
+    private func saveUniformScreenshot(_ app: XCUIApplication, named name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     func testAppLaunches() throws {

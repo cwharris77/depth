@@ -4,6 +4,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
   teamId: 'texans',
   designs: [
     {
+      id: 'texans-home-2024',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -11,7 +12,14 @@ export const TEXANS_CATALOG: TeamCatalog = {
       jersey: 'navy',
       colors: { primary: '#03202F', secondary: '#A71930', accent: '#A71930' },
       legacyAccent: { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-      periods: [{ from: 2024 }],
+      periods: [
+        {
+          from: 2024,
+          startSource:
+            'https://www.houstontexans.com/news/houston-texans-reveal-four-new-fan-inspired-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -32,6 +40,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'texans-away-2024',
       slug: 'away',
       sleeveNike: 'navy',
       name: 'Away',
@@ -39,7 +48,14 @@ export const TEXANS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#03202F', accent: '#A71930' },
       legacyAccent: { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-      periods: [{ from: 2024 }],
+      periods: [
+        {
+          from: 2024,
+          startSource:
+            'https://www.houstontexans.com/news/houston-texans-reveal-four-new-fan-inspired-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -60,6 +76,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'texans-battle-red-2024',
       slug: 'battle-red',
       sleeveNike: 'white',
       name: 'Battle Red',
@@ -67,7 +84,14 @@ export const TEXANS_CATALOG: TeamCatalog = {
       jersey: 'red',
       colors: { primary: '#A71930', secondary: '#03202F', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-      periods: [{ from: 2024 }],
+      periods: [
+        {
+          from: 2024,
+          startSource:
+            'https://www.houstontexans.com/news/houston-texans-reveal-four-new-fan-inspired-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -80,6 +104,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'texans-h-town-2024',
       slug: 'h-town',
       sleeveNike: 'hTownBlue',
       name: 'H-Town Blue',
@@ -87,7 +112,14 @@ export const TEXANS_CATALOG: TeamCatalog = {
       jersey: 'h-town',
       colors: { primary: '#03202F', secondary: '#0072CE', accent: '#A71930' },
       legacyAccent: { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-      periods: [{ from: 2024 }],
+      periods: [
+        {
+          from: 2024,
+          startSource:
+            'https://www.houstontexans.com/news/houston-texans-reveal-four-new-fan-inspired-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

@@ -6,13 +6,20 @@ export const PANTHERS_CATALOG: TeamCatalog = {
   teamId: 'panthers',
   designs: [
     {
+      id: 'panthers-home-2012',
       slug: 'home',
       name: 'Home',
       kind: 'home',
       jersey: 'blue',
       colors: { primary: '#0085CA', secondary: '#101820', accent: '#101820' },
       legacyAccent: { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
-      periods: [{ from: 2012 }],
+      periods: [
+        {
+          from: 2012,
+          startSource: 'https://www.panthers.com/news/panthers-uniforms-unveiled-7136819',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'black-pants',
@@ -33,13 +40,20 @@ export const PANTHERS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'panthers-away-2012',
       slug: 'away',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#0085CA', accent: '#101820' },
       legacyAccent: { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
-      periods: [{ from: 2012 }],
+      periods: [
+        {
+          from: 2012,
+          startSource: 'https://www.panthers.com/news/panthers-uniforms-unveiled-7136819',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'black-pants',
@@ -92,13 +106,20 @@ export const PANTHERS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'panthers-black-alt-2012',
       slug: 'black-alt',
       name: 'Black Alternate',
       kind: 'alternate',
       jersey: 'black',
       colors: { primary: '#101820', secondary: '#0085CA', accent: '#A5ACAF' },
       legacyAccent: { uiAccent: '#36A7E0', onAccent: '#0a0e1a' },
-      periods: [{ from: 2012 }],
+      periods: [
+        {
+          from: 2012,
+          startSource: 'https://www.panthers.com/news/panthers-uniforms-unveiled-7136819',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'black-pants',
