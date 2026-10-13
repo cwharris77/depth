@@ -1,3 +1,4 @@
+import { LIONS_2017_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { LIONS_BANDS_BLUE_WHITE } from '../marks/construction';
 
@@ -12,6 +13,12 @@ export const LIONS_JERSEY_GRAY: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'blue', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'blue',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: LIONS_2017_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: LIONS_BANDS_BLUE_WHITE }],
 };

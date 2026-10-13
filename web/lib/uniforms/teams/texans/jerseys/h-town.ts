@@ -1,3 +1,4 @@
+import { TEXANS_H_TOWN_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { anchoredMark } from '../../core/jersey-spec';
 import { TEXANS_HOME_SLEEVE_HORN } from '../marks/construction';
@@ -19,7 +20,13 @@ export const TEXANS_JERSEY_H_TOWN: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'red', outline: 'hTownBlue', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'red',
+    outline: 'hTownBlue',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: TEXANS_H_TOWN_NUMBER_THREE,
+  },
   marks: [
     anchoredMark({
       paint: 'over',

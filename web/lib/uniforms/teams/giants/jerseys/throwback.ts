@@ -1,3 +1,4 @@
+import { GIANTS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { GIANTS_THROWBACK_CUFF_STRIPES } from '../marks/construction';
 
@@ -20,6 +21,12 @@ export const GIANTS_JERSEY_THROWBACK: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: { fill: 'white' },
-  number: { fill: 'white', outline: 'red', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'red',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: GIANTS_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: GIANTS_THROWBACK_CUFF_STRIPES }],
 };

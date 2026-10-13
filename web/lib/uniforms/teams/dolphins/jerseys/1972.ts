@@ -1,3 +1,4 @@
+import { DOLPHINS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { DOLPHINS_THROWBACK_SLEEVE_BANDS } from '../marks/construction';
 
@@ -20,6 +21,12 @@ export const DOLPHINS_JERSEY_1972: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'orange', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'orange',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: DOLPHINS_BLOCK_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: DOLPHINS_THROWBACK_SLEEVE_BANDS }],
 };

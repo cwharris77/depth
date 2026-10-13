@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "55f2a536572f2c703cbddb0c19b75d49f0e7d76e9204ad99be02a70fca49c0c2",
-  "revision": "875e9cc9e4c99f21",
+  "sourceDigest": "fd590ca0c3f2089b07c6e083c8553d5cb1646cad8651321573d428119f7f42aa",
+  "revision": "5ba8328fcad415e4",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -36,15 +36,15 @@
     {
       "catalogId": "49ers-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "50d45c3da032bd5f",
+      "revision": "28d4483d9e3f841c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-rivalries-2025-2025.webp",
-          "sha256": "f60b8deec09ac3da7600b16e56f7285be950410bb4725d30d61aca97fb23c7b6"
+          "sha256": "ca207f523ebd2401432e490588513866d1a1fd26e251044e433347adefa192cf"
         },
         "full": {
           "path": "/uniforms/49ers-rivalries-2025-2025-full.webp",
-          "sha256": "2800b8a8bb2060ca80f89ae2cc4d1b92563fd69a926cb373352d41290e434f6b"
+          "sha256": "53407578dfa80643b39ccf07b3e3b26debe906eca3bef4e58a271c0f22e57701"
         }
       }
     },
@@ -147,15 +147,15 @@
     {
       "catalogId": "bengals-color-rush-2016",
       "constructionKey": "color-rush",
-      "revision": "78271f2598ec3f28",
+      "revision": "1018ccf28ebe8ea3",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-color-rush-2016.webp",
-          "sha256": "6e5b71c74b03a9898ef283e5878f2d0935798d3e7c6c35ec70937be303f4f203"
+          "sha256": "b297e33c30c3f46d5c0cba216e03b4c9ded2a9a8aaa47d614c1006111092c186"
         },
         "full": {
           "path": "/uniforms/bengals-color-rush-2016-full.webp",
-          "sha256": "21b2b17562df9d5b10351c0c0516d737664c85191e5424a1b14ac44bb1798165"
+          "sha256": "a150ee30876b8bc4978aaef6539b202ea7b796db9caf5faa82838100ccebe3c1"
         }
       }
     },
@@ -268,15 +268,15 @@
     {
       "catalogId": "bills-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "cbd82f7cf8228400",
+      "revision": "e805aa9af62808ea",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-rivalries-2025-2025.webp",
-          "sha256": "a9d051abb17122f3aeef8219f6ee6a68d78b6474a1a0b34120c36001eec9c096"
+          "sha256": "495e5ba9601b9c6708355c9cafce2afcfeae4cebccf30f62cacb1ba33ca1edc2"
         },
         "full": {
           "path": "/uniforms/bills-rivalries-2025-2025-full.webp",
-          "sha256": "d1612809fb74d123d61eddc373e295d0119876b3207278b155d093cbe54fc2a1"
+          "sha256": "4cf8fff193402f3e45b5a7bd6701aa7d213a57fdd60f3e327169f07d2d699cea"
         }
       }
     },
@@ -390,15 +390,15 @@
     {
       "catalogId": "broncos-orange-crush-1968",
       "constructionKey": "orange-crush",
-      "revision": "17a1374fce3ac628",
+      "revision": "7d14028bd5743353",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-crush-1968.webp",
-          "sha256": "184fe90d905b76820934debb292d6d4373fde8a2a6e45610a78925e78f20c595"
+          "sha256": "bfcb1e05a24b5782d4dec2849ee5b706cfdab6c68ee49104d67ec0a29923f0b9"
         },
         "full": {
           "path": "/uniforms/broncos-orange-crush-1968-full.webp",
-          "sha256": "16cbad664087b03cf51a0e1d3096c7a61cc40646df5b4358c7c051aab134a7eb"
+          "sha256": "f18e680fb2a8ae6f0adaad36ed481d805b2e3574ebcba59494d93474c3ec2b44"
         }
       }
     },
@@ -503,15 +503,15 @@
     {
       "catalogId": "buccaneers-creamsicle-1976",
       "constructionKey": "creamsicle",
-      "revision": "a7d728b804a4d03b",
+      "revision": "37dd823fda90fb84",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/buccaneers-creamsicle-1976.webp",
-          "sha256": "94d83a6487f2c1d48576f53e6059871a1dcb54181eac8016d2ef0f96706664cc"
+          "sha256": "0d92ed707daaa24523ff2e42531f6cd6987f92801a416c97465c85a8227608a5"
         },
         "full": {
           "path": "/uniforms/buccaneers-creamsicle-1976-full.webp",
-          "sha256": "5f6bdf718e40528de2d2a1941b9ae98a9594e098be6b03e507b0723e5fc232d0"
+          "sha256": "d840bd3bea911d0322e2eac1dabeb8c061116f20cef3a82aae7d72c7a87a73a0"
         }
       }
     },
@@ -588,15 +588,15 @@
     {
       "catalogId": "cardinals-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "aa77c66de9966ed4",
+      "revision": "a211b7d11a318432",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cardinals-rivalries-2025-2025.webp",
-          "sha256": "764e9aae400f118595bf4c0b5ecd2762dc152bd993d94117520295ecba33bbb1"
+          "sha256": "3de14c614c324b8cf5545cb4430860a3c3bff9e69a5db0b857da03b7c9918b8f"
         },
         "full": {
           "path": "/uniforms/cardinals-rivalries-2025-2025-full.webp",
-          "sha256": "6a1584d8763524a7a452b730c64b34d256bb84a20e998554c9f0118394e0426b"
+          "sha256": "afe4306008d197389479cc0ac10a8b1d6bf0889f92a142893eb9a8b3ed9d2f6a"
         }
       }
     },
@@ -913,15 +913,15 @@
     {
       "catalogId": "dolphins-1972-throwback-1966",
       "constructionKey": "1972-throwback",
-      "revision": "be81feb98af7cd1a",
+      "revision": "6926b1a429a5c69b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-1972-throwback-1966.webp",
-          "sha256": "4bf8e91a097a2b11e4f677575a796e481409ca447ee5cf83373c939f70f9d6ed"
+          "sha256": "3cef0a32ee557eaa3f4c1139bdbd32ce45c251a4aace46ede510b1050d184e9f"
         },
         "full": {
           "path": "/uniforms/dolphins-1972-throwback-1966-full.webp",
-          "sha256": "e9d46c4b7988a6034427ec89a9cf40704e7dd8be6b09c2f1fec74d26e9232732"
+          "sha256": "f01e56df39afe9a66eebe84d693e90d9fce4b2e0b6eec537ed4cf0bed2060e5e"
         }
       }
     },
@@ -968,15 +968,15 @@
     {
       "catalogId": "dolphins-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "405d02ee8961bfd5",
+      "revision": "e81c3bf8b48dc070",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-rivalries-2025-2025.webp",
-          "sha256": "e4ecb51431362bc33913c200c24f1a8cef563c8157690598392dcb15e0fa417a"
+          "sha256": "1108b26297542892025500f077f19b6670461439ee25b83b6c7f7aea3e43566e"
         },
         "full": {
           "path": "/uniforms/dolphins-rivalries-2025-2025-full.webp",
-          "sha256": "9d6b3a3bd297e82632488971b87a67155af8a1a9844c4c18169b061c81814ec5"
+          "sha256": "a9463c9f6c7fbff52be6fa53b5875dfbde1e9368cf310c798dd8819ea317afdd"
         }
       }
     },
@@ -1046,45 +1046,45 @@
     {
       "catalogId": "eagles-kelly-green-1987",
       "constructionKey": "kelly-green-original",
-      "revision": "9f37467898355f4b",
+      "revision": "e79e10d6204b0481",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-kelly-green-1987.webp",
-          "sha256": "374b3c0fc85080dd7234f1cea3044e615606e8b7f14766ed09a44422fc5f4828"
+          "sha256": "12297e50b0777106f268b98f1d47aabd93ce9dc2429599c8ee8fb4af59b69fb5"
         },
         "full": {
           "path": "/uniforms/eagles-kelly-green-1987-full.webp",
-          "sha256": "9e24b4031943616128696ff3997f48698ae408b4c628fa15557af0c112171b6d"
+          "sha256": "13bbfa3d2ef3d4a6ae3814955b9dfd670ea1748d9f82cebdee772e93c7e16386"
         }
       }
     },
     {
       "catalogId": "eagles-kelly-green-modern-2023",
       "constructionKey": "kelly-green-modern",
-      "revision": "1a03d5acef2c5a3e",
+      "revision": "40fdb4d2a8581657",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-kelly-green-modern-2023.webp",
-          "sha256": "015fc7885ec9af015d8e12139c3164d4465de7fee5d2db1208a5936b28d47ac9"
+          "sha256": "e59bd4086a9d4ef874f1cb0239569fff5fdb78af7fb2d5d874136d12b0188fd6"
         },
         "full": {
           "path": "/uniforms/eagles-kelly-green-modern-2023-full.webp",
-          "sha256": "8a4b8fdea3ba46236cc88213a6690cde58f5ef2fec38acd3a0e08806e0ee51aa"
+          "sha256": "a2a7225eba26dade975d4d58656f91d865b3815d0509a29cfa095bbc601b5ccf"
         }
       }
     },
     {
       "catalogId": "falcons-away-2020",
       "constructionKey": "away",
-      "revision": "c544df967cc48865",
+      "revision": "5a512ada0a048eb1",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/falcons-away-2020.webp",
-          "sha256": "bd38fd55f264cc3aafde6639e27851351b808d80ea3bce362984a64269a53fcf"
+          "sha256": "858063f2fdc7266c6674568dc731d73809f88cf7fbb49da592ff5f16258712c2"
         },
         "full": {
           "path": "/uniforms/falcons-away-2020-full.webp",
-          "sha256": "de58309053315d8dfea33eb4543cce12f50449b02bcb4803fefdfc69e31cf377"
+          "sha256": "91c290fe36852f956600c06dbe74758abcd340f133c9ff38e67442850928fd8a"
         }
       },
       "combinations": [
@@ -1093,7 +1093,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/falcons-away-2020--white-pants-full.webp",
-            "sha256": "942cf2a79b6199e7450e3aca10e4f169f4ffcad372100199a22b9207a175e6a4"
+            "sha256": "6636fc9297121e51164133ce368c130ffcdb53bd737283410436e93c25254e2a"
           }
         }
       ]
@@ -1116,15 +1116,15 @@
     {
       "catalogId": "falcons-home-2020",
       "constructionKey": "home",
-      "revision": "e58571a1ccfb3a67",
+      "revision": "b5f23097e0133f0f",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/falcons-home-2020.webp",
-          "sha256": "8b22b8c2a57932b4b224767d00e376478ae9f872a41bb8d849345a0831c7d57b"
+          "sha256": "a60d3893e83623554a33a2ed767751725de9a5e137bb711ca8c23eb38e543194"
         },
         "full": {
           "path": "/uniforms/falcons-home-2020-full.webp",
-          "sha256": "561c22c6dd4f7038efce849560949d0867830fb818e273910f9bb35b488071ea"
+          "sha256": "fca0c1ff0803ee8d76cf185391a9fce4cc7b16c6ccadbe9ebac84ef9d0a139c0"
         }
       },
       "combinations": [
@@ -1133,7 +1133,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/falcons-home-2020--white-pants-full.webp",
-            "sha256": "726250d7637668b3560d1bcd0e0accf2b551929d0e22100574e3933f7c2d93c0"
+            "sha256": "4e975119240f48147d9b45f5ecd98576966a68e88987ef553502ba1487625a6a"
           }
         }
       ]
@@ -1156,30 +1156,30 @@
     {
       "catalogId": "falcons-red-alt-2020",
       "constructionKey": "red-alt",
-      "revision": "d4631e0a3c27ec5e",
+      "revision": "cdd7512b0d863f95",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/falcons-red-alt-2020.webp",
-          "sha256": "89436024a4a7be9d42fc908221b307156f3c492a2b2acb957c4e5de738298d2d"
+          "sha256": "aac800c1afe2024f2806cc5f1ad1e1f84f276cad42becc153e34891c79983da5"
         },
         "full": {
           "path": "/uniforms/falcons-red-alt-2020-full.webp",
-          "sha256": "1416a325d68caea15b7f935f1325cc9750c0c0ef688b7073e09929d483771e1a"
+          "sha256": "a0569c38f9af26a1b870af2cafcb1a47870a4fc291c0b94c3dde0558496fd275"
         }
       }
     },
     {
       "catalogId": "giants-1980s-throwback-1980",
       "constructionKey": "1980s-throwback",
-      "revision": "cd1ba19fe88b2b7e",
+      "revision": "fe51e0741513299a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/giants-1980s-throwback-1980.webp",
-          "sha256": "f14599645e07ee57696c03efb85eb70148c03a5986dd337bf9824f67950b50cf"
+          "sha256": "f08d623261e9f3cb5dcf2f40d1c9135626f6d28127a55bdfb065e30b7ec4fdb1"
         },
         "full": {
           "path": "/uniforms/giants-1980s-throwback-1980-full.webp",
-          "sha256": "6063644dee68d6bf7342764cc0fb0b9375e4db1f7581741a1ebd1797ad99e3ba"
+          "sha256": "228052e29ea7709ceee021c0ffc8c5dedcb1da903ba4a7c3e71b5d872376d8d2"
         }
       }
     },
@@ -1385,15 +1385,15 @@
     {
       "catalogId": "jets-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "0d9a817322f2cc5f",
+      "revision": "a83cfd47abfa358e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jets-rivalries-2025-2025.webp",
-          "sha256": "e5b6e25e89ee40a7dd80397413d28f4b47816217ce2ea59847a5855a3d1e2cff"
+          "sha256": "23cd489bd1478ce7fde641779e591b77f4ce68515742f24d19b99139c49fb89c"
         },
         "full": {
           "path": "/uniforms/jets-rivalries-2025-2025-full.webp",
-          "sha256": "d2810f7a4cc53e67e74f061e1ea4304103794308dfb5d309998482ff15d0bb18"
+          "sha256": "053a73655a30ac9df1a942b958ff19543f027ed993d52d31825c3e7e045177a8"
         }
       }
     },
@@ -1433,15 +1433,15 @@
     {
       "catalogId": "lions-gridiron-gray-2017",
       "constructionKey": "gridiron-gray",
-      "revision": "d44a5b31f01d1628",
+      "revision": "d007175cb22b1f9c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/lions-gridiron-gray-2017.webp",
-          "sha256": "e3836d728ac9577fcd63502a0047e4b0963a7fd53ca1c83dbe3268a05f801f6b"
+          "sha256": "f772693879b948e75ad8f1c35c8a6b423e108b998bb824a66815c4edeb73a8e8"
         },
         "full": {
           "path": "/uniforms/lions-gridiron-gray-2017-full.webp",
-          "sha256": "f56b0c8df18104218016d0eb1e6098f3d6dad80ffd670b0ae7911b1ef5a51de7"
+          "sha256": "cdadb8d0e55d7ffeedbf4ffc049ceb3c8a25c5b38c469e5f5da95f3ffbca55a2"
         }
       }
     },
@@ -1481,15 +1481,15 @@
     {
       "catalogId": "packers-1923-throwback-1923",
       "constructionKey": "1923-throwback",
-      "revision": "083ebfd01f44ec2d",
+      "revision": "901f3f2f82cbd92f",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-1923-throwback-1923.webp",
-          "sha256": "f5978b965ed2f423dd3e67cb4395fd8a63ba05f755bb22860da7a5808bd2efeb"
+          "sha256": "d71afaef4a20909ce1ceb2365cd37720b03c58b68cdfd78e7a151f0d093f1b41"
         },
         "full": {
           "path": "/uniforms/packers-1923-throwback-1923-full.webp",
-          "sha256": "3b66423e6dccfcbf5d51ae2d9095ff25942775888dd06bd38b3d427d1826811a"
+          "sha256": "e136f186a0fa85ceea524f184cef4ca1b67ba3cec3b4b508a13960ce9d5e1568"
         }
       }
     },
@@ -1706,30 +1706,30 @@
     {
       "catalogId": "patriots-pat-patriot-1961",
       "constructionKey": "pat-patriot",
-      "revision": "4a5a3a25d4203334",
+      "revision": "1597c75ec58a7a2a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/patriots-pat-patriot-1961.webp",
-          "sha256": "878e54ddc2782152cff1a36588511dd976bc2c9e94d5fde6f4f38b5f9306ded7"
+          "sha256": "70da8a0dba95dc4ac26a5ef402e096bd29f630c6af9a1be6d1e9543f2ee73617"
         },
         "full": {
           "path": "/uniforms/patriots-pat-patriot-1961-full.webp",
-          "sha256": "beac2d0c001712283c95b8fe7de720690547ecdef7563fbf134cf647cb36f5ae"
+          "sha256": "edce0115dadcc5893b0e9c654182c3e45c8d7a1891027d8f15817f8352c47f17"
         }
       }
     },
     {
       "catalogId": "patriots-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "cb20b6eced3b3643",
+      "revision": "0a64684935357497",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/patriots-rivalries-2025-2025.webp",
-          "sha256": "598563a9289a17598134d177ea36bc155d1fdf9e717529a4ff761ed60bc6ac41"
+          "sha256": "f954d75999c155b3a5303d2e03dfcfdf33e3feb0586201c0ee67c30c25bbba46"
         },
         "full": {
           "path": "/uniforms/patriots-rivalries-2025-2025-full.webp",
-          "sha256": "f06452bec1129160e2be06ac5dd3267684c35ab281f164ff8e1611ee942f100d"
+          "sha256": "51e18f597987983e85a2a019e3c6d868f141266b116fe80f05e7ffc12cdd3290"
         }
       }
     },
@@ -2148,15 +2148,15 @@
     {
       "catalogId": "steelers-bumblebee-1933",
       "constructionKey": "bumblebee",
-      "revision": "65fcbacc46c42221",
+      "revision": "aff707133cf7e611",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/steelers-bumblebee-1933.webp",
-          "sha256": "258e5c7f516522fce306c3347cf80eaeb462bdc5c0665f1de676bf8ea07bfae6"
+          "sha256": "9dec75a6a8ad442d0627aa4230b74667515610eb353b29f365c428c8c1719fa9"
         },
         "full": {
           "path": "/uniforms/steelers-bumblebee-1933-full.webp",
-          "sha256": "0039024a3f17569546f3289af7ee8f69871dd048e09135ce9421058593c8658e"
+          "sha256": "9e4c9f087f6f25c2685f3c17dc62052c9775e1a224ab33be1b75500d51cffc4d"
         }
       }
     },
@@ -2218,15 +2218,15 @@
     {
       "catalogId": "texans-h-town-2024",
       "constructionKey": "h-town",
-      "revision": "75294b4ba6edfeb7",
+      "revision": "ffbcede32e79e36b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/texans-h-town-2024.webp",
-          "sha256": "9e8f3d6b5ca2f3399c7c86341adee0a22dd48532546c5851b192b41947c31629"
+          "sha256": "ced09c105fe783f8752c2533fe72277834f7b410495e09b89e770a625ac33a24"
         },
         "full": {
           "path": "/uniforms/texans-h-town-2024-full.webp",
-          "sha256": "cc17cbf43a08768e35c4f488426735162f4f25585ba3dfb02eb9f4c4969bf867"
+          "sha256": "8f1e0fb88224969e39da947e8918d09a874be5e3ec26c7d40c3bdc2e12722ddf"
         }
       }
     },
@@ -2443,15 +2443,15 @@
     {
       "catalogId": "vikings-purple-classic-1961",
       "constructionKey": "purple-classic",
-      "revision": "e25234b699a88ff6",
+      "revision": "9379310e92d262fd",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/vikings-purple-classic-1961.webp",
-          "sha256": "c827db5ad64275b80474dd4382db8fcbc3bab7ef12a190a854f5adf265c38c07"
+          "sha256": "42d012475249b658d855409cc00fa76475f1ab0e07a3ae2bf5a00082453210fc"
         },
         "full": {
           "path": "/uniforms/vikings-purple-classic-1961-full.webp",
-          "sha256": "7281796e69870f4a9977ee5beaeaa99eeb6cdd5f152e15c3191f890d21903daa"
+          "sha256": "98f3af3a61130abc553bf4b5f65e2406a6732ebcad2c0777b9ab356d5bc7dafd"
         }
       }
     },

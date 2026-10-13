@@ -1,3 +1,4 @@
+import { CARDINALS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { CARDINALS_RIVALRIES_JERSEY_ART } from '../marks/jersey-art';
 
@@ -12,6 +13,12 @@ export const CARDINALS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'rivalRed', outline: 'rivalOrange', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'rivalRed',
+    outline: 'rivalOrange',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: CARDINALS_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: CARDINALS_RIVALRIES_JERSEY_ART }],
 };
