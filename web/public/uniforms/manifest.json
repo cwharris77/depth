@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "9f296081e6ab83dff9437bc6c3d4559b2f056f7dedb5073eb53885f07402f8fa",
-  "revision": "08deec87ffde7fa0",
+  "sourceDigest": "2149edf91f53ff88574f001d5d2a69919cfa3efe4f798a035c5bbb6622de0103",
+  "revision": "024940230e8791ae",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2178,15 +2178,15 @@
     {
       "catalogId": "texans-away-2024",
       "constructionKey": "away",
-      "revision": "446dadbf7e43d781",
+      "revision": "191e0e049b763870",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/texans-away-2024.webp",
-          "sha256": "397fb3facd4e1610a258770e766785d10f0f6a9e3b8e5e9791442ee5c39d32c4"
+          "sha256": "29159ec8f80928f71bcc8cebad1d37952c7c985ddfe0c18114543f95d93f26d7"
         },
         "full": {
           "path": "/uniforms/texans-away-2024-full.webp",
-          "sha256": "a48c6210b8eb9262ef42ed317d0d60443d5834e4ff2a2b364f5b2d5c15e6f5a7"
+          "sha256": "dbf8285a2a008f27ae40a9dd4dbf05889f48451c890a093663929d6e832688bf"
         }
       },
       "combinations": [
@@ -2195,7 +2195,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/texans-away-2024--white-pants-full.webp",
-            "sha256": "7096b819c6717474306202a1f56baade2497872a67053ddde86a719f2d2347e6"
+            "sha256": "e787fd10a4c2a739af93585becc8528272e872cf0562143b934c51feb446a81d"
           }
         }
       ]
@@ -2203,45 +2203,45 @@
     {
       "catalogId": "texans-battle-red-2024",
       "constructionKey": "battle-red",
-      "revision": "78fb6e557d4f5298",
+      "revision": "114c5c23f5c4a674",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/texans-battle-red-2024.webp",
-          "sha256": "a6e608dfef0f680d06484b6831af1baa05f481ae496c0c9628a37162b5426f91"
+          "sha256": "a4daa8327550ff690f7f684b9876d4362315bb552ee7d00acf4ffba5b7123bfc"
         },
         "full": {
           "path": "/uniforms/texans-battle-red-2024-full.webp",
-          "sha256": "18ede60d672e882b089ea78b5b5cb70757da71bb1360df079116fa3f0d18f926"
+          "sha256": "559822530a33b329b4d2ad04ff51ad282085fea3153a8f4a4a485dbf0c2404e2"
         }
       }
     },
     {
       "catalogId": "texans-h-town-2024",
       "constructionKey": "h-town",
-      "revision": "315484e7f96dd8c6",
+      "revision": "8caac1b4c2b4445b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/texans-h-town-2024.webp",
-          "sha256": "dc3075cf5f8234e271ad02358f9ee8bf6d18e2f9bfdaf8b5e6442e49bf1e3f7a"
+          "sha256": "5ba477468a1947040bffd3f836fe5adcfc2ab145df9f6da5357c6f8c2bc0ed4a"
         },
         "full": {
           "path": "/uniforms/texans-h-town-2024-full.webp",
-          "sha256": "37f71bd2739188cfa63c3807b9de176deff79d09e23a2f2e3e141086d29db81d"
+          "sha256": "048ef6b6c6300b37788927ec00ff65123bf736f336bc83f2df4038525dbf8100"
         }
       }
     },
     {
       "catalogId": "texans-home-2024",
       "constructionKey": "home",
-      "revision": "6b6fbbbfd1d44a4d",
+      "revision": "6e5421cddaa2ab25",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/texans-home-2024.webp",
-          "sha256": "2c8f3c9821bf6edf52c5770b49853e663deb7e5496ab260022b9d546e6bbfc75"
+          "sha256": "6374a5a1cc524566e0810cd215e901379c9431f3d213da2b468207a4554720c4"
         },
         "full": {
           "path": "/uniforms/texans-home-2024-full.webp",
-          "sha256": "99c63db12db299c78f7c0e357d7e03e4ad67c75ad4dc5296ddad55fb1cbf0fee"
+          "sha256": "033441c9ee77d585ad56f7af6bc28564ad1014764c6126849bd797e9f1d9428a"
         }
       },
       "combinations": [
@@ -2250,7 +2250,7 @@
           "label": "Navy pants",
           "full": {
             "path": "/uniforms/texans-home-2024--navy-pants-full.webp",
-            "sha256": "860fe53a4534d50beb7c8bba032b71fb50af14d55af28ec7b4133f4645383344"
+            "sha256": "38696b9163785680e6b99d4c2c71d16aca426afbef69370aae2ce3ea49870551"
           }
         }
       ]

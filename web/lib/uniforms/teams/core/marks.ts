@@ -116,22 +116,23 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
     mirror: false,
     idSuffix: '-right',
   },
-  // A team logo worn large on the lower outer sleeve: the box runs past the sleeve's outer edge
-  // and the jersey clip trims the part that wraps out of the front view. Drawn for the right sleeve.
+  // A team logo worn small on the lower outer sleeve: its far side runs past the sleeve's outer
+  // edge and the jersey clip crops it, leaving the near horn. Drawn for the right sleeve, so the
+  // logo reads mirrored there and native on the left.
   'sleeve-logo-left': {
     surface: 'sleeve-left',
-    x0: 30,
-    w: 100,
-    cy: 545,
-    mirror: true,
+    x0: 33,
+    w: 78,
+    cy: 506,
+    mirror: false,
     idSuffix: '-left',
   },
   'sleeve-logo-right': {
     surface: 'sleeve-right',
-    x0: 484,
-    w: 100,
-    cy: 545,
-    mirror: false,
+    x0: 503,
+    w: 78,
+    cy: 506,
+    mirror: true,
     idSuffix: '-right',
   },
 };

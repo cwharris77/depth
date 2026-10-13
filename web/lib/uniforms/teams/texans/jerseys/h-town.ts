@@ -5,12 +5,11 @@ import { TEXANS_LOGO } from '../marks/logo';
 export const TEXANS_JERSEY_H_TOWN: CompleteJerseySpec = {
   body: 'navy',
   collar: {
-    style: 'inset-v',
-    color: 'red',
-    trim: 'none',
+    style: 'narrow-v',
+    color: 'navy',
+    trim: 'red',
+    trimEdge: 'none',
     inside: 'body',
-    lining: 'none',
-    backBar: 'none',
     outline: true,
   },
   shoulderPanel: 'none',
