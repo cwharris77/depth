@@ -54,9 +54,9 @@ export interface CompleteJerseySpec {
   shoulderPanel: { bands: JerseyBand[] } | None;
   shoulderStripes: { bands: JerseyBand[]; gap: JerseyGap } | None;
   shoulderNumber: { fill: string; outline: string | None } | None;
-  sleeveStripes: CompleteStripeStack | None;
+  sleeveStripes: (CompleteStripeStack & { position?: 'hem' }) | None;
   cuff: { color: string; size: JerseySize } | None;
-  sleeveNumber: { fill: string } | None;
+  sleeveNumber: { fill: string; outline?: string } | None;
   number: Required<Omit<JerseyNumber, 'glyphPath' | 'glyphLabel'>> &
     Pick<JerseyNumber, 'glyphPath' | 'glyphLabel'>;
   // Empty when the jersey carries no mark.
@@ -125,7 +125,12 @@ export function jerseySpecOf(c: CompleteJerseySpec): JerseySpec {
     };
   }
   const sleeveStripes = given(c.sleeveStripes);
-  if (sleeveStripes) spec.sleeveStripes = stack(sleeveStripes);
+  if (sleeveStripes) {
+    spec.sleeveStripes = {
+      ...stack(sleeveStripes),
+      ...(sleeveStripes.position && { position: sleeveStripes.position }),
+    };
+  }
   const cuff = given(c.cuff);
   if (cuff) spec.cuff = cuff;
   const sleeveNumber = given(c.sleeveNumber);

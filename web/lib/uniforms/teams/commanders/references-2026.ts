@@ -6,7 +6,7 @@ export const referencePacket = {
       role: 'front-and-detail',
       covers: [
         'white home and burgundy away block numerals with gold keylines',
-        'two-tone sleeve stripes',
+        'sleeve numerals above two-tone hem stripes',
         'gold facemask and three-stripe crown',
         'two-stripe pants',
       ],
@@ -16,7 +16,7 @@ export const referencePacket = {
       role: 'design-description',
       covers: [
         'white home and burgundy away block numerals with gold keylines',
-        'two-tone sleeve stripes',
+        'sleeve numerals above two-tone hem stripes',
         'gold facemask and three-stripe crown',
         'two-stripe pants',
       ],
@@ -24,11 +24,9 @@ export const referencePacket = {
   ],
   observed: [
     'white home and burgundy away block numerals with gold keylines',
-    'two-tone sleeve stripes',
+    'sleeve numerals above two-tone hem stripes',
     'gold facemask and three-stripe crown',
     'two-stripe pants',
   ],
-  approximations: [
-    'The shared athletic numeral is retained in place of the club-specific number font.',
-  ],
+  approximations: ['The shared block numeral stands in for the club block font.'],
 } as const;

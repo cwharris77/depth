@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "e96ce52c480148e34f8566677a36083aba9352f74a94b0644c5c4085c89a2bf3",
-  "revision": "13aba1de55645420",
+  "sourceDigest": "6389d0f193fcca5b2a5f22c27e2700522558768cd22632a6d5c9b4b992c819fa",
+  "revision": "cd7db9b26d49f952",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -853,30 +853,30 @@
     {
       "catalogId": "commanders-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "f54e945d6dcd2e5c",
+      "revision": "a167ad5c92c85c66",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/commanders-home-2026-2026.webp",
-          "sha256": "fb5b3d578f32e7f68d3e0f83183e891d4045f9b7ff46393db7b105352d78ebde"
+          "sha256": "2d4ece8becede6fe86f821fc047619b723fe4a7d153d5186fc6adbdd075cbfe2"
         },
         "full": {
           "path": "/uniforms/commanders-home-2026-2026-full.webp",
-          "sha256": "3b8ff2e85cc4370537bdef7cd05dd76aa57bbf0272a0dc74118adf7ef8746ddd"
+          "sha256": "d120439a7c09f51e7cc4748ad690cc21bfb971dcd014f41456157f48b981ee54"
         }
       }
     },
     {
       "catalogId": "commanders-super-bowl-away-2025",
       "constructionKey": "super-bowl-away",
-      "revision": "ee2ad24a902bc8d8",
+      "revision": "47e62d5ae19b6066",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/commanders-super-bowl-away-2025.webp",
-          "sha256": "b5204fb3aef694f8c5ef871be0786ee542e4b0f3d036f08ce8bfe314b05e7fe7"
+          "sha256": "70fcbfd150a4d42256249faf997f4382e8965cee0968151d0e3897aa2ec7dfa5"
         },
         "full": {
           "path": "/uniforms/commanders-super-bowl-away-2025-full.webp",
-          "sha256": "932811e14197dfd4c465ab52a8c88fb299350efc72eb50895dff921ec6a12d6c"
+          "sha256": "516ef233b99283743cf73bacae048dcb37073d44f63c7f68cfb79396ff266dd0"
         }
       }
     },
@@ -1101,15 +1101,15 @@
     {
       "catalogId": "falcons-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "2efd42354366c767",
+      "revision": "de45a1aef3c873ff",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/falcons-away-2026-2026.webp",
-          "sha256": "05a3343111602dcd1b4d4dd0eb5af8fc35943a369ed1b8f34b71e909fa4cb2c4"
+          "sha256": "1409150b306e6e2806e66351f602aa419ed6a6ff8ef82c88df0801e90e345bc6"
         },
         "full": {
           "path": "/uniforms/falcons-away-2026-2026-full.webp",
-          "sha256": "2e5d18867e11aa867755d0e29cd827804c5e5799d0391d1ad082d664561ab98c"
+          "sha256": "cc6c19b0492c4d0e688fb4af6b84288c633d705f83df9e72452bdd14099702df"
         }
       }
     },
@@ -1141,15 +1141,15 @@
     {
       "catalogId": "falcons-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "597d9421e387009b",
+      "revision": "fce7c6546760aa14",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/falcons-home-2026-2026.webp",
-          "sha256": "d243454bd95552eb848b0dd3e709a4b3168df54073286df2d7e952c522a734c5"
+          "sha256": "37ff712542b0a5e0a68eb9b07786db4017b867835b95c5fbc1a379fdebe4e073"
         },
         "full": {
           "path": "/uniforms/falcons-home-2026-2026-full.webp",
-          "sha256": "2299f2b3b076851ead6fdf3deaa4a781f4d7d69a36dc091068fa59b6146e4146"
+          "sha256": "b5af9d5969c992a0080f8d303c82e61b30a7b5f452e7c63103fe6d9254399e7a"
         }
       }
     },
@@ -1791,15 +1791,15 @@
     {
       "catalogId": "rams-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "84c0fc816f6ee5d1",
+      "revision": "37550ffcf07e8934",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-away-2026-2026.webp",
-          "sha256": "725f62cc272ce81f2e3707621d642154c4a371d9f5cdbc0a87d63048456c799a"
+          "sha256": "d80617313020ae7c0738e93f8723a9e59cc7bc9163ea3caeb8afdc4b7465e4cd"
         },
         "full": {
           "path": "/uniforms/rams-away-2026-2026-full.webp",
-          "sha256": "7dfc1d7426b95be44a9409ea6898cfdc3de5754b37f363697dc24aba2811b370"
+          "sha256": "e6fda4b380d652f96a1a1d2042d3ce85eebf3532b354c6e36b30e84008c1ca53"
         }
       }
     },
@@ -1846,15 +1846,15 @@
     {
       "catalogId": "rams-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "fa4343c8cd94f914",
+      "revision": "726840a674728bcf",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-home-2026-2026.webp",
-          "sha256": "f96916758ec5fe37b8862b20bdff55271a2b1a01820dd6675a8cbb093a62dcc0"
+          "sha256": "42c8ad1d4879052f208e35239f2ef054e9bc7e58316c12343ecc89303296b4f7"
         },
         "full": {
           "path": "/uniforms/rams-home-2026-2026-full.webp",
-          "sha256": "11e02133c9a3761fb31a61623e217564291c371a4baff02b013bd21edd2b31a9"
+          "sha256": "10c1d8196773903e46e3d0c53b879d124554f7bfed8deb55cdfd63b7e2b3a55d"
         }
       }
     },
@@ -1876,75 +1876,75 @@
     {
       "catalogId": "ravens-away-1996",
       "constructionKey": "away",
-      "revision": "8cde53b55b87be3a",
+      "revision": "088abbf6ed2f0284",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-away-1996.webp",
-          "sha256": "65533dd93659f4af3ae4c4669030b0e26770b1a278c9e6b12a66a714c1183402"
+          "sha256": "bdf0d26e8a348775f1d87b59a72132b936eb7ba1b87f949738f287427503ff9d"
         },
         "full": {
           "path": "/uniforms/ravens-away-1996-full.webp",
-          "sha256": "a057b3a2603d2fdaf7e0d2f553c20b1af1150a59a761fcfa10bf7dee54e37b12"
+          "sha256": "a81727f20948a75210a29daa57320b4e4c2916ef509374e4dd93c86d965a04b6"
         }
       }
     },
     {
       "catalogId": "ravens-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "b98a081289cdd806",
+      "revision": "bbba2ee27bdc9380",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-away-2026-2026.webp",
-          "sha256": "f2a5bf5d02f06fe832d69f0ff337e26bae7f919aba24ad06ce0bd0c6cc0e23d8"
+          "sha256": "eafc8b859b49fe26a3e1134e92f52bf2efcc768561786cd9c373f466f2bc6406"
         },
         "full": {
           "path": "/uniforms/ravens-away-2026-2026-full.webp",
-          "sha256": "849aee1053eee5414f2996c424c05d4bb96d8cb8356f0195b2afa781402300a7"
+          "sha256": "26a9f42a016838d8e6593312023e84431e16a2be83218e1e040d8d133c582cd1"
         }
       }
     },
     {
       "catalogId": "ravens-black-alt-2004",
       "constructionKey": "black-alt",
-      "revision": "b51212c2d2fd3bb0",
+      "revision": "c6765242e689bc6b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-black-alt-2004.webp",
-          "sha256": "114e5841744828f6ba14d9b5f61b19d56e8da02517cf44f198f30bf37e5bfb5e"
+          "sha256": "601ca8ca78a95aad0a0932bcc66d8f76049dfa67055516a6beafe542940ca084"
         },
         "full": {
           "path": "/uniforms/ravens-black-alt-2004-full.webp",
-          "sha256": "7ab77ce3020125ad1291f4f1fdf7c826cb54915bb1ec751664603d1d42deaede"
+          "sha256": "869265608cd95d106f721d86c4f441aafb4210a71154b311753c8522270d3a75"
         }
       }
     },
     {
       "catalogId": "ravens-home-1996",
       "constructionKey": "home",
-      "revision": "3471b17a43918b95",
+      "revision": "ba06d34e9df95bea",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-home-1996.webp",
-          "sha256": "1db584a43f3dd0c3677fd2cc3d9cf374b167583f221045781d0d1083f5dd0b89"
+          "sha256": "623a54e6f3f7306dcbb7530ec0053d5f7989121a91c3405f3820dc7e5cb34200"
         },
         "full": {
           "path": "/uniforms/ravens-home-1996-full.webp",
-          "sha256": "bdb441fee2633d1c477e9eb795d2d75f984d47f29d6e393caf7f5bf79c3d538d"
+          "sha256": "773d0dc65e8c900aef61937610048f58db52976ce8900b7078f2f6a83aa50358"
         }
       }
     },
     {
       "catalogId": "ravens-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "d191b099760118e5",
+      "revision": "a20b728e6b03da1d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-home-2026-2026.webp",
-          "sha256": "8ce3c889fbfe958517fcd39b51e42fd7c3e5cd31e76f0cbeeb811eb51779fd8e"
+          "sha256": "adaab698b583a3eda8385695566b553ff62cc35e490e0054c5dc2988568f6657"
         },
         "full": {
           "path": "/uniforms/ravens-home-2026-2026-full.webp",
-          "sha256": "aafaf51e374931902af6978f3f54b78f61bfc37e17549a026180727cc62b06fb"
+          "sha256": "424e96a900ac6ce6b38f76274f31064cda4dd217d9ed214ea639b4be1c6f0aaf"
         }
       }
     },
