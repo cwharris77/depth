@@ -1,35 +1,21 @@
 import SwiftUI
 
-// Native counterpart to the web UniformSheet (web/components/UniformSheet.tsx): a
-// horizontal swipeable carousel — one full-width card per uniform — replacing the old
-// vertical row list. Paging is native SwiftUI (`TabView` + `.page` style)
-// rather than a hand-rolled drag gesture: the platform already has a swipeable-carousel
-// primitive, so reimplementing framer-motion's drag/snap math here would just be
-// distribution-inflation over a built-in (see gstack ethos, "search before building").
-// `onSelect` fires on every page change (swipe settle or dot tap) so the field
-// live-previews each kit's colors while browsing — but it's a preview signal only.
-// The caller (TeamDetailView) holds the live-previewed id separately from the
-// committed one and only persists it (UserPreferences.setUniformSelection) when this
-// sheet is dismissed, whichever way that happens (X button or swipe-down). Web commits
-// on every drag settle instead, which is the bug this deliberately avoids: browsing
-// through kits shouldn't overwrite the saved pick until you actually close the picker.
-//
-// The card art reuses UniformsTab's `UniformThumb`, pointed
-// at the plain jersey crop (`UniformArt.jerseyURL`, not the archive's full-mannequin
-// `-full` raster) — the picker shows just the jersey, matching web's UniformSheet swatch,
-// while sharing the same thumbnail component as the archive instead of a second
-// jersey-rendering implementation. Each card's caption is the kit kind only (Home/Away/
-// etc.) — no year range, since an undated kit has nothing meaningful to show there.
+// A native paged jersey carousel. Selection previews the field while browsing;
+// the caller commits the preview when the sheet is dismissed.
 struct UniformPickerSheet: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let uniforms: [Uniform]
+    let teamName: String
     let onSelect: (String) -> Void
 
     @State private var currentIndex: Int
 
-    init(uniforms: [Uniform], selectedID: String?, onSelect: @escaping (String) -> Void) {
+    init(
+        uniforms: [Uniform], teamName: String, selectedID: String?,
+        onSelect: @escaping (String) -> Void
+    ) {
         func priority(_ uniform: Uniform) -> Int {
             guard uniform.isCurrent else { return 3 }
             switch uniform.kind {
@@ -39,6 +25,7 @@ struct UniformPickerSheet: View {
             }
         }
         let ordered = uniforms.sorted { priority($0) < priority($1) }
+        self.teamName = teamName
         self.uniforms = ordered
         self.onSelect = onSelect
         let startIndex =
@@ -81,17 +68,21 @@ struct UniformPickerSheet: View {
     }
 
     private func card(for uniform: Uniform, index: Int) -> some View {
-        VStack(spacing: DesignTokens.Spacing.sm) {
+        let presentation = UniformPresentation(uniform, teamName: teamName)
+        return VStack(spacing: DesignTokens.Spacing.sm) {
             UniformThumb(
                 url: UniformArt.jerseyURL(for: uniform.id), size: 140, heightMultiplier: 0.81
             )
             .padding(.top, DesignTokens.Spacing.md)
 
             VStack(spacing: DesignTokens.Spacing.xs) {
-                Text(uniform.name)
+                Text(presentation.title)
                     .font(.title3.bold())
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
-                Text(uniform.kind.displayName)
+                Text(presentation.dates)
+                    .font(.footnote.monospacedDigit())
+                    .foregroundStyle(DesignTokens.Colors.textSecondary)
+                Text(presentation.metadata)
                     .font(.footnote)
                     .foregroundStyle(DesignTokens.Colors.textMuted)
             }
@@ -103,7 +94,7 @@ struct UniformPickerSheet: View {
         .accessibilityElement(children: .ignore)
         .accessibilityIdentifier("uniform-\(uniform.id)")
         .accessibilityLabel(
-            "\(uniform.name), \(uniform.kind.displayName)\(index == currentIndex ? ", selected" : "")"
+            "\(presentation.accessibilityLabel)\(index == currentIndex ? ", selected" : "")"
         )
         .accessibilityValue("\(index + 1) of \(uniforms.count)")
     }
@@ -138,7 +129,9 @@ struct UniformPickerSheet: View {
                         }
                         .buttonStyle(.plain)
                         .id(index)
-                        .accessibilityLabel("Select \(uniform.name)")
+                        .accessibilityLabel(
+                            "Select \(UniformPresentation(uniform, teamName: teamName).accessibilityLabel)"
+                        )
                         .accessibilityValue("\(index + 1) of \(uniforms.count)")
                         .accessibilityAddTraits(index == currentIndex ? .isSelected : [])
                         .accessibilityIdentifier("uniform-dot-\(uniform.id)")
@@ -161,17 +154,5 @@ struct UniformPickerSheet: View {
         )
         // Swipes and dot taps both land on `currentIndex`, so each page change ticks once.
         .sensoryFeedback(.selection, trigger: currentIndex)
-    }
-}
-
-extension UniformKind {
-    var displayName: String {
-        switch self {
-        case .home: "Home"
-        case .away: "Away"
-        case .throwback: "Throwback"
-        case .colorRush: "Color Rush"
-        case .alternate: "Alternate"
-        }
     }
 }

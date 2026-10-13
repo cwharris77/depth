@@ -64,7 +64,7 @@ struct UniformKitSheet: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(DesignTokens.Colors.textMuted)
                 }
-                Text(kit.name)
+                Text(kit.presentation.title)
                     .font(.title.bold())
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -80,7 +80,7 @@ struct UniformKitSheet: View {
                     .font(.caption2.weight(.semibold))
                     .tracking(1.2)
                     .foregroundStyle(DesignTokens.Colors.textFaintest)
-                Text(UniformArchive.yearsLong(kit))
+                Text(kit.presentation.dates)
                     .font(.title2.monospacedDigit())
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
             }

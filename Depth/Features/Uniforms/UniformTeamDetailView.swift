@@ -77,11 +77,11 @@ struct UniformTeamDetailView: View {
             layout {
                 UniformThumb(url: UniformArt.fullURL(for: kit.id), size: 60)
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm - 1) {
-                    Text(kit.name)
+                    Text(kit.presentation.title)
                         .font(.title3.bold())
                         .foregroundStyle(DesignTokens.Colors.textPrimary)
                         .multilineTextAlignment(.leading)
-                    Text(UniformArchive.years(kit))
+                    Text(kit.presentation.dates)
                         .font(.subheadline.monospacedDigit())
                         .foregroundStyle(DesignTokens.Colors.textSecondary)
                     UniformKitBadges(kit: kit)
@@ -101,7 +101,7 @@ struct UniformTeamDetailView: View {
         .depthCard(dense: true, padded: false, radius: DesignTokens.Radius.md)
         .accessibilityIdentifier("uniform-kit-row-\(kit.id)")
         .accessibilityLabel(
-            "\(kit.name), \(UniformArchive.yearsLong(kit)), \(kit.isCurrent ? "in rotation" : "retired")"
+            kit.presentation.accessibilityLabel
         )
     }
 }
