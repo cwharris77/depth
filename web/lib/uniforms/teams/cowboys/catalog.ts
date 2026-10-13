@@ -12,7 +12,8 @@ export const COWBOYS_CATALOG: TeamCatalog = {
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
-      colors: { primary: '#003594', secondary: '#869397', accent: '#869397' },
+      // The navy jersey's body is the club navy, not the royal of the white jersey's numerals.
+      colors: { primary: '#041E42', secondary: '#869397', accent: '#869397' },
       legacyAccent: SILVER_ACCENT,
       periods: [
         {

@@ -1041,7 +1041,7 @@ describe('Cowboys catalog conversion', () => {
           yearStart: 1996,
           yearEnd: null,
           isCurrent: true,
-          colors: { primary: '#003594', secondary: '#869397', accent: '#869397' },
+          colors: { primary: '#041E42', secondary: '#869397', accent: '#869397' },
         },
         {
           teamId: 'cowboys',
