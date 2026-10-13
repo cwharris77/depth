@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { RAMS_PARTS, RAMS_UNIFORMS_FROM_PARTS } from '../rams';
 import { JERSEY_NUMBER_THREE } from '../../jersey-art';
+import { RAMS_NUMBER_THREE } from '../rams/marks/numbers';
 import { boundsOf } from '../core/marks';
 import { RAMS_CATALOG } from '../rams/catalog';
 
@@ -79,10 +80,11 @@ describe('Rams jerseys', () => {
     }
   });
   it('uses the Rams numeral construction instead of the shared athletic three', () => {
-    for (const name of ['royal', 'white', 'rivalries'] as const) {
+    for (const name of ['royal', 'white', 'rivalries', 'bone'] as const) {
       const number = RAMS_PARTS.jerseys[name].number;
       expect(number?.glyphPath).toBeDefined();
       expect(number?.glyphPath).not.toBe(JERSEY_NUMBER_THREE);
+      expect(number?.glyphPath).toBe(RAMS_NUMBER_THREE);
       expect(number?.glyphLabel).toBe('3');
     }
   });
@@ -117,12 +119,23 @@ describe('Rams jerseys', () => {
     }
   });
 
-  it('ends the 2020 shoulder horn above the sleeve cuff', () => {
+  it('extends the 2020 shoulder horn flush to the sleeve bottom without a taper', () => {
     for (const name of ['royal', 'white'] as const) {
       const bands = RAMS_PARTS.jerseys[name].layers.filter((l) => l.id.includes('horn-band'));
       expect(bands).toHaveLength(2);
-      for (const band of bands) expect(boundsOf(band.d)[3]).toBeLessThan(550);
+      for (const band of bands) {
+        expect(boundsOf(band.d)[3]).toBe(589);
+        const hemXs = Array.from(band.d.matchAll(/(?:L|M)(\d+),589/g), (m) => Number(m[1]));
+        expect(hemXs).toHaveLength(2);
+        expect(Math.abs(hemXs[0] - hemXs[1])).toBeGreaterThan(40);
+      }
     }
+  });
+
+  it('uses the rounded numeral on Bone sleeve TV numbers too', () => {
+    const numbers = RAMS_PARTS.jerseys.bone.layers.filter((l) => l.id.includes('sleeve-number'));
+    expect(numbers).toHaveLength(2);
+    expect(numbers.every((l) => l.d.includes('C'))).toBe(true);
   });
 
   it('gives Midnight Mode a distinct front sleeve construction', () => {

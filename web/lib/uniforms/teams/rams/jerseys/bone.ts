@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { RAMS_NUMBER_THREE } from '../marks/numbers';
 
 // Bone body with a body-coloured collar and plain sleeves carrying a royal TV number; flat royal numerals.
 export const RAMS_JERSEY_BONE: CompleteJerseySpec = {
@@ -18,6 +19,13 @@ export const RAMS_JERSEY_BONE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: { fill: 'royal' },
-  number: { fill: 'royal', outline: 'gold', outlineWeight: 'none', texture: 'plain' },
+  number: {
+    fill: 'royal',
+    outline: 'gold',
+    outlineWeight: 'none',
+    texture: 'plain',
+    glyphPath: RAMS_NUMBER_THREE,
+    glyphLabel: '3',
+  },
   marks: [],
 };
