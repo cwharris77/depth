@@ -12,12 +12,22 @@ import { LEGACY_ACCENTS } from '@/lib/uniforms/legacy-accents';
 describe('uniform seed generator', () => {
   const sql = generateCuratedSeedSql();
 
+  it('refuses to publish an emitted row whose wearing dates differ from its catalog', () => {
+    const saved = UNIFORMS[0];
+    try {
+      UNIFORMS[0] = { ...saved, yearStart: NaN };
+      expect(() => generateCuratedSeedSql()).toThrow(/wearing dates.*catalog/);
+    } finally {
+      UNIFORMS[0] = saved;
+    }
+  });
+
   // ui_accent/on_accent are no longer on the archive rows — they come from the frozen
   // legacy map. Every emitted row must still carry its exact pair, because already-installed
   // iOS builds select those columns and decode them into non-optional Strings.
   it('emits each row with its frozen legacy accent pair', () => {
     for (const u of UNIFORMS) {
-      const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
+      const id = u.id;
       const pair = LEGACY_ACCENTS[id];
       const row = sql.split('\n').find((line) => line.includes(`('${id}',`));
       expect(row, `no emitted row for ${id}`).toBeDefined();
@@ -32,13 +42,13 @@ describe('uniform seed generator', () => {
 
   it('emits one row per curated kit, keyed by `${teamId}-${slug}-${yearStart}`', () => {
     for (const u of UNIFORMS) {
-      expect(sql).toContain(`('${u.teamId}-${u.slug}-${u.yearStart}', '${u.teamId}',`);
+      expect(sql).toContain(`('${u.id}', '${u.teamId}',`);
     }
   });
 
   it("derives every row's image_path from its id (DEP-220 artifact URL)", () => {
     for (const u of UNIFORMS) {
-      expect(sql).toContain(uniformArtURL(`${u.teamId}-${u.slug}-${u.yearStart}`));
+      expect(sql).toContain(uniformArtURL(u.id));
     }
     // Every curated row must carry the path; a NULL image_path would leave the picker
     // without a thumbnail for a kit whose WebP is always generated. Paths are

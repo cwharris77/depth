@@ -6,6 +6,7 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
   teamId: 'dolphins',
   designs: [
     {
+      id: 'dolphins-home-2018',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -13,7 +14,13 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       jersey: 'teal',
       colors: { primary: '#008E97', secondary: '#FC4C02', accent: '#FC4C02' },
       legacyAccent: AQUA_ACCENT,
-      periods: [{ from: 2018 }],
+      periods: [
+        {
+          from: 2018,
+          startSource: 'https://www.miamidolphins.com/news/uniforms-historically-modern',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -26,6 +33,7 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'dolphins-away-2018',
       slug: 'away',
       sleeveNike: 'teal',
       name: 'Away',
@@ -33,7 +41,13 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#008E97', accent: '#FC4C02' },
       legacyAccent: AQUA_ACCENT,
-      periods: [{ from: 2018 }],
+      periods: [
+        {
+          from: 2018,
+          startSource: 'https://www.miamidolphins.com/news/uniforms-historically-modern',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -53,6 +67,7 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'dolphins-rivalries-2025-2025',
       slug: 'rivalries-2025',
       sleeveNike: 'teal',
       name: 'Rivalries',
@@ -60,12 +75,19 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       jersey: 'navy',
       colors: { primary: '#101820', secondary: '#008E97', accent: '#FC4C02' },
       legacyAccent: AQUA_ACCENT,
-      periods: [{ from: 2025 }],
+      periods: [
+        {
+          from: 2025,
+          startSource: 'https://www.miamidolphins.com/rivalries/',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         { key: 'standard', label: 'Standard', helmet: 'navy', pants: 'navy', pantsNike: 'white' },
       ],
     },
     {
+      id: 'dolphins-1972-throwback-1966',
       slug: '1972-throwback',
       sleeveNike: 'white',
       name: '1972 Throwback',
@@ -73,7 +95,14 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
       jersey: '1972',
       colors: { primary: '#008E97', secondary: '#FC4C02', accent: '#FFFFFF' },
       legacyAccent: AQUA_ACCENT,
-      periods: [{ from: 1966 }],
+      periods: [
+        {
+          from: 2015,
+          startSource:
+            'https://static.clubs.nfl.com/image/upload/v1578436728/patriots/jszl7spp94f7gytw3xge.pdf',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

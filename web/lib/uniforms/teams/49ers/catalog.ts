@@ -4,6 +4,7 @@ export const NINERS_CATALOG: TeamCatalog = {
   teamId: '49ers',
   designs: [
     {
+      id: '49ers-home-2022',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -11,7 +12,14 @@ export const NINERS_CATALOG: TeamCatalog = {
       jersey: 'red',
       colors: { primary: '#AA0000', secondary: '#B3995D', accent: '#B3995D' },
       legacyAccent: { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
-      periods: [{ from: 2022 }],
+      periods: [
+        {
+          from: 2022,
+          startSource:
+            'https://www.49ers.com/news/49ers-unveil-classic-updates-to-standard-home-and-away-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -24,6 +32,7 @@ export const NINERS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: '49ers-away-2022',
       slug: 'away',
       sleeveNike: 'red',
       name: 'Away',
@@ -31,7 +40,14 @@ export const NINERS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#AA0000', accent: '#B3995D' },
       legacyAccent: { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
-      periods: [{ from: 2022 }],
+      periods: [
+        {
+          from: 2022,
+          startSource:
+            'https://www.49ers.com/news/49ers-unveil-classic-updates-to-standard-home-and-away-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -44,6 +60,7 @@ export const NINERS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: '49ers-rivalries-2025-2025',
       slug: 'rivalries-2025',
       sleeveNike: 'red',
       name: 'Rivalries',
@@ -51,7 +68,14 @@ export const NINERS_CATALOG: TeamCatalog = {
       jersey: 'black',
       colors: { primary: '#101820', secondary: '#B3995D', accent: '#AA0000' },
       legacyAccent: { uiAccent: '#B3995D', onAccent: '#0a0e1a' },
-      periods: [{ from: 2025 }],
+      periods: [
+        {
+          from: 2025,
+          startSource:
+            'https://www.49ers.com/news/rivalries-night-paints-levis-stadium-black-49ers',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

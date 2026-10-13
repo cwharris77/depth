@@ -7,13 +7,13 @@ import type { SleeveNikePlacement } from './sleeve-logos';
 // A team's catalog: one entry per distinct uniform design. It is the single source for that
 // team's archive rows, their frozen legacy accent pairs, and the kits the renderer registers.
 
-// Seasons a design was worn. `to` is the last season worn; an open period means the design is
-// still in rotation. A closed period names the provenance record dating its end, or
-// NEEDS_SOURCE until one is recorded.
+// Seasons a design was worn. An omitted end means it remains in rotation.
 export interface WearPeriod {
   from: number;
   to?: number;
+  startSource?: string;
   source?: string;
+  verifiedOn?: string;
 }
 
 export const NEEDS_SOURCE = 'needs-source';
@@ -31,6 +31,18 @@ export interface Combination {
 }
 
 export interface CatalogDesign {
+  referencePacket?: {
+    readonly classification: string;
+    readonly sources: readonly {
+      readonly url: string;
+      readonly role: string;
+      readonly covers: readonly string[];
+    }[];
+    readonly observed: readonly string[];
+    readonly approximations: readonly string[];
+  };
+  // Immutable database and artifact identity, independent of corrected wearing dates.
+  id: string;
   // Explicit equipment treatment, independent of the design's original season.
   sleeveNike?: string;
   sleeveNikePlacement?: SleeveNikePlacement;
@@ -44,7 +56,7 @@ export interface CatalogDesign {
   colors: JerseyColors;
   // Frozen compatibility pair for installed iOS builds; see legacy-accents.ts.
   legacyAccent: LegacyAccentPair;
-  // Chronological. The row spans the first start to the last end.
+  // Chronological. The database row exposes the latest actual wearing period.
   periods: readonly WearPeriod[];
   // Canonical first: it renders the row's own rasters.
   combinations: readonly Combination[];
@@ -61,9 +73,8 @@ export function designConstructionKey(design: CatalogDesign): string {
   return design.constructionKey ?? design.slug;
 }
 
-// Row ids are `${teamId}-${slug}-${yearStart}` and never change once seeded.
-export function designRowId(teamId: string, design: CatalogDesign): string {
-  return `${teamId}-${design.slug}-${design.periods[0].from}`;
+export function designRowId(_teamId: string, design: CatalogDesign): string {
+  return design.id;
 }
 
 export function extraCombinations(design: CatalogDesign): readonly Combination[] {
@@ -85,12 +96,13 @@ export function designRow(teamId: string, design: CatalogDesign): UniformSeed {
   }
   const last = design.periods[design.periods.length - 1];
   return {
+    id: design.id,
     teamId,
     slug: design.slug,
     constructionKey: designConstructionKey(design),
     kind: design.kind,
     name: design.name,
-    yearStart: design.periods[0].from,
+    yearStart: last.from,
     yearEnd: last.to ?? null,
     isCurrent: last.to === undefined,
     colors: { ...design.colors },
@@ -142,10 +154,63 @@ export function catalogKits(catalog: TeamCatalog): Record<string, KitRef> {
 
 type CatalogParts = Pick<TeamPartsDefinition, 'helmets' | 'jerseys' | 'pants' | 'socks'>;
 
+export function validateWearPeriods(design: CatalogDesign, now = new Date()): string[] {
+  const issues: string[] = [];
+  const at = design.slug;
+  const validYear = (year: number) =>
+    Number.isInteger(year) && year >= 1920 && year <= now.getUTCFullYear();
+  const validSource = (source: string | undefined) => {
+    if (!source || source.trim() !== source) return false;
+    try {
+      const url = new URL(source);
+      return (
+        ['http:', 'https:'].includes(url.protocol) &&
+        !!url.hostname &&
+        !url.username &&
+        !url.password
+      );
+    } catch {
+      return false;
+    }
+  };
+  if (design.periods.length === 0) issues.push(`${at}: needs at least one wear period`);
+  design.periods.forEach((period, index) => {
+    if (!validYear(period.from)) issues.push(`${at}: invalid start year ${period.from}`);
+    if (!validSource(period.startSource)) issues.push(`${at}: start needs a resolved HTTP source`);
+    const verified = period.verifiedOn;
+    const parsed = verified ? new Date(verified) : undefined;
+    if (
+      !verified ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(verified) ||
+      !parsed ||
+      !Number.isFinite(parsed.getTime()) ||
+      parsed.toISOString().slice(0, 10) !== verified ||
+      verified > now.toISOString().slice(0, 10)
+    ) {
+      issues.push(`${at}: needs a valid verification date`);
+    }
+    if (period.to === undefined) {
+      if (index !== design.periods.length - 1)
+        issues.push(`${at}: only the last period may be open`);
+    } else {
+      if (!validYear(period.to)) issues.push(`${at}: invalid end year ${period.to}`);
+      if (period.to < period.from)
+        issues.push(`${at}: period ${period.from}-${period.to} ends before it starts`);
+      if (!validSource(period.source)) issues.push(`${at}: end needs a resolved HTTP source`);
+    }
+    const previous = design.periods[index - 1];
+    if (previous && (previous.to === undefined || period.from <= previous.to)) {
+      issues.push(`${at}: period starting ${period.from} overlaps or precedes the one before it`);
+    }
+  });
+  return issues;
+}
+
 // Every structural problem in a catalog, as readable lines. Empty means the catalog is valid.
 export function validateCatalog(catalog: TeamCatalog, parts: CatalogParts): string[] {
   const issues: string[] = [];
   const slugs = new Set<string>();
+  const ids = new Set<string>();
   const kitKeyOwners = new Map<string, string>();
   const has = (group: Record<string, unknown> | undefined, key: string) =>
     group !== undefined && Object.hasOwn(group, key);
@@ -162,6 +227,11 @@ export function validateCatalog(catalog: TeamCatalog, parts: CatalogParts): stri
     const at = design.slug;
     if (slugs.has(at)) issues.push(`${at}: duplicate slug`);
     slugs.add(at);
+    if (!design.id || !KEBAB.test(design.id) || !design.id.startsWith(`${catalog.teamId}-`)) {
+      issues.push(`${at}: invalid stable row id`);
+    }
+    if (ids.has(design.id)) issues.push(`${at}: duplicate stable row id`);
+    ids.add(design.id);
 
     if (!KEBAB.test(design.slug)) issues.push(`${at}: slug must be lowercase kebab-case`);
     if (design.constructionKey !== undefined && !KEBAB.test(design.constructionKey)) {
@@ -177,26 +247,7 @@ export function validateCatalog(catalog: TeamCatalog, parts: CatalogParts): stri
       issues.push(`${at}: unknown jersey "${design.jersey}"`);
     }
 
-    if (design.periods.length === 0) issues.push(`${at}: needs at least one wear period`);
-    design.periods.forEach((period, index) => {
-      const isLast = index === design.periods.length - 1;
-      if (period.to === undefined) {
-        if (!isLast) issues.push(`${at}: only the last period may be open`);
-      } else {
-        if (period.to < period.from) {
-          issues.push(`${at}: period ${period.from}-${period.to} ends before it starts`);
-        }
-        if (!period.source) {
-          issues.push(
-            `${at}: period ${period.from}-${period.to} ends without a source (use a provenance id or "${NEEDS_SOURCE}")`
-          );
-        }
-      }
-      const previous = design.periods[index - 1];
-      if (previous?.to !== undefined && period.from <= previous.to) {
-        issues.push(`${at}: period starting ${period.from} overlaps or precedes the one before it`);
-      }
-    });
+    issues.push(...validateWearPeriods(design));
 
     if (design.combinations.length === 0) {
       issues.push(`${at}: needs at least one combination (canonical first)`);

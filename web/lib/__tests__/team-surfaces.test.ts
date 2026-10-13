@@ -33,7 +33,7 @@ function kitColors(u: (typeof UNIFORMS)[number]): JerseyColors {
 // Look a kit up by its row id, failing loudly rather than with a null-deref if the archive
 // ever renames or retires one of the anchor cases these tests pin.
 function kitById(id: string): (typeof UNIFORMS)[number] {
-  const found = UNIFORMS.find((u) => `${u.teamId}-${u.slug}-${u.yearStart}` === id);
+  const found = UNIFORMS.find((u) => u.id === id);
   if (!found) throw new Error(`no uniform row with id ${id}`);
   return found;
 }
@@ -46,7 +46,7 @@ function isTeamColorOrAllowed(value: string, colors: JerseyColors): boolean {
 
 describe('team surfaces — every resolver returns a real team color', () => {
   for (const u of UNIFORMS) {
-    const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
+    const id = u.id;
     const colors = kitColors(u);
 
     it(`${id}: no resolver invents a color`, () => {
@@ -70,7 +70,7 @@ describe('team surfaces — every resolver returns a real team color', () => {
 
 describe('team surfaces — fill and ring', () => {
   for (const u of UNIFORMS) {
-    const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
+    const id = u.id;
     const colors = kitColors(u);
 
     it(`${id}: fill is the jersey body`, () => {
@@ -90,7 +90,7 @@ describe('team surfaces — fill and ring', () => {
   // than leaving a branch nothing exercises.
   it('only the two Ravens kits fall back to accent for their ring', () => {
     const fellBack = UNIFORMS.filter((u) => teamRing(kitColors(u)) !== u.colors.secondary).map(
-      (u) => `${u.teamId}-${u.slug}-${u.yearStart}`
+      (u) => u.id
     );
     expect(fellBack).toEqual(['ravens-home-1996', 'ravens-black-alt-2004']);
   });
@@ -104,7 +104,7 @@ describe('team surfaces — fill and ring', () => {
 
 describe('team surfaces — text on a fill', () => {
   for (const u of UNIFORMS) {
-    const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
+    const id = u.id;
     const colors = kitColors(u);
 
     it(`${id}: text clears the floor against the fill it sits on`, () => {
@@ -126,7 +126,7 @@ describe('team surfaces — text on a fill', () => {
 
 describe('team surfaces — player-card numeral', () => {
   for (const u of UNIFORMS) {
-    const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
+    const id = u.id;
     const colors = kitColors(u);
 
     it(`${id}: the stroke reads on the app ground`, () => {
@@ -157,8 +157,8 @@ describe('team surfaces — player-card numeral', () => {
     // A data change that shifts kits between branches should surface here rather than be
     // absorbed silently.
     expect({ strokeSecondary, swapped, whiteFallback }).toEqual({
-      strokeSecondary: 59,
-      swapped: 41,
+      strokeSecondary: 63,
+      swapped: 45,
       whiteFallback: 13,
     });
   });
@@ -198,15 +198,19 @@ describe('kitMark', () => {
   // so a body-first order paints all 32 away chromes white. A kit may still land on white --
   // but only when it owns nothing else that reads, never merely because white came first.
   it('resolves an away kit to its white body only when nothing else reads', () => {
-    const away = current.filter((u) => u.slug === 'away');
-    expect(away).toHaveLength(31);
+    const away = current.filter((u) => u.kind === 'away');
+    expect(away).toHaveLength(32);
     expect(away.every((u) => u.colors.primary.toUpperCase() === '#FFFFFF')).toBe(true);
 
     const white = away.filter((u) => kitMark(kitColors(u)).toUpperCase() === '#FFFFFF');
-    // The three dark-body/mid-red teams that also go dim at home, plus the Jets — their
-    // #125740 hunter green reads at only 2.1 on the ground. Every other away kit keeps a
-    // real color.
-    expect(white.map((u) => u.teamId).sort()).toEqual(['falcons', 'giants', 'jets', 'texans']);
+    // These away designs own no secondary or accent paint that clears the ground contrast bar.
+    expect(white.map((u) => u.teamId).sort()).toEqual([
+      'falcons',
+      'giants',
+      'jets',
+      'ravens',
+      'texans',
+    ]);
     for (const u of white) {
       const { secondary, accent } = kitColors(u);
       expect(contrastRatio(secondary, DARK_BG)).toBeLessThan(MARK_MIN);
@@ -214,15 +218,11 @@ describe('kitMark', () => {
     }
   });
 
-  // Only three current kits own nothing that reads on the ground. Pinned so a rule change has
+  // Only two current kits own nothing that reads on the ground. Pinned so a rule change has
   // to justify moving it.
-  it('leaves exactly three current kits dim, all dark bodies with a mid-red', () => {
+  it('leaves exactly two current kits dim, all dark bodies with a mid-red', () => {
     const dim = current.filter((u) => contrastRatio(kitMark(kitColors(u)), DARK_BG) < MARK_MIN);
-    expect(dim.map((u) => `${u.teamId}/${u.slug}`).sort()).toEqual([
-      'falcons/home',
-      'giants/home',
-      'texans/home',
-    ]);
+    expect(dim.map((u) => `${u.teamId}/${u.slug}`).sort()).toEqual(['giants/home', 'texans/home']);
   });
 
   // Even when no color clears the bar, the mark is the best the kit owns — never a worse one.

@@ -6,7 +6,9 @@ import { RAVENS_CATALOG } from '../ravens/catalog';
 
 describe('Ravens jersey parts', () => {
   // One `it` per jersey so a failure names the offending kit.
-  for (const [name, part] of Object.entries(RAVENS_PARTS.jerseys)) {
+  for (const [name, part] of Object.entries(RAVENS_PARTS.jerseys).filter(
+    ([name]) => !name.endsWith('-2026')
+  )) {
     it(`draws the ${name} collar and both shoulder bars and sleeve bands`, () => {
       const ids = part.layers.map((layer) => layer.id);
       expect(ids.some((id) => id.includes('collar'))).toBe(true);
@@ -21,8 +23,20 @@ describe('Ravens jersey parts', () => {
 
 describe('Ravens catalog', () => {
   it('wears the one black shell and purple pants on every design', () => {
-    for (const design of RAVENS_CATALOG.designs) {
+    for (const design of RAVENS_CATALOG.designs.filter(
+      (design) => !design.slug.endsWith('-2026')
+    )) {
       expect(design.combinations.map((c) => [c.helmet, c.pants])).toEqual([['black', 'purple']]);
     }
+  });
+});
+
+describe('Ravens replacement combinations', () => {
+  it('pairs the new home with white pants and the new away with purple pants', () => {
+    const current = RAVENS_CATALOG.designs.filter((design) => design.slug.endsWith('-2026'));
+    expect(current.map((design) => design.combinations.map((c) => [c.helmet, c.pants]))).toEqual([
+      [['black-2026', 'white-2026']],
+      [['black-2026', 'purple-2026']],
+    ]);
   });
 });

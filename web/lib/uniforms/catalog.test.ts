@@ -7,6 +7,7 @@ import {
   combinationArtifactName,
   combinationKitKey,
   designRow,
+  designRowId,
   extraCombinations,
   NEEDS_SOURCE,
   validateCatalog,
@@ -20,13 +21,16 @@ const COLORS = { primary: '#002244', secondary: '#69BE28', accent: '#A5ACAF' };
 const ACCENT = { uiAccent: '#69BE28', onAccent: '#0a0e1a' };
 
 const HOME: CatalogDesign = {
+  id: 'seahawks-home-2012',
   slug: 'home',
   name: 'Home',
   kind: 'home',
   jersey: 'navy',
   colors: COLORS,
   legacyAccent: ACCENT,
-  periods: [{ from: 2012 }],
+  periods: [
+    { from: 2012, startSource: 'https://www.seahawks.com/history/', verifiedOn: '2026-10-12' },
+  ],
   combinations: [
     { key: 'standard', label: 'Standard', helmet: 'navy-hawk', pants: 'navy' },
     { key: 'white-pants', label: 'White pants', helmet: 'navy-hawk', pants: 'white-plain' },
@@ -34,6 +38,7 @@ const HOME: CatalogDesign = {
 };
 
 const RETIRED: CatalogDesign = {
+  id: 'seahawks-old-1990',
   slug: 'old',
   constructionKey: 'old-construction',
   name: 'Old',
@@ -42,8 +47,20 @@ const RETIRED: CatalogDesign = {
   colors: COLORS,
   legacyAccent: ACCENT,
   periods: [
-    { from: 1990, to: 1995, source: 'ref-1' },
-    { from: 2002, to: 2004, source: NEEDS_SOURCE },
+    {
+      from: 1990,
+      to: 1995,
+      startSource: 'https://www.seahawks.com/history/',
+      source: 'https://www.seahawks.com/history/',
+      verifiedOn: '2026-10-12',
+    },
+    {
+      from: 2002,
+      to: 2004,
+      startSource: 'https://www.seahawks.com/history/',
+      source: 'https://www.seahawks.com/history/',
+      verifiedOn: '2026-10-12',
+    },
   ],
   combinations: [
     { key: 'standard', label: 'Standard', helmet: 'throwback-silver', pants: 'throwback' },
@@ -55,6 +72,7 @@ const FIXTURE: TeamCatalog = { teamId: 'seahawks', designs: [HOME, RETIRED] };
 describe('catalog rows', () => {
   it('derives an open design as a current row keyed by its first season', () => {
     expect(designRow('seahawks', HOME)).toEqual({
+      id: 'seahawks-home-2012',
       teamId: 'seahawks',
       slug: 'home',
       constructionKey: 'home',
@@ -69,7 +87,7 @@ describe('catalog rows', () => {
 
   it('ends a closed design at its last period and honours an explicit construction key', () => {
     const row = designRow('seahawks', RETIRED);
-    expect(row.yearStart).toBe(1990);
+    expect(row.yearStart).toBe(2002);
     expect(row.yearEnd).toBe(2004);
     expect(row.isCurrent).toBe(false);
     expect(row.constructionKey).toBe('old-construction');
@@ -172,18 +190,23 @@ describe('validateCatalog', () => {
     ]);
   });
 
-  it('requires ordered periods, only the last open, and a source on every end', () => {
+  it('requires ordered periods and only the last open', () => {
+    const dated = (from: number, to?: number) => ({
+      from,
+      ...(to !== undefined && { to }),
+      startSource: 'https://www.seahawks.com/history/',
+      source: 'https://www.seahawks.com/history/',
+      verifiedOn: '2026-10-12',
+    });
     expect(invalid({ periods: [] })).toEqual(['home: needs at least one wear period']);
-    expect(invalid({ periods: [{ from: 2012, to: 2014 }] })).toEqual([
-      'home: period 2012-2014 ends without a source (use a provenance id or "needs-source")',
-    ]);
-    expect(invalid({ periods: [{ from: 2012 }, { from: 2016 }] })).toEqual([
+    expect(invalid({ periods: [dated(2012), dated(2016)] })).toEqual([
       'home: only the last period may be open',
+      'home: period starting 2016 overlaps or precedes the one before it',
     ]);
-    expect(invalid({ periods: [{ from: 2012, to: 2016, source: 'a' }, { from: 2015 }] })).toEqual([
+    expect(invalid({ periods: [dated(2012, 2016), dated(2015)] })).toEqual([
       'home: period starting 2015 overlaps or precedes the one before it',
     ]);
-    expect(invalid({ periods: [{ from: 2016, to: 2012, source: 'a' }] })).toEqual([
+    expect(invalid({ periods: [dated(2016, 2012)] })).toEqual([
       'home: period 2016-2012 ends before it starts',
     ]);
   });
@@ -191,6 +214,7 @@ describe('validateCatalog', () => {
   it('rejects duplicate slugs', () => {
     expect(validateCatalog({ teamId: 'seahawks', designs: [HOME, HOME] }, SEAHAWKS_PARTS)).toEqual([
       'home: duplicate slug',
+      'home: duplicate stable row id',
     ]);
   });
 
@@ -235,5 +259,40 @@ describe('validateCatalog', () => {
           issue.startsWith('home--white-pants: kit key registered by')
       )
     ).toBe(true);
+  });
+});
+
+describe('publication date integrity', () => {
+  const invalidDates = (periods: CatalogDesign['periods']) =>
+    validateCatalog({ teamId: 'seahawks', designs: [{ ...HOME, periods }] }, SEAHAWKS_PARTS);
+
+  it('preserves a seeded ID when a wearing start is corrected', () => {
+    const corrected = { ...HOME, id: 'seahawks-home-2012', periods: [{ from: 2023 }] };
+    expect(designRowId('seahawks', corrected)).toBe('seahawks-home-2012');
+    expect(designRow('seahawks', corrected)).toHaveProperty('id', 'seahawks-home-2012');
+  });
+
+  it('projects the latest wearing period without implying continuous use across retirement', () => {
+    expect(designRow('seahawks', RETIRED).yearStart).toBe(2002);
+  });
+
+  it('rejects an uncited start even when the design is current', () => {
+    expect(invalidDates([{ from: 2012 }]).join(' ')).toMatch(/start.*source/);
+  });
+
+  it('rejects unresolved retirement evidence', () => {
+    expect(invalidDates([{ from: 2012, to: 2014, source: NEEDS_SOURCE }]).join(' ')).toMatch(
+      /resolved.*source/
+    );
+  });
+
+  it.each([NaN, Infinity, 2020.5, 0, 1800, 9999])('rejects invalid start year %s', (from) => {
+    expect(invalidDates([{ from }]).join(' ')).toMatch(/invalid.*year/);
+  });
+
+  it.each([NaN, Infinity, 2020.5, 0, 1800, 9999])('rejects invalid end year %s', (to) => {
+    expect(
+      invalidDates([{ from: 2012, to, source: 'https://www.seahawks.com/history/' }]).join(' ')
+    ).toMatch(/invalid.*year/);
   });
 });

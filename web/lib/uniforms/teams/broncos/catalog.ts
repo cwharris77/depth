@@ -1,9 +1,10 @@
-import { NEEDS_SOURCE, type TeamCatalog } from '../core/catalog';
+import { type TeamCatalog } from '../core/catalog';
 
 export const BRONCOS_CATALOG: TeamCatalog = {
   teamId: 'broncos',
   designs: [
     {
+      id: 'broncos-home-2024',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -11,7 +12,13 @@ export const BRONCOS_CATALOG: TeamCatalog = {
       jersey: 'orange',
       colors: { primary: '#FB4F14', secondary: '#002244', accent: '#002244' },
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
-      periods: [{ from: 2024 }],
+      periods: [
+        {
+          from: 2024,
+          startSource: 'https://www.denverbroncos.com/uniforms/history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -32,6 +39,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'broncos-away-2024',
       slug: 'away',
       sleeveNike: 'navy',
       name: 'Away',
@@ -39,7 +47,13 @@ export const BRONCOS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#FB4F14', accent: '#002244' },
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
-      periods: [{ from: 2024 }],
+      periods: [
+        {
+          from: 2024,
+          startSource: 'https://www.denverbroncos.com/uniforms/history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -85,6 +99,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
     },
     // Orange base, navy trim: the home jersey over white pants.
     {
+      id: 'broncos-orange-alt-2024',
       slug: 'orange-alt',
       sleeveNike: 'white',
       name: 'Orange Alternate',
@@ -92,7 +107,13 @@ export const BRONCOS_CATALOG: TeamCatalog = {
       jersey: 'orange',
       colors: { primary: '#FB4F14', secondary: '#002244', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
-      periods: [{ from: 2024 }],
+      periods: [
+        {
+          from: 2024,
+          startSource: 'https://www.denverbroncos.com/uniforms/history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -123,13 +144,23 @@ export const BRONCOS_CATALOG: TeamCatalog = {
     // The 1968–1996 royal-blue era. The royal #001489 is too dark for the UI, so uiAccent is the
     // era's orange.
     {
+      id: 'broncos-orange-crush-1968',
       slug: 'orange-crush',
       name: 'Orange Crush',
       kind: 'throwback',
       jersey: 'crush',
       colors: { primary: '#001489', secondary: '#FA4616', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FA4616', onAccent: '#0a0e1a' },
-      periods: [{ from: 1968, to: 1996, source: NEEDS_SOURCE }],
+      periods: [
+        {
+          from: 1968,
+          to: 1996,
+          startSource:
+            'https://static.www.nfl.com/image/upload/league/apps/league-site/media-guides/2025/DEN.pdf',
+          source: 'https://www.denverbroncos.com/uniforms/history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         { key: 'standard', label: 'Standard', helmet: 'royal-d', pants: 'white', socks: 'crush' },
       ],

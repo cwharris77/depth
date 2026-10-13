@@ -1,4 +1,4 @@
-import { NEEDS_SOURCE, type TeamCatalog } from '../core/catalog';
+import { type TeamCatalog } from '../core/catalog';
 
 const legacyAccent = { uiAccent: '#FFC62F', onAccent: '#0a0e1a' };
 
@@ -6,6 +6,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
   teamId: 'vikings',
   designs: [
     {
+      id: 'vikings-home-2013',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -13,7 +14,14 @@ export const VIKINGS_CATALOG: TeamCatalog = {
       jersey: 'purple',
       colors: { primary: '#4F2683', secondary: '#FFC62F', accent: '#FFC62F' },
       legacyAccent,
-      periods: [{ from: 2013 }],
+      periods: [
+        {
+          from: 2013,
+          startSource:
+            'https://www.nfl.com/news/miami-dolphins-minnesota-vikings-unveil-new-uniforms-0ap1000000163369',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -34,6 +42,7 @@ export const VIKINGS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'vikings-away-2013',
       slug: 'away',
       sleeveNike: 'purple',
       name: 'Away',
@@ -41,7 +50,14 @@ export const VIKINGS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#4F2683', accent: '#FFC62F' },
       legacyAccent,
-      periods: [{ from: 2013 }],
+      periods: [
+        {
+          from: 2013,
+          startSource:
+            'https://www.nfl.com/news/miami-dolphins-minnesota-vikings-unveil-new-uniforms-0ap1000000163369',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -62,18 +78,30 @@ export const VIKINGS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'vikings-purple-classic-1961',
       slug: 'purple-classic',
       name: 'Purple Classic',
       kind: 'throwback',
       jersey: 'purple-classic',
       colors: { primary: '#4F2683', secondary: '#FFC62F', accent: '#FFFFFF' },
       legacyAccent,
-      periods: [{ from: 1961, to: 1969, source: NEEDS_SOURCE }],
+      periods: [
+        {
+          from: 1961,
+          to: 1969,
+          startSource:
+            'https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=MIN&year=1961',
+          source:
+            'https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=MIN&year=1970',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         { key: 'standard', label: 'Standard', helmet: 'classic', pants: 'white', socks: 'purple' },
       ],
     },
     {
+      id: 'vikings-winter-warrior-2024',
       slug: 'winter-warrior',
       sleeveNike: 'purple',
       name: 'Winter Warrior',
@@ -81,7 +109,13 @@ export const VIKINGS_CATALOG: TeamCatalog = {
       jersey: 'winter-white',
       colors: { primary: '#FFFFFF', secondary: '#4F2683', accent: '#FFC62F' },
       legacyAccent,
-      periods: [{ from: 2024 }],
+      periods: [
+        {
+          from: 2024,
+          startSource: 'https://www.vikings.com/winter-warrior',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

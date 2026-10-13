@@ -15,6 +15,7 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
   teamId: 'buccaneers',
   designs: [
     {
+      id: 'buccaneers-home-2020',
       slug: 'home',
       sleeveNike: 'white',
       collarShield: true,
@@ -23,13 +24,20 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
       jersey: 'red',
       colors: { primary: '#D50A0A', secondary: '#34302B', accent: '#FF7900' },
       legacyAccent: RED_ACCENT,
-      periods: [{ from: 2020 }],
+      periods: [
+        {
+          from: 2020,
+          startSource: 'https://www.buccaneers.com/news/bucs-new-uniforms-draw-super-bowl-era-2020',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         flag('standard', 'White pants', 'white', 'pewter'),
         flag('pewter-pants', 'Pewter pants', 'pewter', 'pewter'),
       ],
     },
     {
+      id: 'buccaneers-away-2020',
       slug: 'away',
       sleeveNike: 'red',
       collarShield: true,
@@ -38,13 +46,20 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#D50A0A', accent: '#34302B' },
       legacyAccent: RED_ACCENT,
-      periods: [{ from: 2020 }],
+      periods: [
+        {
+          from: 2020,
+          startSource: 'https://www.buccaneers.com/news/bucs-new-uniforms-draw-super-bowl-era-2020',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         flag('standard', 'White pants', 'white', 'pewter'),
         flag('pewter-pants', 'Pewter pants', 'pewter', 'pewter'),
       ],
     },
     {
+      id: 'buccaneers-creamsicle-1976',
       slug: 'creamsicle',
       sleeveNike: 'white',
       collarShield: true,
@@ -53,7 +68,14 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
       jersey: 'creamsicle',
       colors: { primary: '#FF8200', secondary: '#C8102E', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FF8200', onAccent: '#0a0e1a' },
-      periods: [{ from: 1976 }],
+      periods: [
+        {
+          from: 2023,
+          startSource:
+            'https://www.buccaneers.com/news/bucs-reveal-creamsicle-uniforms-lions-oct-15',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

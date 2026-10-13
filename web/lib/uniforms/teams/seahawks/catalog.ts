@@ -4,13 +4,21 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
   teamId: 'seahawks',
   designs: [
     {
+      id: 'seahawks-home-2012',
       slug: 'home',
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
       colors: { primary: '#002244', secondary: '#69BE28', accent: '#A5ACAF' },
       legacyAccent: { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
-      periods: [{ from: 2012 }],
+      periods: [
+        {
+          from: 2012,
+          startSource:
+            'https://www.seahawks.com/news/on-this-date-kam-chancellor-models-seahawks-new-uniforms-155291',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -35,13 +43,20 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
     // for the modern remake; hexes are the reference sheet's flat fills. uiAccent brightens the
     // green so it reads on the dark UI.
     {
+      id: 'seahawks-1976-throwback-1976',
       slug: '1976-throwback',
       name: 'Throwback',
       kind: 'throwback',
       jersey: 'throwback',
       colors: { primary: '#0248B3', secondary: '#0E8329', accent: '#A7B0BA' },
       legacyAccent: { uiAccent: '#3DB06A', onAccent: '#0a0e1a' },
-      periods: [{ from: 1976 }],
+      periods: [
+        {
+          from: 2023,
+          startSource: 'https://www.seahawks.com/news/2023-week-8-seahawks-browns-uniform-combo',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -53,13 +68,21 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'seahawks-away-2012',
       slug: 'away',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#002244', accent: '#69BE28' },
       legacyAccent: { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
-      periods: [{ from: 2012 }],
+      periods: [
+        {
+          from: 2012,
+          startSource:
+            'https://www.seahawks.com/news/on-this-date-kam-chancellor-models-seahawks-new-uniforms-155291',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -116,13 +139,21 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
     // pine (2.41) and the kit's teal shell (1.57) fail AA against the dark UI background — see the
     // contrast tests in lib/__tests__/uniforms.test.ts.
     {
+      id: 'seahawks-rivalries-2025-2025',
       slug: 'rivalries-2025',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries-silver',
       colors: { primary: '#AFB3B5', secondary: '#002244', accent: '#29594C' },
       legacyAccent: { uiAccent: '#AFB3B5', onAccent: '#0a0e1a' },
-      periods: [{ from: 2025 }],
+      periods: [
+        {
+          from: 2025,
+          startSource:
+            'https://www.seahawks.com/news/seahawks-to-debut-rivalries-uniforms-in-week-16-vs-l-a-rams',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -138,13 +169,21 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
     // The fabric is a brighter lime than the brand's Action Green and has no published code, so
     // primary is the reference sheet's flat fill; navy is the band, numerals and pant stripe.
     {
+      id: 'seahawks-color-rush-2016',
       slug: 'color-rush',
       name: 'Color Rush',
       kind: 'color-rush',
       jersey: 'action-green',
       colors: { primary: '#B6FF3E', secondary: '#002244', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#B6FF3E', onAccent: '#15161a' },
-      periods: [{ from: 2016 }],
+      periods: [
+        {
+          from: 2016,
+          startSource:
+            'https://www.seahawks.com/news/seahawks-to-wear-action-green-for-2022-opener-vs-broncos',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

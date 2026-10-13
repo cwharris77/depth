@@ -6,6 +6,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
   teamId: 'browns',
   designs: [
     {
+      id: 'browns-home-2020',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -13,7 +14,14 @@ export const BROWNS_CATALOG: TeamCatalog = {
       jersey: 'brown',
       colors: { primary: '#311D00', secondary: '#FF3C00', accent: '#FF3C00' },
       legacyAccent,
-      periods: [{ from: 2020 }],
+      periods: [
+        {
+          from: 2020,
+          startSource:
+            'https://www.clevelandbrowns.com/news/browns-pay-homage-to-past-look-ahead-to-future-with-new-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -42,6 +50,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'browns-away-2020',
       slug: 'away',
       sleeveNike: 'brown',
       name: 'Away',
@@ -49,7 +58,14 @@ export const BROWNS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#311D00', accent: '#FF3C00' },
       legacyAccent,
-      periods: [{ from: 2020 }],
+      periods: [
+        {
+          from: 2020,
+          startSource:
+            'https://www.clevelandbrowns.com/news/browns-pay-homage-to-past-look-ahead-to-future-with-new-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -70,6 +86,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'browns-1946-throwback-1946',
       slug: '1946-throwback',
       sleeveNike: 'brown',
       name: '1946 Throwback',
@@ -77,7 +94,13 @@ export const BROWNS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#FF3C00', accent: '#311D00' },
       legacyAccent,
-      periods: [{ from: 1946 }],
+      periods: [
+        {
+          from: 2021,
+          startSource: 'https://www.clevelandbrowns.com/news/75uniform-launch',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

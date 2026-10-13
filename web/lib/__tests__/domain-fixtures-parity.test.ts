@@ -234,7 +234,7 @@ describe('domain fixtures parity (drift guard)', () => {
     // The case set is derived from UNIFORMS, so a kit added to the archive without
     // regenerating the fixture fails here rather than only in Swift's hard-coded count.
     expect(cases.map((c) => ({ id: c.id, colors: c.colors }))).toEqual(
-      UNIFORMS.map((u) => ({ id: `${u.teamId}-${u.slug}-${u.yearStart}`, colors: u.colors }))
+      UNIFORMS.map((u) => ({ id: u.id, colors: u.colors }))
     );
     for (const c of cases) {
       const numeral = numeralColors(c.colors);

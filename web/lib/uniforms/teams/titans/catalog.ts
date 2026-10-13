@@ -1,23 +1,29 @@
 import type { TeamCatalog } from '../core/catalog';
 
 const legacyAccent = { uiAccent: '#5BA8E8', onAccent: '#0a0e1a' };
-const primaryChangeSource =
-  'https://www.tennesseetitans.com/news/titans-switching-to-titans-blue-as-primary-home-jersey-color-in-2025';
-const newUniformSource =
-  'https://www.tennesseetitans.com/news/titans-unveil-new-uniforms-logo-to-represent-the-next-chapter-of-franchise-history';
-const oilersSource = 'https://www.tennesseetitans.com/history/logo-history';
 
 export const TITANS_CATALOG: TeamCatalog = {
   teamId: 'titans',
   designs: [
     {
+      id: 'titans-home-2018',
       slug: 'home',
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
       colors: { primary: '#0C2340', secondary: '#4B92DB', accent: '#4B92DB' },
       legacyAccent,
-      periods: [{ from: 2018, to: 2024, source: primaryChangeSource }],
+      periods: [
+        {
+          from: 2018,
+          to: 2025,
+          startSource:
+            'https://www.tennesseetitans.com/news/the-story-behind-titans-new-uniforms-and-helmet-20512660',
+          source:
+            'https://www.tennesseetitans.com/news/titans-unveil-new-uniforms-logo-to-represent-the-next-chapter-of-franchise-history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         { key: 'standard', label: 'Navy pants', helmet: 'navy-t', pants: 'navy', socks: 'navy' },
         {
@@ -30,26 +36,46 @@ export const TITANS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'titans-away-2018',
       slug: 'away',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#0C2340', accent: '#4B92DB' },
       legacyAccent,
-      periods: [{ from: 2018, to: 2025, source: newUniformSource }],
+      periods: [
+        {
+          from: 2018,
+          to: 2025,
+          startSource:
+            'https://www.tennesseetitans.com/news/the-story-behind-titans-new-uniforms-and-helmet-20512660',
+          source:
+            'https://www.tennesseetitans.com/news/titans-unveil-new-uniforms-logo-to-represent-the-next-chapter-of-franchise-history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         { key: 'standard', label: 'White pants', helmet: 'navy-t', pants: 'white', socks: 'white' },
         { key: 'navy-pants', label: 'Navy pants', helmet: 'navy-t', pants: 'navy', socks: 'white' },
       ],
     },
     {
+      id: 'titans-oilers-throwback-1960',
       slug: 'oilers-throwback',
       name: '1960 Oilers',
       kind: 'throwback',
       jersey: 'light-blue',
       colors: { primary: '#4B92DB', secondary: '#C8102E', accent: '#FFFFFF' },
       legacyAccent,
-      periods: [{ from: 1960, to: 1960, source: oilersSource }],
+      periods: [
+        {
+          from: 1960,
+          to: 1960,
+          startSource: 'https://www.tennesseetitans.com/history/logo-history',
+          source: 'https://www.tennesseetitans.com/history/logo-history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -61,25 +87,47 @@ export const TITANS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'titans-navy-alt-2018',
       slug: 'navy-alt',
       name: 'Navy Alternate',
       kind: 'alternate',
       jersey: 'navy-alt',
       colors: { primary: '#0C2340', secondary: '#4B92DB', accent: '#C8102E' },
       legacyAccent,
-      periods: [{ from: 2018, to: 2025, source: newUniformSource }],
+      periods: [
+        {
+          from: 2018,
+          to: 2025,
+          startSource:
+            'https://www.tennesseetitans.com/news/the-story-behind-titans-new-uniforms-and-helmet-20512660',
+          source:
+            'https://www.tennesseetitans.com/news/titans-unveil-new-uniforms-logo-to-represent-the-next-chapter-of-franchise-history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         { key: 'standard', label: 'Navy pants', helmet: 'navy-t', pants: 'navy', socks: 'navy' },
       ],
     },
     {
+      id: 'titans-titans-blue-home-2025',
       slug: 'titans-blue-home',
       name: 'Titans Blue Home',
       kind: 'home',
       jersey: 'blue-2025',
       colors: { primary: '#4B92DB', secondary: '#0C2340', accent: '#FFFFFF' },
       legacyAccent,
-      periods: [{ from: 2025, to: 2025, source: newUniformSource }],
+      periods: [
+        {
+          from: 2025,
+          to: 2025,
+          startSource:
+            'https://www.tennesseetitans.com/news/titans-switching-to-titans-blue-as-primary-home-jersey-color-in-2025',
+          source:
+            'https://www.tennesseetitans.com/news/titans-unveil-new-uniforms-logo-to-represent-the-next-chapter-of-franchise-history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -91,6 +139,7 @@ export const TITANS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'titans-home-2026-2026',
       slug: 'home-2026',
       sleeveNike: 'navy',
       collarShield: 'rounded',
@@ -99,7 +148,14 @@ export const TITANS_CATALOG: TeamCatalog = {
       jersey: 'blue-2026',
       colors: { primary: '#4495D2', secondary: '#FFFFFF', accent: '#D50A0A' },
       legacyAccent,
-      periods: [{ from: 2026 }],
+      periods: [
+        {
+          from: 2026,
+          startSource:
+            'https://www.tennesseetitans.com/news/titans-unveil-new-uniforms-logo-to-represent-the-next-chapter-of-franchise-history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -112,6 +168,7 @@ export const TITANS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'titans-away-2026-2026',
       slug: 'away-2026',
       sleeveNike: 'navy',
       collarShield: 'rounded',
@@ -120,7 +177,14 @@ export const TITANS_CATALOG: TeamCatalog = {
       jersey: 'white-2026',
       colors: { primary: '#FFFFFF', secondary: '#4495D2', accent: '#D50A0A' },
       legacyAccent,
-      periods: [{ from: 2026 }],
+      periods: [
+        {
+          from: 2026,
+          startSource:
+            'https://www.tennesseetitans.com/news/titans-unveil-new-uniforms-logo-to-represent-the-next-chapter-of-franchise-history',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

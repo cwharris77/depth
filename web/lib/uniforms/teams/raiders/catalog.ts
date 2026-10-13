@@ -5,6 +5,7 @@ export const RAIDERS_CATALOG: TeamCatalog = {
   teamId: 'raiders',
   designs: [
     {
+      id: 'raiders-home-1963',
       slug: 'home',
       sleeveNike: 'silver',
       name: 'Home',
@@ -12,7 +13,14 @@ export const RAIDERS_CATALOG: TeamCatalog = {
       jersey: 'black',
       colors: { primary: '#000000', secondary: '#A5ACAF', accent: '#A5ACAF' },
       legacyAccent: { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-      periods: [{ from: 1963 }],
+      periods: [
+        {
+          from: 1963,
+          startSource:
+            'https://www.raiders.com/news/raiders-color-rush-jerseys-celebrate-1970-team-19606979',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -25,6 +33,7 @@ export const RAIDERS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'raiders-away-1963',
       slug: 'away',
       sleeveNike: 'black',
       name: 'Away',
@@ -32,7 +41,21 @@ export const RAIDERS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#000000', accent: '#A5ACAF' },
       legacyAccent: { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-      periods: [{ from: 1963 }],
+      periods: [
+        {
+          from: 1965,
+          to: 1969,
+          startSource: 'https://nfluniforms.blogspot.com/2011/07/boys-are-back.html',
+          source: 'https://www.raiders.com/news/raiders-throwback-jerseys-celebrate-1970-team',
+          verifiedOn: '2026-10-13',
+        },
+        {
+          from: 1971,
+          startSource:
+            'https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=RAI&year=1971',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

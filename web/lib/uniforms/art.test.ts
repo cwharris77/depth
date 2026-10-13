@@ -48,7 +48,7 @@ describe('uniform thumbnail catalog rows', () => {
   it('projects the committed catalog into stable raster inputs', () => {
     expect(buildRowsFromCatalog()).toEqual(
       UNIFORMS.map((uniform) => ({
-        id: `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`,
+        id: uniform.id,
         teamId: uniform.teamId,
         slug: uniform.slug,
         constructionKey: uniform.constructionKey,

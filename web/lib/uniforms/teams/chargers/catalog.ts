@@ -24,6 +24,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
   teamId: 'chargers',
   designs: [
     {
+      id: 'chargers-home-2020',
       slug: 'home',
       sleeveNike: 'white',
       sleeveNikePlacement: 'lower',
@@ -32,10 +33,17 @@ export const CHARGERS_CATALOG: TeamCatalog = {
       jersey: 'powder',
       colors: { primary: '#0080C6', secondary: '#FFC20E', accent: '#FFC20E' },
       legacyAccent: BLUE_ACCENT,
-      periods: [{ from: 2020 }],
+      periods: [
+        {
+          from: 2020,
+          startSource: 'https://www.chargers.com/news/new-uniforms-2020',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: POWDER_COMBINATIONS,
     },
     {
+      id: 'chargers-away-2020',
       slug: 'away',
       sleeveNike: 'powderBlue',
       sleeveNikePlacement: 'lower',
@@ -44,7 +52,13 @@ export const CHARGERS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#0080C6', accent: '#FFC20E' },
       legacyAccent: BLUE_ACCENT,
-      periods: [{ from: 2020 }],
+      periods: [
+        {
+          from: 2020,
+          startSource: 'https://www.chargers.com/news/new-uniforms-2020',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         ...POWDER_COMBINATIONS,
         white('white-out', 'White pants, white socks', 'white', 'white'),
@@ -52,6 +66,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     },
     // The AFL powder blue, worn as a current alternate: the home jersey's construction.
     {
+      id: 'chargers-powder-blue-1960',
       slug: 'powder-blue',
       sleeveNike: 'white',
       sleeveNikePlacement: 'lower',
@@ -60,10 +75,17 @@ export const CHARGERS_CATALOG: TeamCatalog = {
       jersey: 'powder',
       colors: { primary: '#0080C6', secondary: '#FFC20E', accent: '#FFFFFF' },
       legacyAccent: BLUE_ACCENT,
-      periods: [{ from: 1960 }],
+      periods: [
+        {
+          from: 2020,
+          startSource: 'https://www.chargers.com/news/new-uniforms-2020',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [white('standard', 'Gold pants', 'gold', 'powder')],
     },
     {
+      id: 'chargers-charger-power-2025',
       slug: 'charger-power',
       sleeveNike: 'white',
       sleeveNikePlacement: 'lower',
@@ -72,10 +94,18 @@ export const CHARGERS_CATALOG: TeamCatalog = {
       jersey: 'gold',
       colors: { primary: '#FFC20E', secondary: '#0080C6', accent: '#FFFFFF' },
       legacyAccent: GOLD_ACCENT,
-      periods: [{ from: 2025 }],
+      periods: [
+        {
+          from: 2025,
+          startSource:
+            'https://www.chargers.com/news/modern-nostalgia-bolts-introduce-new-charger-power-super-chargers-alternate-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [white('standard', 'Gold pants', 'gold', 'gold')],
     },
     {
+      id: 'chargers-super-chargers-2025',
       slug: 'super-chargers',
       sleeveNike: 'white',
       sleeveNikePlacement: 'lower',
@@ -84,7 +114,14 @@ export const CHARGERS_CATALOG: TeamCatalog = {
       jersey: 'navy',
       colors: { primary: '#002244', secondary: '#FFC20E', accent: '#FFFFFF' },
       legacyAccent: GOLD_ACCENT,
-      periods: [{ from: 2025 }],
+      periods: [
+        {
+          from: 2025,
+          startSource:
+            'https://www.chargers.com/news/modern-nostalgia-bolts-introduce-new-charger-power-super-chargers-alternate-uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

@@ -4,6 +4,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
   teamId: 'chiefs',
   designs: [
     {
+      id: 'chiefs-home-1963',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -11,7 +12,14 @@ export const CHIEFS_CATALOG: TeamCatalog = {
       jersey: 'red',
       colors: { primary: '#E31837', secondary: '#FFB81C', accent: '#FFB81C' },
       legacyAccent: { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
-      periods: [{ from: 1963 }],
+      periods: [
+        {
+          from: 1963,
+          startSource:
+            'https://www.chiefs.com/news/patch-work-lamar-hunt-s-love-of-uniform-patches',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -24,6 +32,7 @@ export const CHIEFS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'chiefs-away-1963',
       slug: 'away',
       sleeveNike: 'red',
       name: 'Away',
@@ -31,7 +40,14 @@ export const CHIEFS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#E31837', accent: '#FFB81C' },
       legacyAccent: { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
-      periods: [{ from: 1963 }],
+      periods: [
+        {
+          from: 1963,
+          startSource:
+            'https://www.chiefs.com/news/patch-work-lamar-hunt-s-love-of-uniform-patches',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

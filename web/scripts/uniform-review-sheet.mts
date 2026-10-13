@@ -229,7 +229,7 @@ async function main() {
   const baseCommit = resolveBaseCommit(root, base);
   const teamRows = UNIFORMS.filter((row) => row.teamId === team).map((row) => ({
     ...row,
-    id: `${row.teamId}-${row.slug}-${row.yearStart}`,
+    id: row.id,
   }));
   if (teamRows.length === 0) {
     throw new Error(`no uniform rows for team "${team}"`);
