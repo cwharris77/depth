@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "55f2a536572f2c703cbddb0c19b75d49f0e7d76e9204ad99be02a70fca49c0c2",
-  "revision": "875e9cc9e4c99f21",
+  "sourceDigest": "9f296081e6ab83dff9437bc6c3d4559b2f056f7dedb5073eb53885f07402f8fa",
+  "revision": "08deec87ffde7fa0",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2218,30 +2218,30 @@
     {
       "catalogId": "texans-h-town-2024",
       "constructionKey": "h-town",
-      "revision": "75294b4ba6edfeb7",
+      "revision": "315484e7f96dd8c6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/texans-h-town-2024.webp",
-          "sha256": "9e8f3d6b5ca2f3399c7c86341adee0a22dd48532546c5851b192b41947c31629"
+          "sha256": "dc3075cf5f8234e271ad02358f9ee8bf6d18e2f9bfdaf8b5e6442e49bf1e3f7a"
         },
         "full": {
           "path": "/uniforms/texans-h-town-2024-full.webp",
-          "sha256": "cc17cbf43a08768e35c4f488426735162f4f25585ba3dfb02eb9f4c4969bf867"
+          "sha256": "37f71bd2739188cfa63c3807b9de176deff79d09e23a2f2e3e141086d29db81d"
         }
       }
     },
     {
       "catalogId": "texans-home-2024",
       "constructionKey": "home",
-      "revision": "dd8468e32c2eecc9",
+      "revision": "6b6fbbbfd1d44a4d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/texans-home-2024.webp",
-          "sha256": "4ec8a0f1c1dec066cee39e1441386e698eea322a123629b043bddd1cf2471d42"
+          "sha256": "2c8f3c9821bf6edf52c5770b49853e663deb7e5496ab260022b9d546e6bbfc75"
         },
         "full": {
           "path": "/uniforms/texans-home-2024-full.webp",
-          "sha256": "a89dd940235166ce598590cef3061e1df252d141f1a4e7bd98b6330d2665bec4"
+          "sha256": "99c63db12db299c78f7c0e357d7e03e4ad67c75ad4dc5296ddad55fb1cbf0fee"
         }
       },
       "combinations": [
@@ -2250,7 +2250,7 @@
           "label": "Navy pants",
           "full": {
             "path": "/uniforms/texans-home-2024--navy-pants-full.webp",
-            "sha256": "17aef29c8caac9421797564aa081b409fdc3661450abab4c05b771bdf24d30ff"
+            "sha256": "860fe53a4534d50beb7c8bba032b71fb50af14d55af28ec7b4133f4645383344"
           }
         }
       ]

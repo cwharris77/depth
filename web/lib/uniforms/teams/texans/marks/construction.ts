@@ -92,13 +92,3 @@ export const TEXANS_BATTLE_RED_SLEEVE_SWOOSH: Mark<'navy'> = {
     },
   ],
 };
-
-export const TEXANS_HOME_SLEEVE_HORN: Mark<'red'> = {
-  box: SLEEVE_BOX,
-  paths: [
-    {
-      slot: 'red',
-      d: 'M521,498 C530,502 536,505 539,510 C541,516 540,520 541,526 C543,536 548,548 555,560 C549,554 544,546 539,537 C534,530 528,526 524,522 C519,518 516,510 517,503 C518,500 519,498 521,498 Z',
-    },
-  ],
-};
