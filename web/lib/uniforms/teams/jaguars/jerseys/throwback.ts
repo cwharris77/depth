@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { JAGUARS_THROWBACK_NUMBER_THREE } from '../marks/numbers';
 import { JAGUARS_THROWBACK_BLOCKS } from '../marks/construction';
 
 // Teal body with a black V collar band and black back bar, white shoulder numerals, a gold block
@@ -21,6 +22,12 @@ export const JAGUARS_JERSEY_THROWBACK: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: { color: 'black', size: 'm' },
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'gold', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'gold',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: JAGUARS_THROWBACK_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: JAGUARS_THROWBACK_BLOCKS }],
 };

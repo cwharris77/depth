@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { BILLS_NUMBER_THREE } from '../marks/numbers';
 
 // White body. The collar band reverses the royal jersey's: red on its outer half, royal lining on
 // the inner half, red across the back of the neck. Sleeve stripes and shoulder numeral go royal.
@@ -26,6 +27,12 @@ export const BILLS_JERSEY_WHITE: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'navy', outline: 'red', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'navy',
+    outline: 'red',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: BILLS_NUMBER_THREE,
+  },
   marks: [],
 };

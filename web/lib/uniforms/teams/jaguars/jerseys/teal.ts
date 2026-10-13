@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { JAGUARS_NUMBER_THREE } from '../marks/numbers';
 
 // Teal body with a black V collar band keylined grey, a teal back bar, white shoulder numerals, a
 // black sleeve hem band and plain white numerals.
@@ -19,6 +20,12 @@ export const JAGUARS_JERSEY_TEAL: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: { color: 'black', size: 'l' },
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'teal', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'teal',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: JAGUARS_NUMBER_THREE,
+  },
   marks: [],
 };

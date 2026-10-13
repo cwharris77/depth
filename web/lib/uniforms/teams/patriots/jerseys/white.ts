@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { PATRIOTS_NUMBER_THREE } from '../marks/numbers';
 import { patriotsShoulderBands } from '../marks/construction';
 
 // White body with a same-colour keylined V collar, red-navy-red shoulder bands and navy numerals outlined in red.
@@ -19,6 +20,12 @@ export const PATRIOTS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'navy', outline: 'red', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'navy',
+    outline: 'red',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: PATRIOTS_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: patriotsShoulderBands('red', 'navy') }],
 };
