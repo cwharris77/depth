@@ -31,7 +31,7 @@ export const referencePacket = {
     'diagonally cut talon stripes',
     'Ravens and Baltimore chest wordmarks',
     'round numerals',
-    'purple sleeve hem on white',
+    'sleeve hem bands, black on purple and purple on white',
   ],
   approximations: [
     'The round numeral is outlined from the pinned DIN face, not the club-specific number font.',

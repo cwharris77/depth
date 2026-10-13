@@ -12,7 +12,7 @@ export const referencePacket = {
       covers: [
         'full spiral sleeve horns',
         'flat Sol home numerals',
-        'blue away numerals with Sol keyline',
+        'flat blue away numerals',
         'Sol shoulder panels on white',
         'unchanged primary helmet',
       ],
@@ -23,7 +23,7 @@ export const referencePacket = {
       covers: [
         'full spiral sleeve horns',
         'flat Sol home numerals',
-        'blue away numerals with Sol keyline',
+        'flat blue away numerals',
         'Sol shoulder panels on white',
         'unchanged primary helmet',
       ],
@@ -32,12 +32,12 @@ export const referencePacket = {
   observed: [
     'full spiral sleeve horns',
     'flat Sol home numerals',
-    'blue away numerals with Sol keyline',
+    'flat blue away numerals',
     'Sol shoulder panels on white',
     'unchanged primary helmet',
   ],
   approximations: [
     'The round numeral is the one drawn for the 2020 jerseys.',
-    'The sleeve horn is drawn as the front view shows it, a tapering band at the sleeve seam; its curl sits on the side of the sleeve.',
+    'The sleeve horn is drawn as the front view shows it, tapering down from the shoulder; its curl sits on the side of the sleeve.',
   ],
 } as const;

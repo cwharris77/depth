@@ -88,11 +88,12 @@ export interface JerseySpec {
   shoulderNumber?: { fill: string; outline?: string };
   // Horizontal stripes around the upper arm, below any shoulder panel. `edge` pipes every band
   // with a thin band of that colour above and below it; the gap is measured between pipings.
-  sleeveStripes?: { bands: JerseyBand[]; gap: JerseyGap; edge?: string };
+  // `position: 'hem'` ends the stack at the sleeve hem instead of starting it on the upper arm.
+  sleeveStripes?: { bands: JerseyBand[]; gap: JerseyGap; edge?: string; position?: 'hem' };
   // A solid band at the sleeve opening.
   cuff?: { color: string; size: JerseySize };
   // The numeral repeated small and upright on the lower outer face of each sleeve.
-  sleeveNumber?: { fill: string };
+  sleeveNumber?: { fill: string; outline?: string };
   number: JerseyNumber;
   // Logos and wordmarks. Omitted, the jersey carries none.
   marks?: readonly JerseyMarkUse[];
@@ -329,7 +330,11 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
     const { edge } = spec.sleeveStripes;
     const gap = GAP_PX[spec.sleeveStripes.gap];
     const e = edge ? STRIPE_EDGE_PX : 0;
-    let sy = STRIPES_TOP;
+    const stackHeight = spec.sleeveStripes.bands.reduce(
+      (sum, band, i) => sum + SIZE_PX[band.size] + 2 * e + (i > 0 ? gap : 0),
+      0
+    );
+    let sy = spec.sleeveStripes.position === 'hem' ? CUFF_BOTTOM - stackHeight : STRIPES_TOP;
     spec.sleeveStripes.bands.forEach((band, i) => {
       const h = SIZE_PX[band.size];
       const top = sy + e;
@@ -359,11 +364,24 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
   }
 
   if (spec.sleeveNumber) {
-    layers.push(
-      ...bothSleeves(`${prefix}-sleeve-number`, spec.sleeveNumber.fill, (side) =>
-        sleeveNumber(side, spec.number.glyphPath)
-      )
-    );
+    const { fill, outline } = spec.sleeveNumber;
+    const sleeveGlyph = (side: Sleeve) => sleeveNumber(side, spec.number.glyphPath);
+    if (outline) {
+      layers.push(
+        ...bothSleeves(`${prefix}-sleeve-number-outline`, outline, sleeveGlyph).map(
+          (l): PartLayer => ({
+            id: l.id,
+            surface: l.surface,
+            clip: true,
+            kind: 'stroke',
+            stroke: outline,
+            strokeWidth: SHOULDER_NUMBER_OUTLINE * 2,
+            d: l.d,
+          })
+        )
+      );
+    }
+    layers.push(...bothSleeves(`${prefix}-sleeve-number`, fill, sleeveGlyph));
   }
 
   layers.push(...collarLayers(prefix, spec));

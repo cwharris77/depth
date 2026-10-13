@@ -54,11 +54,18 @@ export const RAVENS_HELMET_DECAL = placed([
   fill('ravens-decal-svg-16', 'helmet', RAVENS_DECAL_SVG_16_PATH, 'purple'),
 ]);
 
-// A solid band at each sleeve hem with the gold-bordered shield above it.
-export function ravensSleeveMarks(band: string): PlacedMark {
+// A solid band at each sleeve hem.
+export function ravensSleeveBands(band: string): PlacedMark {
   return placed([
     fill('ravens-sleeve-band-left', 'sleeve-left', RAVENS_SLEEVE_BAND_LEFT, band),
     fill('ravens-sleeve-band-right', 'sleeve-right', RAVENS_SLEEVE_BAND_RIGHT, band),
+  ]);
+}
+
+// The hem bands with the gold-bordered shield above them.
+export function ravensSleeveMarks(band: string): PlacedMark {
+  return placed([
+    ...ravensSleeveBands(band).layers,
     ...ravensSleeveShields('ravens-shield', 'gold').layers,
   ]);
 }

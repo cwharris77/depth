@@ -75,6 +75,20 @@ export function ramsRivalriesSleeveHorn(horn: string, panel: string): PlacedMark
   ]);
 }
 
+// The full horn's front-facing part on each sleeve, over an optional solid outer sleeve.
+export function ramsFullSleeveHorn(horn: string, sleeve?: string): PlacedMark {
+  return placed([
+    ...(sleeve
+      ? [
+          fill('rams-full-horn-sleeve-left', 'sleeve-left', RAMS_AWAY_HORN_SPLIT_LEFT, sleeve),
+          fill('rams-full-horn-sleeve-right', 'sleeve-right', RAMS_AWAY_HORN_SPLIT_RIGHT, sleeve),
+        ]
+      : []),
+    fill('rams-full-horn-front-left', 'sleeve-left', RAMS_RIVALRIES_HORN_FRONT_LEFT, horn),
+    fill('rams-full-horn-front-right', 'sleeve-right', RAMS_RIVALRIES_HORN_FRONT_RIGHT, horn),
+  ]);
+}
+
 // The pant leg stripe: an outer keyline with the inboard band beside it, both ending at the hem.
 export function ramsLegStripe(keyline: string, band: string): PlacedMark {
   return placed([

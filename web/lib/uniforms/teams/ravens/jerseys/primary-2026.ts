@@ -1,5 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { RAVENS_JERSEY_PURPLE } from './purple';
+import { ravensSleeveBands } from '../marks/construction';
 import { RAVENS_NUMBER_THREE } from '../marks/numbers';
 import {
   ravensCollarWings,
@@ -9,7 +10,7 @@ import {
 import { ravensSleeveShields } from '../marks/shield';
 
 // Purple body and collar with dark feathers down the collar band, white shoulder and chest
-// numerals with a midnight outline, the white-bordered shield on each sleeve.
+// numerals with a midnight outline, the white-bordered shield above a black band on each sleeve.
 export const RAVENS_JERSEY_PURPLE_2026: CompleteJerseySpec = {
   ...RAVENS_JERSEY_PURPLE,
   shoulderNumber: { fill: 'white', outline: 'midnight' },
@@ -22,6 +23,7 @@ export const RAVENS_JERSEY_PURPLE_2026: CompleteJerseySpec = {
     glyphLabel: '3',
   },
   marks: [
+    { paint: 'over', mark: ravensSleeveBands('black') },
     { paint: 'over', mark: ravensCollarWings('black') },
     { paint: 'over', mark: ravensSleeveShields('ravens-2026-shield', 'white') },
     { paint: 'over', mark: RAVENS_2026_HOME_WORDMARK },
@@ -29,7 +31,7 @@ export const RAVENS_JERSEY_PURPLE_2026: CompleteJerseySpec = {
 };
 
 // White body and collar with purple feathers down the collar band, purple numerals and a
-// purple sleeve hem.
+// purple band at each sleeve hem.
 export const RAVENS_JERSEY_WHITE_2026: CompleteJerseySpec = {
   ...RAVENS_JERSEY_PURPLE_2026,
   body: 'white',
@@ -43,7 +45,6 @@ export const RAVENS_JERSEY_WHITE_2026: CompleteJerseySpec = {
     outline: true,
   },
   shoulderNumber: { fill: 'purple', outline: 'midnight' },
-  cuff: { color: 'purple', size: 's' },
   number: {
     fill: 'purple',
     outline: 'midnight',
@@ -53,6 +54,7 @@ export const RAVENS_JERSEY_WHITE_2026: CompleteJerseySpec = {
     glyphLabel: '3',
   },
   marks: [
+    { paint: 'over', mark: ravensSleeveBands('purple') },
     { paint: 'over', mark: ravensCollarWings('purple') },
     { paint: 'over', mark: ravensSleeveShields('ravens-2026-shield', null) },
     { paint: 'over', mark: RAVENS_2026_AWAY_WORDMARK },

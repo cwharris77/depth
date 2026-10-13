@@ -119,6 +119,32 @@ describe('expandJersey', () => {
     expect(ltx0 - ltx1b).toBe(18);
   });
 
+  it('ends a hem stripe stack at the sleeve hem and outlines the sleeve numeral when asked', () => {
+    const layers = (position?: 'hem', outline?: string) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        sleeveStripes: {
+          bands: [
+            { color: 'white', size: 's' },
+            { color: 'orange', size: 's' },
+          ],
+          gap: 'none',
+          position,
+        },
+        sleeveNumber: { fill: 'white', outline },
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'none' },
+      }).layers;
+    const ys = (id: string, all: ReturnType<typeof layers>) =>
+      numbers(all.find((l) => l.id === id)?.d ?? '').filter((_, i) => i % 2 === 1);
+    expect(Math.min(...ys('t-stripe-0-left', layers()))).toBe(476);
+    expect(Math.max(...ys('t-stripe-1-left', layers('hem')))).toBe(591);
+    expect(Math.min(...ys('t-stripe-0-left', layers('hem')))).toBe(569);
+    const ids = (all: ReturnType<typeof layers>) => all.map((l) => l.id);
+    expect(ids(layers())).not.toContain('t-sleeve-number-outline-left');
+    expect(ids(layers(undefined, 'orange'))).toContain('t-sleeve-number-outline-left');
+  });
+
   it("draws the shoulder numeral from the jersey's own glyph when it has one", () => {
     const glyph = 'M0,0 Q10,0 10,10 L0,10 Z';
     const shoulder = (glyphPath?: string) =>
