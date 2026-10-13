@@ -82,36 +82,6 @@ enum UniformArchive {
 
     // MARK: - Labels
 
-    /// Compact year range for dense cells ("1970–76", "2025–", "1998–2001").
-    static func years(_ kit: UniformListing) -> String {
-        guard let start = kit.yearStart else { return "—" }
-        guard let end = kit.yearEnd else { return "\(start)–" }
-        if end == start { return "\(start)" }
-        let sameCentury = end / 100 == start / 100
-        return sameCentury ? "\(start)–\(String(end).suffix(2))" : "\(start)–\(end)"
-    }
-
-    /// Full year range for the detail sheet, where there is room for both centuries.
-    static func yearsLong(_ kit: UniformListing) -> String {
-        guard let start = kit.yearStart else { return "—" }
-        guard let end = kit.yearEnd else { return "\(start)–" }
-        return end == start ? "\(start)" : "\(start)–\(end)"
-    }
-
-    /// The compact era cell drops a leading year from the name — the year label right
-    /// below already carries it ("1976 Throwback" + "1976–2001" says the same thing
-    /// twice).
-    static func shortKitName(_ name: String) -> String {
-        guard let space = name.firstIndex(of: " ") else { return name }
-        let head = name[name.startIndex..<space]
-        let digits = head.hasSuffix("s") ? head.dropLast() : head[...]
-        let isYearToken =
-            digits.allSatisfy(\.isNumber)
-            && (digits.count == 4 || (digits.count == 2 && head.hasSuffix("s")))
-        guard isYearToken else { return name }
-        return String(name[name.index(after: space)...])
-    }
-
     static func kindLabel(_ kind: UniformKind) -> String {
         switch kind {
         case .home: "HOME"
@@ -336,5 +306,82 @@ enum UniformArchive {
                 )
             }
             .sorted { ($0.decade ?? .max) < ($1.decade ?? .max) }
+    }
+}
+
+/// Shared display rules for archive listings and the team's uniform picker.
+struct UniformPresentation: Equatable {
+    let title: String
+    let dates: String
+    let status: String
+    let kindLabel: String?
+
+    var metadata: String {
+        [kindLabel, status].compactMap { $0 }.joined(separator: " · ")
+    }
+
+    var accessibilityLabel: String {
+        [title, kindLabel, dates, status].compactMap { $0 }.joined(separator: ", ")
+    }
+
+    init(
+        name: String, teamName: String, kind: UniformKind, yearStart: Int?, yearEnd: Int?,
+        isCurrent: Bool
+    ) {
+        var title = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !teamName.isEmpty, title == teamName {
+            title = ""
+        } else if !teamName.isEmpty, title.hasPrefix(teamName + " ") {
+            title = String(title.dropFirst(teamName.count + 1))
+        }
+        if let start = yearStart, yearEnd.map({ $0 >= start }) ?? isCurrent {
+            let end = yearEnd.map(String.init) ?? "present"
+            for separator in ["–", "-"] {
+                let suffix = " \(start)\(separator)\(end)"
+                if title.hasSuffix(suffix) {
+                    title = String(title.dropLast(suffix.count))
+                    break
+                }
+            }
+        }
+        title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let kindName = UniformArchive.kindChipLabel(kind)
+        self.title = title.isEmpty ? kindName : title
+        let words = self.title.lowercased().split(whereSeparator: { !$0.isLetter && !$0.isNumber })
+            .map(String.init)
+        let kindWords = kindName.lowercased().split(separator: " ").map(String.init)
+        let containsKind =
+            words.count >= kindWords.count
+            && (0...(words.count - kindWords.count)).contains {
+                Array(words[$0..<($0 + kindWords.count)]) == kindWords
+            }
+        kindLabel = containsKind ? nil : kindName
+        status = isCurrent ? "Current" : "Retired"
+        switch (yearStart, yearEnd) {
+        case let (start?, end?) where end >= start:
+            dates = start == end ? "\(start)" : "\(start)–\(end)"
+        case (_?, _?):
+            dates = "Dates unknown"
+        case let (start?, nil):
+            dates = isCurrent ? "\(start)–present" : "From \(start) · end unknown"
+        case let (nil, end?):
+            dates = "Through \(end) · start unknown"
+        case (nil, nil):
+            dates = "Dates unknown"
+        }
+    }
+
+    init(_ uniform: Uniform, teamName: String) {
+        self.init(
+            name: uniform.name, teamName: teamName, kind: uniform.kind,
+            yearStart: uniform.yearStart, yearEnd: uniform.yearEnd, isCurrent: uniform.isCurrent)
+    }
+}
+
+extension UniformListing {
+    var presentation: UniformPresentation {
+        UniformPresentation(
+            name: name, teamName: teamName, kind: kind,
+            yearStart: yearStart, yearEnd: yearEnd, isCurrent: isCurrent)
     }
 }

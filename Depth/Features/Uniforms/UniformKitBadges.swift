@@ -17,19 +17,22 @@ struct UniformKitBadges: View {
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: DesignTokens.Spacing.xs + 2))
             : AnyLayout(HStackLayout(spacing: DesignTokens.Spacing.xs + 2))
         layout {
+            if let kind = kit.presentation.kindLabel {
+                badge(
+                    kind,
+                    fill: DesignTokens.Colors.surfaceChip,
+                    text: prominent
+                        ? DesignTokens.Colors.textSecondary : DesignTokens.Colors.textMuted
+                )
+            }
             badge(
-                UniformArchive.kindLabel(kit.kind),
-                fill: DesignTokens.Colors.surfaceChip,
-                text: prominent ? DesignTokens.Colors.textSecondary : DesignTokens.Colors.textMuted
-            )
-            badge(
-                kit.isCurrent ? "IN ROTATION" : "RETIRED",
+                kit.presentation.status,
                 fill: kit.isCurrent
                     ? DesignTokens.Colors.accent.opacity(0.16)
                     : DesignTokens.Colors.surfaceRaised,
                 text: kit.isCurrent
                     ? DesignTokens.Colors.accentSoft
-                    : DesignTokens.Colors.textFaint
+                    : DesignTokens.Colors.textMuted
             )
         }
         .accessibilityElement(children: .combine)

@@ -16,14 +16,17 @@ import SwiftUI
             kit("alternate", kind: .alternate), kit("away", kind: .away),
             kit("home", kind: .home), kit("throwback", kind: .throwback),
         ]
-        let picker = UniformPickerSheet(uniforms: kits, selectedID: "old-home") { _ in }
+        let picker = UniformPickerSheet(
+            uniforms: kits, teamName: "Buffalo Bills", selectedID: "old-home"
+        ) { _ in }
         #expect(
             picker.uniforms.map(\.id) == ["home", "away", "alternate", "throwback", "old-home"])
     }
 
     @Test func samePriorityKitsKeepTheirSourceOrder() {
         let kits = [kit("second", kind: .alternate), kit("first", kind: .colorRush)]
-        let picker = UniformPickerSheet(uniforms: kits, selectedID: nil) { _ in }
+        let picker = UniformPickerSheet(uniforms: kits, teamName: "Buffalo Bills", selectedID: nil)
+        { _ in }
         #expect(picker.uniforms.map(\.id) == ["second", "first"])
     }
 }
@@ -87,45 +90,76 @@ struct EraBucketTests {
     }
 }
 
-@Suite("UniformArchive year labels")
-struct YearLabelTests {
-    @Test func compactRangeAbbreviatesWithinACentury() {
-        #expect(UniformArchive.years(listing(id: "a", yearStart: 1970, yearEnd: 1976)) == "1970–76")
+@Suite("Uniform presentation")
+struct UniformPresentationTests {
+    @Test(arguments: [
+        ("Buffalo Bills Home 2025–present", "Home"),
+        ("Buffalo Bills Away 2025-present", "Away"),
+        ("Buffalo Bills Home 2011–present", "Home 2011–present"),
+        ("Buffalo Bills Historic Home", "Historic Home"),
+        ("Buffalo Billsmen Home", "Buffalo Billsmen Home"),
+        ("Boston Patriots Home", "Boston Patriots Home"),
+        ("1976 Throwback", "1976 Throwback"),
+        ("1960s Throwback", "1960s Throwback"),
+        ("Rivalries 2025", "Rivalries 2025"),
+        ("Creamsicle", "Creamsicle"),
+        ("Buffalo Bills", "Home"),
+        ("   ", "Home"),
+    ])
+    func namesPreserveDistinctiveAndConflictingContext(input: String, expected: String) {
+        #expect(listing(id: "kit", name: input).presentation.title == expected)
     }
 
-    @Test func compactRangeKeepsBothCenturiesWhenTheyDiffer() {
+    @Test(arguments: [
+        (1970 as Int?, 1976 as Int?, false, "1970–1976"),
+        (1998, 2001, false, "1998–2001"),
+        (2025, 2025, true, "2025"),
+        (2012, nil, true, "2012–present"),
+        (2012, nil, false, "From 2012 · end unknown"),
+        (nil, 2001, false, "Through 2001 · start unknown"),
+        (nil, nil, true, "Dates unknown"),
+        (2025, 2020, false, "Dates unknown"),
+    ])
+    func datesDescribeKnownBounds(start: Int?, end: Int?, current: Bool, expected: String) {
+        let kit = listing(id: "kit", yearStart: start, yearEnd: end, isCurrent: current)
+        #expect(kit.presentation.dates == expected)
+        #expect(kit.presentation.status == (current ? "Current" : "Retired"))
+    }
+
+    @Test func rangeSuffixOnlyDisappearsWhenItAgrees() {
         #expect(
-            UniformArchive.years(listing(id: "a", yearStart: 1998, yearEnd: 2001)) == "1998–2001")
-    }
-
-    @Test func openEndedAndSingleSeasonAndUndated() {
-        #expect(UniformArchive.years(listing(id: "a", yearStart: 2025, yearEnd: nil)) == "2025–")
-        #expect(UniformArchive.years(listing(id: "a", yearStart: 1994, yearEnd: 1994)) == "1994")
-        #expect(UniformArchive.years(listing(id: "a", yearStart: nil, yearEnd: nil)) == "—")
-    }
-
-    @Test func longRangeNeverAbbreviates() {
+            listing(id: "a", name: "Home 1998–2001", yearStart: 1998, yearEnd: 2001).presentation
+                .title == "Home")
         #expect(
-            UniformArchive.yearsLong(listing(id: "a", yearStart: 1970, yearEnd: 1976))
-                == "1970–1976")
-        #expect(UniformArchive.yearsLong(listing(id: "a", yearStart: nil, yearEnd: nil)) == "—")
-    }
-}
-
-@Suite("UniformArchive shortKitName")
-struct ShortKitNameTests {
-    @Test func stripsALeadingYearToken() {
-        #expect(UniformArchive.shortKitName("1976 Throwback") == "Throwback")
-        #expect(UniformArchive.shortKitName("1960s Throwback") == "Throwback")
-        #expect(UniformArchive.shortKitName("70s Throwback") == "Throwback")
+            listing(id: "a", name: "Home 2012–present", yearStart: 2012, isCurrent: false)
+                .presentation.title == "Home 2012–present")
+        #expect(
+            listing(id: "a", name: "Home 2025–2020", yearStart: 2025, yearEnd: 2020).presentation
+                .title == "Home 2025–2020")
     }
 
-    @Test func leavesNamesWithoutAYearAlone() {
-        #expect(UniformArchive.shortKitName("Color Rush") == "Color Rush")
-        #expect(UniformArchive.shortKitName("Creamsicle") == "Creamsicle")
-        #expect(UniformArchive.shortKitName("") == "")
-        // Not a year token — four digits are required, or two plus an "s".
-        #expect(UniformArchive.shortKitName("100 Seasons") == "100 Seasons")
+    @Test func kindAppearsOnlyWhenItAddsContext() {
+        #expect(listing(id: "a").presentation.metadata == "Current")
+        #expect(
+            listing(id: "a", kind: .throwback, name: "1976 Throwback").presentation.metadata
+                == "Current")
+        #expect(
+            listing(id: "a", kind: .throwback, name: "Creamsicle", isCurrent: false).presentation
+                .metadata == "Throwback · Retired")
+        #expect(
+            listing(id: "a", kind: .home, name: "Homecoming").presentation.metadata
+                == "Home · Current")
+    }
+
+    @Test func archiveAndPickerShareReadableLabels() {
+        let kit = listing(id: "a", name: "Buffalo Bills Home 2025–present")
+        let uniform = Uniform(
+            id: kit.id, teamId: kit.teamId, kind: kit.kind, name: kit.name,
+            yearStart: kit.yearStart, yearEnd: kit.yearEnd, isCurrent: kit.isCurrent,
+            colors: kit.colors, imagePath: nil)
+        let picker = UniformPresentation(uniform, teamName: kit.teamName)
+        #expect(picker == kit.presentation)
+        #expect(picker.accessibilityLabel == "Home, 2025–present, Current")
     }
 }
 
