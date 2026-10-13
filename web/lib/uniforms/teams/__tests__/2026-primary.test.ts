@@ -3,7 +3,7 @@ import { UNIFORMS } from '../../data';
 import { getTeamUniformDefinition } from '../index';
 import { getTeamCatalog } from '../catalogs';
 import { renderUniformThumbSVG } from '../../art';
-import { RAVENS_2026_SHIELDS } from '../ravens/marks/primary-2026';
+import { ravensSleeveShields, SHIELD_SHIFT } from '../ravens/marks/shield';
 
 const replacements = [
   ['falcons', 'home-2026', 2026, 'red'],
@@ -18,11 +18,14 @@ const replacements = [
 
 describe('worn replacement primary designs', () => {
   it('keeps Ravens shield lettering upright on both sleeves', () => {
-    const letters = RAVENS_2026_SHIELDS.layers.filter((layer) => layer.id.includes('-red'));
+    const letters = ravensSleeveShields('ravens-2026-shield', 'white').layers.filter((layer) =>
+      layer.id.includes('-black-3')
+    );
+    expect(letters).toHaveLength(2);
     const left = letters.find((layer) => layer.surface === 'sleeve-left');
     const right = letters.find((layer) => layer.surface === 'sleeve-right');
     expect(left?.d).toBe(
-      right?.d.replace(/(-?\d+\.\d+),/g, (_, x) => `${(Number(x) - 466).toFixed(1)},`)
+      right?.d.replace(/(-?\d+(?:\.\d+)?),/g, (_, x) => `${(Number(x) + SHIELD_SHIFT).toFixed(1)},`)
     );
   });
   for (const [teamId, slug, from, paint] of replacements) {

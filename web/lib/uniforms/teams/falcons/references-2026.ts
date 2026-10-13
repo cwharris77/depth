@@ -32,7 +32,7 @@ export const referencePacket = {
     'Falcons and Atlanta chest wordmarks',
   ],
   approximations: [
-    'The shared athletic numeral is retained in place of the club-specific number font.',
-    'Chest lettering is outlined from the pinned condensed font.',
+    'The block numeral and its diagonal terminals are drawn from photographed digits other than 3.',
+    'Chest lettering is outlined from the pinned Copperplate face.',
   ],
 } as const;

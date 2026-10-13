@@ -1,10 +1,18 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { RAMS_JERSEY_ROYAL } from './royal';
+import { RAMS_NUMBER_THREE } from '../marks/numbers';
 import { RAMS_2026_HOME_HORNS, RAMS_2026_AWAY_HORNS } from '../marks/primary-2026';
 
 export const RAMS_JERSEY_ROYAL_2026: CompleteJerseySpec = {
   ...RAMS_JERSEY_ROYAL,
-  number: { fill: 'yellow', outline: 'yellow', outlineWeight: 'none', texture: 'plain' },
+  number: {
+    fill: 'yellow',
+    outline: 'yellow',
+    outlineWeight: 'none',
+    texture: 'plain',
+    glyphPath: RAMS_NUMBER_THREE,
+    glyphLabel: '3',
+  },
   marks: [{ paint: 'over', mark: RAMS_2026_HOME_HORNS }],
 };
 export const RAMS_JERSEY_WHITE_2026: CompleteJerseySpec = {
@@ -20,6 +28,13 @@ export const RAMS_JERSEY_WHITE_2026: CompleteJerseySpec = {
     outline: true,
   },
   shoulderPanel: 'none',
-  number: { fill: 'royal', outline: 'yellow', outlineWeight: 'thin', texture: 'plain' },
+  number: {
+    fill: 'royal',
+    outline: 'yellow',
+    outlineWeight: 'thin',
+    texture: 'plain',
+    glyphPath: RAMS_NUMBER_THREE,
+    glyphLabel: '3',
+  },
   marks: [{ paint: 'over', mark: RAMS_2026_AWAY_HORNS }],
 };

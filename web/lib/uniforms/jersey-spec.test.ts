@@ -119,6 +119,19 @@ describe('expandJersey', () => {
     expect(ltx0 - ltx1b).toBe(18);
   });
 
+  it("draws the shoulder numeral from the jersey's own glyph when it has one", () => {
+    const glyph = 'M0,0 Q10,0 10,10 L0,10 Z';
+    const shoulder = (glyphPath?: string) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        shoulderNumber: { fill: 'white', outline: 'orange' },
+        number: { fill: 'white', outline: 'navy', outlineWeight: 'none', glyphPath },
+      }).layers.map((l) => l.d);
+    expect(shoulder().some((d) => d.includes('Q'))).toBe(false);
+    expect(shoulder(glyph).every((d) => d.includes('Q'))).toBe(true);
+  });
+
   it('lays a shoulder numeral along each shoulder only when asked', () => {
     const layers = (shoulderNumber?: { fill: string; outline?: string }) =>
       expandJersey('t', {

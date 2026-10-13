@@ -3,22 +3,35 @@
 import { describe, expect, it } from 'vitest';
 import { RAVENS_PARTS } from '../ravens';
 import { RAVENS_CATALOG } from '../ravens/catalog';
+import { RAVENS_NUMBER_THREE } from '../ravens/marks/numbers';
 
 describe('Ravens jersey parts', () => {
   // One `it` per jersey so a failure names the offending kit.
   for (const [name, part] of Object.entries(RAVENS_PARTS.jerseys).filter(
     ([name]) => !name.endsWith('-2026')
   )) {
-    it(`draws the ${name} collar and both shoulder bars and sleeve bands`, () => {
+    it(`draws the ${name} collar, shoulder numerals, sleeve bands and shields`, () => {
       const ids = part.layers.map((layer) => layer.id);
       expect(ids.some((id) => id.includes('collar'))).toBe(true);
+      expect(ids.some((id) => id.includes('ravens-shoulder-'))).toBe(false);
       for (const side of ['left', 'right']) {
-        expect(ids).toContain(`ravens-shoulder-outer-${side}`);
-        expect(ids).toContain(`ravens-shoulder-inner-${side}`);
+        expect(ids.some((id) => id.endsWith(`-shoulder-number-${side}`))).toBe(true);
         expect(ids).toContain(`ravens-sleeve-band-${side}`);
+        expect(ids).toContain(`ravens-shield-border-${side}`);
       }
     });
   }
+});
+
+describe('Ravens numerals', () => {
+  it('draws every jersey with the round 3 on the chest and both shoulders', () => {
+    for (const part of Object.values(RAVENS_PARTS.jerseys)) {
+      expect(part.number?.glyphPath).toBe(RAVENS_NUMBER_THREE);
+      const shoulder = part.layers.find((layer) => layer.id.endsWith('-shoulder-number-left'));
+      // The shared block numeral has no curves.
+      expect(shoulder?.d).toContain('Q');
+    }
+  });
 });
 
 describe('Ravens catalog', () => {

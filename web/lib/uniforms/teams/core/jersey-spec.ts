@@ -188,10 +188,10 @@ function sleeveNumber(side: Sleeve, glyph?: string) {
 
 // Lying along the shoulder line with the numeral's top toward the collar and its open side toward
 // the back. The right sleeve mirrors the left, so seen from above the two tops point at each other.
-function shoulderNumber(side: Sleeve) {
+function shoulderNumber(side: Sleeve, glyph?: string) {
   const [[xo, yo], [xi, yi]] = [SHOULDER_LINE_OUTER, SHOULDER_LINE_INNER];
   const angle = Math.atan2(xi - xo, -(yi - yo));
-  const left = numeralAt((xo + xi) / 2, (yo + yi) / 2, SHOULDER_NUMBER_HEIGHT, angle);
+  const left = numeralAt((xo + xi) / 2, (yo + yi) / 2, SHOULDER_NUMBER_HEIGHT, angle, glyph);
   if (side === SLEEVE_LEFT) return left;
   let i = 0;
   return left.replace(/-?\d+(?:\.\d+)?/g, (n) =>
@@ -306,9 +306,10 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
 
   if (spec.shoulderNumber) {
     const { fill, outline } = spec.shoulderNumber;
+    const shoulderGlyph = (side: Sleeve) => shoulderNumber(side, spec.number.glyphPath);
     if (outline) {
       layers.push(
-        ...bothSleeves(`${prefix}-shoulder-number-outline`, outline, shoulderNumber).map(
+        ...bothSleeves(`${prefix}-shoulder-number-outline`, outline, shoulderGlyph).map(
           (l): PartLayer => ({
             id: l.id,
             surface: l.surface,
@@ -321,7 +322,7 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
         )
       );
     }
-    layers.push(...bothSleeves(`${prefix}-shoulder-number`, fill, shoulderNumber));
+    layers.push(...bothSleeves(`${prefix}-shoulder-number`, fill, shoulderGlyph));
   }
 
   if (spec.sleeveStripes) {

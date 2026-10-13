@@ -28,7 +28,5 @@ export const referencePacket = {
     'gold facemask and three-stripe crown',
     'two-stripe pants',
   ],
-  approximations: [
-    'The shared athletic numeral is retained in place of the club-specific number font.',
-  ],
+  approximations: ['The shared block numeral stands in for the club block font.'],
 } as const;

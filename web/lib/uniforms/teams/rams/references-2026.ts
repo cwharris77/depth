@@ -36,7 +36,5 @@ export const referencePacket = {
     'Sol shoulder panels on white',
     'unchanged primary helmet',
   ],
-  approximations: [
-    'The shared athletic numeral is retained in place of the club-specific number font.',
-  ],
+  approximations: ['The round numeral is the one drawn for the 2020 jerseys.'],
 } as const;

@@ -2,8 +2,11 @@ import { boundsOf, placed, placeMarkOnPair, type Mark } from '../../core/marks';
 import { FALCONS_DECAL } from './construction';
 import { FALCONS_2026_WORDMARK, ATLANTA_2026_WORDMARK } from './wordmarks-2026';
 
+// The box is wider than the falcon on the sleeve's outer side, so the logo sits clear of the
+// sleeve's outer edge instead of being trimmed by it.
+const [logoX0, logoY0, logoX1, logoY1] = boundsOf(FALCONS_DECAL.layers[0].d);
 const sleeveLogo: Mark = {
-  box: boundsOf(FALCONS_DECAL.layers[0].d),
+  box: [logoX0, logoY0, logoX1 + 0.2 * (logoX1 - logoX0), logoY1],
   paths: FALCONS_DECAL.layers.map((layer) => ({
     slot: layer.kind === 'fill' ? layer.fill : layer.stroke,
     d: layer.d,

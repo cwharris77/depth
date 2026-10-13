@@ -30,11 +30,13 @@ export const referencePacket = {
     'heraldic sleeve shields',
     'diagonally cut talon stripes',
     'Ravens and Baltimore chest wordmarks',
+    'round numerals',
+    'purple sleeve hem on white',
   ],
   approximations: [
-    'The shared athletic numeral is retained in place of the club-specific number font.',
+    'The round numeral is outlined from the pinned DIN face, not the club-specific number font.',
     'Iridescence is represented by a fixed midnight-purple paint.',
-    'The small sleeve shield retains its quartered field and letters with simplified heraldic detail.',
-    'Chest lettering is outlined from the pinned condensed font.',
+    'The sleeve shield keeps its quarters and letters with simplified heraldic detail and no banner lettering.',
+    'Chest lettering is outlined from the pinned Copperplate face.',
   ],
 } as const;

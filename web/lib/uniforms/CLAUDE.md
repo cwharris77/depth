@@ -8,7 +8,7 @@ How a team's uniform art is built and changed. Read this before touching `teams/
 - A part is a base colour plus ordered layers (`PartLayer`). Later layers paint over earlier ones. Coordinates are the shared mannequin space: jersey crop `viewBox="20 372 560 452"`, neck at y≈384, sleeve hems at y≈589.
 - Colours in layers are palette keys, never hexes. `hex()` throws on an unknown key. The one team-independent paint is `outline` (the mannequin's grey, `FIGURE_OUTLINE`), for keylines that separate a band from a body of the same colour.
 - Geometry that is a fact about the mannequin, not about a team, lives in `teams/core/shared.ts` (collars, the helmet crown stripe, the helmet numeral). Team modules own everything team-specific.
-- The silhouette, the collar geometry and the numeral glyph (a `3`) are shared by every team. Don't chase a reference's collar width or depth or its numeral shape in a team module; that is a catalog change affecting everyone.
+- The silhouette and the collar geometry are shared by every team. Don't chase a reference's collar width or depth in a team module; that is a catalog change affecting everyone. The numeral is always a `3`: the shared block glyph by default, or a team's own glyph from `teams/<team>/marks/numbers.ts` when its number font differs (see `number.glyphPath`).
 
 ## Jerseys are specs first
 
@@ -41,7 +41,7 @@ Anything the spec cannot describe is appended as ordinary layers after `spec.lay
 | `sleeveStripes` | Horizontal stripes lower on the sleeve, with `gap` `none` / `hairline` / `narrow` / `wide` / `broad`. `edge` pipes every stripe with a thin band of that colour above and below it; the gap is then measured between pipings. |
 | `cuff` | A solid band at the sleeve hem. |
 | `sleeveNumber` | The numeral, small and upright on the lower outer face of each sleeve (TV numbers), in `fill`. |
-| `number` | Numeral fill, outline colour and `outlineWeight` (`none` / `thin` / `regular` / `heavy` / `x-heavy`: 0 / 8 / 14 / 20 / 26 units). `outline` is required even with `none`. `texture` is `mesh` (the default: the shared mesh overlay) or `plain` (drawn flat). |
+| `number` | Numeral fill, outline colour and `outlineWeight` (`none` / `thin` / `regular` / `heavy` / `x-heavy`: 0 / 8 / 14 / 20 / 26 units). `outline` is required even with `none`. `texture` is `mesh` (the default: the shared mesh overlay) or `plain` (drawn flat). `glyphPath` replaces the shared block `3` with the team's own, written with explicit x,y pairs (M/L/Q/C/Z, no H/V) in the chest numeral's space; `glyphLabel` is its accessible label. The shoulder and sleeve numerals use the same glyph. Outline a font-based glyph with `outline-wordmark.py --pairs` (`--x-scale` widens it). |
 
 **Shoulder number orientation** (a frequent mistake): seen from above, the two numerals' tops point at each other, toward the collar (`→ ←`), and on both shoulders the open side of the numeral (the tips of a `3`) faces the back of the jersey. The right shoulder is therefore the left one mirrored, not rotated. On the front view this puts the open side toward the top of the shoulder on both sleeves.
 
