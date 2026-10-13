@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "2149edf91f53ff88574f001d5d2a69919cfa3efe4f798a035c5bbb6622de0103",
-  "revision": "024940230e8791ae",
+  "sourceDigest": "4cc3e92be632eb58418a6d458098cb8539687670916a9bd13b1046b7958f92ab",
+  "revision": "73306d7452cbe244",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2218,15 +2218,15 @@
     {
       "catalogId": "texans-h-town-2024",
       "constructionKey": "h-town",
-      "revision": "8caac1b4c2b4445b",
+      "revision": "0d1fe4013e00bb89",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/texans-h-town-2024.webp",
-          "sha256": "5ba477468a1947040bffd3f836fe5adcfc2ab145df9f6da5357c6f8c2bc0ed4a"
+          "sha256": "6d9643fc49fde1e9e172c0eea62bb4ffa5e2843e3ad7af979f9158ca4bb7fdfd"
         },
         "full": {
           "path": "/uniforms/texans-h-town-2024-full.webp",
-          "sha256": "048ef6b6c6300b37788927ec00ff65123bf736f336bc83f2df4038525dbf8100"
+          "sha256": "321082af0015a88f6474df68c1f8a8c23e0496deb652757d95dae12555aa8ec4"
         }
       }
     },
