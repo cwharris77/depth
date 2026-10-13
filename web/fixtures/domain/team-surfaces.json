@@ -18,15 +18,15 @@
   {
     "id": "bengals-home-2021",
     "colors": {
-      "primary": "#FB4F14",
-      "secondary": "#000000",
-      "accent": "#000000"
+      "primary": "#000000",
+      "secondary": "#FB4F14",
+      "accent": "#FFFFFF"
     },
     "expected": {
-      "fill": "#FB4F14",
-      "ring": "#000000",
+      "fill": "#000000",
+      "ring": "#FB4F14",
       "mark": "#FB4F14",
-      "textOnFill": "#000000",
+      "textOnFill": "#FB4F14",
       "numeralFill": "#000000",
       "numeralStroke": "#FB4F14"
     }
@@ -50,15 +50,15 @@
   {
     "id": "steelers-home-1997",
     "colors": {
-      "primary": "#FFB612",
-      "secondary": "#101820",
-      "accent": "#101820"
+      "primary": "#101820",
+      "secondary": "#FFB612",
+      "accent": "#FFFFFF"
     },
     "expected": {
-      "fill": "#FFB612",
-      "ring": "#101820",
+      "fill": "#101820",
+      "ring": "#FFB612",
       "mark": "#FFB612",
-      "textOnFill": "#101820",
+      "textOnFill": "#FFB612",
       "numeralFill": "#101820",
       "numeralStroke": "#FFB612"
     }
@@ -386,16 +386,16 @@
   {
     "id": "falcons-home-2020",
     "colors": {
-      "primary": "#A71930",
-      "secondary": "#000000",
-      "accent": "#000000"
+      "primary": "#000000",
+      "secondary": "#A71930",
+      "accent": "#A71930"
     },
     "expected": {
-      "fill": "#A71930",
-      "ring": "#000000",
+      "fill": "#000000",
+      "ring": "#A71930",
       "mark": "#A71930",
       "textOnFill": "#ffffff",
-      "numeralFill": "#A71930",
+      "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
     }
   },
@@ -418,15 +418,15 @@
   {
     "id": "saints-home-2002",
     "colors": {
-      "primary": "#D3BC8D",
-      "secondary": "#101820",
-      "accent": "#101820"
+      "primary": "#101820",
+      "secondary": "#D3BC8D",
+      "accent": "#FFFFFF"
     },
     "expected": {
-      "fill": "#D3BC8D",
-      "ring": "#101820",
+      "fill": "#101820",
+      "ring": "#D3BC8D",
       "mark": "#D3BC8D",
-      "textOnFill": "#101820",
+      "textOnFill": "#D3BC8D",
       "numeralFill": "#101820",
       "numeralStroke": "#D3BC8D"
     }
@@ -450,16 +450,16 @@
   {
     "id": "cardinals-home-2023",
     "colors": {
-      "primary": "#97233F",
+      "primary": "#A01523",
       "secondary": "#000000",
       "accent": "#FFB612"
     },
     "expected": {
-      "fill": "#97233F",
+      "fill": "#A01523",
       "ring": "#000000",
       "mark": "#FFB612",
       "textOnFill": "#ffffff",
-      "numeralFill": "#97233F",
+      "numeralFill": "#A01523",
       "numeralStroke": "#FFFFFF"
     }
   },
@@ -498,16 +498,16 @@
   {
     "id": "seahawks-home-2012",
     "colors": {
-      "primary": "#002244",
+      "primary": "#24293C",
       "secondary": "#69BE28",
       "accent": "#A5ACAF"
     },
     "expected": {
-      "fill": "#002244",
+      "fill": "#24293C",
       "ring": "#69BE28",
       "mark": "#69BE28",
       "textOnFill": "#69BE28",
-      "numeralFill": "#002244",
+      "numeralFill": "#24293C",
       "numeralStroke": "#69BE28"
     }
   },
@@ -578,15 +578,15 @@
   {
     "id": "broncos-orange-crush-1968",
     "colors": {
-      "primary": "#001489",
-      "secondary": "#FA4616",
+      "primary": "#FA4616",
+      "secondary": "#001489",
       "accent": "#FFFFFF"
     },
     "expected": {
-      "fill": "#001489",
-      "ring": "#FA4616",
-      "mark": "#FA4616",
-      "textOnFill": "#ffffff",
+      "fill": "#FA4616",
+      "ring": "#001489",
+      "mark": "#FFFFFF",
+      "textOnFill": "#15161a",
       "numeralFill": "#001489",
       "numeralStroke": "#FA4616"
     }
@@ -1330,17 +1330,17 @@
   {
     "id": "cardinals-rivalries-2025-2025",
     "colors": {
-      "primary": "#FFF7E3",
+      "primary": "#FBF1DD",
       "secondary": "#B31529",
       "accent": "#EE6B3D"
     },
     "expected": {
-      "fill": "#FFF7E3",
+      "fill": "#FBF1DD",
       "ring": "#B31529",
       "mark": "#EE6B3D",
       "textOnFill": "#B31529",
       "numeralFill": "#B31529",
-      "numeralStroke": "#FFF7E3"
+      "numeralStroke": "#FBF1DD"
     }
   },
   {
@@ -1378,17 +1378,17 @@
   {
     "id": "seahawks-rivalries-2025-2025",
     "colors": {
-      "primary": "#AFB3B5",
+      "primary": "#C6D3DC",
       "secondary": "#002244",
       "accent": "#29594C"
     },
     "expected": {
-      "fill": "#AFB3B5",
+      "fill": "#C6D3DC",
       "ring": "#002244",
-      "mark": "#AFB3B5",
+      "mark": "#C6D3DC",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
-      "numeralStroke": "#AFB3B5"
+      "numeralStroke": "#C6D3DC"
     }
   },
   {
@@ -1458,15 +1458,15 @@
   {
     "id": "steelers-bumblebee-1933",
     "colors": {
-      "primary": "#101820",
-      "secondary": "#FFB612",
+      "primary": "#FFB612",
+      "secondary": "#101820",
       "accent": "#FFFFFF"
     },
     "expected": {
-      "fill": "#101820",
-      "ring": "#FFB612",
-      "mark": "#FFB612",
-      "textOnFill": "#FFB612",
+      "fill": "#FFB612",
+      "ring": "#101820",
+      "mark": "#FFFFFF",
+      "textOnFill": "#101820",
       "numeralFill": "#101820",
       "numeralStroke": "#FFB612"
     }

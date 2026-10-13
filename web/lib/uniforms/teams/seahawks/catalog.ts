@@ -9,7 +9,7 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
       name: 'Home',
       kind: 'home',
       jersey: 'navy',
-      colors: { primary: '#002244', secondary: '#69BE28', accent: '#A5ACAF' },
+      colors: { primary: '#24293C', secondary: '#69BE28', accent: '#A5ACAF' },
       legacyAccent: { uiAccent: '#69BE28', onAccent: '#0a0e1a' },
       periods: [
         {
@@ -144,7 +144,7 @@ export const SEAHAWKS_CATALOG: TeamCatalog = {
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries-silver',
-      colors: { primary: '#AFB3B5', secondary: '#002244', accent: '#29594C' },
+      colors: { primary: '#C6D3DC', secondary: '#002244', accent: '#29594C' },
       legacyAccent: { uiAccent: '#AFB3B5', onAccent: '#0a0e1a' },
       periods: [
         {

@@ -10,7 +10,7 @@ export const STEELERS_CATALOG: TeamCatalog = {
       name: 'Home',
       kind: 'home',
       jersey: 'black',
-      colors: { primary: '#FFB612', secondary: '#101820', accent: '#101820' },
+      colors: { primary: '#101820', secondary: '#FFB612', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [
         {
@@ -63,7 +63,7 @@ export const STEELERS_CATALOG: TeamCatalog = {
       name: 'Bumblebee',
       kind: 'throwback',
       jersey: 'bumblebee',
-      colors: { primary: '#101820', secondary: '#FFB612', accent: '#FFFFFF' },
+      colors: { primary: '#FFB612', secondary: '#101820', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
       periods: [
         {

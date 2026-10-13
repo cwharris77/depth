@@ -149,7 +149,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
       name: 'Orange Crush',
       kind: 'throwback',
       jersey: 'crush',
-      colors: { primary: '#001489', secondary: '#FA4616', accent: '#FFFFFF' },
+      colors: { primary: '#FA4616', secondary: '#001489', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#FA4616', onAccent: '#0a0e1a' },
       periods: [
         {

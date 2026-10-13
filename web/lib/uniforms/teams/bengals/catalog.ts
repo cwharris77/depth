@@ -22,7 +22,7 @@ export const BENGALS_CATALOG: TeamCatalog = {
       name: 'Home',
       kind: 'home',
       jersey: 'black',
-      colors: { primary: '#FB4F14', secondary: '#000000', accent: '#000000' },
+      colors: { primary: '#000000', secondary: '#FB4F14', accent: '#FFFFFF' },
       legacyAccent: ACCENT,
       periods: [
         {

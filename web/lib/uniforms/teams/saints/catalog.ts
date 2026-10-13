@@ -10,7 +10,7 @@ export const SAINTS_CATALOG: TeamCatalog = {
       name: 'Home',
       kind: 'home',
       jersey: 'black',
-      colors: { primary: '#D3BC8D', secondary: '#101820', accent: '#101820' },
+      colors: { primary: '#101820', secondary: '#D3BC8D', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#E2CC9A', onAccent: '#0a0e1a' },
       periods: [
         {

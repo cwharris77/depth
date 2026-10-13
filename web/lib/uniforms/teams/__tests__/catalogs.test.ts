@@ -62,6 +62,23 @@ const byId = <T extends { teamId: string; slug: string; id?: string }>(rows: T[]
 // A converted team's accent pairs live only in its catalog. A hand-written pair left behind
 // under the same id would be silently overridden by the catalog spread, so check the
 // hand-written map itself rather than the merged one.
+// A kit's stored primary is the dot fill, so it must be the colour the jersey is drawn in.
+describe('kit colors follow the jersey art', () => {
+  it("stores each design's jersey body colour as its primary", () => {
+    const mismatched: string[] = [];
+    for (const { catalog, parts } of getAllTeamCatalogs()) {
+      for (const design of catalog.designs) {
+        const jersey = parts.jerseys[design.jersey];
+        const body = jersey ? parts.palette[jersey.base] : undefined;
+        if (body?.toLowerCase() !== design.colors.primary.toLowerCase()) {
+          mismatched.push(`${design.id}: art ${body}, primary ${design.colors.primary}`);
+        }
+      }
+    }
+    expect(mismatched).toEqual([]);
+  });
+});
+
 describe('no leftover hand-written accents for a converted team', () => {
   it('has no hand-written key belonging to a registered team', () => {
     const prefixes = getAllTeamCatalogs().map(({ catalog }) => `${catalog.teamId}-`);
@@ -237,7 +254,7 @@ describe('Seahawks catalog conversion', () => {
           yearStart: 2012,
           yearEnd: null,
           isCurrent: true,
-          colors: { primary: '#002244', secondary: '#69BE28', accent: '#A5ACAF' },
+          colors: { primary: '#24293C', secondary: '#69BE28', accent: '#A5ACAF' },
         },
         {
           teamId: 'seahawks',
@@ -270,7 +287,7 @@ describe('Seahawks catalog conversion', () => {
           yearStart: 2025,
           yearEnd: null,
           isCurrent: true,
-          colors: { primary: '#AFB3B5', secondary: '#002244', accent: '#29594C' },
+          colors: { primary: '#C6D3DC', secondary: '#002244', accent: '#29594C' },
         },
         {
           teamId: 'seahawks',
@@ -458,7 +475,7 @@ describe('Broncos catalog conversion', () => {
           yearStart: 1968,
           yearEnd: 1996,
           isCurrent: false,
-          colors: { primary: '#001489', secondary: '#FA4616', accent: '#FFFFFF' },
+          colors: { primary: '#FA4616', secondary: '#001489', accent: '#FFFFFF' },
         },
       ])
     );
@@ -791,9 +808,9 @@ describe('Bengals catalog conversion', () => {
     expect(byId(catalogRows(catalog))).toEqual(
       byId([
         row('home', 'home', 'Home', 2021, null, {
-          primary: '#FB4F14',
-          secondary: '#000000',
-          accent: '#000000',
+          primary: '#000000',
+          secondary: '#FB4F14',
+          accent: '#FFFFFF',
         }),
         row('away', 'away', 'Away', 2021, null, {
           primary: '#FFFFFF',
@@ -1337,7 +1354,7 @@ describe('Falcons catalog conversion', () => {
           yearStart: 2020,
           yearEnd: 2025,
           isCurrent: false,
-          colors: { primary: '#A71930', secondary: '#000000', accent: '#000000' },
+          colors: { primary: '#000000', secondary: '#A71930', accent: '#A71930' },
         },
         {
           teamId: 'falcons',
