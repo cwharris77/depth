@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { CARDINALS_NUMBER_THREE } from '../marks/numbers';
 import { CARDINALS_HOME_JERSEY_ART } from '../marks/jersey-art';
 
 // Cardinal body with plain white chest numerals. The feathered collar, the ARIZONA chest wordmark,
@@ -12,6 +13,12 @@ export const CARDINALS_JERSEY_RED: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'red', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'red',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: CARDINALS_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: CARDINALS_HOME_JERSEY_ART }],
 };

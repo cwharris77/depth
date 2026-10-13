@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { BRONCOS_NUMBER_THREE } from '../marks/numbers';
 import { broncosChestWordmark } from '../marks/construction';
 
 // An orange-and-navy shoulder cap, and the chest wordmark in orange.
@@ -24,6 +25,12 @@ export const BRONCOS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'navy', outline: 'orange', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'navy',
+    outline: 'orange',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: BRONCOS_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: broncosChestWordmark('white', 'orange') }],
 };

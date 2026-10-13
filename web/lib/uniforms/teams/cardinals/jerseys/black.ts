@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { CARDINALS_NUMBER_THREE } from '../marks/numbers';
 import { CARDINALS_BLACK_JERSEY_ART } from '../marks/jersey-art';
 
 // Black body with two cardinal sleeve bands around a white label block and cardinal numerals
@@ -12,6 +13,12 @@ export const CARDINALS_JERSEY_BLACK: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'cardinal', outline: 'white', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'cardinal',
+    outline: 'white',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: CARDINALS_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: CARDINALS_BLACK_JERSEY_ART }],
 };
