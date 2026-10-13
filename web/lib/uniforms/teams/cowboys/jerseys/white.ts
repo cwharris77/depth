@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { COWBOYS_NUMBER_THREE } from '../marks/numbers';
 import { COWBOYS_SLEEVE_CAPS_NAVY } from '../marks/construction';
 
 // White body under navy sleeve caps, a keylined white V collar, navy numerals.
@@ -19,6 +20,12 @@ export const COWBOYS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: { fill: 'white' },
-  number: { fill: 'navy', outline: 'navy', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'navy',
+    outline: 'navy',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: COWBOYS_NUMBER_THREE,
+  },
   marks: [{ paint: 'under', mark: COWBOYS_SLEEVE_CAPS_NAVY }],
 };

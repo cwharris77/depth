@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { CHIEFS_NUMBER_THREE } from '../marks/numbers';
 
 // White-gold-white sleeve bands, white shoulder numerals and white chest numerals, all ringed
 // gold.
@@ -27,6 +28,12 @@ export const CHIEFS_JERSEY_RED: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'gold', outlineWeight: 'heavy', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'gold',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: CHIEFS_NUMBER_THREE,
+  },
   marks: [],
 };

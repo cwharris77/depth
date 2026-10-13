@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { GIANTS_NUMBER_THREE } from '../marks/numbers';
 
 // White body with a white V collar keylined grey, red shoulder numerals, a thin/thick/thin set of
 // red sleeve stripes, and plain red numerals.
@@ -27,6 +28,12 @@ export const GIANTS_JERSEY_WHITE: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'red', outline: 'red', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'red',
+    outline: 'red',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: GIANTS_NUMBER_THREE,
+  },
   marks: [],
 };

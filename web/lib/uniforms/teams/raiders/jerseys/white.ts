@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { RAIDERS_NUMBER_THREE } from '../marks/numbers';
 
 // White body with a body-coloured collar and black numerals edged in silver; the TV number on
 // each sleeve is black.
@@ -19,6 +20,12 @@ export const RAIDERS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: { fill: 'black' },
-  number: { fill: 'black', outline: 'silver', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'black',
+    outline: 'silver',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: RAIDERS_NUMBER_THREE,
+  },
   marks: [],
 };
