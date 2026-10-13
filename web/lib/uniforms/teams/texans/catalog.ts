@@ -106,7 +106,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
     {
       id: 'texans-h-town-2024',
       slug: 'h-town',
-      sleeveNike: 'hTownBlue',
+      sleeveNike: 'red',
       name: 'H-Town Blue',
       kind: 'alternate',
       jersey: 'h-town',
@@ -126,7 +126,7 @@ export const TEXANS_CATALOG: TeamCatalog = {
           label: 'Standard',
           helmet: 'navy-h',
           pants: 'h-town',
-          pantsNike: 'white',
+          pantsNike: 'red',
           socks: 'navy',
         },
       ],
