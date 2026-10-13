@@ -19,16 +19,10 @@ name: Ingest nflverse data
 
 on:
   schedule:
-    # Twice daily, each slot an hour after the matching ESPN ingest run
-    # (ingest-espn.yml, 15:00 and 20:00 UTC) so the two never interleave in
-    # ingestion_runs. Cron is fixed UTC, so these drift together with ESPN's under DST
-    # — the 1-hour stagger holds regardless.
-    #
-    # 9am PT morning run so night-game results land before morning instead of waiting for
-    # the next afternoon. The one-hour stagger follows the source publish lag.
-    - cron: '0 16 * * *'
-    # 1pm PT afternoon run — the original daily slot.
-    - cron: '0 21 * * *'
+    # Daily imports remain one hour apart. Extra imports use a half-hour phase
+    # offset and a Pacific game-day gate; UTC covers both daylight-saving offsets.
+    - cron: '17 16,21 * * *'
+    - cron: '47 0-7,16-23 * * *'
   workflow_dispatch:
     inputs:
       seasons:
@@ -61,8 +55,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  cadence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+      mode: ${{ steps.gate.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check game-day cadence
+        id: gate
+        env:
+          INGEST_SCHEDULE: ${{ github.event.schedule }}
+        run: >-
+          python3 scripts/ingest-cadence.py --workflow nflverse
+          --expires-at 2026-10-28T07:00:00Z --output cadence-decision.json
+      - name: Retain cadence decision
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cadence-decision
+          path: cadence-decision.json
+          retention-days: 30
+
   ingest:
-    if: ${{ !inputs.stat_files_only }}
+    needs: cadence
+    if: ${{ needs.cadence.outputs.run == 'true' && !inputs.stat_files_only }}
     runs-on: ubuntu-latest
     # Next.js app + shared backend live under web/ now — see ingest-espn.yml.
     defaults:
@@ -123,6 +142,13 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           STRICT: '1'
+      - name: Observe production game scores
+        continue-on-error: true
+        working-directory: .
+        run: python3 scripts/ingest-cadence.py --observe --output score-observation.json
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       # Staging mirrors — same two ingest commands against the dedicated staging project
       # (djwrecczgudktgsooxti) so the staging-backed iOS suites and App Store captures
       # read fresh data. Overrides the same two env vars the scripts read, so no script
@@ -152,8 +178,18 @@ jobs:
           SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.STAGING_SUPABASE_SECRET_KEY }}
           STRICT: '1'
+      - name: Retain production score observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: score-observation
+          path: score-observation.json
+          if-no-files-found: ignore
+          retention-days: 30
 
   stat-files:
+    needs: cadence
+    if: ${{ needs.cadence.outputs.mode != 'hourly' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -176,14 +212,14 @@ jobs:
       - name: Publish stat files (production)
         if: ${{ inputs.stat_files != 'staging' && inputs.stat_files != 'skip' }}
         run: |
-          FLAGS=""
-          if [ "$TEAM_FILES" = "true" ]; then FLAGS="--teams"; fi
+          FLAGS=()
+          if [ "$TEAM_FILES" = "true" ]; then FLAGS+=(--teams); fi
           # Scheduled runs always build record files: the event detector reads them.
-          if [ "$RECORD_FILES" = "true" ] || [ "$GITHUB_EVENT_NAME" = "schedule" ]; then FLAGS="$FLAGS --records"; fi
+          if [ "$RECORD_FILES" = "true" ] || [ "$GITHUB_EVENT_NAME" = "schedule" ]; then FLAGS+=(--records); fi
           if [ -n "$SEASONS" ]; then
-            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" $FLAGS
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" "${FLAGS[@]}"
           else
-            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" $FLAGS
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" "${FLAGS[@]}"
           fi
         env:
           SEASONS: ${{ inputs.seasons }}
@@ -201,14 +237,14 @@ jobs:
       - name: Publish stat files (staging)
         if: ${{ !cancelled() && inputs.stat_files != 'production' && inputs.stat_files != 'skip' }}
         run: |
-          FLAGS=""
-          if [ "$TEAM_FILES" = "true" ]; then FLAGS="--teams"; fi
+          FLAGS=()
+          if [ "$TEAM_FILES" = "true" ]; then FLAGS+=(--teams); fi
           # Scheduled runs always build record files: the event detector reads them.
-          if [ "$RECORD_FILES" = "true" ] || [ "$GITHUB_EVENT_NAME" = "schedule" ]; then FLAGS="$FLAGS --records"; fi
+          if [ "$RECORD_FILES" = "true" ] || [ "$GITHUB_EVENT_NAME" = "schedule" ]; then FLAGS+=(--records); fi
           if [ -n "$SEASONS" ]; then
-            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" $FLAGS
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" --seasons "$SEASONS" "${FLAGS[@]}"
           else
-            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" $FLAGS
+            npm run stat-files:build -- --target r2 --bucket "$R2_BUCKET" "${FLAGS[@]}"
           fi
         env:
           SEASONS: ${{ inputs.seasons }}

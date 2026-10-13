@@ -13,19 +13,10 @@ name: Ingest ESPN data
 
 on:
   schedule:
-    # Twice daily. Cron is fixed UTC, so both slots drift an hour with DST --
-    # acceptable for a daily refresh, not worth a DST-aware cron for this.
-    #
-    # 8am PT morning run. The afternoon slot alone left every Thursday/Sunday/Monday
-    # night game stale until the next afternoon (~20 hours): TNF/SNF finish around
-    # 03:30 UTC and MNF around 04:30 UTC, both after the previous afternoon run.
-    # nflverse publishes a final score into its games asset ~5 minutes after the final
-    # whistle, so 15:00 UTC clears them with
-    # hours to spare even allowing for the routine GitHub Actions scheduling delay
-    # (these crons have been firing ~2.5h late on the free plan).
-    - cron: '0 15 * * *'
-    # Noon PT afternoon run -- the original daily slot.
-    - cron: '0 20 * * *'
+    # Daily imports remain one hour apart. Extra imports use a half-hour phase
+    # offset and a Pacific game-day gate; UTC covers both daylight-saving offsets.
+    - cron: '17 15,20 * * *'
+    - cron: '17 0-7,16-19,21-23 * * *'
   workflow_dispatch:
     inputs:
       seasons:
@@ -41,7 +32,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  cadence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+      mode: ${{ steps.gate.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check game-day cadence
+        id: gate
+        env:
+          INGEST_SCHEDULE: ${{ github.event.schedule }}
+        run: >-
+          python3 scripts/ingest-cadence.py --workflow espn
+          --expires-at 2026-10-28T07:00:00Z --output cadence-decision.json
+      - name: Retain cadence decision
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cadence-decision
+          path: cadence-decision.json
+          retention-days: 30
+
   ingest:
+    needs: cadence
+    if: ${{ needs.cadence.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     # The Next.js app and its shared backend (scripts/, lib/, supabase/) all live under
     # web/ now — npm commands and the node 22 cache run from there.
