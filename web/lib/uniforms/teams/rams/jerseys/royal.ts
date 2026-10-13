@@ -1,6 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { ramsCappedSleeveHorn } from '../marks/construction';
-import { RAMS_NUMBER_ELEVEN } from '../marks/numbers';
+import { RAMS_NUMBER_THREE } from '../marks/numbers';
 
 // Royal body with a body-coloured collar, yellow sleeve horns and fading yellow-to-white numerals.
 export const RAMS_JERSEY_ROYAL: CompleteJerseySpec = {
@@ -25,8 +25,8 @@ export const RAMS_JERSEY_ROYAL: CompleteJerseySpec = {
     outline: 'yellow',
     outlineWeight: 'thin',
     texture: 'plain',
-    glyphPath: RAMS_NUMBER_ELEVEN,
-    glyphLabel: '11',
+    glyphPath: RAMS_NUMBER_THREE,
+    glyphLabel: '3',
   },
   marks: [{ paint: 'over', mark: ramsCappedSleeveHorn('yellow', 'yellow') }],
 };

@@ -1,6 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { ramsRivalriesSleeveHorn } from '../marks/construction';
-import { RAMS_NUMBER_ELEVEN } from '../marks/numbers';
+import { RAMS_NUMBER_THREE } from '../marks/numbers';
 
 // Near-black body with a body-coloured collar and white meshed numerals. The front-facing horn tapers beside a blue sleeve panel.
 export const RAMS_JERSEY_RIVALRIES: CompleteJerseySpec = {
@@ -25,8 +25,8 @@ export const RAMS_JERSEY_RIVALRIES: CompleteJerseySpec = {
     outline: 'royal',
     outlineWeight: 'thin',
     texture: 'mesh',
-    glyphPath: RAMS_NUMBER_ELEVEN,
-    glyphLabel: '11',
+    glyphPath: RAMS_NUMBER_THREE,
+    glyphLabel: '3',
   },
   marks: [{ paint: 'over', mark: ramsRivalriesSleeveHorn('yellow', 'royal') }],
 };

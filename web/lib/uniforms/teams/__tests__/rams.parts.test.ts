@@ -83,6 +83,7 @@ describe('Rams jerseys', () => {
       const number = RAMS_PARTS.jerseys[name].number;
       expect(number?.glyphPath).toBeDefined();
       expect(number?.glyphPath).not.toBe(JERSEY_NUMBER_THREE);
+      expect(number?.glyphLabel).toBe('3');
     }
   });
 
@@ -112,7 +113,15 @@ describe('Rams jerseys', () => {
         (layer.d?.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number).filter((_, index) => index % 2 === 1)
       );
       expect(Math.min(...yCoordinates)).toBeLessThanOrEqual(400);
-      expect(Math.max(...yCoordinates)).toBeGreaterThanOrEqual(550);
+      expect(Math.max(...yCoordinates)).toBeGreaterThanOrEqual(530);
+    }
+  });
+
+  it('ends the 2020 shoulder horn above the sleeve cuff', () => {
+    for (const name of ['royal', 'white'] as const) {
+      const bands = RAMS_PARTS.jerseys[name].layers.filter((l) => l.id.includes('horn-band'));
+      expect(bands).toHaveLength(2);
+      for (const band of bands) expect(boundsOf(band.d)[3]).toBeLessThan(550);
     }
   });
 
