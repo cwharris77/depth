@@ -1,5 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { chargersSleeveBolts } from '../marks/construction';
+import { CHARGERS_NUMBER_THREE } from '../marks/numbers';
 
 // Powder-blue-keylined white sleeve bolts, and white numerals keylined powder blue.
 export const CHARGERS_JERSEY_GOLD: CompleteJerseySpec = {
@@ -19,6 +20,12 @@ export const CHARGERS_JERSEY_GOLD: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'powderBlue', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'powderBlue',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: CHARGERS_NUMBER_THREE,
+  },
   marks: [{ paint: 'under', mark: chargersSleeveBolts('powderBlue', 'white') }],
 };

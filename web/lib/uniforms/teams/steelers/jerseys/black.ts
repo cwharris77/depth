@@ -1,5 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { STEELERS_SLEEVE_STRIPES } from '../marks/construction';
+import { STEELERS_NUMBER_THREE } from '../marks/numbers';
 
 // Black body with a body-coloured V collar and grey keylines, white shoulder numerals, the gold and white sleeve stripe set and plain white numerals.
 export const STEELERS_JERSEY_BLACK: CompleteJerseySpec = {
@@ -19,6 +20,12 @@ export const STEELERS_JERSEY_BLACK: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'black', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'black',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: STEELERS_NUMBER_THREE,
+  },
   marks: [{ paint: 'under', mark: STEELERS_SLEEVE_STRIPES }],
 };

@@ -1,5 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { eaglesSleeveWing } from '../marks/construction';
+import { EAGLES_NUMBER_THREE } from '../marks/numbers';
 
 // White body, a black V collar and a black sleeve hem band; green numerals keylined black, the
 // same on the shoulders.
@@ -20,6 +21,12 @@ export const EAGLES_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: { color: 'black', size: 'm' },
   sleeveNumber: 'none',
-  number: { fill: 'green', outline: 'black', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'green',
+    outline: 'black',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: EAGLES_NUMBER_THREE,
+  },
   marks: [eaglesSleeveWing()],
 };
