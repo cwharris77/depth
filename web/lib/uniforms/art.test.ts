@@ -56,6 +56,24 @@ describe('uniform thumbnail catalog rows', () => {
       })).sort((left, right) => left.id.localeCompare(right.id))
     );
   });
+
+  it('limits a targeted build to the requested catalog rows', () => {
+    const rowIds = ['rams-home-2020', 'rams-away-2020', 'rams-rivalries-2025-2025'];
+
+    expect(buildRowsFromCatalog(rowIds)).toEqual(
+      UNIFORMS.filter((uniform) =>
+        rowIds.includes(`${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`)
+      )
+        .map((uniform) => ({
+          id: `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`,
+          teamId: uniform.teamId,
+          slug: uniform.slug,
+          constructionKey: uniform.constructionKey,
+          colors: uniform.colors,
+        }))
+        .sort((left, right) => left.id.localeCompare(right.id))
+    );
+  });
 });
 
 describe('renderUniformThumbSVG', () => {

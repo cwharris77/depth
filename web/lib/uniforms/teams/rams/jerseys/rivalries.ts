@@ -1,7 +1,7 @@
 import type { CompleteJerseySpec } from '../../core/complete';
-import { ramsSleeveMark } from '../marks/construction';
+import { ramsRivalriesSleeveHorn } from '../marks/construction';
 
-// Near-black body with a body-coloured collar and white meshed numerals. The sleeve tail is royal against a yellow band.
+// Near-black body with a body-coloured collar and white meshed numerals. The front-facing horn tapers beside a blue sleeve panel.
 export const RAMS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   body: 'navy',
   collar: {
@@ -20,5 +20,5 @@ export const RAMS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: { fill: 'white', outline: 'royal', outlineWeight: 'none', texture: 'mesh' },
-  marks: [{ paint: 'over', mark: ramsSleeveMark('yellow', 'royal') }],
+  marks: [{ paint: 'over', mark: ramsRivalriesSleeveHorn('yellow', 'royal') }],
 };

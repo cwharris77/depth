@@ -1,7 +1,7 @@
 import type { CompleteJerseySpec } from '../../core/complete';
-import { ramsSleeveMark } from '../marks/construction';
+import { ramsCappedSleeveHorn } from '../marks/construction';
 
-// Royal body with a body-coloured collar, a gold band and tail on each sleeve and flat gold numerals.
+// Royal body with a body-coloured collar, yellow sleeve horns and flat gold numerals.
 export const RAMS_JERSEY_ROYAL: CompleteJerseySpec = {
   body: 'royal',
   collar: {
@@ -20,5 +20,5 @@ export const RAMS_JERSEY_ROYAL: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: { fill: 'gold', outline: 'white', outlineWeight: 'none', texture: 'plain' },
-  marks: [{ paint: 'over', mark: ramsSleeveMark('gold', 'gold') }],
+  marks: [{ paint: 'over', mark: ramsCappedSleeveHorn('yellow', 'yellow') }],
 };

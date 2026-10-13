@@ -71,4 +71,32 @@ describe('Rams jerseys', () => {
       expect(jersey.layers.some((l) => l.id.includes('collar'))).toBe(true);
     }
   });
+
+  it('wraps the horn from the shoulder into each horn jersey sleeve', () => {
+    for (const jerseyName of ['royal', 'white', 'rivalries'] as const) {
+      const hornLayers = RAMS_PARTS.jerseys[jerseyName].layers.filter((layer) =>
+        layer.id.includes('horn')
+      );
+
+      expect(hornLayers).toHaveLength(jerseyName === 'white' ? 6 : 4);
+      expect(hornLayers.every((layer) => layer.d?.includes('C'))).toBe(true);
+
+      const yCoordinates = hornLayers.flatMap((layer) =>
+        (layer.d?.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number).filter((_, index) => index % 2 === 1)
+      );
+      expect(Math.min(...yCoordinates)).toBeLessThanOrEqual(400);
+      expect(Math.max(...yCoordinates)).toBeGreaterThanOrEqual(550);
+    }
+  });
+
+  it('gives Midnight Mode a distinct front sleeve construction', () => {
+    const cappedHornPaths = RAMS_PARTS.jerseys.royal.layers.map((layer) => layer.d);
+    const frontHornPaths = RAMS_PARTS.jerseys.rivalries.layers.map((layer) => layer.d);
+
+    expect(frontHornPaths).not.toEqual(cappedHornPaths);
+  });
+
+  it('keeps the hornless Bone jersey free of sleeve-horn layers', () => {
+    expect(RAMS_PARTS.jerseys.bone.layers.some((layer) => layer.id.includes('horn'))).toBe(false);
+  });
 });
