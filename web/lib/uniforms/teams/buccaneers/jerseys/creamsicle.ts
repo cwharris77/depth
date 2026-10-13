@@ -1,3 +1,4 @@
+import { BUCCANEERS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { buccaneersCreamCuff } from '../marks/construction';
 
@@ -18,6 +19,12 @@ export const BUCCANEERS_JERSEY_CREAMSICLE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'crimson', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'crimson',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: BUCCANEERS_BLOCK_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: buccaneersCreamCuff('crimson', 'white') }],
 };

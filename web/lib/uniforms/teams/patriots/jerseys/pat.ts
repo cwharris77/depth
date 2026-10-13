@@ -1,3 +1,4 @@
+import { PATRIOTS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { patriotsShoulderBands } from '../marks/construction';
 
@@ -19,6 +20,12 @@ export const PATRIOTS_JERSEY_PAT: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: { fill: 'white' },
-  number: { fill: 'white', outline: 'rivalNavy', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'rivalNavy',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: PATRIOTS_BLOCK_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: patriotsShoulderBands('white', 'rivalNavy') }],
 };

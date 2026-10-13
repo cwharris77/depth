@@ -1,3 +1,4 @@
+import { DOLPHINS_RIVALRIES_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { DOLPHINS_RIVALRIES_TRIM } from '../marks/construction';
 
@@ -20,6 +21,12 @@ export const DOLPHINS_JERSEY_NAVY: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'teal', outline: 'teal', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'teal',
+    outline: 'teal',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: DOLPHINS_RIVALRIES_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: DOLPHINS_RIVALRIES_TRIM }],
 };

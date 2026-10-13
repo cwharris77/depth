@@ -1,3 +1,4 @@
+import { JETS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 
 // Rivalries: the heritage green body with black collar and sleeve stripes and white numerals
@@ -26,6 +27,12 @@ export const JETS_JERSEY_RIV: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'white', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'white',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: JETS_NUMBER_THREE,
+  },
   marks: [],
 };

@@ -1,3 +1,4 @@
+import { STEELERS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { STEELERS_BUMBLEBEE_PANEL } from '../marks/construction';
 
@@ -19,6 +20,12 @@ export const STEELERS_JERSEY_BUMBLEBEE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'black', outlineWeight: 'x-heavy', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'black',
+    outlineWeight: 'x-heavy',
+    texture: 'mesh',
+    glyphPath: STEELERS_BLOCK_NUMBER_THREE,
+  },
   marks: [{ paint: 'under', mark: STEELERS_BUMBLEBEE_PANEL }],
 };

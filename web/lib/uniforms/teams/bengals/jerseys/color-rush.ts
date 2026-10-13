@@ -1,3 +1,4 @@
+import { BENGALS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { bengalsSleeveTigers } from '../marks/construction';
 
@@ -20,6 +21,12 @@ export const BENGALS_JERSEY_COLOR_RUSH: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: { color: 'black', size: 'm' },
   sleeveNumber: 'none',
-  number: { fill: 'black', outline: 'black', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'black',
+    outline: 'black',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: BENGALS_BLOCK_NUMBER_THREE,
+  },
   marks: [{ paint: 'under', mark: bengalsSleeveTigers('black') }],
 };

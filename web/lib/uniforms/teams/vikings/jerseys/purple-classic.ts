@@ -1,3 +1,4 @@
+import { VIKINGS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 
 export const VIKINGS_JERSEY_PURPLE_CLASSIC: CompleteJerseySpec = {
@@ -25,6 +26,12 @@ export const VIKINGS_JERSEY_PURPLE_CLASSIC: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: { fill: 'white' },
-  number: { fill: 'white', outline: 'gold', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'gold',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: VIKINGS_BLOCK_NUMBER_THREE,
+  },
   marks: [],
 };

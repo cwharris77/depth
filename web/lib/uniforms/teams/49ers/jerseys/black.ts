@@ -1,3 +1,4 @@
+import { NINERS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 
 // Red sleeve stripes and shoulder numerals; red body numerals with a gold outline.
@@ -26,6 +27,12 @@ export const NINERS_JERSEY_BLACK: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'red', outline: 'gold', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'red',
+    outline: 'gold',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: NINERS_NUMBER_THREE,
+  },
   marks: [],
 };

@@ -1,3 +1,4 @@
+import { BILLS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 
 // Tone-on-tone: a white body with an unbanded white collar, kept legible by the shared keylines,
@@ -19,6 +20,12 @@ export const BILLS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'rivalriesNumber', outline: 'navy', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'rivalriesNumber',
+    outline: 'navy',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: BILLS_NUMBER_THREE,
+  },
   marks: [],
 };

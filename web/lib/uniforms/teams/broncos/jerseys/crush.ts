@@ -1,3 +1,4 @@
+import { BRONCOS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 
 // Royal-white-royal sleeve stripes, and white shoulder and chest numerals outlined in royal.
@@ -18,6 +19,12 @@ export const BRONCOS_JERSEY_CRUSH: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'royal', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'royal',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: BRONCOS_BLOCK_NUMBER_THREE,
+  },
   marks: [],
 };
