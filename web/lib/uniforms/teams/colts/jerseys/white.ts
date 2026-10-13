@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { COLTS_NUMBER_THREE } from '../marks/numbers';
 
 // Navy shoulder stripes and navy numerals with no outline.
 export const COLTS_JERSEY_WHITE: CompleteJerseySpec = {
@@ -24,6 +25,12 @@ export const COLTS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: { fill: 'navy' },
-  number: { fill: 'navy', outline: 'white', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'navy',
+    outline: 'white',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: COLTS_NUMBER_THREE,
+  },
   marks: [],
 };

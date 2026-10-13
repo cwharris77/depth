@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { JETS_NUMBER_THREE } from '../marks/numbers';
 
 // Black alternate: black body with green trim throughout, a white shoulder numeral, and white
 // chest numerals carrying a thin green offset.
@@ -26,6 +27,12 @@ export const JETS_JERSEY_BLACK: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'green', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'green',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: JETS_NUMBER_THREE,
+  },
   marks: [],
 };

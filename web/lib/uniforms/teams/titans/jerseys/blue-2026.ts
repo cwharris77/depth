@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { TITANS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import { TITANS_2026_SLEEVES } from '../marks/construction';
 
 export const JERSEY_BLUE_2026: CompleteJerseySpec = {
@@ -10,6 +11,12 @@ export const JERSEY_BLUE_2026: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'red2026', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'red2026',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: TITANS_BLOCK_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: TITANS_2026_SLEEVES }],
 };

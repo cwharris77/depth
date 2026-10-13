@@ -10,7 +10,13 @@ import { COMMANDERS_W_DECAL } from './marks/construction';
 import { COMMANDERS_JERSEY_BURGUNDY } from './jerseys/burgundy';
 import { COMMANDERS_JERSEY_WHITE } from './jerseys/white';
 
-export const COMMANDERS_PALETTE = { burgundy: '#5A1414', gold: '#FFB612', white: '#FFFFFF' };
+export const COMMANDERS_PALETTE = {
+  burgundy: '#5A1414',
+  gold: '#FFB612',
+  white: '#FFFFFF',
+  // The away numeral's outline.
+  black: '#000000',
+};
 
 export const COMMANDERS_SPEC: TeamSpec = {
   helmets: {
