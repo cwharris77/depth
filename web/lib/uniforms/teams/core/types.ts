@@ -54,6 +54,8 @@ export interface NumberStyle {
   outline: ColorRef;
   outlineWidth: number;
   glyphPath?: string;
+  glyphLabel?: string;
+  texture?: 'mesh' | 'plain';
 }
 
 export interface UniformStyle {

@@ -170,6 +170,29 @@ describe('variantSpec', () => {
 });
 
 describe('UniformFigure', () => {
+  it('preserves mesh texture on an explicitly textured custom numeral', () => {
+    const customized: TeamUniformDefinition = {
+      ...definition,
+      defaults: {
+        ...definition.defaults,
+        number: { glyphPath: 'M240,539 H270 V694 H240 Z', texture: 'mesh' },
+      },
+    };
+    const svg = renderToStaticMarkup(<UniformFigure colors={colors} definition={customized} />);
+    expect(svg).toMatch(/d="M240,539 H270 V694 H240 Z" fill="url\(#.*?-number-mesh\)"/);
+  });
+  it('resolves patterned numeral fills to the figure-local pattern definition', () => {
+    const patterned: TeamUniformDefinition = {
+      ...definition,
+      patterns: {
+        fade: { width: 588, height: 820, shapes: [{ d: 'M0,0 H588 V820 H0 Z', fill: '#FFFFFF' }] },
+      },
+      defaults: { ...definition.defaults, number: { fill: 'pattern:fade' } },
+    };
+    const svg = renderToStaticMarkup(<UniformFigure colors={colors} definition={patterned} />);
+    expect(svg).not.toContain('fill="pattern:fade"');
+    expect(svg).toMatch(/fill="url\(#.*?-pattern-fade\)"/);
+  });
   it('omits team-authored layers from the generic render', () => {
     const markup = renderFigure();
 

@@ -1,8 +1,7 @@
 import { RAMS_JERSEY_ROYAL_2026, RAMS_JERSEY_WHITE_2026 } from './jerseys/primary-2026';
-// Los Angeles as a complete team spec: every helmet, jersey, pants and socks part. All four kits
-// share the construction: the horn on the shell, a widening band with a tail on each sleeve, and a
-// keylined stripe on each pant leg. What changes between kits is which colours paint it, and on
-// Rivalries the tail is royal against a yellow band rather than matching it.
+// Los Angeles as a complete team spec: every helmet, jersey, pants and socks part. The 2020
+// jerseys carry a capped-sleeve horn, while Midnight Mode shows a tapered front horn and blue sleeve.
+// Every kit shares the shell horn and a keylined stripe on each pant leg.
 //
 // Two golds and two blues are real here and stay distinct: the modern gold #FFA300 and Rivalries'
 // yellow #FFD100, the club royal #003594 and Rivalries' near-black navy #0D1B3E.

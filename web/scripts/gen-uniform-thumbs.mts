@@ -16,9 +16,9 @@
 // the corrected WebP + manifest must be live before any catalog row references the
 // construction (see lib/uniforms/manifest.ts's header for the full contract).
 //
-// Usage: npm run gen:uniform-thumbs
+// Usage: npm run gen:uniform-thumbs [-- --only <row-id[,row-id...]>]
 // Pure rendering lives in lib/uniforms/art.tsx — this script is I/O glue.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -31,6 +31,7 @@ import {
   computeSourceDigest,
   serializeArtifactManifest,
   sha256Hex,
+  type ArtifactManifest,
   type ArtifactRecord,
   type CombinationArtifact,
   type ManifestRowInput,
@@ -68,14 +69,17 @@ type UniformRow = {
 };
 
 // The complete committed catalog, using the same deterministic ids as the seed migration.
-export function buildRowsFromCatalog(): UniformRow[] {
+export function buildRowsFromCatalog(onlyRowIds?: ReadonlyArray<string>): UniformRow[] {
+  const requestedRows = onlyRowIds ? new Set(onlyRowIds) : undefined;
   return UNIFORMS.map((uniform) => ({
     id: uniform.id,
     teamId: uniform.teamId,
     slug: uniform.slug,
     constructionKey: uniform.constructionKey,
     colors: uniform.colors,
-  })).sort((a, b) => a.id.localeCompare(b.id));
+  }))
+    .filter((row) => !requestedRows || requestedRows.has(row.id))
+    .sort((a, b) => a.id.localeCompare(b.id));
 }
 
 export interface CombinationRender {
@@ -162,6 +166,43 @@ async function writeRasters(rows: UniformRow[]): Promise<ManifestRowInput[]> {
   return inputs;
 }
 
+function requestedRowIds(argv: readonly string[]): string[] | undefined {
+  const onlyIndex = argv.indexOf('--only');
+  if (onlyIndex === -1) return undefined;
+  const value = argv[onlyIndex + 1];
+  if (!value) throw new Error('--only requires one or more comma-separated row ids');
+  return value.split(',').filter(Boolean);
+}
+
+function existingManifestInputs(): ManifestRowInput[] {
+  const manifestPath = join(ROOT, ARTIFACT_MANIFEST_RELATIVE_PATH);
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as ArtifactManifest;
+  return manifest.rows.map((row) => ({
+    catalogId: row.catalogId,
+    constructionKey: row.constructionKey,
+    jersey: row.artifacts.jersey,
+    full: row.artifacts.full,
+    ...(row.combinations?.length ? { combinations: row.combinations } : {}),
+  }));
+}
+
+function combineArtifactInputs(
+  allRows: ReadonlyArray<UniformRow>,
+  renderedRows: ReadonlyArray<ManifestRowInput>
+): ManifestRowInput[] {
+  const renderedById = new Map(renderedRows.map((row) => [row.catalogId, row]));
+  const existingById = new Map(existingManifestInputs().map((row) => [row.catalogId, row]));
+  return allRows.map((row) => {
+    const rendered = renderedById.get(row.id);
+    if (rendered) return rendered;
+    const existing = existingById.get(row.id);
+    if (!existing || existing.constructionKey !== row.constructionKey) {
+      throw new Error(`cannot preserve stale manifest entry for ${row.id}`);
+    }
+    return existing;
+  });
+}
+
 async function main() {
   // Refuse to rasterize from an unpinned toolchain: sharp's version determines the bytes.
   await assertRasterToolchain();
@@ -173,7 +214,14 @@ async function main() {
       `invalid team catalog:\n${catalogIssues.map((issue) => `  - ${issue}`).join('\n')}`
     );
   }
-  const rows = buildRowsFromCatalog();
+  const allRows = buildRowsFromCatalog();
+  const onlyRowIds = requestedRowIds(process.argv.slice(2));
+  const rows = buildRowsFromCatalog(onlyRowIds);
+  if (onlyRowIds && rows.length !== onlyRowIds.length) {
+    const found = new Set(rows.map((row) => row.id));
+    const missing = onlyRowIds.filter((id) => !found.has(id));
+    throw new Error(`unknown uniform row ids: ${missing.join(', ')}`);
+  }
   // A row whose construction key is not a registered kit renders the generic fallback — fine
   // in the running app, never acceptable for a published raster. Fail the whole run instead of
   // committing art that silently degrades to the mannequin default. Extra combinations resolve
@@ -196,7 +244,10 @@ async function main() {
           .join('\n')
     );
   }
-  const artifactInputs = await writeRasters(rows);
+  const renderedInputs = await writeRasters(rows);
+  const artifactInputs = onlyRowIds
+    ? combineArtifactInputs(allRows, renderedInputs)
+    : renderedInputs;
   const manifest = buildArtifactManifest(computeSourceDigest(ROOT), artifactInputs);
   const manifestPath = join(ROOT, ARTIFACT_MANIFEST_RELATIVE_PATH);
   writeFileSync(manifestPath, serializeArtifactManifest(manifest));

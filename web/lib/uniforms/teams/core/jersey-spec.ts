@@ -56,6 +56,8 @@ export interface JerseyNumber {
   outlineWeight: 'none' | 'thin' | 'regular' | 'heavy' | 'x-heavy';
   // 'mesh' overlays the numeral with the shared mesh texture; 'plain' draws it flat.
   texture?: 'mesh' | 'plain';
+  glyphPath?: string;
+  glyphLabel?: string;
 }
 
 export interface JerseySpec {
@@ -147,10 +149,15 @@ function shoulderStripe(side: Sleeve, xOuter: number, xInner: number) {
   return `M${at(xOuter, t)} L${at(xInner, t)} L${at(xInner, b)} L${at(xOuter, b)} Z`;
 }
 
-// JERSEY_NUMBER_THREE scaled to `height`, rotated by `angle` radians and centred on (cx, cy). The
-// glyph is absolute M/L/Z only, so every number pair is an x,y point.
-function numeralAt(cx: number, cy: number, height: number, angle: number) {
-  const nums = (JERSEY_NUMBER_THREE.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+// Scale, rotate and centre a glyph authored with absolute coordinate pairs (M/L/C/Q/Z).
+function numeralAt(
+  cx: number,
+  cy: number,
+  height: number,
+  angle: number,
+  glyph = JERSEY_NUMBER_THREE
+) {
+  const nums = (glyph.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
   const xs = nums.filter((_, i) => i % 2 === 0);
   const ys = nums.filter((_, i) => i % 2 === 1);
   const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
@@ -158,7 +165,7 @@ function numeralAt(cx: number, cy: number, height: number, angle: number) {
   const [cos, sin] = [Math.cos(angle), Math.sin(angle)];
   const round = (v: number) => String(Math.round(v * 100) / 100);
   const out: string[] = [];
-  const d = JERSEY_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, () => '#');
+  const d = glyph.replace(/-?\d+(?:\.\d+)?/g, () => '#');
   for (let i = 0; i < nums.length; i += 2) {
     const dx = (nums[i] - (x0 + x1) / 2) * k;
     const dy = (nums[i + 1] - (y0 + y1) / 2) * k;
@@ -169,8 +176,14 @@ function numeralAt(cx: number, cy: number, height: number, angle: number) {
 }
 
 // Small and upright, centred on the lower outer face of the sleeve.
-function sleeveNumber(side: Sleeve) {
-  return numeralAt((side.outer + side.inner) / 2, SLEEVE_NUMBER_CENTER_Y, SLEEVE_NUMBER_HEIGHT, 0);
+function sleeveNumber(side: Sleeve, glyph?: string) {
+  return numeralAt(
+    (side.outer + side.inner) / 2,
+    SLEEVE_NUMBER_CENTER_Y,
+    SLEEVE_NUMBER_HEIGHT,
+    0,
+    glyph
+  );
 }
 
 // Lying along the shoulder line with the numeral's top toward the collar and its open side toward
@@ -345,7 +358,11 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
   }
 
   if (spec.sleeveNumber) {
-    layers.push(...bothSleeves(`${prefix}-sleeve-number`, spec.sleeveNumber.fill, sleeveNumber));
+    layers.push(
+      ...bothSleeves(`${prefix}-sleeve-number`, spec.sleeveNumber.fill, (side) =>
+        sleeveNumber(side, spec.number.glyphPath)
+      )
+    );
   }
 
   layers.push(...collarLayers(prefix, spec));
@@ -357,8 +374,10 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
       fill: spec.number.fill,
       outline: spec.number.outline,
       outlineWidth: OUTLINE_PX[spec.number.outlineWeight],
-      // The renderer overlays the mesh only on the default glyph, so naming the glyph draws it flat.
-      ...(spec.number.texture === 'plain' && { glyphPath: JERSEY_NUMBER_THREE }),
+      ...(spec.number.glyphPath
+        ? { glyphPath: spec.number.glyphPath, texture: spec.number.texture ?? 'mesh' }
+        : spec.number.texture === 'plain' && { glyphPath: JERSEY_NUMBER_THREE }),
+      ...(spec.number.glyphLabel && { glyphLabel: spec.number.glyphLabel }),
     },
   };
 
