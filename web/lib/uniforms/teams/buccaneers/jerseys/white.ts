@@ -1,4 +1,5 @@
 import { anchoredMark } from '../../core/jersey-spec';
+import { BUCCANEERS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { BUCCANEERS_SHIP_COLORS } from '../marks/ship';
 import { buccaneersCuff, BUCCANEERS_SLEEVE_SHIP } from '../marks/construction';
@@ -20,7 +21,13 @@ export const BUCCANEERS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'red', outline: 'pewter', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'red',
+    outline: 'pewter',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: BUCCANEERS_NUMBER_THREE,
+  },
   marks: [
     anchoredMark({
       paint: 'over',

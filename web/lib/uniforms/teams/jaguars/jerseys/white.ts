@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { JAGUARS_NUMBER_THREE } from '../marks/numbers';
 
 // White body with a black V collar band keylined grey, a white back bar, black shoulder numerals,
 // a black sleeve hem band and plain black numerals.
@@ -19,6 +20,12 @@ export const JAGUARS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: { color: 'black', size: 'l' },
   sleeveNumber: 'none',
-  number: { fill: 'black', outline: 'white', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'black',
+    outline: 'white',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: JAGUARS_NUMBER_THREE,
+  },
   marks: [],
 };

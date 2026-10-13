@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { SAINTS_NUMBER_THREE } from '../marks/numbers';
 
 // Black body with a gold V collar filled gold inside, gold shoulder numerals, gold numerals keylined white.
 export const SAINTS_JERSEY_BLACK: CompleteJerseySpec = {
@@ -18,6 +19,12 @@ export const SAINTS_JERSEY_BLACK: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'gold', outline: 'white', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'gold',
+    outline: 'white',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: SAINTS_NUMBER_THREE,
+  },
   marks: [],
 };
