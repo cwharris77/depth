@@ -49,7 +49,7 @@ describe('parts migration gate', () => {
       it('has kits to check', () => expect(rows.length).toBeGreaterThan(0));
 
       for (const row of rows) {
-        const id = `${row.teamId}-${row.slug}-${row.yearStart}`;
+        const id = row.id;
         const colors = row.colors as JerseyColors;
 
         for (const variant of ['jersey', 'full'] as const) {

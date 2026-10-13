@@ -4,6 +4,7 @@ export const JAGUARS_CATALOG: TeamCatalog = {
   teamId: 'jaguars',
   designs: [
     {
+      id: 'jaguars-home-2018',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -11,7 +12,13 @@ export const JAGUARS_CATALOG: TeamCatalog = {
       jersey: 'teal',
       colors: { primary: '#006778', secondary: '#D7A22A', accent: '#D7A22A' },
       legacyAccent: { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
-      periods: [{ from: 2018 }],
+      periods: [
+        {
+          from: 2018,
+          startSource: 'https://www.jaguars.com/team/history/uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'white-pants',
@@ -32,6 +39,7 @@ export const JAGUARS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'jaguars-away-2018',
       slug: 'away',
       sleeveNike: 'black',
       name: 'Away',
@@ -39,7 +47,13 @@ export const JAGUARS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#006778', accent: '#D7A22A' },
       legacyAccent: { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
-      periods: [{ from: 2018 }],
+      periods: [
+        {
+          from: 2018,
+          startSource: 'https://www.jaguars.com/team/history/uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'white-pants',
@@ -68,6 +82,7 @@ export const JAGUARS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'jaguars-teal-throwback-1998',
       slug: 'teal-throwback',
       sleeveNike: 'white',
       name: 'Prowler Throwback',
@@ -75,7 +90,13 @@ export const JAGUARS_CATALOG: TeamCatalog = {
       jersey: 'throwback',
       colors: { primary: '#006778', secondary: '#D7A22A', accent: '#101820' },
       legacyAccent: { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
-      periods: [{ from: 1998 }],
+      periods: [
+        {
+          from: 2024,
+          startSource: 'https://www.jaguars.com/team/history/uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',
@@ -88,6 +109,7 @@ export const JAGUARS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'jaguars-black-alt-2018',
       slug: 'black-alt',
       sleeveNike: 'white',
       collarShield: true,
@@ -96,7 +118,13 @@ export const JAGUARS_CATALOG: TeamCatalog = {
       jersey: 'black-alt',
       colors: { primary: '#101820', secondary: '#D7A22A', accent: '#006778' },
       legacyAccent: { uiAccent: '#2DD4D4', onAccent: '#0a0e1a' },
-      periods: [{ from: 2018 }],
+      periods: [
+        {
+          from: 2018,
+          startSource: 'https://www.jaguars.com/team/history/uniforms',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'standard',

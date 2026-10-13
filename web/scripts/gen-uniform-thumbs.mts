@@ -2,7 +2,7 @@
 // the exact committed rows that picker renders. data.ts is the complete curated archive the
 // migration seeds, so raster output is independent of local credentials or hosted data.
 //
-// Outputs: `public/uniforms/<id>.webp` per row (id = `<teamId>-<slug>-<yearStart>`),
+// Outputs: `public/uniforms/<id>.webp` per row, using its immutable catalog id,
 // deterministically rendered from the shared UniformFigure jersey crop (the same SVG the web
 // picker's JerseySwatch fallback renders) and rasterized with sharp. Committed to the repo like the
 // `gen:icons` rasters and served under /uniforms/ (origin-relative on web); the DB's
@@ -70,7 +70,7 @@ type UniformRow = {
 // The complete committed catalog, using the same deterministic ids as the seed migration.
 export function buildRowsFromCatalog(): UniformRow[] {
   return UNIFORMS.map((uniform) => ({
-    id: `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`,
+    id: uniform.id,
     teamId: uniform.teamId,
     slug: uniform.slug,
     constructionKey: uniform.constructionKey,

@@ -16,7 +16,7 @@ const CURATED_KINDS = ['home', 'away', 'throwback', 'color-rush', 'alternate'];
 
 describe('legacy accents — legibility for shipped iOS builds', () => {
   it('has exactly one pair per uniform row', () => {
-    const ids = UNIFORMS.map((u) => `${u.teamId}-${u.slug}-${u.yearStart}`).sort();
+    const ids = UNIFORMS.map((u) => u.id).sort();
     expect(Object.keys(LEGACY_ACCENTS).sort()).toEqual(ids);
   });
 
@@ -64,10 +64,7 @@ describe('uniform seed — integrity', () => {
   it('maps every catalog construction key to a registered team kit', () => {
     for (const uniform of UNIFORMS) {
       const definition = getTeamUniformDefinition(uniform.teamId);
-      expect(
-        definition?.kits,
-        `${uniform.teamId}-${uniform.slug}-${uniform.yearStart}`
-      ).toHaveProperty(uniform.constructionKey);
+      expect(definition?.kits, uniform.id).toHaveProperty(uniform.constructionKey);
     }
   });
 
@@ -109,7 +106,7 @@ describe('uniform seed — integrity', () => {
   });
 
   it('ids (`${teamId}-${slug}-${yearStart}`) are unique', () => {
-    const ids = UNIFORMS.map((u) => `${u.teamId}-${u.slug}-${u.yearStart}`);
+    const ids = UNIFORMS.map((u) => u.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
@@ -130,7 +127,7 @@ describe('uniform seed — integrity', () => {
       it(`${teamId}: exactly one current ${kind} kit`, () => {
         const current = UNIFORMS.filter(
           (u) => u.teamId === teamId && u.kind === kind && u.isCurrent
-        ).map((u) => `${u.teamId}-${u.slug}-${u.yearStart}`);
+        ).map((u) => u.id);
         expect(current).toHaveLength(1);
       });
     }
@@ -144,7 +141,7 @@ describe('uniform seed — integrity', () => {
   });
 
   for (const u of UNIFORMS) {
-    const id = `${u.teamId}-${u.slug}-${u.yearStart}`;
+    const id = u.id;
 
     it(`${id}: teamId and slug are non-empty`, () => {
       expect(u.teamId).toBeTruthy();

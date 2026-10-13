@@ -40,6 +40,8 @@ describe('Rams catalog', () => {
       ],
       'rivalries-2025': [['navy', 'navy']],
       bone: [['bone', 'bone']],
+      'home-2026': [['sol-2026', 'royal']],
+      'away-2026': [['white-2026', 'white']],
     });
   });
 });

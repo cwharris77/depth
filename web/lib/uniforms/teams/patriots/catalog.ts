@@ -5,6 +5,7 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
   teamId: 'patriots',
   designs: [
     {
+      id: 'patriots-home-2020',
       slug: 'home',
       sleeveNike: 'white',
       name: 'Home',
@@ -12,7 +13,13 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
       jersey: 'navy',
       colors: { primary: '#002244', secondary: '#C60C30', accent: '#B0B7BC' },
       legacyAccent: { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-      periods: [{ from: 2020 }],
+      periods: [
+        {
+          from: 2020,
+          startSource: 'https://www.patriots.com/press-room/history-logo-uniform',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'navy-pants',
@@ -33,6 +40,7 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'patriots-away-2020',
       slug: 'away',
       sleeveNike: 'navy',
       name: 'Away',
@@ -40,7 +48,13 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
       jersey: 'white',
       colors: { primary: '#FFFFFF', secondary: '#002244', accent: '#C60C30' },
       legacyAccent: { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-      periods: [{ from: 2020 }],
+      periods: [
+        {
+          from: 2020,
+          startSource: 'https://www.patriots.com/press-room/history-logo-uniform',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'white-pants',
@@ -61,6 +75,7 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'patriots-rivalries-2025-2025',
       slug: 'rivalries-2025',
       sleeveNike: 'white',
       name: 'Rivalries',
@@ -68,7 +83,14 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
       jersey: 'rivalries',
       colors: { primary: '#002F6C', secondary: '#C60C30', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
-      periods: [{ from: 2025 }],
+      periods: [
+        {
+          from: 2025,
+          startSource:
+            'https://www.patriots.com/news/patriots-unveil-nor-easter-uniforms-for-week-11-rivalry-game-vs-jets',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'white-pants',
@@ -81,6 +103,7 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
       ],
     },
     {
+      id: 'patriots-pat-patriot-1961',
       slug: 'pat-patriot',
       sleeveNike: 'white',
       name: 'Pat Patriot',
@@ -88,7 +111,14 @@ export const PATRIOTS_CATALOG: TeamCatalog = {
       jersey: 'pat',
       colors: { primary: '#C8102E', secondary: '#002F6C', accent: '#FFFFFF' },
       legacyAccent: { uiAccent: '#C8CDD6', onAccent: '#0a0e1a' },
-      periods: [{ from: 1961 }],
+      periods: [
+        {
+          from: 2022,
+          startSource:
+            'https://www.patriots.com/news/how-patriots-led-push-to-change-nfl-rule-and-bring-red-throwback-uniform-back',
+          verifiedOn: '2026-10-12',
+        },
+      ],
       combinations: [
         {
           key: 'white-pants',
