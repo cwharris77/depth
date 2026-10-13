@@ -145,6 +145,17 @@ describe('expandJersey', () => {
     expect(ids(layers(undefined, 'orange'))).toContain('t-sleeve-number-outline-left');
   });
 
+  it('strokes a wider outer outline under the numeral when asked', () => {
+    const outer = (outerOutline?: string) =>
+      expandJersey('t', {
+        body: 'navy',
+        collar: { style: 'none' },
+        number: { fill: 'white', outline: 'orange', outlineWeight: 'thin', outerOutline },
+      }).layers.find((l) => l.id === 't-number-outer-outline');
+    expect(outer()).toBeUndefined();
+    expect(outer('black')).toMatchObject({ kind: 'stroke', stroke: 'black', strokeWidth: 24 });
+  });
+
   it("draws the shoulder numeral from the jersey's own glyph when it has one", () => {
     const glyph = 'M0,0 Q10,0 10,10 L0,10 Z';
     const shoulder = (glyphPath?: string) =>

@@ -24,7 +24,8 @@ export const BUCCANEERS_JERSEY_RED: CompleteJerseySpec = {
   number: {
     fill: 'white',
     outline: 'orange',
-    outlineWeight: 'regular',
+    outlineWeight: 'thin',
+    outerOutline: 'pewter',
     texture: 'mesh',
     glyphPath: BUCCANEERS_NUMBER_THREE,
   },

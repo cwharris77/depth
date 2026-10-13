@@ -58,6 +58,8 @@ export interface JerseyNumber {
   texture?: 'mesh' | 'plain';
   glyphPath?: string;
   glyphLabel?: string;
+  // A second, wider outline in this colour drawn outside `outline`.
+  outerOutline?: string;
 }
 
 export interface JerseySpec {
@@ -102,6 +104,8 @@ export interface JerseySpec {
 const SIZE_PX: Record<JerseySize, number> = { s: 11, m: 16, l: 28 };
 const GAP_PX: Record<JerseyGap, number> = { none: 0, hairline: 3, narrow: 6, wide: 12, broad: 18 };
 const OUTLINE_PX = { none: 0, thin: 8, regular: 14, heavy: 20, 'x-heavy': 26 };
+// How much wider the outer outline's stroke is than the inner outline's.
+const OUTER_OUTLINE_EXTRA = 16;
 
 type Sleeve = { outer: number; inner: number };
 const SLEEVE_LEFT: Sleeve = { outer: 30, inner: 96 };
@@ -385,6 +389,18 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
   }
 
   layers.push(...collarLayers(prefix, spec));
+
+  if (spec.number.outerOutline) {
+    layers.push({
+      id: `${prefix}-number-outer-outline`,
+      surface: 'jersey',
+      clip: true,
+      kind: 'stroke',
+      stroke: spec.number.outerOutline,
+      strokeWidth: OUTLINE_PX[spec.number.outlineWeight] + OUTER_OUTLINE_EXTRA,
+      d: spec.number.glyphPath ?? JERSEY_NUMBER_THREE,
+    });
+  }
 
   const part: UniformPart = {
     base: spec.body,
