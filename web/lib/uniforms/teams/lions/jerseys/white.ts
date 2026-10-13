@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { LIONS_NUMBER_THREE } from '../marks/numbers';
 import { LIONS_BANDS_BLUE_SILVER } from '../marks/construction';
 
 // White body with a white V collar keylined grey over a blue back bar, blue shoulder numerals, a
@@ -21,6 +22,12 @@ export const LIONS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'blue', outline: 'silver', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'blue',
+    outline: 'silver',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: LIONS_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: LIONS_BANDS_BLUE_SILVER }],
 };

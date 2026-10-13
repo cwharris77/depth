@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { DOLPHINS_NUMBER_THREE } from '../marks/numbers';
 
 // Home: teal body, a keylined teal collar, no sleeve trim, white numerals keylined orange.
 export const DOLPHINS_JERSEY_TEAL: CompleteJerseySpec = {
@@ -18,6 +19,12 @@ export const DOLPHINS_JERSEY_TEAL: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'orange', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'orange',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: DOLPHINS_NUMBER_THREE,
+  },
   marks: [],
 };
