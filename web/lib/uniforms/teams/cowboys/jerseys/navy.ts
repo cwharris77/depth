@@ -4,7 +4,7 @@ import { COWBOYS_SLEEVE_STAR } from '../marks/construction';
 import { COWBOYS_NUMBER_THREE } from '../marks/numbers';
 
 // Navy body, a white-over-silver neck band and rounded collar, a white-edged silver sleeve band
-// under the sleeve star, white numerals.
+// with the sleeve star over its outer end, white numerals.
 export const COWBOYS_JERSEY_NAVY: CompleteJerseySpec = {
   body: 'navy',
   collar: {
