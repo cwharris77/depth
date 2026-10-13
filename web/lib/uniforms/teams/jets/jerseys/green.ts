@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { JETS_NUMBER_THREE } from '../marks/numbers';
 
 // Home: green body, white inset-V collar, a white shoulder numeral and two white sleeve stripes
 // separated by a body-coloured gap. Numerals are flat white with no offset.
@@ -26,6 +27,12 @@ export const JETS_JERSEY_GREEN: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'green', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'green',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: JETS_NUMBER_THREE,
+  },
   marks: [],
 };

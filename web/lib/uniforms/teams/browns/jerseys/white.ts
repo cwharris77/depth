@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { BROWNS_NUMBER_THREE } from '../marks/numbers';
 
 // White body carrying the same five-band sleeve stack with brown in white's place, a brown
 // shoulder numeral and plain brown chest numerals. The V collar is body-coloured, so it needs the
@@ -30,6 +31,12 @@ export const BROWNS_JERSEY_WHITE: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'brown', outline: 'white', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'brown',
+    outline: 'white',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: BROWNS_NUMBER_THREE,
+  },
   marks: [],
 };

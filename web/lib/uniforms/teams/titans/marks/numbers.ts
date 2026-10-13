@@ -1,0 +1,8 @@
+// An angular numeral: a top bar pointed at its right end, a slanted stem, and a middle stroke that
+// comes to a point on the left.
+export const TITANS_2018_NUMBER_THREE =
+  'M241.2,541 L346.8,539 L336,619 L319,623 L336,632 L336,680 L324,694 L241.2,694 L241.2,655 L259,668 L308,668 L308,646 L254,620 L308,594 L308,569 L259,567 L241.2,580 Z';
+
+// A wide, heavy block numeral with chamfered corners.
+export const TITANS_BLOCK_NUMBER_THREE =
+  'M259,539 L329,539 L345,555 L345,609.5 L338,616.5 L345,623.5 L345,678 L329,694 L259,694 L243,678 L243,650 L277,650 L277,663 L311,663 L311,628.5 L276,628.5 L276,604.5 L311,604.5 L311,570 L277,570 L277,583 L243,583 L243,555 Z';

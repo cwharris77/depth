@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { COMMANDERS_NUMBER_THREE } from '../marks/numbers';
 import { COMMANDERS_SLEEVE_BAND_BURGUNDY } from '../marks/construction';
 
 // White body, a burgundy band around a gold line on each sleeve, burgundy numerals keylined gold. A burgundy V collar band over a white neck.
@@ -19,6 +20,12 @@ export const COMMANDERS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'burgundy', outline: 'gold', outlineWeight: 'regular', texture: 'mesh' },
+  number: {
+    fill: 'burgundy',
+    outline: 'gold',
+    outlineWeight: 'regular',
+    texture: 'mesh',
+    glyphPath: COMMANDERS_NUMBER_THREE,
+  },
   marks: [{ paint: 'over', mark: COMMANDERS_SLEEVE_BAND_BURGUNDY }],
 };

@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { JETS_NUMBER_THREE } from '../marks/numbers';
 
 // Away: the home construction in reverse — white body with the collar, shoulder numeral, sleeve
 // stripes and numerals all green.
@@ -26,6 +27,12 @@ export const JETS_JERSEY_WHITE: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'green', outline: 'white', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'green',
+    outline: 'white',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: JETS_NUMBER_THREE,
+  },
   marks: [],
 };
