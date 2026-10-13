@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { PACKERS_NUMBER_THREE } from '../marks/numbers';
 import { anchoredMark } from '../../core/jersey-spec';
 import { NIKE_MARK } from '../../core/pants-logos';
 
@@ -29,7 +30,13 @@ export const PACKERS_JERSEY_GREEN: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'white', outlineWeight: 'none', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'white',
+    outlineWeight: 'none',
+    texture: 'mesh',
+    glyphPath: PACKERS_NUMBER_THREE,
+  },
   marks: [
     anchoredMark({
       paint: 'over',

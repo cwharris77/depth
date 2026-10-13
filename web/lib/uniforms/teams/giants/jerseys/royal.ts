@@ -1,4 +1,5 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { GIANTS_NUMBER_THREE } from '../marks/numbers';
 
 // Royal body with a royal V collar keylined grey, white shoulder numerals, no sleeve stripes,
 // and plain white numerals.
@@ -19,6 +20,12 @@ export const GIANTS_JERSEY_ROYAL: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'white', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    fill: 'white',
+    outline: 'white',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+    glyphPath: GIANTS_NUMBER_THREE,
+  },
   marks: [],
 };

@@ -1,35 +1,35 @@
 {
   "version": 1,
-  "sourceDigest": "d7acbbedf6aab492301384cf13869f346745eb26ca01dee612576b2dad31e055",
-  "revision": "c55699b9dbb381f4",
+  "sourceDigest": "5178d0f1f762e151180ba92f2526d8a675388cd01f365a35bcf3e1fe9507d111",
+  "revision": "83148b256e102810",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
       "constructionKey": "away",
-      "revision": "431242a27fcef35c",
+      "revision": "9549cb2b65b97dbc",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-away-2022.webp",
-          "sha256": "601735d433382a7d03abaa84851fd4dfaaa7760f53ef03bc52c2e2fe60fef8c1"
+          "sha256": "f151c852f878157f758ae546bf1aa0ba8874850a1edce86dea332e8f6fc77217"
         },
         "full": {
           "path": "/uniforms/49ers-away-2022-full.webp",
-          "sha256": "f2bff62e1f2b186a711cfc7e7dbb9d0b18df49a438a1cea72985c205512770d9"
+          "sha256": "c0e9c27299a3353a06a7c11856071fde6f8326a13103b0a5d530812af464998b"
         }
       }
     },
     {
       "catalogId": "49ers-home-2022",
       "constructionKey": "home",
-      "revision": "7ea1a69f36a00da5",
+      "revision": "739167eabe339a87",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-home-2022.webp",
-          "sha256": "94edc54fcb02112cedca835e876c5e247d408a09688ca2c320110e37ad554fe3"
+          "sha256": "5b06932d5118f593ccdee5949ac7907ad0a694fb73b2df0b18bc5892e127da7a"
         },
         "full": {
           "path": "/uniforms/49ers-home-2022-full.webp",
-          "sha256": "3cc7d739b3c1ab84781d544736412d468eb72f167d483de337b7a210f26c2553"
+          "sha256": "cfc270270673010a5a07068db96b7083de0f89b554b9c863300ddc644221049c"
         }
       }
     },
@@ -738,15 +738,15 @@
     {
       "catalogId": "chiefs-away-1963",
       "constructionKey": "away",
-      "revision": "9ac13e88c96c31f8",
+      "revision": "37c7706f7c4bbde7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chiefs-away-1963.webp",
-          "sha256": "3397e2d120095d17b04870d76975cdd9bcd9ec75b07bde68b3e20050ad6a9a99"
+          "sha256": "3137c84d2e0c86cb0688c044f1d8e0fde19710e57e22c9d520b1c6b80c7da1b8"
         },
         "full": {
           "path": "/uniforms/chiefs-away-1963-full.webp",
-          "sha256": "6a157a0326ee4a44c14af2c681cae0d63080ec9bad57f0880b334a8db3861096"
+          "sha256": "c7cd58e6ace6db4b7be745dba4ac1601d8b1bbd4ec601ad0144f0945850f2296"
         }
       },
       "combinations": [
@@ -755,7 +755,7 @@
           "label": "Red pants",
           "full": {
             "path": "/uniforms/chiefs-away-1963--red-pants-full.webp",
-            "sha256": "63763bec68f3471203c8623eb97c02dcb24c2f079012e7dceeddd1a427449ba6"
+            "sha256": "604236b47d561bd1850fb5121bb06c560a5b95db71e12229114f19320050df04"
           }
         }
       ]
@@ -763,15 +763,15 @@
     {
       "catalogId": "chiefs-home-1963",
       "constructionKey": "home",
-      "revision": "cd4ea870ca711310",
+      "revision": "d6c2cf3ee0000c65",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chiefs-home-1963.webp",
-          "sha256": "ee7f0068ca4b071c1cbb985885acb0c9f8654bce9a5687104f32d285617486da"
+          "sha256": "9d6e7ae59059e711292e84d79ab56280906a111f4d2646c1d392b80f16e65d78"
         },
         "full": {
           "path": "/uniforms/chiefs-home-1963-full.webp",
-          "sha256": "e03d2ee23d43e1b2fa91acb056d704c51a2d53a63e5b92cde64db3a3b90951c2"
+          "sha256": "5a232764befa9e3c2b5d1c8f2a31a5e195131ab36336bdb6c556503682502f47"
         }
       }
     },
@@ -883,30 +883,30 @@
     {
       "catalogId": "cowboys-away-1964",
       "constructionKey": "away",
-      "revision": "ac0f2bc50ebf9673",
+      "revision": "2fc04971ab5034bb",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cowboys-away-1964.webp",
-          "sha256": "543f4d294885755cab71f1bdfaac1bef2b165eadbc2b6081419195fb99ad6afb"
+          "sha256": "362129828b21ecc5986ab97313c66f753284f32f76c507b58b0c26e946e981be"
         },
         "full": {
           "path": "/uniforms/cowboys-away-1964-full.webp",
-          "sha256": "088a5c734e5b67c1a9a87ff1db0b52bc5ba6e3cf82e634d35a011161a24c4f0d"
+          "sha256": "40bb7bdc99beed82d68ebeb57dc2a2f90b6290150c834916d7151f080c912e1f"
         }
       }
     },
     {
       "catalogId": "cowboys-home-1964",
       "constructionKey": "home",
-      "revision": "47d7132b64c33155",
+      "revision": "30ab13ddcc87300c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cowboys-home-1964.webp",
-          "sha256": "43c7e65e0e561268985fe03098f7d8b9c7fa75054cb325a02aef0962b70b37ff"
+          "sha256": "b9cdc20fb4002a8b76bb85980f47f9832176bdfade8107c8b63c20e4e8c36df0"
         },
         "full": {
           "path": "/uniforms/cowboys-home-1964-full.webp",
-          "sha256": "8a532f95df7b46ef0d55cbfea3b53586c2c899a303cf69d5cfc001b4e70c909d"
+          "sha256": "5a05f4ad788cd002cf4ed8c43f099738d9346a882452c521ca71245a47deb8b0"
         }
       }
     },
@@ -1186,30 +1186,30 @@
     {
       "catalogId": "giants-away-2000",
       "constructionKey": "away",
-      "revision": "7f60aca29f2a1df8",
+      "revision": "8e57f0758a2f8192",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/giants-away-2000.webp",
-          "sha256": "acfea0313ec8d583d71aeecd43de65ede448d9d9af6ab574abb4212c2828ca93"
+          "sha256": "117b4499f9856cba89b9ca915857bb6ed7bde231e3a4bfb055fb04cc82319c7b"
         },
         "full": {
           "path": "/uniforms/giants-away-2000-full.webp",
-          "sha256": "5100310c5a6ecb95e7c178e9cbb3213ce588b73c09b8fca026b8ac4b0792eee3"
+          "sha256": "adde5d57b977d5f61384184e6d071475c62d654fbd34b262fa6a24f23337c8d7"
         }
       }
     },
     {
       "catalogId": "giants-home-2000",
       "constructionKey": "home",
-      "revision": "d24d2d613f4676f6",
+      "revision": "58d2788bc687f114",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/giants-home-2000.webp",
-          "sha256": "fd838660d82d3066b50793b50c627cbf4870276f246a69233444081591107955"
+          "sha256": "f5ece850bd611513c084eeddfeb6de7dda4e4a610553666615474cbef9d97881"
         },
         "full": {
           "path": "/uniforms/giants-home-2000-full.webp",
-          "sha256": "556af91395938c9d9449eb40b257f3dd9b0e768b3eccd0032f589d611406900c"
+          "sha256": "de04cb1e26f3920e2a801e10d6878e927827b4b40189d7a7bb0fa64bf3ee1873"
         }
       }
     },
@@ -1496,45 +1496,45 @@
     {
       "catalogId": "packers-away-1959",
       "constructionKey": "away",
-      "revision": "b82e45cf4b47f78c",
+      "revision": "9c3e9d53c4f3ec26",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-away-1959.webp",
-          "sha256": "74401ffb25882a0b4e3e1dcd96f7c866e34e701d88f2b2ff902cfa4de469dc5a"
+          "sha256": "effe60125d298d2792238ce194dfd3476b211d66b4da2cda73ac225ea9d81b07"
         },
         "full": {
           "path": "/uniforms/packers-away-1959-full.webp",
-          "sha256": "d115de7c18900ee4157c911c150cd60b9fb464e6e7439a01408adb0e46fa05f8"
+          "sha256": "d34ba2345a63174d76a23d557ca3d14fd347e4b9608cf0c9891b4de2c9ded51f"
         }
       }
     },
     {
       "catalogId": "packers-home-1959",
       "constructionKey": "home",
-      "revision": "ba2bb3eb8b4430f5",
+      "revision": "e17289f0a0f4f61c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-home-1959.webp",
-          "sha256": "2dce52fe5adbc5602970529535f5b271041df55d5b5116bbefd4e8db1344f2ef"
+          "sha256": "200294e5fe478b932d8e72aece54e47b7c083dfe7e9ca0736b45b53500a7ce81"
         },
         "full": {
           "path": "/uniforms/packers-home-1959-full.webp",
-          "sha256": "29ce5783e8854f2e55864e7cf3bf410d8e054f85f187eedbb5f8e8dedf5fb09d"
+          "sha256": "bea6e6ca5a89ae7217ee02f87ab424b4cd53f04ed9e582238222e72badc48ed6"
         }
       }
     },
     {
       "catalogId": "packers-winter-warning-2025",
       "constructionKey": "winter-warning",
-      "revision": "0b15d254949352bf",
+      "revision": "b4a3a6363cea63b0",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-winter-warning-2025.webp",
-          "sha256": "74401ffb25882a0b4e3e1dcd96f7c866e34e701d88f2b2ff902cfa4de469dc5a"
+          "sha256": "effe60125d298d2792238ce194dfd3476b211d66b4da2cda73ac225ea9d81b07"
         },
         "full": {
           "path": "/uniforms/packers-winter-warning-2025-full.webp",
-          "sha256": "bafeef8675b88279b7b8fae75afc9b47ef04dc2167cb0ecc5015b720f9e762eb"
+          "sha256": "b6db12534cb1e38ae66f734a5a7f5da92adc0c96a9c412a02436f3fa731d252c"
         }
       }
     },
@@ -1736,30 +1736,30 @@
     {
       "catalogId": "raiders-away-1963",
       "constructionKey": "away",
-      "revision": "95d1a485a8c32479",
+      "revision": "3e8d2ecdfcf492f7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/raiders-away-1963.webp",
-          "sha256": "965e9823a36a1bf8f795df626a8a83b55e6f5b04dc1cf5201733725b1ff28f15"
+          "sha256": "d0ffd901c6bf5ada69baef86914ef53786ed6d4ddf2a7b6a02f7beacd35d61ea"
         },
         "full": {
           "path": "/uniforms/raiders-away-1963-full.webp",
-          "sha256": "3eb9ddff601c47337cde78cd147ec8bc0c7afdbfe3a307da92c67450ee807b85"
+          "sha256": "7d7c835a9625aa95105e4122a71f3e881359004e42493144c05211927638c689"
         }
       }
     },
     {
       "catalogId": "raiders-home-1963",
       "constructionKey": "home",
-      "revision": "1981635a6fd80fc1",
+      "revision": "70142df1098ec9f4",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/raiders-home-1963.webp",
-          "sha256": "92b23239d51dfaa5f22d71b94bc6c9c4c36d6ceda30da49f6393a173f4d6a639"
+          "sha256": "f98dceb990039c45d04bd9cccc6711b9fc5a95a9e82459b0f09f7147e6b2beb8"
         },
         "full": {
           "path": "/uniforms/raiders-home-1963-full.webp",
-          "sha256": "5982e8c24785550fe832109bc107d17317e80cf57f2525e9e83276a9e337e951"
+          "sha256": "601a711dfebb090724dc283599bb8f5faac9f85f1968aab964067a7b1c585c35"
         }
       }
     },
