@@ -222,8 +222,14 @@ struct TeamStatsReferenceView: View {
         TeamSeasonStoryBuilder.games(stats) >= TeamSeasonStoryBuilder.minimumGamesForRanks
     }
 
-    private func rank(_ value: Int?, _ qualifier: TeamStatsRankQualifier) -> String? {
-        showRanks ? teamStatsRankLabel(value, lastRank: leagueSize, qualifier: qualifier) : nil
+    private func rank(
+        _ value: Int?, _ qualifier: TeamStatsRankQualifier, tieKey: String
+    ) -> String? {
+        showRanks
+            ? teamStatsRankLabel(
+                value, lastRank: leagueSize, qualifier: qualifier,
+                tied: ranks?.tiedMetrics.contains(tieKey) ?? false)
+            : nil
     }
 
     @ViewBuilder
@@ -243,20 +249,21 @@ struct TeamStatsReferenceView: View {
             rows: [
                 LedgerRow(
                     "points-for", "Points for", String(stats.pointsFor),
-                    rank: rank(ranks?.pointsFor, .most)),
+                    rank: rank(ranks?.pointsFor, .most, tieKey: "pointsFor")),
                 LedgerRow(
                     "points-against", "Points against", String(stats.pointsAgainst),
-                    rank: rank(ranks?.pointsAgainst, .least)),
+                    rank: rank(ranks?.pointsAgainst, .least, tieKey: "pointsAgainst")),
                 LedgerRow(
                     "diff", "Point differential", signed(stats.pointDifferential),
                     color: signedColor(stats.pointDifferential),
-                    rank: rank(ranks?.pointDifferential, .most)),
+                    rank: rank(ranks?.pointDifferential, .most, tieKey: "pointDifferential")),
             ]
                 + (stats.matchupMetrics?.turnoverMargin.map { margin in
                     [
                         LedgerRow(
                             "to-margin", "Turnover margin", signed(margin),
-                            color: signedColor(margin), rank: rank(ranks?.turnoverMargin, .most))
+                            color: signedColor(margin),
+                            rank: rank(ranks?.turnoverMargin, .most, tieKey: "turnoverMargin"))
                     ]
                 } ?? []))
     }
@@ -266,11 +273,13 @@ struct TeamStatsReferenceView: View {
         let rows = [
             stats.passingYards.map {
                 LedgerRow(
-                    "pass-yds", "PASS YDS", String($0), rank: rank(ranks?.passingYards, .most))
+                    "pass-yds", "PASS YDS", String($0),
+                    rank: rank(ranks?.passingYards, .most, tieKey: "passingYards"))
             },
             stats.rushingYards.map {
                 LedgerRow(
-                    "rush-yds", "RUSH YDS", String($0), rank: rank(ranks?.rushingYards, .most))
+                    "rush-yds", "RUSH YDS", String($0),
+                    rank: rank(ranks?.rushingYards, .most, tieKey: "rushingYards"))
             },
         ].compactMap { $0 }
         if !rows.isEmpty {
