@@ -87,5 +87,31 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
         },
       ],
     },
+    {
+      id: 'buccaneers-pewter-2020',
+      slug: 'pewter',
+      sleeveNike: 'white',
+      collarShield: true,
+      name: 'All-Pewter',
+      kind: 'alternate',
+      jersey: 'pewter',
+      colors: { primary: '#34302B', secondary: '#D50A0A', accent: '#FFFFFF' },
+      legacyAccent: RED_ACCENT,
+      periods: [
+        {
+          from: 2020,
+          to: 2023,
+          startSource: 'https://www.buccaneers.com/photos/bucs-new-uniforms-pictures-pewter',
+          source: 'https://www.buccaneers.com/news/bucs-pewter-uniforms-unveiled-week-15-2026',
+          verifiedOn: '2026-10-13',
+        },
+        {
+          from: 2026,
+          startSource: 'https://www.buccaneers.com/news/bucs-pewter-uniforms-unveiled-week-15-2026',
+          verifiedOn: '2026-10-13',
+        },
+      ],
+      combinations: [flag('standard', 'Pewter pants', 'pewter', 'pewter')],
+    },
   ],
 };

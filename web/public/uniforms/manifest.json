@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "17fd7a5b7365c8fb722379e85ba4cb5a11c9954f20210d238415b963dabce507",
-  "revision": "b2f09c111f48acec",
+  "sourceDigest": "719411fa266716fac690e5c07025952ea2bbefd067f36c87760e961f96e5aa0b",
+  "revision": "aeb91437e53a4ef6",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -539,6 +539,21 @@
           }
         }
       ]
+    },
+    {
+      "catalogId": "buccaneers-pewter-2020",
+      "constructionKey": "pewter",
+      "revision": "3453eb457f560cf3",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/buccaneers-pewter-2020.webp",
+          "sha256": "ce05bde92889298b5821af797d67427d1753660b2368c69b50dca1f373683bc1"
+        },
+        "full": {
+          "path": "/uniforms/buccaneers-pewter-2020-full.webp",
+          "sha256": "a40ed10465d0bd0e14e6973c0454a9d98beaeef4ad77f40d966060e38ad767e9"
+        }
+      }
     },
     {
       "catalogId": "cardinals-away-2023",

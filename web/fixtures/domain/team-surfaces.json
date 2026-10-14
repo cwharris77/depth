@@ -1934,5 +1934,21 @@
       "numeralFill": "#003594",
       "numeralStroke": "#FFFFFF"
     }
+  },
+  {
+    "id": "buccaneers-pewter-2020",
+    "colors": {
+      "primary": "#34302B",
+      "secondary": "#D50A0A",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#34302B",
+      "ring": "#D50A0A",
+      "mark": "#D50A0A",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#34302B",
+      "numeralStroke": "#D50A0A"
+    }
   }
 ]
