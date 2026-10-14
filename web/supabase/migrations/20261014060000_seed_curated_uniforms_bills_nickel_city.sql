@@ -125,6 +125,8 @@ values
   ('commanders-super-bowl-away-2025', 'commanders', 'away', 'Away', 2025, NULL, true, '#FFFFFF', '#5A1414', '#FFB612', '#FFB612', '#0a0e1a', '/uniforms/commanders-super-bowl-away-2025.webp'),
   ('rams-home-2026-2026', 'rams', 'home', 'Home', 2026, NULL, true, '#003594', '#FFD100', '#FFFFFF', '#FFC20E', '#0a0e1a', '/uniforms/rams-home-2026-2026.webp'),
   ('rams-away-2026-2026', 'rams', 'away', 'Away', 2026, NULL, true, '#FFFFFF', '#003594', '#FFD100', '#FFC20E', '#0a0e1a', '/uniforms/rams-away-2026-2026.webp'),
+  ('rams-classic-sol-2026', 'rams', 'alternate', 'Classic Sol', 2026, NULL, true, '#FFD100', '#003594', '#FFFFFF', '#FFC20E', '#0a0e1a', '/uniforms/rams-classic-sol-2026.webp'),
+  ('rams-fearsome-white-2026', 'rams', 'alternate', 'Fearsome White', 2026, NULL, true, '#FFFFFF', '#003594', '#0D1B3E', '#FFC20E', '#0a0e1a', '/uniforms/rams-fearsome-white-2026.webp'),
   ('bills-nickel-city-2026', 'bills', 'alternate', 'Nickel City', 2026, NULL, true, '#949399', '#00338D', '#C60C30', '#5B9BFF', '#0a0e1a', '/uniforms/bills-nickel-city-2026.webp')
 on conflict (id) do update set
   team_id = excluded.team_id,

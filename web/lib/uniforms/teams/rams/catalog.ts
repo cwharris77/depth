@@ -201,5 +201,61 @@ export const RAMS_CATALOG: TeamCatalog = {
         },
       ],
     },
+    {
+      id: 'rams-classic-sol-2026',
+      slug: 'classic-sol',
+      sleeveNike: 'royal',
+      name: 'Classic Sol',
+      kind: 'alternate',
+      jersey: 'classic-sol',
+      colors: { primary: '#FFD100', secondary: '#003594', accent: '#FFFFFF' },
+      legacyAccent: { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
+      periods: [
+        {
+          from: 2026,
+          startSource:
+            'https://www.therams.com/news/rams-alternate-uniforms-celebrating-franchise-championship-legacy',
+          verifiedOn: '2026-10-13',
+        },
+      ],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'royal-2026',
+          pants: 'classic-sol',
+          pantsNike: 'royal',
+          socks: 'royal',
+        },
+      ],
+    },
+    {
+      id: 'rams-fearsome-white-2026',
+      slug: 'fearsome-white',
+      sleeveNike: 'royal',
+      name: 'Fearsome White',
+      kind: 'alternate',
+      jersey: 'fearsome-white',
+      colors: { primary: '#FFFFFF', secondary: '#003594', accent: '#0D1B3E' },
+      legacyAccent: { uiAccent: '#FFC20E', onAccent: '#0a0e1a' },
+      periods: [
+        {
+          from: 2026,
+          startSource:
+            'https://www.therams.com/news/rams-alternate-uniforms-celebrating-franchise-championship-legacy',
+          verifiedOn: '2026-10-13',
+        },
+      ],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'royal-white-horn',
+          pants: 'fearsome-white',
+          pantsNike: 'royal',
+          socks: 'white',
+        },
+      ],
+    },
   ],
 };

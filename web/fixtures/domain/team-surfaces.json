@@ -1936,6 +1936,38 @@
     }
   },
   {
+    "id": "rams-classic-sol-2026",
+    "colors": {
+      "primary": "#FFD100",
+      "secondary": "#003594",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#FFD100",
+      "ring": "#003594",
+      "mark": "#FFFFFF",
+      "textOnFill": "#003594",
+      "numeralFill": "#003594",
+      "numeralStroke": "#FFD100"
+    }
+  },
+  {
+    "id": "rams-fearsome-white-2026",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#003594",
+      "accent": "#0D1B3E"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#003594",
+      "mark": "#FFFFFF",
+      "textOnFill": "#003594",
+      "numeralFill": "#003594",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
     "id": "bills-nickel-city-2026",
     "colors": {
       "primary": "#949399",

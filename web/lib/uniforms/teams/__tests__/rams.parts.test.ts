@@ -45,13 +45,17 @@ describe('Rams catalog', () => {
       bone: [['bone', 'bone']],
       'home-2026': [['sol-2026', 'royal']],
       'away-2026': [['white-2026', 'white']],
+      'classic-sol': [['classic-sol', 'royal']],
+      'fearsome-white': [['fearsome-white', 'white']],
     });
   });
 });
 
 describe('Rams pants parts', () => {
-  // One `it` per leg so a failure names the offending pant.
+  // One `it` per leg so a failure names the offending pant. Classic Sol's triple stripe is its own
+  // construction, checked below.
   for (const [name, part] of Object.entries(RAMS_PARTS.pants)) {
+    if (name === 'classic-sol') continue;
     it(`stripes the ${name} leg with a keyline and a band`, () => {
       expect(part.layers.map((layer) => layer.id)).toEqual([
         'rams-stripe-keyline-left',
@@ -68,6 +72,14 @@ describe('Rams pants parts', () => {
       if (name !== 'royal') expect(keyline).not.toBe(band);
     });
   }
+
+  it('stripes the classic-sol leg royal, Sol, royal from the outer edge in', () => {
+    const part = RAMS_PARTS.pants['classic-sol'];
+    expect(part.base).toBe('white');
+    expect(part.layers.map((layer) => (layer.kind === 'fill' ? layer.fill : layer.stroke))).toEqual(
+      ['royal', 'royal', 'yellow', 'yellow', 'royal', 'royal']
+    );
+  });
 });
 
 describe('Rams jerseys', () => {

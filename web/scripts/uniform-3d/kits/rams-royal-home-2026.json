@@ -1,0 +1,95 @@
+{
+  "id": "rams-royal-home-2026",
+  "references": [
+    "Rams 2026 release gallery: front, side and rear jersey, shoulder close-up, helmet front and rear three-quarter",
+    "Rams 2025 season uniform composite: pant stripe order and widths",
+    "Rams 2026 helmet front photo: white RAMS bumper, horn tips down to the facemask"
+  ],
+  "palette": {
+    "from": "web/lib/uniforms/teams/rams/parts.ts#RAMS_PALETTE",
+    "extra": { "yellowShade": "#C9A10A" }
+  },
+  "jersey": {
+    "body": "royal",
+    "number": {
+      "glyph": "web/lib/uniforms/teams/rams/marks/numbers.ts#RAMS_NUMBER_THREE",
+      "fill": "yellow",
+      "inline": { "color": "yellowShade", "inset": 26, "width": 12 },
+      "front": { "top": 0.37, "height": 0.4 },
+      "back": { "top": 0.31, "height": 0.5 }
+    },
+    "name": {
+      "text": "PLAYER",
+      "font": "DIN Condensed Bold.ttf",
+      "tracking": 0.04,
+      "color": "white",
+      "top": 0.19,
+      "height": 0.075
+    },
+    "collar_shield": true,
+    "nape_patch": {
+      "text": "LA",
+      "font": "DIN Condensed Bold.ttf",
+      "fill": "royal",
+      "border": "yellow",
+      "ink": "yellow",
+      "width": 0.056,
+      "height": 0.035
+    },
+    "sleeve_cap": {
+      "color": "yellow",
+      "rim_band": { "inset": 72, "width": 32, "from": -70, "to": 165, "ramp": 85 },
+      "crescent": { "outer": [-77.4, -28.0, 238.5], "inner": [-21.9, 43.7, 209.7] },
+      "swoosh": { "color": "white", "centre": [40, -15], "size": [275, 115] }
+    }
+  },
+  "pants": {
+    "body": "yellow",
+    "stripes": [
+      { "color": "royal", "from": -0.024, "to": 0 },
+      { "color": "white", "from": 0, "to": 0.019 }
+    ]
+  },
+  "socks": { "color": "royal" },
+  "helmet": {
+    "shell": "royal",
+    "facemask": "royal",
+    "crown_band": { "half_width": 0.036 },
+    "horn": {
+      "color": "yellow",
+      "ear": [0.01, -0.03],
+      "radius": [
+        [10, 0.128],
+        [52, 0.112],
+        [120, 0.1],
+        [200, 0.084],
+        [280, 0.065],
+        [344, 0.05]
+      ],
+      "width": [
+        [10, 0.064],
+        [52, 0.06],
+        [87, 0.058],
+        [183, 0.058],
+        [344, 0.004]
+      ],
+      "shrink_from": 110,
+      "shrink_full": 213,
+      "clearance": 0.016
+    },
+    "bumper": {
+      "plate": "white",
+      "ink": "royal",
+      "text": "RAMS",
+      "font": "AvenirNext-HeavyItalic",
+      "tracking": 0.02,
+      "width": 0.09,
+      "height": 0.028,
+      "corner": 0.35,
+      "taper": 0.08,
+      "text_height": 0.62,
+      "above_brow": 0.004
+    },
+    "rear_shield": true
+  }
+}
