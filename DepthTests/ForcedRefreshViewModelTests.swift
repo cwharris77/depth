@@ -128,6 +128,23 @@ private func refreshListing(id: String) -> UniformListing {
     #expect(await viewModel.listings.count == 2)
 }
 
+@Test func successfulForcedUniformLoadBumpsTheArtRefreshToken() async {
+    let repository = RefreshRepositoryFake()
+    await repository.setUniforms(
+        cached: [refreshListing(id: "bills-home-2025")],
+        fresh: .success([refreshListing(id: "bills-home-2025")]))
+    let viewModel = await UniformArchiveViewModel(repository: repository)
+    await viewModel.load()
+    #expect(await viewModel.artRefreshToken == 0)
+
+    await viewModel.load(forceRefresh: true)
+    #expect(await viewModel.artRefreshToken == 1)
+
+    await repository.setUniforms(cached: [], fresh: .failure(.server("offline")))
+    await viewModel.load(forceRefresh: true)
+    #expect(await viewModel.artRefreshToken == 1)
+}
+
 @Test func failedForcedUniformLoadKeepsTheArchiveOnScreen() async {
     let repository = RefreshRepositoryFake()
     await repository.setUniforms(
