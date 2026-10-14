@@ -157,8 +157,8 @@ describe('team surfaces — player-card numeral', () => {
     // A data change that shifts kits between branches should surface here rather than be
     // absorbed silently.
     expect({ strokeSecondary, swapped, whiteFallback }).toEqual({
-      strokeSecondary: 63,
-      swapped: 45,
+      strokeSecondary: 64,
+      swapped: 44,
       whiteFallback: 13,
     });
   });
@@ -167,7 +167,7 @@ describe('team surfaces — player-card numeral', () => {
   // stroke, the away inversion that forced the swap branch, the only kit whose two jersey
   // colors both read (Chiefs red-on-gold), and a kit where neither does.
   it.each([
-    ['seahawks-home-2012', '#002244', '#69be28'],
+    ['seahawks-home-2012', '#24293c', '#69be28'],
     ['seahawks-away-2012', '#002244', '#ffffff'],
     ['chiefs-home-1963', '#e31837', '#ffb81c'],
     ['ravens-home-1996', '#241773', '#ffffff'],

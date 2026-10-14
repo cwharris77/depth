@@ -11,7 +11,7 @@ export const FALCONS_CATALOG: TeamCatalog = {
       name: 'Home',
       kind: 'home',
       jersey: 'black',
-      colors: { primary: '#A71930', secondary: '#000000', accent: '#000000' },
+      colors: { primary: '#000000', secondary: '#A71930', accent: '#A71930' },
       legacyAccent: { uiAccent: '#FF4D5E', onAccent: '#0a0e1a' },
       periods: [
         {

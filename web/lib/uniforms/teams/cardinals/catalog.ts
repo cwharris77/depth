@@ -11,7 +11,7 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       name: 'Home',
       kind: 'home',
       jersey: 'red',
-      colors: { primary: '#97233F', secondary: '#000000', accent: '#FFB612' },
+      colors: { primary: '#A01523', secondary: '#000000', accent: '#FFB612' },
       legacyAccent: { uiAccent: '#FF4D6A', onAccent: '#0a0e1a' },
       periods: [
         {
@@ -69,7 +69,7 @@ export const CARDINALS_CATALOG: TeamCatalog = {
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',
-      colors: { primary: '#FFF7E3', secondary: '#B31529', accent: '#EE6B3D' },
+      colors: { primary: '#FBF1DD', secondary: '#B31529', accent: '#EE6B3D' },
       legacyAccent: { uiAccent: '#EE6B3D', onAccent: '#0a0e1a' },
       periods: [
         {
