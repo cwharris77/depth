@@ -15,6 +15,7 @@ one rule mechanically: published data stays decodable by every supported app bui
 
 - **Current App Store build (`CFBundleVersion`):** **764** — LIVE since 2026-09-24 (the
   first LIVE build; archived from `3760372c`). Build 587 was rejected and never LIVE.
+- **Submitted, not yet LIVE:** build **950** (iOS 1.1, tag `ios-v1.1`) — on TestFlight as of 2026-10-14.
 - **Minimum supported build (`app_config.minimum_supported_build`):** **764** — armed 2026-09-24, so every build older than the live App Store build gets the update screen.
 - **Gateable floor:** build 321 (`c6a66bc`). Any build ≥ 321 contains the forced-update gate; build 764 **is gateable**. The flow for a breaking change is: ship the new build → confirm the listing is public → **only then** arm the gate by raising `app_config.minimum_supported_build` to that build → after it's live and blocking, destructive backend changes may ship.
 - **Backend contract facts** (as of the current schema, `web/supabase/migrations/`):
