@@ -62,6 +62,11 @@ __pycache__/
 # Claude
 .claude/settings.local.json
 
+# Particles agent-memory config and content blobs (machine-local)
+/config.yaml
+/corpus_blobs/
+/particles.db*
+
 # Local workflow docs
 # Documentation lives in the obsidian vault (../obsidian/Projects/depth), not this repo.
 /docs/
