@@ -1,8 +1,9 @@
 import Foundation
 
 // Explicit `roster_history` projection for an on-demand historical field. It deliberately
-// excludes headshots and uniforms: native history is a text/number fallback until rights
-// are cleared, and it never enters the current-roster snapshot cache.
+// excludes uniforms and never enters the current-roster snapshot cache. The nflverse
+// headshot URL is carried so a past roster shows the same player photos a live one does;
+// a player with no URL for a season gets the same placeholder as a live player without one.
 struct HistoricalRosterRowDTO: Decodable {
     let season: Int
     let teamId: String
@@ -15,6 +16,8 @@ struct HistoricalRosterRowDTO: Decodable {
     let weight: Int?
     let depthRank: Int
     let playerOrder: Int
+    /// nflverse headshot for the season; nil when the source has none.
+    var headshotUrl: String? = nil
     /// Jobs held on top of the position. Nil when the player held none, the season has no
     /// depth chart, or the column was not selected.
     var roles: HistoricalRoleRanks? = nil
@@ -25,6 +28,7 @@ struct HistoricalRosterRowDTO: Decodable {
         case gsisId = "gsis_id"
         case depthRank = "depth_rank"
         case playerOrder = "player_order"
+        case headshotUrl = "headshot_url"
     }
 }
 

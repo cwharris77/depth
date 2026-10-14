@@ -107,7 +107,7 @@ actor SupabaseDepthRepository: DepthRepository {
     private static let rosterLeaderStatsSelect =
         "player_id, season, completions, attempts, passing_yards, passing_tds, carries, rushing_yards, rushing_tds, receptions, receiving_yards, receiving_tds"
     private static let historicalRosterSelect =
-        "season, team_id, gsis_id, name, number, position, college, height, weight, depth_rank, player_order, roles"
+        "season, team_id, gsis_id, name, number, position, college, height, weight, depth_rank, player_order, headshot_url, roles"
     private static let playerSearchSelect = """
         id, name, number, position, college, photo_url, \
         teams(id, abbrev, city, name, conference, division, logo_url, logo_dark_url, \

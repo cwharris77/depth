@@ -29,6 +29,15 @@ enum HistoricalRosterMapper {
         return "\(inches / 12)' \(inches % 12)\""
     }
 
+    /// The stored headshot when it is a usable URL; blank or whitespace-only values are
+    /// treated as missing, giving the placeholder a live player without a photo gets.
+    private static func photoUrl(_ raw: String?) -> String? {
+        guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines),
+            !trimmed.isEmpty
+        else { return nil }
+        return trimmed
+    }
+
     /// Why a historical row could not become a player. Carries the identifying key so a
     /// drop is actionable rather than a bare count, matching the ingest-side conservation
     /// rule used wherever the client performs the same kind of work.
@@ -95,7 +104,8 @@ enum HistoricalRosterMapper {
                     status: row.depthRank == 1 ? .starter : .backup, age: 0,
                     college: row.college ?? "",
                     experience: 0, height: displayHeight(row.height), weight: row.weight ?? 0,
-                    bio: "\(row.season) · \(team.city) \(team.name)", photoUrl: nil
+                    bio: "\(row.season) · \(team.city) \(team.name)",
+                    photoUrl: Self.photoUrl(row.headshotUrl)
                 )
             )
         }
