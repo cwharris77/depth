@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "17fd7a5b7365c8fb722379e85ba4cb5a11c9954f20210d238415b963dabce507",
-  "revision": "b2f09c111f48acec",
+  "sourceDigest": "4f2b0065d06fa3763e7e352f55d0a7445507f56d311faa18fd2636a445b9e0df",
+  "revision": "926f0f4d8d59f98d",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1815,6 +1815,36 @@
         "full": {
           "path": "/uniforms/rams-bone-2020-full.webp",
           "sha256": "42c22a8ae27971280780e7d448395edf44b0bea555e6d89fefa3c326d97fd415"
+        }
+      }
+    },
+    {
+      "catalogId": "rams-classic-sol-2026",
+      "constructionKey": "classic-sol",
+      "revision": "0d566a41d215d688",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/rams-classic-sol-2026.webp",
+          "sha256": "d9fa073b5810547c34aa8fc85f01700eab15d4693fab0978e9549db6475ab52d"
+        },
+        "full": {
+          "path": "/uniforms/rams-classic-sol-2026-full.webp",
+          "sha256": "d602b5a2d1ed458dc770ef99dfbff6948de44c387563a2cccd8ca72ab98d21d9"
+        }
+      }
+    },
+    {
+      "catalogId": "rams-fearsome-white-2026",
+      "constructionKey": "fearsome-white",
+      "revision": "7da6085de7294c21",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/rams-fearsome-white-2026.webp",
+          "sha256": "6bdc158af3cb75223936fbc1dc5a78e314a4a34188d4a608bcc08a7f39d3aecf"
+        },
+        "full": {
+          "path": "/uniforms/rams-fearsome-white-2026-full.webp",
+          "sha256": "e1ed195ea51482d1caefa064e27e18af9784e343e1555e7f3452fe70bf2be6dc"
         }
       }
     },
