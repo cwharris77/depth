@@ -894,6 +894,14 @@ describe('Buccaneers catalog conversion', () => {
           secondary: '#C8102E',
           accent: '#FFFFFF',
         }),
+        {
+          ...row('pewter', 'alternate', 'All-Pewter', 2026, {
+            primary: '#34302B',
+            secondary: '#D50A0A',
+            accent: '#FFFFFF',
+          }),
+          id: 'buccaneers-pewter-2020',
+        },
       ])
     );
   });
@@ -903,6 +911,7 @@ describe('Buccaneers catalog conversion', () => {
       'buccaneers-home-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
       'buccaneers-away-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
       'buccaneers-creamsicle-1976': { uiAccent: '#FF8200', onAccent: '#0a0e1a' },
+      'buccaneers-pewter-2020': { uiAccent: '#FF4D4D', onAccent: '#0a0e1a' },
     });
   });
 
@@ -914,6 +923,7 @@ describe('Buccaneers catalog conversion', () => {
       away: { ...flag, jersey: 'white', pants: 'white', socks: 'pewter' },
       'away--pewter-pants': { ...flag, jersey: 'white', pants: 'pewter', socks: 'pewter' },
       creamsicle: { helmet: 'white', jersey: 'creamsicle', pants: 'white', socks: 'creamsicle' },
+      pewter: { ...flag, jersey: 'pewter', pants: 'pewter', socks: 'pewter' },
     });
   });
 });

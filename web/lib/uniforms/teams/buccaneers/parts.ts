@@ -13,6 +13,7 @@ import {
 } from './marks/decal';
 import { BUCCANEERS_CREAMSICLE_DECAL, BUCCANEERS_FLAG_DECAL } from './marks/construction';
 import { BUCCANEERS_JERSEY_CREAMSICLE } from './jerseys/creamsicle';
+import { BUCCANEERS_JERSEY_PEWTER } from './jerseys/pewter';
 import { BUCCANEERS_JERSEY_RED } from './jerseys/red';
 import { BUCCANEERS_JERSEY_WHITE } from './jerseys/white';
 
@@ -53,6 +54,7 @@ export const BUCCANEERS_SPEC: TeamSpec = {
     red: BUCCANEERS_JERSEY_RED,
     white: BUCCANEERS_JERSEY_WHITE,
     creamsicle: BUCCANEERS_JERSEY_CREAMSICLE,
+    pewter: BUCCANEERS_JERSEY_PEWTER,
   },
   pants: {
     white: plainPants('white'),

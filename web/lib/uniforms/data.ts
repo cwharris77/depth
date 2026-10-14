@@ -233,4 +233,5 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(RAMS_CATALOG, 'classic-sol'),
   catalogRow(RAMS_CATALOG, 'fearsome-white'),
   catalogRow(BILLS_CATALOG, 'nickel-city'),
+  catalogRow(BUCCANEERS_CATALOG, 'pewter'),
 ];
