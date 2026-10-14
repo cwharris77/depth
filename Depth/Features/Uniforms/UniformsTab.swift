@@ -17,6 +17,7 @@ struct UniformsTab: View {
     @State private var viewModel: UniformArchiveViewModel
     @State private var showAccount = false
     @State private var showFilterSheet = false
+    @State private var showAbout = false
     @State private var selectedKit: UniformListing?
     @State private var path: [String] = []
     @Namespace private var teamZoom
@@ -77,6 +78,7 @@ struct UniformsTab: View {
             guard tab != .uniforms else { return }
             showAccount = false
             showFilterSheet = false
+            showAbout = false
             selectedKit = nil
         }
         // Live bindings into both sheets, so a change made in either is visible in the
@@ -87,6 +89,10 @@ struct UniformsTab: View {
                 kindCounts: viewModel.kindCounts,
                 applyLabel: viewModel.applyLabel
             )
+        }
+        .sheet(isPresented: $showAbout) {
+            UniformArchiveAboutSheet()
+                .modifier(UITestingDynamicTypeOverride())
         }
         .sheet(item: $selectedKit) { kit in
             UniformKitSheet(kit: kit) { onOpenDepthChart(kit.teamId, kit.id) }
@@ -455,19 +461,77 @@ struct UniformsTab: View {
         .accessibilityIdentifier("uniforms-empty")
     }
 
+    /// The archive's credits and scope live one tap away in a sheet, so the foot of a long
+    /// list is a single row rather than paragraphs of small print.
     private var attribution: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            // Matches the web archive's attribution paragraph.
-            Text(
-                "Uniform figures are original artwork; team marks are reproduced for identification only. Proportions modeled on the NFL uniform template by JohnnySeoul, used under CC BY 3.0 (modified)."
-            )
-            Text(
-                "All kits shown here are drawn SVG references, not official NFL-owned images. For a more detailed uniform archive, see Gridiron Uniforms."
-            )
+        Button {
+            showAbout = true
+        } label: {
+            HStack {
+                Text("About this archive")
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(DesignTokens.Colors.textFaintest)
+            }
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(DesignTokens.Colors.accentSoft)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
-        .font(.caption2)
-        .foregroundStyle(DesignTokens.Colors.textFaintest)
+        .buttonStyle(.plain)
         .padding(.top, DesignTokens.Spacing.sm)
+        .overlay(alignment: .top) {
+            Rectangle().fill(DesignTokens.Colors.borderDefault).frame(height: 1)
+        }
+        .accessibilityIdentifier("uniforms-about")
+    }
+}
+
+/// What the archive's artwork is, whose template it follows and where to find a complete
+/// record of every uniform.
+struct UniformArchiveAboutSheet: View {
+    var body: some View {
+        DepthSheet(
+            title: "About this archive", sizing: .medium, closeIdentifier: "uniforms-about-close"
+        ) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
+                    section("THE ARTWORK") {
+                        Text(
+                            "Every uniform is original artwork drawn for this app, not an official NFL image. Team marks are reproduced for identification only."
+                        )
+                    }
+                    section("CREDITS") {
+                        Text(
+                            "Proportions modeled on the NFL uniform template by JohnnySeoul, used under CC BY 3.0 (modified)."
+                        )
+                        Text("For a complete record of every uniform, see Gridiron Uniforms.")
+                    }
+                }
+                .padding(.horizontal, DesignTokens.Spacing.lg)
+                .padding(.top, DesignTokens.Spacing.md)
+                .padding(.bottom, DesignTokens.Spacing.xl)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .accessibilityIdentifier("uniforms-about-sheet")
+    }
+
+    private func section<Content: View>(
+        _ title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .tracking(1.4)
+                .foregroundStyle(DesignTokens.Colors.textMuted)
+            content()
+                .font(.subheadline)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
