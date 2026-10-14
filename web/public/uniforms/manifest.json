@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "578750eabb2c93091763b9501197c9b112e2c55222b3ceea17ed1d13dae8e0a3",
-  "revision": "5ff06ff5fb703bbb",
+  "sourceDigest": "c09d8119f9bfffa229252c3a0911b75a203356a0522f361e681ff0c051740542",
+  "revision": "b8a80fcf30cad5c2",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -268,7 +268,7 @@
     {
       "catalogId": "bills-nickel-city-2026",
       "constructionKey": "nickel-city",
-      "revision": "2bb18d369ce365a5",
+      "revision": "94a02117a5192cd4",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-nickel-city-2026.webp",
@@ -276,7 +276,7 @@
         },
         "full": {
           "path": "/uniforms/bills-nickel-city-2026-full.webp",
-          "sha256": "cecb20cd30461d7bde7550e86e1988fa8ada75af4107398fadaf67823ebad2c6"
+          "sha256": "a6f959a47077f913296a8ec23dafd5f01bbfcf440ef546f4c500f6ced3fcfa5a"
         }
       }
     },
