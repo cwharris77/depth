@@ -1,4 +1,5 @@
 import { RAMS_JERSEY_ROYAL_2026, RAMS_JERSEY_WHITE_2026 } from './jerseys/primary-2026';
+import { RAMS_JERSEY_CLASSIC_SOL, RAMS_JERSEY_FEARSOME_WHITE } from './jerseys/alternates-2026';
 // Los Angeles as a complete team spec: every helmet, jersey, pants and socks part. The 2020
 // jerseys carry a capped-sleeve horn, while Midnight Mode shows a tapered front horn and blue sleeve.
 // Every kit shares the shell horn and a keylined stripe on each pant leg.
@@ -29,6 +30,13 @@ export const RAMS_SPEC: TeamSpec = {
       decal: ramsHelmetHorn('yellow'),
       number: 'none',
     },
+    // The royal shell with a white horn and a white cage, worn with Fearsome White.
+    'royal-white-horn': {
+      shell: 'royal',
+      facemask: 'white',
+      decal: ramsHelmetHorn('white'),
+      number: 'none',
+    },
     // The royal shell with the gold horn and a royal cage, worn with the royal, white and bone
     // jerseys.
     'royal-horn': {
@@ -48,6 +56,8 @@ export const RAMS_SPEC: TeamSpec = {
   jerseys: {
     'royal-2026': RAMS_JERSEY_ROYAL_2026,
     'white-2026': RAMS_JERSEY_WHITE_2026,
+    'classic-sol': RAMS_JERSEY_CLASSIC_SOL,
+    'fearsome-white': RAMS_JERSEY_FEARSOME_WHITE,
     royal: RAMS_JERSEY_ROYAL,
     white: RAMS_JERSEY_WHITE,
     bone: RAMS_JERSEY_BONE,
@@ -65,6 +75,26 @@ export const RAMS_SPEC: TeamSpec = {
       body: 'white',
       stripes: 'none',
       marks: [{ paint: 'over', mark: ramsLegStripe('yellow', 'royal') }],
+    },
+    // Classic Sol's royal, Sol and royal triple stripe down the side of the leg.
+    'classic-sol': {
+      body: 'white',
+      stripes: {
+        position: 'leg-edge',
+        bands: [
+          { color: 'royal', size: 's' },
+          { color: 'yellow', size: 's' },
+          { color: 'royal', size: 's' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    'fearsome-white': {
+      body: 'white',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ramsLegStripe('navy', 'royal') }],
     },
     gold: {
       body: 'gold',

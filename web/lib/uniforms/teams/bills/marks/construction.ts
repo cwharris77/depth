@@ -1,6 +1,11 @@
 // Buffalo's helmet decals, bound to palette keys. Each export is a placed mark, emitted exactly
 // as written.
-import { BILLS_HELMET_DECAL_BUFFALO_PATH, BILLS_HELMET_DECAL_STRIPE_PATH } from './decal';
+import {
+  BILLS_CHARGE_EDGE_PATH,
+  BILLS_CHARGE_STREAK_PATH,
+  BILLS_HELMET_DECAL_BUFFALO_PATH,
+  BILLS_HELMET_DECAL_STRIPE_PATH,
+} from './decal';
 import { placed } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
 
@@ -36,4 +41,10 @@ export const BILLS_ICE_DECAL = placed([
   outline('bills-helmet-buffalo-outline', BILLS_HELMET_DECAL_BUFFALO_PATH),
   fill('bills-helmet-stripe', BILLS_HELMET_DECAL_STRIPE_PATH, 'iceSilverLight'),
   outline('bills-helmet-stripe-outline', BILLS_HELMET_DECAL_STRIPE_PATH),
+]);
+
+// The Charge helmet: the red streak with its white edge and horn painted over it.
+export const BILLS_CHARGE_DECAL = placed([
+  fill('bills-charge-streak', BILLS_CHARGE_STREAK_PATH, 'red'),
+  fill('bills-charge-edge', BILLS_CHARGE_EDGE_PATH, 'white'),
 ]);

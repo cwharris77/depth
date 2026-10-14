@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "719411fa266716fac690e5c07025952ea2bbefd067f36c87760e961f96e5aa0b",
-  "revision": "aeb91437e53a4ef6",
+  "sourceDigest": "1bb2c576f6b4c5985a7c6d39c2abbfbd8a7123291e1af1996a1ae179f821456a",
+  "revision": "fd3c2783d91f0979",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -264,6 +264,21 @@
           }
         }
       ]
+    },
+    {
+      "catalogId": "bills-nickel-city-2026",
+      "constructionKey": "nickel-city",
+      "revision": "94a02117a5192cd4",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/bills-nickel-city-2026.webp",
+          "sha256": "f6b3aea31e3210228a91be27836cf0b69faac5f247d0d665425fdd90ba6b6bf4"
+        },
+        "full": {
+          "path": "/uniforms/bills-nickel-city-2026-full.webp",
+          "sha256": "a6f959a47077f913296a8ec23dafd5f01bbfcf440ef546f4c500f6ced3fcfa5a"
+        }
+      }
     },
     {
       "catalogId": "bills-rivalries-2025-2025",
@@ -1830,6 +1845,36 @@
         "full": {
           "path": "/uniforms/rams-bone-2020-full.webp",
           "sha256": "42c22a8ae27971280780e7d448395edf44b0bea555e6d89fefa3c326d97fd415"
+        }
+      }
+    },
+    {
+      "catalogId": "rams-classic-sol-2026",
+      "constructionKey": "classic-sol",
+      "revision": "0d566a41d215d688",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/rams-classic-sol-2026.webp",
+          "sha256": "d9fa073b5810547c34aa8fc85f01700eab15d4693fab0978e9549db6475ab52d"
+        },
+        "full": {
+          "path": "/uniforms/rams-classic-sol-2026-full.webp",
+          "sha256": "d602b5a2d1ed458dc770ef99dfbff6948de44c387563a2cccd8ca72ab98d21d9"
+        }
+      }
+    },
+    {
+      "catalogId": "rams-fearsome-white-2026",
+      "constructionKey": "fearsome-white",
+      "revision": "7da6085de7294c21",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/rams-fearsome-white-2026.webp",
+          "sha256": "6bdc158af3cb75223936fbc1dc5a78e314a4a34188d4a608bcc08a7f39d3aecf"
+        },
+        "full": {
+          "path": "/uniforms/rams-fearsome-white-2026-full.webp",
+          "sha256": "e1ed195ea51482d1caefa064e27e18af9784e343e1555e7f3452fe70bf2be6dc"
         }
       }
     },
