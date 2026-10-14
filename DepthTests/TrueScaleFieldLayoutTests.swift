@@ -235,7 +235,7 @@ struct TrueScaleFieldLayoutTests {
         }
     }
 
-    @Test func defenseHeaderAndCalloutReadForDefense() {
+    @Test @MainActor func defenseHeaderAndCalloutReadForDefense() {
         let layout = TrueScaleFieldLayout(slots: nickelFourTwoFive, unit: .defense)
         #expect(layout.personnelSummary == "4-2-5")
         let lde = layout.dots.first { $0.key == "lde" }!
@@ -271,6 +271,113 @@ struct TrueScaleFieldLayoutTests {
             layout.dots.allSatisfy { $0.center.y >= 0 && $0.center.y <= layout.contentSize.height })
         #expect(
             !layout.isOffCentre(pan: layout.initialPan(window: phoneWindow), window: phoneWindow))
+    }
+
+    // MARK: Name placement
+
+    private func named(_ slots: [RenderSlot], _ name: (RenderSlot) -> String) -> [RenderSlot] {
+        slots.map { s in
+            RenderSlot(
+                key: s.key, x: s.x, y: s.y, label: s.label,
+                player: player(s.player?.number ?? 0, name(s)), onLine: s.onLine)
+        }
+    }
+
+    private func dotRect(_ dot: TrueScaleFieldLayout.Dot) -> CGRect {
+        let size = TrueScaleFieldLayout.dotSize
+        return CGRect(
+            x: dot.center.x - size / 2, y: dot.center.y - size / 2, width: size, height: size)
+    }
+
+    /// Formations the placement is checked on: both units, with the roster's own short names
+    /// and a long-name stress set that cannot all sit under a tight row.
+    private var placementCases: [(slots: [RenderSlot], unit: Depth.Unit)] {
+        let long: (RenderSlot) -> String = { _ in "Fitzpatrick-Jones" }
+        return [
+            (shotgunEleven, .offense), (nickelFourTwoFive, .defense),
+            (named(shotgunEleven, long), .offense), (named(nickelFourTwoFive, long), .defense),
+        ]
+    }
+
+    @Test func offDrawsNoNamesAndNoCallouts() {
+        for (slots, unit) in placementCases {
+            let layout = TrueScaleFieldLayout(slots: slots, unit: unit, nameMode: .off)
+            #expect(layout.dots.allSatisfy { !$0.showsName && $0.nameCallout == nil })
+        }
+    }
+
+    @Test func inlineOnlyNeverDrawsALeaderLine() {
+        for (slots, unit) in placementCases {
+            let layout = TrueScaleFieldLayout(slots: slots, unit: unit, nameMode: .inlineOnly)
+            #expect(layout.dots.allSatisfy { $0.nameCallout == nil })
+        }
+        // The roster's short names all fit somewhere, so none is dropped.
+        let layout = TrueScaleFieldLayout(
+            slots: shotgunEleven, unit: .offense, nameMode: .inlineOnly)
+        #expect(layout.dots.allSatisfy { $0.showsName })
+    }
+
+    @Test func calloutsKeepEveryNameThatHasRoomSomewhere() {
+        for (slots, unit) in placementCases {
+            let layout = TrueScaleFieldLayout(slots: slots, unit: unit, nameMode: .callouts)
+            for dot in layout.dots {
+                #expect(dot.showsName || dot.nameCallout != nil, "\(dot.key) lost its name")
+            }
+        }
+    }
+
+    @Test func labelsNeverCoverADotOrEachOther() {
+        for mode in FieldNameMode.allCases {
+            for (slots, unit) in placementCases {
+                let layout = TrueScaleFieldLayout(slots: slots, unit: unit, nameMode: mode)
+                var rects: [(String, CGRect)] = layout.dots.map {
+                    ($0.key, layout.labelRect(for: $0))
+                }
+                rects += layout.dots.compactMap { dot in
+                    layout.calloutRect(for: dot).map { ("\(dot.key)-callout", $0) }
+                }
+                for dot in layout.dots {
+                    for (owner, rect) in rects
+                    where owner != dot.key && owner != "\(dot.key)-callout" {
+                        #expect(
+                            !dotRect(dot).intersects(rect),
+                            "\(owner) covers \(dot.key) in \(mode) \(unit)")
+                    }
+                }
+                for (i, a) in rects.enumerated() {
+                    for b in rects.dropFirst(i + 1) {
+                        #expect(
+                            !a.1.intersects(b.1), "\(a.0) overlaps \(b.0) in \(mode) \(unit)")
+                    }
+                }
+            }
+        }
+    }
+
+    @Test func nameStaysUnderneathUnlessSomethingIsInTheWay() {
+        for mode in [FieldNameMode.inlineOnly, .callouts] {
+            // A sparse formation has nothing under any dot, so every name hangs below.
+            let sparse = TrueScaleFieldLayout(
+                slots: nickelFourTwoFive, unit: .defense, nameMode: mode)
+            #expect(sparse.dots.allSatisfy { !$0.labelAbove })
+
+            // A name only goes above when the underneath spot is genuinely taken. Long names
+            // crowd the line's tight row, so some are pushed above.
+            let crowded = named(shotgunEleven) { _ in "Fitzpatrick-Jones" }
+            let layout = TrueScaleFieldLayout(slots: crowded, unit: .offense, nameMode: mode)
+            for dot in layout.dots where dot.labelAbove {
+                var below = dot
+                below.labelAbove = false
+                let rect = layout.labelRect(for: below)
+                let blocked = layout.dots.contains { other in
+                    other.key != dot.key
+                        && (dotRect(other).intersects(rect)
+                            || layout.labelRect(for: other).intersects(rect))
+                }
+                #expect(blocked, "\(dot.key) is above with room underneath")
+            }
+            #expect(layout.dots.contains { $0.labelAbove })
+        }
     }
 
     @Test func numeralsPointAtTheNearerGoal() {
