@@ -33,7 +33,7 @@ final class AuthUITests: XCTestCase {
             "About should show the non-affiliation disclaimer"
         )
         XCTAssertTrue(
-            app.buttons["settings-about-privacy"].waitForExistence(timeout: 15),
+            app.links["settings-about-privacy"].waitForExistence(timeout: 15),
             "About should link to the privacy policy (DEP-160 — reachable from within the app)"
         )
 
