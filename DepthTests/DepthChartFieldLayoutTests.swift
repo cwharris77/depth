@@ -333,7 +333,7 @@ struct DepthChartFieldLayoutTests {
         let filled = DepthChartFieldLayout.compute(
             slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
 
-        // The outermost WRs (flanker off-wr-1 at x=12, split end off-wr-0 at x=88) are
+        // The outermost WRs (flanker off-wr-1 at x=10, split end off-wr-0 at x=88) are
         // pinned to the field edges — the offense takes the full width.
         let leftWR = filled.positions["off-wr-1"]?.x ?? .zero
         let rightWR = filled.positions["off-wr-0"]?.x ?? .zero
@@ -387,6 +387,18 @@ struct DepthChartFieldLayoutTests {
         #expect(filled.dotSize <= DepthChartFieldLayout.maxDotSize)
 
         assertNoTouching(slots, layout: filled)
+    }
+
+    @Test("generic offense seats its left receiver no deeper than a real formation does")
+    func genericLeftReceiverMatchesRealFormationDepth() throws {
+        // Past seasons have no formation rows and fall back to offenseFormation, so its
+        // off-line receiver must sit where a charted real formation puts one.
+        let realOffLine = buildRealFormation(alignment: "SHOTGUN", code: "11")
+            .filter { $0.label == "WR" && !$0.onLine }
+        let deepestReal = try #require(realOffLine.map(\.y).max())
+        let left = try #require(offenseFormation.first { $0.id == "off-wr-1" })
+        #expect(left.y <= deepestReal, "left receiver at y=\(left.y) is deeper than \(deepestReal)")
+        #expect(left.x <= 10, "left receiver should reach the left edge, got x=\(left.x)")
     }
 
     @Test("empty input yields a safe default layout")

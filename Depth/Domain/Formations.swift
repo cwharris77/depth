@@ -133,7 +133,7 @@ let offenseFormation: [FormationSlot] =
         FormationSlot(
             id: "off-wr-0", position: .wr, index: 0, x: 88, y: 51, label: "WR", onLine: true),
         FormationSlot(
-            id: "off-wr-1", position: .wr, index: 1, x: 12, y: 55, label: "WR", onLine: false),
+            id: "off-wr-1", position: .wr, index: 1, x: 10, y: 54, label: "WR", onLine: false),
         FormationSlot(
             id: "off-wr-2", position: .wr, index: 2, x: 24, y: 56, label: "WR", onLine: false),
         FormationSlot(
