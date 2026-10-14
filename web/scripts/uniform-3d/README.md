@@ -13,7 +13,7 @@ Nothing generated is committed. Source meshes and every output live under `build
 
 ## Source models
 
-Download and unzip these into one folder: `~/Downloads` by default, or set `UNIFORM_3D_SOURCES`.
+Download and unzip these into `3d/sources/` at the root of the main checkout. Git ignores that folder, and worktrees find it through git's common dir. Set `UNIFORM_3D_SOURCES` to use another folder. Reference photos for authoring kits go in `3d/references/`, which is also ignored.
 
 | Folder | Model |
 |---|---|

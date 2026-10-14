@@ -5,14 +5,11 @@ The sections were laid out flat for printing, so each one is registered onto its
 planar cut faces they share (rigid ICP, no scaling). STL units are millimetres.
 
   python3 assemble_helmet.py      (needs numpy, scipy, trimesh and networkx; not Blender's Python)"""
-import os
-from pathlib import Path
 import numpy as np, trimesh
 from scipy.spatial import cKDTree
+from paths import SOURCES, BUILD
 
-HERE = Path(__file__).parent
-SRC = Path(os.environ.get('UNIFORM_3D_SOURCES', Path.home() / 'Downloads')) / 'Speedflex+decon+shell_stls'
-BUILD = HERE / 'build'
+SRC = SOURCES / 'Speedflex+decon+shell_stls'
 SHELL, MASK = [16, 17, 18, 41, 42, 55, 56], 27   # obj_<n>_* source files
 meshes = {i: trimesh.load(next(SRC.glob(f'obj_{i}_*'))) for i in SHELL + [MASK]}
 

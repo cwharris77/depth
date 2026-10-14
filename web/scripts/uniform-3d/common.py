@@ -1,10 +1,6 @@
-import os, bpy, numpy as np
-from pathlib import Path
+import bpy, numpy as np
 from mathutils import Vector
-
-HERE = Path(__file__).parent
-SOURCES = Path(os.environ.get('UNIFORM_3D_SOURCES', Path.home() / 'Downloads'))   # the unpacked source model downloads
-BUILD = HERE / 'build'
+from paths import HERE, SOURCES, BUILD
 
 def select(objects):
     bpy.ops.object.select_all(action='DESELECT')
