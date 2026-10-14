@@ -81,7 +81,7 @@ targets:
         # APP_DISPLAY_NAME preserves App Store name-uniqueness while letting Dev/Stage be
         # unmistakable on-device; the built app and executable remain "Depth.app".
         CFBundleName: $(APP_DISPLAY_NAME)
-        CFBundleShortVersionString: '1.0'
+        CFBundleShortVersionString: '1.1'
         # Baseline for Debug/Staging runs; the archive-only postbuildScripts phase below
         # overwrites this with the git commit count for every App Store/TestFlight build.
         CFBundleVersion: '1'
