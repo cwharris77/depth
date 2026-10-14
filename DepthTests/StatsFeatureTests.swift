@@ -31,6 +31,20 @@ private func statsSeason(_ season: Int) -> TeamSeasonStats {
     )
 }
 
+/// The all-zero `team_stats` row ingest writes as soon as a season's schedule exists.
+private func unstartedSeason(_ season: Int) -> TeamSeasonStats {
+    TeamSeasonStats(
+        season: season,
+        overallWins: 0, overallLosses: 0, overallTies: 0,
+        homeWins: 0, homeLosses: 0,
+        roadWins: 0, roadLosses: 0,
+        divisionWins: 0, divisionLosses: 0,
+        conferenceWins: 0, conferenceLosses: 0,
+        pointsFor: 0, pointsAgainst: 0, pointDifferential: 0,
+        matchupMetrics: nil
+    )
+}
+
 private func statsPage(
     seasons: [Int] = [2025, 2024, 2023],
     upcomingSeason: Int? = nil
@@ -85,6 +99,56 @@ private actor StatsRepositoryFake: DepthRepository {
     await viewModel.backToCurrentSeason()
     #expect(await viewModel.selectedSeason == 2025)
     #expect(await viewModel.isViewingPastSeason == false)
+}
+
+// An unstarted season's 0-0 row sorts newest-first; Stats opens on the last season with
+// games rather than an all-zero page, and "Back to current" still reaches the empty one.
+@Test func emptyCurrentSeasonFallsBackToTheLastSeasonWithGames() async {
+    let page = TeamStatsPage(
+        team: statsTeam(),
+        seasons: [unstartedSeason(2026), statsSeason(2025), statsSeason(2024)],
+        upcomingSeason: 2026,
+        currentSeason: 2026
+    )
+    let viewModel = await TeamStatsViewModel(
+        teamId: "bills", repository: StatsRepositoryFake(page: page))
+    await viewModel.load()
+
+    #expect(await viewModel.selectedSeason == 2025)
+    #expect(await viewModel.isViewingPastSeason == true)
+
+    await viewModel.backToCurrentSeason()
+    #expect(await viewModel.selectedSeason == 2026)
+    #expect(await viewModel.isViewingPastSeason == false)
+}
+
+@Test func emptyNewestSeasonWithoutUpcomingStillFallsBackAndCanReturn() async {
+    let page = TeamStatsPage(
+        team: statsTeam(),
+        seasons: [unstartedSeason(2026), statsSeason(2025)],
+        upcomingSeason: nil,
+        currentSeason: 2026
+    )
+    let viewModel = await TeamStatsViewModel(
+        teamId: "bills", repository: StatsRepositoryFake(page: page))
+    await viewModel.load()
+
+    #expect(await viewModel.selectedSeason == 2025)
+    #expect(await viewModel.isViewingPastSeason == true)
+
+    await viewModel.backToCurrentSeason()
+    #expect(await viewModel.selectedSeason == 2026)
+}
+
+@Test func onlyEmptySeasonsKeepsTheNewestSelected() async {
+    let page = TeamStatsPage(
+        team: statsTeam(), seasons: [unstartedSeason(2026)], upcomingSeason: 2026,
+        currentSeason: 2026)
+    let viewModel = await TeamStatsViewModel(
+        teamId: "bills", repository: StatsRepositoryFake(page: page))
+    await viewModel.load()
+
+    #expect(await viewModel.selectedSeason == 2026)
 }
 
 @Test func upcomingSeasonIsTheBackToCurrentTargetDuringOffSeason() async {
