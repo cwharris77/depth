@@ -319,40 +319,38 @@ final class CompareViewModel {
         // A refresh over loaded content keeps it on screen until the reload resolves.
         let keepsContent = loadState == .loaded
         if !keepsContent { loadState = .loading }
+        var refreshDidFail = false
         do {
             allTeams =
                 forceRefresh
                 ? try await repository.freshTeams()
                 : try await repository.teams()
-            loadState = .loaded
-            refreshFailed = false
-            // Apply the schedule-card preselection once teams are known —
-            // mirrors web's compare page resolving both a/b query params unconditionally
-            // on load. Re-running on `.refreshable` just re-picks the same two teams
-            // (pickTeam is idempotent per side), so no extra guard is needed.
-            if let preselectedTeamIds {
-                await pickTeam(preselectedTeamIds.a, into: .a)
-                await pickTeam(preselectedTeamIds.b, into: .b)
-            }
-            if forceRefresh {
-                for teamId in [teamA?.id, teamB?.id].compactMap({ $0 }) {
-                    await resolveSide(teamId, forceRefresh: true)
-                }
-                await repository.refreshRelatedInBackground(teamId: nil, after: .teams)
-            }
-        } catch let error as DepthError {
-            if keepsContent {
-                refreshFailed = true
-            } else {
-                loadState = .failed(error)
-            }
         } catch {
-            if keepsContent {
-                refreshFailed = true
-            } else {
-                loadState = .failed(.server("\(error)"))
+            // A failed forced team-list read keeps the list already on screen and still
+            // refreshes both sides below; the team list is the least likely thing to have
+            // changed, so it does not gate them.
+            guard forceRefresh, keepsContent else {
+                loadState = .failed(error as? DepthError ?? .server("\(error)"))
+                return
             }
+            refreshDidFail = true
         }
+        loadState = .loaded
+        // Apply the schedule-card preselection once teams are known —
+        // mirrors web's compare page resolving both a/b query params unconditionally
+        // on load. Re-running on `.refreshable` just re-picks the same two teams
+        // (pickTeam is idempotent per side), so no extra guard is needed.
+        if let preselectedTeamIds {
+            await pickTeam(preselectedTeamIds.a, into: .a)
+            await pickTeam(preselectedTeamIds.b, into: .b)
+        }
+        if forceRefresh {
+            for teamId in [teamA?.id, teamB?.id].compactMap({ $0 }) {
+                if !(await resolveSide(teamId, forceRefresh: true)) { refreshDidFail = true }
+            }
+            await repository.refreshRelatedInBackground(teamId: nil, after: .teams)
+        }
+        refreshFailed = refreshDidFail
     }
 
     /// Picks a team into a slot and resolves that side. Mirrors web's `updateUrl` —
@@ -369,34 +367,46 @@ final class CompareViewModel {
     }
 
     /// Resolves one side's stats + snapshot once its team is known. A read failure
-    /// degrades that side (dashes / no players) rather than failing the page.
-    private func resolveSide(_ teamId: String, forceRefresh: Bool = false) async {
+    /// degrades that side (dashes / no players) rather than failing the page. Returns false
+    /// when a forced read failed for a reason other than the data not existing, so the
+    /// caller can say the refresh didn't land; a team with legitimately missing stats
+    /// (`notFound`) is not a failure.
+    @discardableResult
+    private func resolveSide(_ teamId: String, forceRefresh: Bool = false) async -> Bool {
         resolvingTeamIds.insert(teamId)
         defer { resolvingTeamIds.remove(teamId) }
 
         // Stats and roster are independently optional. Resolve them concurrently, then
         // retain every successful result so one absent feed never blanks the other.
-        async let stats =
+        let repository = repository
+        async let stats = captureRead {
             forceRefresh
-            ? try? repository.freshTeamStats(teamId: teamId)
-            : try? repository.teamStats(teamId: teamId)
-        async let snapshot =
+                ? try await repository.freshTeamStats(teamId: teamId)
+                : try await repository.teamStats(teamId: teamId)
+        }
+        async let snapshot = captureRead {
             forceRefresh
-            ? try? repository.freshTeamSnapshot(teamId: teamId)
-            : try? repository.teamSnapshot(teamId: teamId)
-        let (page, snap) = await (stats, snapshot)
+                ? try await repository.freshTeamSnapshot(teamId: teamId)
+                : try await repository.teamSnapshot(teamId: teamId)
+        }
+        let (statsResult, snapshotResult) = await (stats, snapshot)
 
         // A failed forced refresh keeps the side already on screen instead of degrading it.
-        if let page {
-            statsPages[teamId] = page
-        } else if !forceRefresh {
-            statsPages.removeValue(forKey: teamId)
+        switch statsResult {
+        case .success(let page): statsPages[teamId] = page
+        case .failure: if !forceRefresh { statsPages.removeValue(forKey: teamId) }
         }
-        if let snap {
-            snapshots[teamId] = snap
-        } else if !forceRefresh {
-            snapshots.removeValue(forKey: teamId)
+        switch snapshotResult {
+        case .success(let snap): snapshots[teamId] = snap
+        case .failure: if !forceRefresh { snapshots.removeValue(forKey: teamId) }
         }
+        return !(isFailedRead(statsResult) || isFailedRead(snapshotResult))
+    }
+
+    private func isFailedRead<T>(_ result: Result<T, Error>) -> Bool {
+        guard case .failure(let error) = result else { return false }
+        if case .notFound? = error as? DepthError { return false }
+        return true
     }
 
     /// Reads season rows for the players a depth table shows, skipping any already loaded or
@@ -506,5 +516,15 @@ final class CompareViewModel {
             expandedRoomID = room.id
             position = room.positions[0]
         }
+    }
+}
+
+private func captureRead<T: Sendable>(
+    _ read: @Sendable () async throws -> T
+) async -> Result<T, Error> {
+    do {
+        return .success(try await read())
+    } catch {
+        return .failure(error)
     }
 }

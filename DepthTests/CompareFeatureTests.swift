@@ -91,13 +91,24 @@ private actor CompareRepositoryFake: DepthRepository {
     let stats: [String: TeamStatsPage]
     let playerSeasons: [String: [PlayerSeasonStats]]
     private(set) var playerStatsReads: [String] = []
+    /// What the forced (`fresh*`) reads return. nil falls back to the cached read, matching
+    /// the protocol defaults.
+    let freshStats: [String: TeamStatsPage]?
+    let freshTeamsFailure: DepthError?
+    let freshStatsFailure: DepthError?
 
     init(
         teams: [Team],
         snapshots: [String: TeamSnapshot],
         stats: [String: TeamStatsPage],
-        playerSeasons: [String: [PlayerSeasonStats]] = [:]
+        playerSeasons: [String: [PlayerSeasonStats]] = [:],
+        freshStats: [String: TeamStatsPage]? = nil,
+        freshTeamsFailure: DepthError? = nil,
+        freshStatsFailure: DepthError? = nil
     ) {
+        self.freshStats = freshStats
+        self.freshTeamsFailure = freshTeamsFailure
+        self.freshStatsFailure = freshStatsFailure
         self.teams = teams
         self.snapshots = snapshots
         self.stats = stats
@@ -105,6 +116,15 @@ private actor CompareRepositoryFake: DepthRepository {
     }
 
     func teams() async throws -> [Team] { teams }
+    func freshTeams() async throws -> [Team] {
+        if let freshTeamsFailure { throw freshTeamsFailure }
+        return teams
+    }
+    func freshTeamStats(teamId: String) async throws -> TeamStatsPage {
+        if let freshStatsFailure { throw freshStatsFailure }
+        guard let page = (freshStats ?? stats)[teamId] else { throw DepthError.notFound }
+        return page
+    }
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
         guard let snap = snapshots[teamId] else { throw DepthError.notFound }
         return snap
@@ -127,6 +147,74 @@ private actor CompareRepositoryFake: DepthRepository {
     func appConfig() async throws -> AppConfig {
         AppConfig(minimumSupportedBuild: 1, maintenanceMessage: nil)
     }
+}
+
+// MARK: - Forced refresh
+
+@Test func forcedLoadRefreshesBothSidesWhenTheTeamListReadFails() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let niners = compareTeam("49ers", abbrev: "SF", city: "San Francisco")
+    let repo = CompareRepositoryFake(
+        teams: [hawks, niners],
+        snapshots: [
+            hawks.id: compareSnapshot(team: hawks, qbCount: 1),
+            niners.id: compareSnapshot(team: niners, qbCount: 1),
+        ],
+        stats: [
+            hawks.id: statsPage(team: hawks, wins: 12),
+            niners.id: statsPage(team: niners, wins: 10),
+        ],
+        freshStats: [
+            hawks.id: statsPage(team: hawks, wins: 14),
+            niners.id: statsPage(team: niners, wins: 11),
+        ],
+        freshTeamsFailure: .server("offline"))
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam(hawks.id, into: .a)
+    await viewModel.pickTeam(niners.id, into: .b)
+    #expect(await viewModel.effectiveStatsA?.overallWins == 12)
+
+    await viewModel.load(forceRefresh: true)
+
+    #expect(await viewModel.loadState == .loaded)
+    #expect(await viewModel.effectiveStatsA?.overallWins == 14)
+    #expect(await viewModel.effectiveStatsB?.overallWins == 11)
+    #expect(await viewModel.refreshFailed)
+}
+
+@Test func failedForcedSideReadSetsRefreshFailedAndKeepsTheSide() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let repo = CompareRepositoryFake(
+        teams: [hawks],
+        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1)],
+        stats: [hawks.id: statsPage(team: hawks, wins: 12)],
+        freshStatsFailure: .server("offline"))
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam(hawks.id, into: .a)
+    #expect(await viewModel.refreshFailed == false)
+
+    await viewModel.load(forceRefresh: true)
+
+    #expect(await viewModel.refreshFailed)
+    #expect(await viewModel.effectiveStatsA?.overallWins == 12)
+}
+
+@Test func forcedLoadOfATeamWithNoStatsIsNotARefreshFailure() async {
+    let hawks = compareTeam("seahawks", abbrev: "SEA", city: "Seattle")
+    let repo = CompareRepositoryFake(
+        teams: [hawks],
+        snapshots: [hawks.id: compareSnapshot(team: hawks, qbCount: 1)],
+        stats: [:])
+    let viewModel = await CompareViewModel(repository: repo)
+    await viewModel.load()
+    await viewModel.pickTeam(hawks.id, into: .a)
+
+    await viewModel.load(forceRefresh: true)
+
+    #expect(await viewModel.refreshFailed == false)
+    #expect(await viewModel.effectiveStatsA == nil)
 }
 
 // MARK: - Pure helpers
