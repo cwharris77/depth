@@ -230,4 +230,5 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(COMMANDERS_CATALOG, 'super-bowl-away'),
   catalogRow(RAMS_CATALOG, 'home-2026'),
   catalogRow(RAMS_CATALOG, 'away-2026'),
+  catalogRow(BILLS_CATALOG, 'nickel-city'),
 ];

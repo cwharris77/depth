@@ -37,3 +37,13 @@ export const BILLS_ICE_DECAL = placed([
   fill('bills-helmet-stripe', BILLS_HELMET_DECAL_STRIPE_PATH, 'iceSilverLight'),
   outline('bills-helmet-stripe-outline', BILLS_HELMET_DECAL_STRIPE_PATH),
 ]);
+
+// The Charge helmet's streak: a red band across the side of the shell from the back, with a thin
+// white edge, ending in a slanted cut ahead of the ear hole. The shell clip trims its back end.
+const CHARGE_EDGE_PATH = 'M120,276 L490,276 L455,384 L120,384 Z';
+const CHARGE_STREAK_PATH = 'M120,284 L478,284 L449,376 L120,376 Z';
+
+export const BILLS_CHARGE_DECAL = placed([
+  fill('bills-charge-edge', CHARGE_EDGE_PATH, 'white'),
+  fill('bills-charge-streak', CHARGE_STREAK_PATH, 'red'),
+]);

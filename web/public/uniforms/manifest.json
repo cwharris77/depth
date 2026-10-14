@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "17fd7a5b7365c8fb722379e85ba4cb5a11c9954f20210d238415b963dabce507",
-  "revision": "b2f09c111f48acec",
+  "sourceDigest": "578750eabb2c93091763b9501197c9b112e2c55222b3ceea17ed1d13dae8e0a3",
+  "revision": "5ff06ff5fb703bbb",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -264,6 +264,21 @@
           }
         }
       ]
+    },
+    {
+      "catalogId": "bills-nickel-city-2026",
+      "constructionKey": "nickel-city",
+      "revision": "2bb18d369ce365a5",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/bills-nickel-city-2026.webp",
+          "sha256": "f6b3aea31e3210228a91be27836cf0b69faac5f247d0d665425fdd90ba6b6bf4"
+        },
+        "full": {
+          "path": "/uniforms/bills-nickel-city-2026-full.webp",
+          "sha256": "cecb20cd30461d7bde7550e86e1988fa8ada75af4107398fadaf67823ebad2c6"
+        }
+      }
     },
     {
       "catalogId": "bills-rivalries-2025-2025",

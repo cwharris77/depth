@@ -104,5 +104,33 @@ export const BILLS_CATALOG: TeamCatalog = {
         },
       ],
     },
+    {
+      id: 'bills-nickel-city-2026',
+      slug: 'nickel-city',
+      sleeveNike: 'white',
+      name: 'Nickel City',
+      kind: 'alternate',
+      jersey: 'nickel-city',
+      colors: { primary: '#949399', secondary: '#00338D', accent: '#C60C30' },
+      legacyAccent,
+      periods: [
+        {
+          from: 2026,
+          startSource:
+            'https://www.buffalobills.com/news/buffalo-bills-unveil-new-nickel-city-uniforms-leading-into-the-inaugural-season-of-highmark-stadium',
+          verifiedOn: '2026-10-13',
+        },
+      ],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Gray pants',
+          helmet: 'charge',
+          pants: 'nickel-city',
+          pantsNike: 'white',
+          socks: 'navy',
+        },
+      ],
+    },
   ],
 };

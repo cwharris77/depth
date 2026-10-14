@@ -1934,5 +1934,21 @@
       "numeralFill": "#003594",
       "numeralStroke": "#FFFFFF"
     }
+  },
+  {
+    "id": "bills-nickel-city-2026",
+    "colors": {
+      "primary": "#949399",
+      "secondary": "#00338D",
+      "accent": "#C60C30"
+    },
+    "expected": {
+      "fill": "#949399",
+      "ring": "#00338D",
+      "mark": "#C60C30",
+      "textOnFill": "#15161a",
+      "numeralFill": "#00338D",
+      "numeralStroke": "#949399"
+    }
   }
 ]
