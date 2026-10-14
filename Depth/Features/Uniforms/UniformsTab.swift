@@ -457,6 +457,7 @@ struct UniformsTab: View {
 
     private var attribution: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            UniformCoverageNote()
             // Matches the web archive's attribution paragraph.
             Text(
                 "Uniform figures are original artwork; team marks are reproduced for identification only. Proportions modeled on the NFL uniform template by JohnnySeoul, used under CC BY 3.0 (modified)."
@@ -468,6 +469,20 @@ struct UniformsTab: View {
         .font(.caption2)
         .foregroundStyle(DesignTokens.Colors.textFaintest)
         .padding(.top, DesignTokens.Spacing.sm)
+    }
+}
+
+/// States that the archive is selective, shown at the foot of both the archive and a
+/// team's kit list so a missing uniform reads as a known gap rather than an error.
+struct UniformCoverageNote: View {
+    var body: some View {
+        Text(
+            "This archive doesn't include every uniform a team has worn. A design gets its own entry only when you could tell it apart from the others."
+        )
+        .font(.caption2)
+        .foregroundStyle(DesignTokens.Colors.textFaintest)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier("uniforms-coverage-note")
     }
 }
 

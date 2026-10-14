@@ -21,6 +21,8 @@ struct UniformTeamDetailView: View {
                     ForEach(team.kits) { kit in
                         kitRow(kit)
                     }
+                    UniformCoverageNote()
+                        .padding(.top, DesignTokens.Spacing.xs)
                 }
                 .padding(.horizontal, DesignTokens.Spacing.screenMargin)
                 .padding(.top, DesignTokens.Spacing.lg)
