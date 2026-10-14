@@ -5,8 +5,9 @@
 // diagonal stripe. The Rivalries kit is the genuinely different one: a tone-on-tone ice-silver
 // helmet treatment. Body and pants are royal at home, white at away; the Rivalries body is white.
 import type { TeamSpec } from '../core/team-spec';
-import { BILLS_BUFFALO_DECAL, BILLS_ICE_DECAL } from './marks/construction';
+import { BILLS_BUFFALO_DECAL, BILLS_CHARGE_DECAL, BILLS_ICE_DECAL } from './marks/construction';
 import { BILLS_JERSEY_BLUE } from './jerseys/blue';
+import { BILLS_JERSEY_NICKEL_CITY } from './jerseys/nickel-city';
 import { BILLS_JERSEY_RIVALRIES } from './jerseys/rivalries';
 import { BILLS_JERSEY_WHITE } from './jerseys/white';
 
@@ -17,6 +18,9 @@ export const BILLS_PALETTE = {
   iceSilver: '#9CA0A4',
   iceSilverLight: '#D6D8DA',
   rivalriesNumber: '#A9ADB1',
+  // Nickel City's gray and its darker stripe gray.
+  nickel: '#949399',
+  nickelDark: '#72707A',
 };
 
 export const BILLS_SPEC: TeamSpec = {
@@ -25,11 +29,14 @@ export const BILLS_SPEC: TeamSpec = {
     white: { shell: 'white', facemask: 'white', decal: BILLS_BUFFALO_DECAL, number: 'none' },
     // Rivalries' shell stays white; only the decal treatment is silver. Same white cage.
     ice: { shell: 'white', facemask: 'white', decal: BILLS_ICE_DECAL, number: 'none' },
+    // Nickel City's royal shell and cage with the red streak.
+    charge: { shell: 'navy', facemask: 'navy', decal: BILLS_CHARGE_DECAL, number: 'none' },
   },
   jerseys: {
     blue: BILLS_JERSEY_BLUE,
     white: BILLS_JERSEY_WHITE,
     rivalries: BILLS_JERSEY_RIVALRIES,
+    'nickel-city': BILLS_JERSEY_NICKEL_CITY,
   },
   pants: {
     // A single red stripe down the leg seam, stopping at the hem.
@@ -48,6 +55,17 @@ export const BILLS_SPEC: TeamSpec = {
       stripes: {
         position: 'center',
         bands: [{ color: 'red', size: 'm' }],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
+    // A single dark-gray stripe down the leg seam.
+    'nickel-city': {
+      body: 'nickel',
+      stripes: {
+        position: 'center',
+        bands: [{ color: 'nickelDark', size: 'm' }],
         gap: 'none',
         edge: 'none',
       },
