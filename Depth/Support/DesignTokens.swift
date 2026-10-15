@@ -26,6 +26,10 @@ enum DesignTokens {
         /// used by the uniform archive's status badge and active filter chips.
         static let accentSoft = Color(hex: "#8fa8c4")
         static let danger = Color(hex: "#ff6b6b")
+        /// Text and glyphs on a `danger` fill.
+        static let onDanger = Color(hex: "#2a0e0e")
+        /// Caution that is not destructive — warning buttons. Pair with `onAccent` text.
+        static let warning = Color(hex: "#f5b942")
         /// Matches web's `statusInjured` — injury status and negative point differential.
         static let statusInjured = Color(hex: "#ef5350")
         /// Native-only — no web tokens.ts counterpart. Carries forward the
