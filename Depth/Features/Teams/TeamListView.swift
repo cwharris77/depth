@@ -6,6 +6,15 @@ enum TeamSearchRowPresentation {
     }
 }
 
+/// A caller-supplied row pinned above the division list for a choice that is not a team,
+/// such as "No favorite". Absent by default, so a picker without one is unchanged.
+struct TeamListLeadingOption {
+    let title: String
+    let identifier: String
+    var isSelected: Bool = false
+    let action: @MainActor () -> Void
+}
+
 // The searchable 32-team list. This used to be the app's root screen; as of the
 // it is the *content of the team
 // switcher sheet* instead — "the list stops being a place you are and becomes a control
@@ -37,15 +46,18 @@ struct TeamListView: View {
     private let selectedTeamId: String
     private let onSelect: (String) -> Void
     private let onSelectPlayer: ((PlayerHit) -> Void)?
+    private let leadingOption: TeamListLeadingOption?
 
     init(
         repository: CachingDepthRepository,
         events: any AppEventsRecording = NoOpAppEventsRecorder(),
         selectedTeamId: String,
+        leadingOption: TeamListLeadingOption? = nil,
         onSelect: @escaping (String) -> Void,
         onSelectPlayer: ((PlayerHit) -> Void)? = nil
     ) {
         self.selectedTeamId = selectedTeamId
+        self.leadingOption = leadingOption
         self.onSelect = onSelect
         self.onSelectPlayer = onSelectPlayer
         _viewModel = State(initialValue: TeamListViewModel(repository: repository, events: events))
@@ -227,6 +239,9 @@ struct TeamListView: View {
                 if viewModel.refreshFailed {
                     RefreshFailedBanner().listRowSeparator(.hidden)
                 }
+                if let leadingOption {
+                    leadingRow(leadingOption)
+                }
                 ForEach(divisions, id: \.division) { division in
                     Section(header: sectionHeader(divisionHeader(division.division))) {
                         ForEach(Array(division.teams.enumerated()), id: \.element.id) {
@@ -274,6 +289,28 @@ struct TeamListView: View {
             .font(.caption)
             .foregroundStyle(DesignTokens.Colors.textMuted)
             .accessibilityAddTraits(.isHeader)
+    }
+
+    private func leadingRow(_ option: TeamListLeadingOption) -> some View {
+        Button {
+            option.action()
+        } label: {
+            HStack {
+                Text(option.title)
+                    .font(.subheadline)
+                Spacer()
+                if option.isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .frame(minHeight: 44)
+        .accessibilityIdentifier(option.identifier)
+        .listRowBackground(DesignTokens.Colors.surfaceCard2)
     }
 
     private func teamRow(_ team: Team) -> some View {

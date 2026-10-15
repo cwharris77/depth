@@ -166,3 +166,16 @@ final class UserSettingsStore {
         for task in pending { await task.value }
     }
 }
+
+extension TeamListLeadingOption {
+    /// The picker row that clears the favorite; checked while no favorite is set.
+    @MainActor static func noFavorite(in store: UserSettingsStore) -> TeamListLeadingOption {
+        TeamListLeadingOption(
+            title: "No favorite",
+            identifier: "team-picker-no-favorite",
+            isSelected: store.favoriteTeamId?.isEmpty ?? true
+        ) {
+            store.selectTeam(nil)
+        }
+    }
+}
