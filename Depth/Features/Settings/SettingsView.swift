@@ -296,8 +296,7 @@ struct SettingsView: View {
             Text("Sign in")
                 .font(.title2.bold())
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
-            Text("Sign in only when you want to save private preferences or depth orders.")
-                .foregroundStyle(DesignTokens.Colors.textSecondary)
+                .frame(maxWidth: .infinity)
             Button {
                 showAuth = true
             } label: {
