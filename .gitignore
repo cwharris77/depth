@@ -78,3 +78,6 @@ __pycache__/
 /skill-observations/
 /skill-updates/
 /supabase/
+
+# Local brand/reference assets moved out of Downloads (logos, promo video, uniform refs, 3D notes)
+/assets/
