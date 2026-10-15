@@ -172,9 +172,16 @@ struct TrueScaleFieldLayout {
         /// Real yards off the line of scrimmage on the unit's own side — behind it for the
         /// offense, downfield of it for the defense. Always ≥ 0 for a player in his unit.
         let depthYards: CGFloat
-        /// Tight rows alternate labels above/below instead of nudging dots apart — at 1:1
-        /// a dot is exactly where the data puts it.
+        /// Labels move instead of nudging dots apart — at 1:1 a dot is exactly where the data
+        /// puts it. A label hangs underneath unless something is in the way, then above.
         var labelAbove = false
+        /// Whether the last name is drawn with the position tag. False leaves the tag alone:
+        /// the Settings name style says no names, or the name is routed through
+        /// `nameCallout`, or it fits nowhere.
+        var showsName = true
+        /// Content-space centre of the name's own tag on a leader line, for a name with no
+        /// room beside its dot. Only the leader-line style ever sets it.
+        var nameCallout: CGPoint?
 
         var id: String { key }
     }
@@ -199,7 +206,7 @@ struct TrueScaleFieldLayout {
     let lineOfScrimmageY: CGFloat
 
     /// Defaults to offense so the offense's call sites and tests read unchanged.
-    init(slots: [RenderSlot], unit: Unit = .offense) {
+    init(slots: [RenderSlot], unit: Unit = .offense, nameMode: FieldNameMode = .callouts) {
         self.unit = unit
         let ppy = Self.pointsPerYard
         let ahead = Self.aheadYards(for: unit)
@@ -215,7 +222,7 @@ struct TrueScaleFieldLayout {
         // either way; only the REPORTED depth flips sign, so `depthYards` stays "yards off
         // the line on my own side" for a defender the way it already is for a back.
         let ownSideSign: CGFloat = unit == .defense ? -1 : 1
-        var dots = filled.compactMap { slot -> Dot? in
+        let dots = filled.compactMap { slot -> Dot? in
             guard let player = slot.player else { return nil }
             let charted = CGFloat(
                 (slot.y - FieldYardScale.lineOfScrimmage)
@@ -231,30 +238,162 @@ struct TrueScaleFieldLayout {
             )
         }
 
-        // Rows = dots within 3 charted units of depth, the same grouping the chart uses.
-        let order = dots.indices.sorted { dots[$0].center.y < dots[$1].center.y }
-        var rows: [[Int]] = []
+        self.dots = Self.placingLabels(
+            dots, content: CGSize(width: contentWidth, height: (ahead + behind) * ppy),
+            nameMode: nameMode)
+    }
+
+    // MARK: Labels
+
+    /// Height of a tag block that carries a last name under the position tag.
+    static let nameBlockHeight: CGFloat = 28
+    /// Height of a position tag on its own.
+    static let tagBlockHeight: CGFloat = 13
+    /// Width reserved for a position tag.
+    static let tagWidth: CGFloat = 40
+    /// Gap between a dot's edge and its label block.
+    static let labelGap: CGFloat = 4
+    /// Size of a leader-line name tag.
+    static let calloutHeight: CGFloat = 20
+    static let calloutPadding: CGFloat = 12
+
+    /// The block a dot's label occupies, in content space.
+    func labelRect(for dot: Dot) -> CGRect {
+        Self.labelRect(
+            center: dot.center, above: dot.labelAbove,
+            width: dot.showsName ? Self.labelWidth(for: dot) : Self.tagWidth,
+            height: dot.showsName ? Self.nameBlockHeight : Self.tagBlockHeight)
+    }
+
+    /// The leader-line name tag's rect, nil when the name is drawn with the tag or not at all.
+    func calloutRect(for dot: Dot) -> CGRect? {
+        dot.nameCallout.map { Self.calloutRect(at: $0, for: dot) }
+    }
+
+    private static func calloutRect(at center: CGPoint, for dot: Dot) -> CGRect {
+        let width = labelWidth(for: dot) + calloutPadding
+        return CGRect(
+            x: center.x - width / 2, y: center.y - calloutHeight / 2, width: width,
+            height: calloutHeight)
+    }
+
+    private static func labelRect(
+        center: CGPoint, above: Bool, width: CGFloat, height: CGFloat
+    ) -> CGRect {
+        let offset = dotSize / 2 + labelGap
+        return CGRect(
+            x: center.x - width / 2,
+            y: above ? center.y - offset - height : center.y + offset,
+            width: width,
+            height: height)
+    }
+
+    /// Chooses, for every dot, where its label goes — against the real rectangles of every
+    /// dot and every label already placed, so a name never covers a dot or another name.
+    ///
+    /// Underneath is the first choice, matching the depth chart; above is only taken when
+    /// the underneath spot is blocked. A name that fits in neither goes to a leader-line tag
+    /// when the style allows it, and is left off otherwise, leaving the position tag alone.
+    /// Names are placed before any leader line is, so a line routes around finished labels.
+    private static func placingLabels(
+        _ input: [Dot], content: CGSize, nameMode: FieldNameMode
+    ) -> [Dot] {
+        var dots = input
+        let bounds = CGRect(origin: .zero, size: content)
+        let dotRects = dots.map { dot in
+            CGRect(
+                x: dot.center.x - dotSize / 2, y: dot.center.y - dotSize / 2, width: dotSize,
+                height: dotSize)
+        }
+        var labels = [CGRect?](repeating: nil, count: dots.count)
+        var tags = [CGRect]()
+
+        func isFree(_ rect: CGRect, for index: Int) -> Bool {
+            let padded = rect.insetBy(dx: -2, dy: -1)
+            guard bounds.contains(rect) else { return false }
+            for other in dots.indices where other != index {
+                if dotRects[other].intersects(padded) { return false }
+                if let label = labels[other], label.intersects(padded) { return false }
+            }
+            return !tags.contains { $0.intersects(padded) }
+        }
+
+        let order = dots.indices.sorted { a, b in
+            let (ca, cb) = (dots[a].center, dots[b].center)
+            return ca.x != cb.x ? ca.x < cb.x : ca.y < cb.y
+        }
         for index in order {
-            if let first = rows.last?.first,
-                abs(dots[index].depthYards - dots[first].depthYards)
-                    * FieldYardScale.chartedUnitsPerYard <= 3
-            {
-                rows[rows.count - 1].append(index)
-            } else {
-                rows.append([index])
+            let center = dots[index].center
+            let hasName = nameMode != .off && !dots[index].player.name.isEmpty
+            let nameWidth = labelWidth(for: dots[index])
+            var choice: (above: Bool, name: Bool)?
+            search: for withName in hasName ? [true, false] : [false] {
+                for above in [false, true] {
+                    let rect = labelRect(
+                        center: center, above: above,
+                        width: withName ? nameWidth : tagWidth,
+                        height: withName ? nameBlockHeight : tagBlockHeight)
+                    if isFree(rect, for: index) {
+                        choice = (above, withName)
+                        break search
+                    }
+                }
+            }
+            // Nowhere is clear: the tag still draws, underneath like every other.
+            let final = choice ?? (above: false, name: false)
+            dots[index].labelAbove = final.above
+            dots[index].showsName = final.name
+            labels[index] = labelRect(
+                center: center, above: final.above,
+                width: final.name ? nameWidth : tagWidth,
+                height: final.name ? nameBlockHeight : tagBlockHeight)
+        }
+
+        guard nameMode == .callouts else { return dots }
+        let step: CGFloat = 26
+        let firstRing = dotSize / 2 + 16
+        let clearance = DepthChartFieldLayout.leaderLineClearance(dotSize: dotSize)
+        for index in order where !dots[index].showsName && !dots[index].player.name.isEmpty {
+            let dot = dots[index]
+            let width = labelWidth(for: dot) + calloutPadding
+            func lineIsClear(to anchor: CGPoint) -> Bool {
+                dots.indices.allSatisfy { other in
+                    guard other != index else { return true }
+                    let farFromDot =
+                        DepthChartFieldLayout.distance(
+                            from: dots[other].center, toSegment: dot.center, anchor) >= clearance
+                    let clearOfLabel = labels[other].map {
+                        DepthChartFieldLayout.segment(dot.center, anchor, avoids: $0)
+                    }
+                    return farFromDot && (clearOfLabel ?? true)
+                }
+            }
+            var best: CGPoint?
+            search: for requireClearLine in [true, false] {
+                for ring in 0..<6 {
+                    for direction: CGFloat in [1, -1] {
+                        for dx in [0, -width * 0.7, width * 0.7, -width * 1.4, width * 1.4] {
+                            let x = min(
+                                max(width / 2 + 2, dot.center.x + dx), content.width - width / 2 - 2
+                            )
+                            let y = dot.center.y + direction * (firstRing + CGFloat(ring) * step)
+                            let anchor = CGPoint(x: x, y: y)
+                            guard isFree(calloutRect(at: anchor, for: dot), for: index) else {
+                                continue
+                            }
+                            if requireClearLine, !lineIsClear(to: anchor) { continue }
+                            best = anchor
+                            break search
+                        }
+                    }
+                }
+            }
+            if let best {
+                dots[index].nameCallout = best
+                tags.append(calloutRect(at: best, for: dot))
             }
         }
-        for row in rows where row.count > 1 {
-            let sorted = row.sorted { dots[$0].center.x < dots[$1].center.x }
-            let tight = zip(sorted, sorted.dropFirst()).contains { a, b in
-                dots[b].center.x - dots[a].center.x < Self.labelWidth(for: dots[b]) + 6
-            }
-            guard tight else { continue }
-            for (i, index) in sorted.enumerated() {
-                dots[index].labelAbove = i % 2 == 1
-            }
-        }
-        self.dots = dots
+        return dots
     }
 
     /// Side and order from the charted x; magnitude from `RealX` / `RealDefenseX`.

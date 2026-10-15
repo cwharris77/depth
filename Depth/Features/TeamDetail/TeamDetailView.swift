@@ -478,7 +478,8 @@ struct TeamDetailView: View {
                         colors: fieldColors ?? snapshot.team.colors,
                         formation: activeFormation,
                         formations: currentUnitFormations,
-                        onSelectFormation: selectFormation
+                        onSelectFormation: selectFormation,
+                        nameMode: fieldNameMode
                     )
                     // A new formation is a new picture: reopen framed on the ball with
                     // nothing selected rather than keeping a stale pan/selection.
