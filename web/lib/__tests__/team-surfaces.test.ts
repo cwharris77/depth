@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { UNIFORMS } from '@/lib/uniforms/data';
 import { contrastRatio, DARK_BG } from '@/lib/utils/colors';
-import { teamFill, teamRing, kitMark, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
+import {
+  teamFill,
+  teamRing,
+  kitMark,
+  kitText,
+  textOnFill,
+  numeralColors,
+} from '@/lib/utils/team-surfaces';
 import type { JerseyColors } from '@/lib/types';
 
 // The resolvers replace a per-kit stored hex, so the property that matters most is not
@@ -263,4 +270,21 @@ describe('kitMark', () => {
     const kit = UNIFORMS.find((u) => u.teamId === teamId && u.slug === slug && u.isCurrent)!;
     expect(kitMark(kitColors(kit)).toLowerCase()).toBe(expected.toLowerCase());
   });
+});
+
+// kitText is kitMark held to the body-text bar. Every kit must land on a color that reads at
+// 4.5:1 on the ground, and it must still be one of the kit's own colors or plain white.
+describe('kitText', () => {
+  const TEXT_MIN = 4.5;
+
+  for (const u of UNIFORMS) {
+    it(`${u.teamId}/${u.slug} text reads at AA on the app ground`, () => {
+      const colors = kitColors(u);
+      const text = kitText(colors);
+      expect(contrastRatio(text, DARK_BG)).toBeGreaterThanOrEqual(TEXT_MIN);
+      expect(
+        [colors.primary, colors.secondary, colors.accent, '#FFFFFF'].map((c) => c.toLowerCase())
+      ).toContain(text.toLowerCase());
+    });
+  }
 });

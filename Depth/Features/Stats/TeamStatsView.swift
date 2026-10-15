@@ -101,6 +101,15 @@ struct TeamStatsView: View {
         return Color(hex: TeamSurfaces.mark(page.team.colors.jersey))
     }
 
+    /// The team's color for small type: `teamAccent` reads at the 3:1 mark bar, text needs 4.5:1.
+    private var teamText: Color {
+        if let colors = currentTeamStore.colors {
+            return Color(hex: TeamSurfaces.text(colors))
+        }
+        guard let page = viewModel.page else { return DesignTokens.Colors.textPrimary }
+        return Color(hex: TeamSurfaces.text(page.team.colors.jersey))
+    }
+
     private var content: some View {
         contentStates.loadStateTransition(viewModel.loadState)
     }
@@ -230,7 +239,7 @@ struct TeamStatsView: View {
                     Text(verbatim: "HEAD COACH · \(ordinal(coach.experience).uppercased()) SEASON")
                         .font(.caption.bold())
                         .tracking(0.6)
-                        .foregroundStyle(teamAccent)
+                        .foregroundStyle(teamText)
                 }
                 .padding(.top, 11)
                 .accessibilityElement(children: .combine)
@@ -243,7 +252,7 @@ struct TeamStatsView: View {
                     Text("HEAD COACH · INCOMING")
                         .font(.caption.bold())
                         .tracking(0.6)
-                        .foregroundStyle(teamAccent)
+                        .foregroundStyle(teamText)
                 }
                 .padding(.top, 11)
                 .accessibilityElement(children: .combine)
@@ -295,7 +304,7 @@ struct TeamStatsView: View {
                         if let streak = displayStreak(stats.streak) {
                             Text(verbatim: streak)
                                 .font(.footnote.bold())
-                                .foregroundStyle(teamAccent)
+                                .foregroundStyle(teamText)
                         }
                         if let caption = teamStatsRankLabel(
                             ranks(for: stats)?.winPercent, lastRank: leagueSize,
@@ -410,7 +419,7 @@ struct TeamStatsView: View {
                 .font(.caption.bold())
                 .tracking(1.0)
                 .foregroundStyle(
-                    overview.isCarryover ? DesignTokens.Colors.textFaint : teamAccent)
+                    overview.isCarryover ? DesignTokens.Colors.textFaint : teamText)
             Text(verbatim: story.headline)
                 .font(.title2.weight(.black))
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
@@ -461,7 +470,7 @@ struct TeamStatsView: View {
                 .font(.title.weight(.black))
                 .monospacedDigit()
                 .rollingValue(story.lead.rank)
-                .foregroundStyle(teamAccent)
+                .foregroundStyle(teamText)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: story.lockupLabel)
                     .font(.subheadline.weight(.semibold))
@@ -601,7 +610,7 @@ struct TeamStatsView: View {
                 }
                 Text(verbatim: rankText)
                     .font(.caption.bold())
-                    .foregroundStyle(teamAccent)
+                    .foregroundStyle(teamText)
             }
         }
         .padding(.vertical, DesignTokens.Spacing.md)

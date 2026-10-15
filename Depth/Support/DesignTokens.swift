@@ -12,9 +12,9 @@ enum DesignTokens {
         static let textPrimary = Color(hex: "#f0f4ff")
         static let textSecondary = Color(hex: "#dfe5f0")
         static let textMuted = Color(hex: "#A5ACAF")
-        static let textFaint = Color(hex: "#7d848c")
+        static let textFaint = Color(hex: "#8a9199")
         /// Matches web's `textFaintest` — footer tickers and micro-rank labels.
-        static let textFaintest = Color(hex: "#5a616a")
+        static let textFaintest = Color(hex: "#868d95")
         /// The app's own UI accent (link colors, focus rings, tab-bar tint) — never
         /// team-specific. Distinct from any team's `uiAccent`.
         static let accent = Color(hex: "#6E8CAE")

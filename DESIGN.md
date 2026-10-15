@@ -9,8 +9,8 @@ colors:
   text-primary: "#f0f4ff"
   text-secondary: "#dfe5f0"
   text-muted: "#A5ACAF"
-  text-faint: "#7d848c"
-  text-faintest: "#5a616a"
+  text-faint: "#8a9199"
+  text-faintest: "#868d95"
   danger: "#ff6b6b"
   danger-on: "#2a0e0e"
   surface-card: "#1a1e23"
@@ -169,8 +169,8 @@ The chrome ramp — every surface, border, and text color in the UI, all built f
 - **Text Primary** (#f0f4ff): Primary text on dark surfaces.
 - **Text Secondary** (#dfe5f0): Secondary text — descriptions, inactive chips.
 - **Text Muted** (#A5ACAF): Tertiary text — labels, captions, icon buttons at rest.
-- **Text Faint** (#7d848c): Section headers, stat labels.
-- **Text Faintest** (#5a616a): Overlines, micro-labels.
+- **Text Faint** (#8a9199): Section headers, stat labels.
+- **Text Faintest** (#868d95): Overlines, micro-labels.
 - **Border Subtle** (rgba(255,255,255,0.06)): Lightest hairline — dense cards.
 - **Border Default** (rgba(255,255,255,0.08)): Standard card borders.
 - **Border Strong** (rgba(255,255,255,0.10)): Dividers, menu edges, field yard lines.
@@ -326,7 +326,7 @@ Single style text input — translucent fill, hairline border, glow focus.
 - **Padding:** 12 px × 16 px.
 - **Text:** 16 px (text-base), text-primary color.
 - **Focus:** Border color shifts to accent; glow ring appears (`0 0 0 3px accent@30%`).
-- **Placeholder:** Text-faint color (#7d848c).
+- **Placeholder:** Text-faint color (#8a9199).
 
 ### IconButton
 
