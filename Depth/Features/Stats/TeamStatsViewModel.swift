@@ -160,7 +160,7 @@ final class TeamStatsViewModel {
                 await repository.refreshRelatedInBackground(teamId: teamId, after: .stats)
             }
             if selectedSeason == nil {
-                selectedSeason = page.seasons.first?.season ?? page.upcomingSeason
+                selectedSeason = Self.openingSeason(in: page)
             }
             loadState = .loaded
         } catch {
@@ -235,6 +235,16 @@ final class TeamStatsViewModel {
             // not blank the seasons it already showed.
             leadersBySeason.merge(result) { _, new in new }
         }
+    }
+
+    /// The season the page opens on: the newest row with a game played. Ingest writes an
+    /// all-zero row as soon as a season's schedule exists, and that stub sorts first, so
+    /// taking `seasons.first` opened an all-zero page before kickoff. Same rule as Compare's
+    /// default season (newest season with real data, else the newest row); the empty season
+    /// stays one tap away through "Back to current".
+    private static func openingSeason(in page: TeamStatsPage) -> Int? {
+        let played = page.seasons.first { TeamSeasonStoryBuilder.games($0) > 0 }
+        return (played ?? page.seasons.first)?.season ?? page.upcomingSeason
     }
 
     /// Pure selection — every season is already in the `teamStats` payload.
