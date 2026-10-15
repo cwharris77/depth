@@ -556,6 +556,43 @@ struct LeaderLineRoutingTests {
                 < 0.001)
     }
 
+    @Test("a crowded offensive name sits underneath its dot, not floating above it")
+    func crowdedOffensiveNamesPreferUnderneath() {
+        let names = [
+            "Justin Jefferson", "Jordan Addison", "T.J. Hockenson", "Sam Darnold",
+            "Aaron Jones", "Christian Darrisaw", "Blake Brandel", "Garrett Bradbury",
+            "Ed Ingram", "Brian O'Neill", "Josh Oliver", "Jalen Nailor",
+        ]
+        for alignment in ["UNDER CENTER", "SHOTGUN", "PISTOL"] {
+            for code in ["11", "12", "21"] {
+                let slots = buildRealFormation(alignment: alignment, code: code).enumerated()
+                    .map { index, formationSlot in
+                        RenderSlot(
+                            key: formationSlot.id, x: formationSlot.x, y: formationSlot.y,
+                            label: formationSlot.label,
+                            player: Player(
+                                id: "p\(index)", name: names[index % names.count], position: .wr,
+                                depthRank: 1, number: index),
+                            onLine: formationSlot.onLine)
+                    }
+                let layout = DepthChartFieldLayout.compute(
+                    slots: slots, fieldSize: CGSize(width: 370, height: 650), fillWidth: true,
+                    zoomToUnit: false)
+                #expect(!layout.nameCallouts.isEmpty, "\(alignment) \(code) should crowd names")
+                // Receivers and tight ends have open grass beneath them. The interior line
+                // sits in front of the backfield under center, where underneath is blocked.
+                for slot in slots where ["WR", "TE"].contains(slot.label) {
+                    guard let callout = layout.nameCallouts[slot.key],
+                        let dot = layout.positions[slot.key]
+                    else { continue }
+                    #expect(
+                        callout.y > dot.y,
+                        "\(alignment) \(code): \(slot.key)'s name sits above its dot")
+                }
+            }
+        }
+    }
+
     @Test("segment/rect test catches a crossing that misses both endpoints")
     func segmentAvoidanceCatchesMidCrossings() {
         let rect = CGRect(x: 40, y: -5, width: 20, height: 10)
