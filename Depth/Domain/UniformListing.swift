@@ -18,6 +18,40 @@ enum UniformArt {
         URL(string: "\(baseURL)/\(id)-full.webp")
     }
 
+    /// How many items past the current one get warmed — enough to stay ahead of a flick
+    /// without pulling the whole archive over the network.
+    static let prefetchLookahead = 10
+
+    /// The art URLs for the `lookahead` items after `index`, clamped to the list and with
+    /// missing URLs dropped. The window is positional, so a nil entry doesn't pull in an
+    /// extra item from further out.
+    static func upcoming(
+        after index: Int, in urls: [URL?], lookahead: Int = prefetchLookahead
+    ) -> [URL] {
+        let start = index + 1
+        guard start < urls.count, lookahead > 0 else { return [] }
+        return urls[start..<min(urls.count, start + lookahead)].compactMap { $0 }
+    }
+
+    /// Warms the HTTP cache `AsyncImage` reads, one request at a time and stopping as soon
+    /// as the calling task is cancelled (a cell scrolling away cancels its `.task`).
+    /// Anything already cached is skipped, so it never re-fetches what a visible cell loaded.
+    static func prefetch(
+        _ urls: [URL],
+        fetch: (URL) async -> Void = { url in
+            _ = try? await URLSession.shared.data(for: URLRequest(url: url))
+        },
+        isCached: (URL) -> Bool = { url in
+            URLCache.shared.cachedResponse(for: URLRequest(url: url)) != nil
+        }
+    ) async {
+        for url in urls {
+            if Task.isCancelled { return }
+            if isCached(url) { continue }
+            await fetch(url)
+        }
+    }
+
     /// Drops the HTTP-cached copy of these kits' art so the next load re-fetches it. The art is
     /// served with a one-hour lifetime and `AsyncImage` reads `URLCache.shared`, so a
     /// user-initiated refresh has to evict it explicitly.

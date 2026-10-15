@@ -264,8 +264,15 @@ struct UniformsTab: View {
     }
 
     private var teamGrid: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg - 4) {
-            ForEach(viewModel.groups) { group in
+        let groups = viewModel.groups
+        // Cards materialize lazily as the grid scrolls, so each one warms the jerseys of
+        // the cards just past it (across division boundaries); the `.task` is cancelled
+        // when its card scrolls out, which drops the rest of that window.
+        let teams = groups.flatMap(\.teams)
+        let jerseyURLs = teams.map { UniformArt.jerseyURL(for: $0.representativeKit.id) }
+        let positions = Dictionary(uniqueKeysWithValues: teams.enumerated().map { ($1.id, $0) })
+        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg - 4) {
+            ForEach(groups) { group in
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm + 3) {
                     Text(group.label)
                         .font(.caption.bold())
@@ -283,6 +290,11 @@ struct UniformsTab: View {
                     ) {
                         ForEach(group.teams) { team in
                             teamCard(team)
+                                .task {
+                                    guard let index = positions[team.id] else { return }
+                                    await UniformArt.prefetch(
+                                        UniformArt.upcoming(after: index, in: jerseyURLs))
+                                }
                         }
                     }
                 }
@@ -577,8 +589,10 @@ struct UniformThumb: View {
                         failureCount += 1
                     }
             default:
-                // Reserve the slot so the row doesn't reflow once image loads (#16).
-                Color.clear
+                // Fills the same slot the image resolves into, so nothing reflows when
+                // it lands.
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
+                    .fill(DesignTokens.Colors.surfacePlaceholder)
             }
         }
         .id("\(url?.absoluteString ?? "none")-\(failureCount)-\(refreshToken)")
