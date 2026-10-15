@@ -4,6 +4,8 @@ Builds a 3D player model (jersey, pants, socks, cleats, helmet with facemask) an
 
 Nothing generated is committed. Source meshes and every output live under `build/`, which is ignored.
 
+The pipeline is paused at the Rams kit, which is the only verified one. [`spike/broncos/`](spike/broncos/README.md) archives an unfinished attempt to generalize the painter; nothing here uses it.
+
 ## Requirements
 
 - Blender 5.2 (`/Applications/Blender.app/Contents/MacOS/Blender`, called `Blender` below)
