@@ -26,12 +26,13 @@ private func historyRow(
     height: String? = "5' 11\"",
     weight: Int? = 215,
     depthRank: Int = 1,
-    playerOrder: Int = 7
+    playerOrder: Int = 7,
+    headshotUrl: String? = nil
 ) -> HistoricalRosterRowDTO {
     HistoricalRosterRowDTO(
         season: season, teamId: "seahawks", gsisId: gsisId, name: name, number: number,
         position: position, college: college, height: height, weight: weight,
-        depthRank: depthRank, playerOrder: playerOrder
+        depthRank: depthRank, playerOrder: playerOrder, headshotUrl: headshotUrl
     )
 }
 
@@ -61,7 +62,7 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     #expect(historySeasonOptions(currentSeason: 2026) == expected)
 }
 
-@Test func historicalMapperUsesTypedIdentityStoredProfileFieldsAndNoRemoteImage() throws {
+@Test func historicalMapperUsesTypedIdentityAndStoredProfileFields() throws {
     let roster = try HistoricalRosterMapper.map(team: historyTeam(), rows: [historyRow()])
     let player = try #require(roster.players.first)
 
@@ -76,8 +77,36 @@ func currentRosterSeasonUsesThePreviousCalendarYearOnlyInJanuary(
     #expect(player.age == 0)
     #expect(player.experience == 0)
     #expect(player.bio == "2013 · Seattle Seahawks")
-    #expect(player.photoUrl == nil, "historical native players must keep the number fallback")
     #expect(roster.uniforms.isEmpty, "history keeps team colors but does not render uniforms")
+}
+
+@Test func historicalMapperCarriesTheStoredHeadshotAndFallsBackWhenMissing() throws {
+    let url = "https://static.www.nfl.com/image/private/f_auto,q_auto/league/gebzv2aljujgleboe4ns"
+    let roster = try HistoricalRosterMapper.map(
+        team: historyTeam(),
+        rows: [
+            historyRow(gsisId: "has", headshotUrl: url),
+            historyRow(gsisId: "none", headshotUrl: nil),
+            historyRow(gsisId: "blank", headshotUrl: "  "),
+        ])
+    let byId = Dictionary(uniqueKeysWithValues: roster.players.map { ($0.id, $0) })
+
+    #expect(byId["gsis:has@2013"]?.photoUrl == url)
+    #expect(byId["gsis:none@2013"]?.photoUrl == nil)
+    #expect(byId["gsis:blank@2013"]?.photoUrl == nil)
+}
+
+@Test func historicalRowDecodesHeadshotUrlAndToleratesItsAbsence() throws {
+    func decode(_ extra: String) throws -> HistoricalRosterRowDTO {
+        let json = """
+            {"season":2013,"team_id":"seahawks","gsis_id":"g","name":"N","position":"QB",
+             "depth_rank":1,"player_order":1\(extra)}
+            """
+        return try JSONDecoder().decode(HistoricalRosterRowDTO.self, from: Data(json.utf8))
+    }
+    #expect(try decode(#","headshot_url":"https://x/y""#).headshotUrl == "https://x/y")
+    #expect(try decode(#","headshot_url":null"#).headshotUrl == nil)
+    #expect(try decode("").headshotUrl == nil)
 }
 
 // nflverse heights are total inches; the profile shows feet and inches like a live roster.
