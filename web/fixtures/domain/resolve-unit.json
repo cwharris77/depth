@@ -27,17 +27,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": "wr1"
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -286,17 +286,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -1154,17 +1154,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -1273,17 +1273,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -1444,17 +1444,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -1894,17 +1894,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -2030,17 +2030,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -2166,17 +2166,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -2302,17 +2302,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -2417,17 +2417,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
@@ -2843,17 +2843,17 @@
       {
         "key": "off-wr-0",
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true,
+        "onLine": false,
         "playerId": null
       },
       {
         "key": "off-wr-1",
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false,
+        "onLine": true,
         "playerId": null
       },
       {
