@@ -40,7 +40,7 @@ iOS ships on a fixed two-week train: **cut Tuesday, submit Wednesday**, every ot
 1. **Cut (Tuesday).** From a clean, current `main`, bump `CFBundleShortVersionString` in `project.yml` to the train's version (minor per train, patch per hotfix), run `xcodegen generate`, and land it as `chore(release): cut ios <version>`.
 2. Archive that merge commit (Release config) and upload. The build number is `git rev-list --count <sha>`; record it as `build:` on the release note.
 3. Tag it: `git tag -a ios-v<version> <sha> -m "iOS <version> (build <n>)"` and push the tag.
-4. `scripts/ios-release-notes.sh` lists the app commits since the previous `ios-v*` tag; turn that into the App Store "What's New" copy on the release note.
+4. `scripts/ios-release-notes.sh` lists the app commits since the previous `ios-v*` tag; turn that into the release note's `# What's New` (the factual, engineering-level change list), then write the consumer-facing `# App Store Copy` section from it (see "Consumer copy" below).
 5. Moment ① below, and set the release note's `status: testflight`.
 6. **Submit (Wednesday).** Install the current App Store build, upgrade to the TestFlight build, smoke-test, then submit with phased release on. `status: review`.
 7. **LIVE.** Moment ② below; set `live:` and `status: live`. Arm the gate only if a breaking backend change is waiting on this build.
@@ -48,6 +48,17 @@ iOS ships on a fixed two-week train: **cut Tuesday, submit Wednesday**, every ot
 At most one risky change (backend contract, navigation, new data source) rides each train; the ticket carries `risky: true`. A hotfix (`<version>.1`) is out of band, carries only the fix, and does not move the next cut.
 
 A skipped train keeps its version: "Skip train" on the Releases board moves the release and every later planned train two weeks out and adds the missed cut day to the release note's `skipped:` list. Always read the train's dates from its note; never assume the 14-day grid.
+
+## Consumer copy
+
+`# What's New` on the release note is the engineering record: what changed, in the terms the team uses. It is not what goes in App Store Connect. Every train also gets a `# App Store Copy` section, written for a casual fan, and that is what the release owner pastes:
+
+- **What's New** (App Store field, 4,000 chars max): two to five short lines, each a benefit a fan would notice ("See every team's playoff run"), never a component, screen name, ticket or fix list. Drop chores and fixes a user never saw. Lead with the one thing worth opening the app for.
+- **Promotional text** (170 chars max): one sentence about the product, not this release. It can change without a new submission.
+- Facts only: no claim the build doesn't deliver, no data the app doesn't show.
+- Screenshots: if the train changes the first screens a visitor sees, re-run `scripts/capture-appstore-screenshots.sh` and refresh the framed set; the capture script lists the shots.
+
+Tick "App Store copy written" on the checklist.
 
 ## Running the train as an agent
 
@@ -68,7 +79,7 @@ A scheduled agent runs this twice a day. Everything below is the agent's job; **
    - Take the newest `VALID` build number `N`. The archived commit is the `N`th commit on `main` (`git rev-list --reverse origin/main | sed -n "${N}p"`). Confirm `git rev-list --count <sha>` equals `N`. A mismatch means the build was not archived from `main`; notify and stop.
    - Record `build: N` on the note.
    - Tag and push: `git tag -a ios-v<version> <sha> -m "iOS <version> (build N)"`.
-   - Draft "What's New" on the note from `scripts/ios-release-notes.sh`. Write user-facing copy: what a fan notices, no internal chores.
+   - Draft `# What's New` on the note from `scripts/ios-release-notes.sh` (factual change list), then `# App Store Copy` from it (see "Consumer copy" below).
    - Moment ① below, as a `docs:` PR with auto-merge.
    - Set `status: testflight` and tick those items.
    - Notify: "Build N of <version> is on TestFlight: upgrade-test from the App Store build, then submit with phased release." If today is past `submit` and the stage is still `none`, send one reminder to archive, noted on the release note so it is sent only once.

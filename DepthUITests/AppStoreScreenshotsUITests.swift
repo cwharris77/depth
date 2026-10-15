@@ -30,9 +30,9 @@ import XCTest
 // team", and the reorder shot reused the same player card as the player-detail shot, so
 // two of five slots showed what read as the same image.
 //
-// The set contains seven screenshots, including the player profile (jersey header + season
+// The set contains ten screenshots (the seven below plus schedule, uniform team detail and kit detail), including the player profile (jersey header + season
 // ledger) and postseason ladder (slots 3 and 5 below). The pinned teams/season are unchanged
-// apart from adding the Patriots for the postseason shot.
+// apart from adding the Rams for the postseason shot.
 //
 // Teams are pinned rather than incidental: Seahawks (already the launch default), Broncos
 // for defense, Chargers for stats, Chiefs/Eagles for compare. Pinning keeps reruns
@@ -62,6 +62,35 @@ final class AppStoreScreenshotsUITests: XCTestCase {
             switcher.waitForLabel(containing: "Seahawks"),
             "screenshot mode should start on the default team so this shot is deterministic"
         )
+        XCTAssertTrue(
+            waitForFilledSlot(in: app),
+            "the offense should render at least one filled slot before capture"
+        )
+        // Retire the first-run true-scale tip so it isn't in the hero capture.
+        let tipDismiss = app.buttons["Got it"]
+        if tipDismiss.waitForExistence(timeout: 5) {
+            tipDismiss.tap()
+        }
+        // Pin the field to the Shotgun 11 look the store listing shows rather than whichever
+        // formation the backend ranks first.
+        let overflow = app.buttons["depth-chart-overflow"]
+        if overflow.waitForExistence(timeout: 5) {
+            overflow.tap()
+            let formations = app.buttons["choose-formation"]
+            if formations.waitForExistence(timeout: 5) {
+                formations.tap()
+                let shotgun = app.buttons.matching(
+                    NSPredicate(format: "label == 'Shotgun 11'")
+                ).firstMatch
+                XCTAssertTrue(
+                    shotgun.waitForExistence(timeout: 10),
+                    "the formations sheet should list Shotgun 11")
+                shotgun.tap()
+                XCTAssertTrue(
+                    app.buttons["formation-row"].waitForNonExistence(timeout: 10),
+                    "the formations sheet should close after picking a formation")
+            }
+        }
         XCTAssertTrue(
             waitForFilledSlot(in: app),
             "the offense should render at least one filled slot before capture"
@@ -121,12 +150,12 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // played rather than the empty current one.
         attachScreenshot(name: "04-team-stats")
 
-        // 5. Postseason ladder — the newest schedule surface. The Patriots ran the full
-        // WC → DIV → CON → SB ladder in 2025, so the pinned season has every round to show
-        // (the other pinned teams would render a shorter run). Pin the completed season
-        // because the schedule page opens on the current season, which is empty before week 1.
+        // 5. Postseason ladder — the newest schedule surface. The Rams won a wild-card,
+        // divisional and conference round in 2025, so the pinned season has a multi-round run
+        // to show. Pin the completed season because the schedule page opens on the current
+        // season, which is empty before week 1.
         selectTeam(
-            named: "Patriots", rowIdentifier: "team-row-patriots", switcher: switcher, app: app)
+            named: "Rams", rowIdentifier: "team-row-rams", switcher: switcher, app: app)
         let scheduleTab = app.buttons["page-switcher-schedule"]
         XCTAssertTrue(
             scheduleTab.waitForExistence(timeout: 15),
@@ -153,9 +182,20 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         playoffsTab.tap()
         XCTAssertTrue(
             element(app, identifier: "schedule-playoffs-content").waitForExistence(timeout: 20),
-            "the Patriots' 2025 postseason run should render the bracket content"
+            "the Rams' 2025 postseason run should render the bracket content"
         )
         attachScreenshot(name: "05-postseason")
+
+        // 8. Regular-season schedule for the same pinned team and season.
+        let regularTab = app.buttons["schedule-phase-regular"]
+        XCTAssertTrue(
+            regularTab.waitForExistence(timeout: 10), "the schedule should offer a Regular phase")
+        regularTab.tap()
+        XCTAssertTrue(
+            element(app, identifier: "schedule-content").waitForExistence(timeout: 20),
+            "the regular-season schedule should render content"
+        )
+        attachScreenshot(name: "08-schedule-regular")
 
         // 6. Compare, on the "By team" (matchup) tab with both slots filled.
         let tabs = app.tabBars.firstMatch
@@ -190,6 +230,44 @@ final class AppStoreScreenshotsUITests: XCTestCase {
             uniformTeam.waitForExistence(timeout: 20),
             "the archive should render at least one team's kits")
         attachScreenshot(name: "07-uniform-archive")
+
+        // 9. A team's uniform detail, drilled in from the archive grid. Pinned to the Bills.
+        let billsKits = app.descendants(matching: .any).matching(
+            identifier: "uniforms-team-bills"
+        ).firstMatch
+        XCTAssertTrue(billsKits.waitForExistence(timeout: 10), "the archive should list the Bills")
+        billsKits.tap()
+        XCTAssertTrue(
+            element(app, identifier: "uniform-team-detail").waitForExistence(timeout: 20),
+            "tapping a team should push its uniform detail")
+        attachScreenshot(name: "09-uniform-team-detail")
+
+        // 10. A single kit's detail sheet for a different team (Packers), so the two uniform
+        // shots don't repeat a team. The grid is lazy, so scroll until the row exists.
+        app.navigationBars.buttons.firstMatch.tap()
+        let packersKits = app.descendants(matching: .any).matching(
+            identifier: "uniforms-team-packers"
+        ).firstMatch
+        var scrolls = 0
+        while !packersKits.exists && scrolls < 12 {
+            app.swipeUp()
+            scrolls += 1
+        }
+        XCTAssertTrue(
+            packersKits.waitForExistence(timeout: 5), "the archive should list the Packers")
+        packersKits.tap()
+        XCTAssertTrue(
+            element(app, identifier: "uniform-team-detail").waitForExistence(timeout: 20),
+            "tapping a team should push its uniform detail")
+        let kitRow = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'uniform-kit-row-'")
+        ).firstMatch
+        XCTAssertTrue(kitRow.waitForExistence(timeout: 15), "the team detail should list its kits")
+        kitRow.tap()
+        XCTAssertTrue(
+            element(app, identifier: "uniform-kit-sheet").waitForExistence(timeout: 15),
+            "tapping a kit should open its detail sheet")
+        attachScreenshot(name: "10-uniform-kit-detail")
     }
 
     // MARK: - Helpers

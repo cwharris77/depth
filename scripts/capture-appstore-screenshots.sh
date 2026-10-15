@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # capture-appstore-screenshots.sh — deterministic App Store screenshot capture for depth.
 #
-# The one command that turns a clean checkout into the seven raw App Store Connect PNGs.
+# The one command that turns a clean checkout into the ten raw App Store Connect PNGs.
 # Everything the capture needs to be reproducible lives here, so a human can run it from a
 # clean checkout without hand-editing project.yml:
 #
@@ -16,7 +16,7 @@
 #   3. Runs AppStoreScreenshotsUITests against the dedicated Depth-AppStoreScreenshots
 #      scheme (which does NOT carry the default-run `skippedTests` entry the Depth scheme
 #      has, so `-only-testing:` works without regenerating project.yml).
-#   4. Exports the seven XCTAttachment PNGs from the .xcresult and writes them raw — no
+#   4. Exports the ten XCTAttachment PNGs from the .xcresult and writes them raw — no
 #      bezel, no framing, no caption — to a deterministic output directory:
 #
 #          Screenshots/<device>/01-depth-chart-offense.png
@@ -26,8 +26,11 @@
 #          Screenshots/<device>/05-postseason.png
 #          Screenshots/<device>/06-compare.png
 #          Screenshots/<device>/07-uniform-archive.png
+#          Screenshots/<device>/08-schedule-regular.png
+#          Screenshots/<device>/09-uniform-team-detail.png
+#          Screenshots/<device>/10-uniform-kit-detail.png
 #
-#   5. Verifies the artifacts automatically: exactly seven files, each at the exact current
+#   5. Verifies the artifacts automatically: exactly ten files, each at the exact current
 #      App Store Connect 6.5-inch-display portrait resolution (1284×2778) with no alpha
 #      channel. The remaining checks in the spec's item 38 (clipping, stale data, placeholder
 #      artifacts, simulator chrome, personal information, unlicensed assets) are visual
@@ -45,28 +48,32 @@
 #   -o <path>  Output root. Default: <repo-root>/Screenshots (gitignored). The five PNGs
 #              land in <outRoot>/<device>/, where <device> is the resolved simulator type
 #              slug (e.g. iPhone-13-Pro-Max).
+#   -s         Capture against the Staging backend instead of production.
 #   -h         Help
 #
 # Dependencies: xcodegen, xcodebuild, xcrun (simctl/xcresulttool), jq, sips.
 #
-# Staging config: runs against the dedicated staging Supabase project
-# (`xcconfig/Staging.xcconfig` → djwrecczgudktgsooxti), same as every other DepthUITests
-# run against the seeded project from the checked-in `supabase/seed*.sql`. "Stable staging
-# seed" means pinned real teams (Seahawks for the
-# offense hero, Broncos for defense + the QB profile, Chargers for stats, Patriots for the
-# 2025 postseason ladder, and Chiefs/Eagles for compare) rather than fabricated fixture
-# data, so reruns stay byte-comparable; the screenshots never show a signed-in session or
-# real credentials.
+# Backend: captures read the PRODUCTION backend by default (signed out, read-only, the
+# same publishable key the App Store binary ships with) so every team, roster and color
+# matches the build users install; the Staging project is seeded test data and renders
+# different rosters and formations. Pass -s to capture against Staging instead. The
+# build is still the Staging config (it carries the screenshot-mode seam); in screenshot
+# mode feature flags resolve to their shipped `launched` values, as in a Release build.
+# Pinned teams/seasons (Seahawks for the offense hero, Broncos for defense + the QB
+# profile, Chargers for stats, Patriots for the 2025 postseason ladder, and Chiefs/Eagles
+# for compare) keep reruns comparable.
 set -euo pipefail
 
 # ---- flags ----
 DERIVED=""
+USE_STAGING=0
 OUT_ROOT=""
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 while [ $# -gt 0 ]; do
   case "$1" in
     -d) DERIVED="${2:?}"; shift 2 ;;
     -o) OUT_ROOT="${2:?}"; shift 2 ;;
+    -s) USE_STAGING=1; shift ;;
     -h) grep '^#' "$0" | sed '1d;s/^# \?//'; exit 0 ;;
     *) echo "unknown flag: $1" >&2; exit 1 ;;
   esac
@@ -154,6 +161,31 @@ mkdir -p "$DERIVED" "$OUT_DIR"
 XCRESULT="$DERIVED/.appstore-screenshots.xcresult"
 EXPORT_DIR="$DERIVED/.appstore-screenshots-export"
 rm -rf "$XCRESULT" "$EXPORT_DIR"
+# Release.xcconfig is the source of truth for the production endpoints; values keep their
+# literal "$()" so xcconfig's comment parser doesn't truncate the URL.
+BACKEND_ARGS=()
+if [ "$USE_STAGING" -ne 1 ]; then
+  for key in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY STAT_FILES_BASE_URL; do
+    val=$(grep -E "^${key}[[:space:]]*=" "$REPO_ROOT/xcconfig/Release.xcconfig" | head -n1 | sed -E 's/^[^=]*=[[:space:]]*//')
+    [ -z "$val" ] && { echo "ERROR: $key missing from xcconfig/Release.xcconfig" >&2; exit 1; }
+    BACKEND_ARGS+=("$key=$val")
+  done
+  echo "Capturing against the production backend (read-only)." >&2
+fi
+# Build first, stamp the app with the build number an archive would get, then run the test:
+# the production update gate blocks any build below app_config.minimum_supported_build, and a
+# plain Staging build carries CFBundleVersion 1.
+xcodebuild \
+  -project "$REPO_ROOT/Depth.xcodeproj" \
+  -scheme Depth-AppStoreScreenshots \
+  -configuration Staging \
+  -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+  -derivedDataPath "$DERIVED" \
+  ${BACKEND_ARGS[@]+"${BACKEND_ARGS[@]}"} \
+  build-for-testing 2>&1 | tail -5
+APP="$DERIVED/Build/Products/Staging-iphonesimulator/Depth.app"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(git -C "$REPO_ROOT" rev-list --count HEAD)" "$APP/Info.plist"
+codesign --force --sign - --preserve-metadata=entitlements "$APP" >/dev/null 2>&1 || true
 xcodebuild \
   -project "$REPO_ROOT/Depth.xcodeproj" \
   -scheme Depth-AppStoreScreenshots \
@@ -162,7 +194,7 @@ xcodebuild \
   -derivedDataPath "$DERIVED" \
   -only-testing:DepthUITests/AppStoreScreenshotsUITests \
   -resultBundlePath "$XCRESULT" \
-  test 2>&1 | tail -20
+  test-without-building 2>&1 | tail -20
 
 # ---- export the XCTAttachment PNGs ----
 mkdir -p "$EXPORT_DIR"
@@ -182,6 +214,9 @@ declare -a NAMES=(
   "05-postseason"
   "06-compare"
   "07-uniform-archive"
+  "08-schedule-regular"
+  "09-uniform-team-detail"
+  "10-uniform-kit-detail"
 )
 rm -rf "$OUT_DIR"/*.png 2>/dev/null || true
 for name in "${NAMES[@]}"; do
@@ -192,7 +227,7 @@ for name in "${NAMES[@]}"; do
   cp "$EXPORT_DIR/$exported" "$OUT_DIR/$name.png"
 done
 
-# ---- verify: exactly seven, exact resolution, no alpha ----
+# ---- verify: exactly ten, exact resolution, no alpha ----
 PASS=1
 COUNT=0
 for f in "$OUT_DIR"/*.png; do
@@ -211,8 +246,8 @@ for f in "$OUT_DIR"/*.png; do
     PASS=0
   fi
 done
-if [ "$COUNT" -ne 7 ]; then
-  echo "ERROR: expected 7 screenshots, found $COUNT" >&2
+if [ "$COUNT" -ne 10 ]; then
+  echo "ERROR: expected 10 screenshots, found $COUNT" >&2
   PASS=0
 fi
 [ "$PASS" -eq 1 ] || { echo "FAILED verification — fix and re-run." >&2; exit 1; }
