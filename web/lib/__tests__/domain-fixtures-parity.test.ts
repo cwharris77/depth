@@ -24,7 +24,14 @@ import {
   type PlayerRecentSnapsRow,
 } from '@/lib/utils/compare/recent-participation';
 import { UNIFORMS } from '@/lib/uniforms/data';
-import { teamFill, teamRing, kitMark, textOnFill, numeralColors } from '@/lib/utils/team-surfaces';
+import {
+  teamFill,
+  teamRing,
+  kitMark,
+  kitText,
+  textOnFill,
+  numeralColors,
+} from '@/lib/utils/team-surfaces';
 import type { DepthSeat, Player, TeamRoster, FormationSlot, Position } from '@/lib/types';
 
 const fixturesDir = join(process.cwd(), 'fixtures/domain');
@@ -243,6 +250,7 @@ describe('domain fixtures parity (drift guard)', () => {
           fill: teamFill(c.colors),
           ring: teamRing(c.colors),
           mark: kitMark(c.colors),
+          text: kitText(c.colors),
           textOnFill: textOnFill(c.colors),
           numeralFill: numeral.fill,
           numeralStroke: numeral.stroke,

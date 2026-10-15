@@ -95,6 +95,16 @@ export function kitMark(colors: JerseyColors): string {
   );
 }
 
+// Small text that floats on the app ground: overlines, status labels, a coach's tenure line.
+// kitMark() is judged at the 3:1 graphical-object bar, which is right for an underline and
+// wrong for 12pt type -- text needs TEXT_MIN. Same candidate order as kitMark (a kit's contrast
+// color before its body); where no real kit color reaches 4.5:1 the text is plain white,
+// the same non-team fallback textOnFill() and numeralColors() already use.
+export function kitText(colors: JerseyColors): string {
+  const candidates = [colors.secondary, colors.accent, colors.primary];
+  return candidates.find((hex) => contrastRatio(hex, DARK_BG) >= TEXT_MIN) ?? WHITE;
+}
+
 export interface NumeralColors {
   fill: string;
   stroke: string;

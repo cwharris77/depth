@@ -22,6 +22,7 @@ private struct FixtureExpected: Decodable {
     let fill: String
     let ring: String
     let mark: String
+    let text: String
     let textOnFill: String
     let numeralFill: String
     let numeralStroke: String
@@ -43,6 +44,7 @@ private struct TeamSurfaceCase: Decodable {
         #expect(TeamSurfaces.fill(colors) == c.expected.fill, "\(c.id) — fill")
         #expect(TeamSurfaces.ring(colors) == c.expected.ring, "\(c.id) — ring")
         #expect(TeamSurfaces.mark(colors) == c.expected.mark, "\(c.id) — mark")
+        #expect(TeamSurfaces.text(colors) == c.expected.text, "\(c.id) — text")
         #expect(TeamSurfaces.textOnFill(colors) == c.expected.textOnFill, "\(c.id) — textOnFill")
 
         let numeral = TeamSurfaces.numeral(colors)

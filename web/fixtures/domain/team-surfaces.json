@@ -10,6 +10,7 @@
       "fill": "#241773",
       "ring": "#9E7C0C",
       "mark": "#9E7C0C",
+      "text": "#9E7C0C",
       "textOnFill": "#ffffff",
       "numeralFill": "#241773",
       "numeralStroke": "#FFFFFF"
@@ -26,6 +27,7 @@
       "fill": "#000000",
       "ring": "#FB4F14",
       "mark": "#FB4F14",
+      "text": "#FB4F14",
       "textOnFill": "#FB4F14",
       "numeralFill": "#000000",
       "numeralStroke": "#FB4F14"
@@ -42,6 +44,7 @@
       "fill": "#311D00",
       "ring": "#FF3C00",
       "mark": "#FF3C00",
+      "text": "#FF3C00",
       "textOnFill": "#FF3C00",
       "numeralFill": "#311D00",
       "numeralStroke": "#FF3C00"
@@ -58,6 +61,7 @@
       "fill": "#101820",
       "ring": "#FFB612",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#FFB612",
       "numeralFill": "#101820",
       "numeralStroke": "#FFB612"
@@ -74,6 +78,7 @@
       "fill": "#00338D",
       "ring": "#C60C30",
       "mark": "#C60C30",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#00338D",
       "numeralStroke": "#C60C30"
@@ -90,6 +95,7 @@
       "fill": "#008E97",
       "ring": "#FC4C02",
       "mark": "#FC4C02",
+      "text": "#FC4C02",
       "textOnFill": "#15161a",
       "numeralFill": "#008E97",
       "numeralStroke": "#FC4C02"
@@ -106,6 +112,7 @@
       "fill": "#002244",
       "ring": "#C60C30",
       "mark": "#C60C30",
+      "text": "#B0B7BC",
       "textOnFill": "#ffffff",
       "numeralFill": "#002244",
       "numeralStroke": "#C60C30"
@@ -122,6 +129,7 @@
       "fill": "#125740",
       "ring": "#FFFFFF",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#FFFFFF",
       "numeralFill": "#125740",
       "numeralStroke": "#FFFFFF"
@@ -138,6 +146,7 @@
       "fill": "#03202F",
       "ring": "#A71930",
       "mark": "#A71930",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#03202F",
       "numeralStroke": "#FFFFFF"
@@ -154,6 +163,7 @@
       "fill": "#002C5F",
       "ring": "#A2AAAD",
       "mark": "#A2AAAD",
+      "text": "#A2AAAD",
       "textOnFill": "#A2AAAD",
       "numeralFill": "#002C5F",
       "numeralStroke": "#A2AAAD"
@@ -170,6 +180,7 @@
       "fill": "#006778",
       "ring": "#D7A22A",
       "mark": "#D7A22A",
+      "text": "#D7A22A",
       "textOnFill": "#ffffff",
       "numeralFill": "#006778",
       "numeralStroke": "#D7A22A"
@@ -186,6 +197,7 @@
       "fill": "#0C2340",
       "ring": "#4B92DB",
       "mark": "#4B92DB",
+      "text": "#4B92DB",
       "textOnFill": "#4B92DB",
       "numeralFill": "#0C2340",
       "numeralStroke": "#4B92DB"
@@ -202,6 +214,7 @@
       "fill": "#FB4F14",
       "ring": "#002244",
       "mark": "#FB4F14",
+      "text": "#FB4F14",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#FB4F14"
@@ -218,6 +231,7 @@
       "fill": "#E31837",
       "ring": "#FFB81C",
       "mark": "#FFB81C",
+      "text": "#FFB81C",
       "textOnFill": "#ffffff",
       "numeralFill": "#E31837",
       "numeralStroke": "#FFB81C"
@@ -234,6 +248,7 @@
       "fill": "#000000",
       "ring": "#A5ACAF",
       "mark": "#A5ACAF",
+      "text": "#A5ACAF",
       "textOnFill": "#A5ACAF",
       "numeralFill": "#000000",
       "numeralStroke": "#A5ACAF"
@@ -250,6 +265,7 @@
       "fill": "#0080C6",
       "ring": "#FFC20E",
       "mark": "#FFC20E",
+      "text": "#FFC20E",
       "textOnFill": "#ffffff",
       "numeralFill": "#0080C6",
       "numeralStroke": "#FFC20E"
@@ -266,6 +282,7 @@
       "fill": "#0B162A",
       "ring": "#C83803",
       "mark": "#C83803",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#0B162A",
       "numeralStroke": "#C83803"
@@ -282,6 +299,7 @@
       "fill": "#0076B6",
       "ring": "#B0B7BC",
       "mark": "#B0B7BC",
+      "text": "#B0B7BC",
       "textOnFill": "#ffffff",
       "numeralFill": "#0076B6",
       "numeralStroke": "#B0B7BC"
@@ -298,6 +316,7 @@
       "fill": "#203731",
       "ring": "#FFB612",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#FFB612",
       "numeralFill": "#203731",
       "numeralStroke": "#FFB612"
@@ -314,6 +333,7 @@
       "fill": "#4F2683",
       "ring": "#FFC62F",
       "mark": "#FFC62F",
+      "text": "#FFC62F",
       "textOnFill": "#FFC62F",
       "numeralFill": "#4F2683",
       "numeralStroke": "#FFC62F"
@@ -330,6 +350,7 @@
       "fill": "#041E42",
       "ring": "#869397",
       "mark": "#869397",
+      "text": "#869397",
       "textOnFill": "#869397",
       "numeralFill": "#041E42",
       "numeralStroke": "#869397"
@@ -346,6 +367,7 @@
       "fill": "#0B2265",
       "ring": "#A71930",
       "mark": "#A71930",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#0B2265",
       "numeralStroke": "#FFFFFF"
@@ -362,6 +384,7 @@
       "fill": "#004C54",
       "ring": "#A5ACAF",
       "mark": "#A5ACAF",
+      "text": "#A5ACAF",
       "textOnFill": "#ffffff",
       "numeralFill": "#004C54",
       "numeralStroke": "#A5ACAF"
@@ -378,6 +401,7 @@
       "fill": "#5A1414",
       "ring": "#FFB612",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#FFB612",
       "numeralFill": "#5A1414",
       "numeralStroke": "#FFB612"
@@ -394,6 +418,7 @@
       "fill": "#000000",
       "ring": "#A71930",
       "mark": "#A71930",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -410,6 +435,7 @@
       "fill": "#0085CA",
       "ring": "#101820",
       "mark": "#0085CA",
+      "text": "#FFFFFF",
       "textOnFill": "#15161a",
       "numeralFill": "#101820",
       "numeralStroke": "#0085CA"
@@ -426,6 +452,7 @@
       "fill": "#101820",
       "ring": "#D3BC8D",
       "mark": "#D3BC8D",
+      "text": "#D3BC8D",
       "textOnFill": "#D3BC8D",
       "numeralFill": "#101820",
       "numeralStroke": "#D3BC8D"
@@ -442,6 +469,7 @@
       "fill": "#D50A0A",
       "ring": "#34302B",
       "mark": "#FF7900",
+      "text": "#FF7900",
       "textOnFill": "#ffffff",
       "numeralFill": "#34302B",
       "numeralStroke": "#D50A0A"
@@ -458,6 +486,7 @@
       "fill": "#A01523",
       "ring": "#000000",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#ffffff",
       "numeralFill": "#A01523",
       "numeralStroke": "#FFFFFF"
@@ -474,6 +503,7 @@
       "fill": "#003594",
       "ring": "#FFA300",
       "mark": "#FFA300",
+      "text": "#FFA300",
       "textOnFill": "#FFA300",
       "numeralFill": "#003594",
       "numeralStroke": "#FFA300"
@@ -490,6 +520,7 @@
       "fill": "#AA0000",
       "ring": "#B3995D",
       "mark": "#B3995D",
+      "text": "#B3995D",
       "textOnFill": "#ffffff",
       "numeralFill": "#AA0000",
       "numeralStroke": "#B3995D"
@@ -506,6 +537,7 @@
       "fill": "#24293C",
       "ring": "#69BE28",
       "mark": "#69BE28",
+      "text": "#69BE28",
       "textOnFill": "#69BE28",
       "numeralFill": "#24293C",
       "numeralStroke": "#69BE28"
@@ -522,6 +554,7 @@
       "fill": "#0248B3",
       "ring": "#0E8329",
       "mark": "#0E8329",
+      "text": "#A7B0BA",
       "textOnFill": "#ffffff",
       "numeralFill": "#0248B3",
       "numeralStroke": "#0E8329"
@@ -538,6 +571,7 @@
       "fill": "#FF8200",
       "ring": "#C8102E",
       "mark": "#C8102E",
+      "text": "#FFFFFF",
       "textOnFill": "#15161a",
       "numeralFill": "#FF8200",
       "numeralStroke": "#C8102E"
@@ -554,6 +588,7 @@
       "fill": "#046A38",
       "ring": "#A5ACAF",
       "mark": "#A5ACAF",
+      "text": "#A5ACAF",
       "textOnFill": "#ffffff",
       "numeralFill": "#046A38",
       "numeralStroke": "#A5ACAF"
@@ -570,6 +605,7 @@
       "fill": "#046A38",
       "ring": "#A5ACAF",
       "mark": "#A5ACAF",
+      "text": "#A5ACAF",
       "textOnFill": "#ffffff",
       "numeralFill": "#046A38",
       "numeralStroke": "#A5ACAF"
@@ -586,6 +622,7 @@
       "fill": "#FA4616",
       "ring": "#001489",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#15161a",
       "numeralFill": "#001489",
       "numeralStroke": "#FA4616"
@@ -602,6 +639,7 @@
       "fill": "#FFFFFF",
       "ring": "#002244",
       "mark": "#69BE28",
+      "text": "#69BE28",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#FFFFFF"
@@ -618,6 +656,7 @@
       "fill": "#FFFFFF",
       "ring": "#00338D",
       "mark": "#C60C30",
+      "text": "#FFFFFF",
       "textOnFill": "#00338D",
       "numeralFill": "#00338D",
       "numeralStroke": "#FFFFFF"
@@ -634,6 +673,7 @@
       "fill": "#FFFFFF",
       "ring": "#008E97",
       "mark": "#008E97",
+      "text": "#008E97",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#008E97"
@@ -650,6 +690,7 @@
       "fill": "#FFFFFF",
       "ring": "#002244",
       "mark": "#C60C30",
+      "text": "#FFFFFF",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#FFFFFF"
@@ -666,6 +707,7 @@
       "fill": "#FFFFFF",
       "ring": "#125740",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#125740",
       "numeralFill": "#125740",
       "numeralStroke": "#FFFFFF"
@@ -682,6 +724,7 @@
       "fill": "#FFFFFF",
       "ring": "#97233F",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#97233F",
       "numeralFill": "#97233F",
       "numeralStroke": "#FFFFFF"
@@ -698,6 +741,7 @@
       "fill": "#FFFFFF",
       "ring": "#003594",
       "mark": "#FFA300",
+      "text": "#FFA300",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#FFFFFF"
@@ -714,6 +758,7 @@
       "fill": "#FFFFFF",
       "ring": "#AA0000",
       "mark": "#B3995D",
+      "text": "#B3995D",
       "textOnFill": "#AA0000",
       "numeralFill": "#AA0000",
       "numeralStroke": "#FFFFFF"
@@ -730,6 +775,7 @@
       "fill": "#FFFFFF",
       "ring": "#241773",
       "mark": "#9E7C0C",
+      "text": "#9E7C0C",
       "textOnFill": "#241773",
       "numeralFill": "#241773",
       "numeralStroke": "#FFFFFF"
@@ -746,6 +792,7 @@
       "fill": "#FFFFFF",
       "ring": "#FB4F14",
       "mark": "#FB4F14",
+      "text": "#FB4F14",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#FB4F14"
@@ -762,6 +809,7 @@
       "fill": "#FFFFFF",
       "ring": "#311D00",
       "mark": "#FF3C00",
+      "text": "#FF3C00",
       "textOnFill": "#311D00",
       "numeralFill": "#311D00",
       "numeralStroke": "#FFFFFF"
@@ -778,6 +826,7 @@
       "fill": "#FFFFFF",
       "ring": "#FFB612",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#FFB612"
@@ -794,6 +843,7 @@
       "fill": "#FFFFFF",
       "ring": "#03202F",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#03202F",
       "numeralFill": "#03202F",
       "numeralStroke": "#FFFFFF"
@@ -810,6 +860,7 @@
       "fill": "#FFFFFF",
       "ring": "#002C5F",
       "mark": "#A2AAAD",
+      "text": "#A2AAAD",
       "textOnFill": "#002C5F",
       "numeralFill": "#002C5F",
       "numeralStroke": "#FFFFFF"
@@ -826,6 +877,7 @@
       "fill": "#FFFFFF",
       "ring": "#006778",
       "mark": "#D7A22A",
+      "text": "#D7A22A",
       "textOnFill": "#006778",
       "numeralFill": "#006778",
       "numeralStroke": "#FFFFFF"
@@ -842,6 +894,7 @@
       "fill": "#FFFFFF",
       "ring": "#0C2340",
       "mark": "#4B92DB",
+      "text": "#4B92DB",
       "textOnFill": "#0C2340",
       "numeralFill": "#0C2340",
       "numeralStroke": "#FFFFFF"
@@ -858,6 +911,7 @@
       "fill": "#FFFFFF",
       "ring": "#FB4F14",
       "mark": "#FB4F14",
+      "text": "#FB4F14",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#FB4F14"
@@ -874,6 +928,7 @@
       "fill": "#FFFFFF",
       "ring": "#E31837",
       "mark": "#E31837",
+      "text": "#FFB81C",
       "textOnFill": "#E31837",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#E31837"
@@ -890,6 +945,7 @@
       "fill": "#FFFFFF",
       "ring": "#000000",
       "mark": "#A5ACAF",
+      "text": "#A5ACAF",
       "textOnFill": "#000000",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -906,6 +962,7 @@
       "fill": "#FFFFFF",
       "ring": "#0080C6",
       "mark": "#0080C6",
+      "text": "#FFC20E",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#0080C6"
@@ -922,6 +979,7 @@
       "fill": "#FFFFFF",
       "ring": "#003594",
       "mark": "#869397",
+      "text": "#869397",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#FFFFFF"
@@ -938,6 +996,7 @@
       "fill": "#FFFFFF",
       "ring": "#0B2265",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#0B2265",
       "numeralFill": "#0B2265",
       "numeralStroke": "#FFFFFF"
@@ -954,6 +1013,7 @@
       "fill": "#FFFFFF",
       "ring": "#004C54",
       "mark": "#A5ACAF",
+      "text": "#A5ACAF",
       "textOnFill": "#004C54",
       "numeralFill": "#004C54",
       "numeralStroke": "#FFFFFF"
@@ -970,6 +1030,7 @@
       "fill": "#FFFFFF",
       "ring": "#5A1414",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#5A1414",
       "numeralFill": "#5A1414",
       "numeralStroke": "#FFFFFF"
@@ -986,6 +1047,7 @@
       "fill": "#FFFFFF",
       "ring": "#0B162A",
       "mark": "#C83803",
+      "text": "#FFFFFF",
       "textOnFill": "#0B162A",
       "numeralFill": "#0B162A",
       "numeralStroke": "#FFFFFF"
@@ -1002,6 +1064,7 @@
       "fill": "#FFFFFF",
       "ring": "#0076B6",
       "mark": "#0076B6",
+      "text": "#B0B7BC",
       "textOnFill": "#0076B6",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#0076B6"
@@ -1018,6 +1081,7 @@
       "fill": "#FFFFFF",
       "ring": "#203731",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#203731",
       "numeralFill": "#203731",
       "numeralStroke": "#FFFFFF"
@@ -1034,6 +1098,7 @@
       "fill": "#FFFFFF",
       "ring": "#4F2683",
       "mark": "#FFC62F",
+      "text": "#FFC62F",
       "textOnFill": "#4F2683",
       "numeralFill": "#4F2683",
       "numeralStroke": "#FFFFFF"
@@ -1050,6 +1115,7 @@
       "fill": "#FFFFFF",
       "ring": "#A71930",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#A71930",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -1066,6 +1132,7 @@
       "fill": "#FFFFFF",
       "ring": "#0085CA",
       "mark": "#0085CA",
+      "text": "#FFFFFF",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#0085CA"
@@ -1082,6 +1149,7 @@
       "fill": "#FFFFFF",
       "ring": "#D3BC8D",
       "mark": "#D3BC8D",
+      "text": "#D3BC8D",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#D3BC8D"
@@ -1098,6 +1166,7 @@
       "fill": "#FFFFFF",
       "ring": "#D50A0A",
       "mark": "#D50A0A",
+      "text": "#FFFFFF",
       "textOnFill": "#D50A0A",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#D50A0A"
@@ -1114,6 +1183,7 @@
       "fill": "#0080C6",
       "ring": "#FFC20E",
       "mark": "#FFC20E",
+      "text": "#FFC20E",
       "textOnFill": "#ffffff",
       "numeralFill": "#0080C6",
       "numeralStroke": "#FFC20E"
@@ -1130,6 +1200,7 @@
       "fill": "#FFC20E",
       "ring": "#0080C6",
       "mark": "#0080C6",
+      "text": "#FFFFFF",
       "textOnFill": "#15161a",
       "numeralFill": "#FFC20E",
       "numeralStroke": "#0080C6"
@@ -1146,6 +1217,7 @@
       "fill": "#002244",
       "ring": "#FFC20E",
       "mark": "#FFC20E",
+      "text": "#FFC20E",
       "textOnFill": "#FFC20E",
       "numeralFill": "#002244",
       "numeralStroke": "#FFC20E"
@@ -1162,6 +1234,7 @@
       "fill": "#4B92DB",
       "ring": "#C8102E",
       "mark": "#C8102E",
+      "text": "#FFFFFF",
       "textOnFill": "#15161a",
       "numeralFill": "#4B92DB",
       "numeralStroke": "#C8102E"
@@ -1178,6 +1251,7 @@
       "fill": "#C83803",
       "ring": "#0B162A",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#0B162A",
       "numeralStroke": "#C83803"
@@ -1194,6 +1268,7 @@
       "fill": "#101820",
       "ring": "#D3BC8D",
       "mark": "#D3BC8D",
+      "text": "#D3BC8D",
       "textOnFill": "#D3BC8D",
       "numeralFill": "#101820",
       "numeralStroke": "#D3BC8D"
@@ -1210,6 +1285,7 @@
       "fill": "#006778",
       "ring": "#D7A22A",
       "mark": "#D7A22A",
+      "text": "#D7A22A",
       "textOnFill": "#ffffff",
       "numeralFill": "#006778",
       "numeralStroke": "#D7A22A"
@@ -1226,6 +1302,7 @@
       "fill": "#5A1414",
       "ring": "#FFB612",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#FFB612",
       "numeralFill": "#5A1414",
       "numeralStroke": "#FFB612"
@@ -1242,6 +1319,7 @@
       "fill": "#4F2683",
       "ring": "#FFC62F",
       "mark": "#FFC62F",
+      "text": "#FFC62F",
       "textOnFill": "#FFC62F",
       "numeralFill": "#4F2683",
       "numeralStroke": "#FFC62F"
@@ -1258,6 +1336,7 @@
       "fill": "#1B2C4E",
       "ring": "#CC8835",
       "mark": "#CC8835",
+      "text": "#CC8835",
       "textOnFill": "#CC8835",
       "numeralFill": "#1B2C4E",
       "numeralStroke": "#CC8835"
@@ -1274,6 +1353,7 @@
       "fill": "#FFFFFF",
       "ring": "#00338D",
       "mark": "#C60C30",
+      "text": "#FFFFFF",
       "textOnFill": "#00338D",
       "numeralFill": "#00338D",
       "numeralStroke": "#FFFFFF"
@@ -1290,6 +1370,7 @@
       "fill": "#101820",
       "ring": "#008E97",
       "mark": "#008E97",
+      "text": "#008E97",
       "textOnFill": "#008E97",
       "numeralFill": "#101820",
       "numeralStroke": "#008E97"
@@ -1306,6 +1387,7 @@
       "fill": "#002F6C",
       "ring": "#C60C30",
       "mark": "#C60C30",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#002F6C",
       "numeralStroke": "#C60C30"
@@ -1322,6 +1404,7 @@
       "fill": "#115740",
       "ring": "#000000",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#115740",
       "numeralStroke": "#FFFFFF"
@@ -1338,6 +1421,7 @@
       "fill": "#FBF1DD",
       "ring": "#B31529",
       "mark": "#EE6B3D",
+      "text": "#EE6B3D",
       "textOnFill": "#B31529",
       "numeralFill": "#B31529",
       "numeralStroke": "#FBF1DD"
@@ -1354,6 +1438,7 @@
       "fill": "#0D1B3E",
       "ring": "#FFD100",
       "mark": "#FFD100",
+      "text": "#FFD100",
       "textOnFill": "#FFD100",
       "numeralFill": "#0D1B3E",
       "numeralStroke": "#FFD100"
@@ -1370,6 +1455,7 @@
       "fill": "#101820",
       "ring": "#B3995D",
       "mark": "#B3995D",
+      "text": "#B3995D",
       "textOnFill": "#B3995D",
       "numeralFill": "#101820",
       "numeralStroke": "#B3995D"
@@ -1386,6 +1472,7 @@
       "fill": "#C6D3DC",
       "ring": "#002244",
       "mark": "#C6D3DC",
+      "text": "#C6D3DC",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#C6D3DC"
@@ -1402,6 +1489,7 @@
       "fill": "#B6FF3E",
       "ring": "#002244",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#B6FF3E"
@@ -1418,6 +1506,7 @@
       "fill": "#008E97",
       "ring": "#FC4C02",
       "mark": "#FC4C02",
+      "text": "#FC4C02",
       "textOnFill": "#15161a",
       "numeralFill": "#008E97",
       "numeralStroke": "#FC4C02"
@@ -1434,6 +1523,7 @@
       "fill": "#C8102E",
       "ring": "#002F6C",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#002F6C",
       "numeralStroke": "#C8102E"
@@ -1450,6 +1540,7 @@
       "fill": "#000000",
       "ring": "#125740",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1466,6 +1557,7 @@
       "fill": "#FFB612",
       "ring": "#101820",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#101820",
       "numeralFill": "#101820",
       "numeralStroke": "#FFB612"
@@ -1482,6 +1574,7 @@
       "fill": "#FFFFFF",
       "ring": "#FF3C00",
       "mark": "#FF3C00",
+      "text": "#FF3C00",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#FF3C00"
@@ -1498,6 +1591,7 @@
       "fill": "#FB4F14",
       "ring": "#000000",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#000000",
       "numeralFill": "#000000",
       "numeralStroke": "#FB4F14"
@@ -1514,6 +1608,7 @@
       "fill": "#FFFFFF",
       "ring": "#000000",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#000000",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1530,6 +1625,7 @@
       "fill": "#000000",
       "ring": "#9E7C0C",
       "mark": "#9E7C0C",
+      "text": "#9E7C0C",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1546,6 +1642,7 @@
       "fill": "#A71930",
       "ring": "#03202F",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -1562,6 +1659,7 @@
       "fill": "#101820",
       "ring": "#D7A22A",
       "mark": "#D7A22A",
+      "text": "#D7A22A",
       "textOnFill": "#D7A22A",
       "numeralFill": "#101820",
       "numeralStroke": "#D7A22A"
@@ -1578,6 +1676,7 @@
       "fill": "#0C2340",
       "ring": "#4B92DB",
       "mark": "#4B92DB",
+      "text": "#4B92DB",
       "textOnFill": "#4B92DB",
       "numeralFill": "#0C2340",
       "numeralStroke": "#4B92DB"
@@ -1594,6 +1693,7 @@
       "fill": "#4B92DB",
       "ring": "#0C2340",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#0C2340",
       "numeralFill": "#0C2340",
       "numeralStroke": "#4B92DB"
@@ -1610,6 +1710,7 @@
       "fill": "#4495D2",
       "ring": "#FFFFFF",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#15161a",
       "numeralFill": "#4495D2",
       "numeralStroke": "#FFFFFF"
@@ -1626,6 +1727,7 @@
       "fill": "#FFFFFF",
       "ring": "#4495D2",
       "mark": "#4495D2",
+      "text": "#4495D2",
       "textOnFill": "#15161a",
       "numeralFill": "#FFFFFF",
       "numeralStroke": "#4495D2"
@@ -1642,6 +1744,7 @@
       "fill": "#FB4F14",
       "ring": "#002244",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#002244",
       "numeralFill": "#002244",
       "numeralStroke": "#FB4F14"
@@ -1658,6 +1761,7 @@
       "fill": "#0B2265",
       "ring": "#A71930",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#0B2265",
       "numeralStroke": "#FFFFFF"
@@ -1674,6 +1778,7 @@
       "fill": "#000000",
       "ring": "#004C54",
       "mark": "#A5ACAF",
+      "text": "#A5ACAF",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1690,6 +1795,7 @@
       "fill": "#B0B7BC",
       "ring": "#0076B6",
       "mark": "#0076B6",
+      "text": "#B0B7BC",
       "textOnFill": "#15161a",
       "numeralFill": "#B0B7BC",
       "numeralStroke": "#0076B6"
@@ -1706,6 +1812,7 @@
       "fill": "#FFFFFF",
       "ring": "#4F2683",
       "mark": "#FFC62F",
+      "text": "#FFC62F",
       "textOnFill": "#4F2683",
       "numeralFill": "#4F2683",
       "numeralStroke": "#FFFFFF"
@@ -1722,6 +1829,7 @@
       "fill": "#FFFFFF",
       "ring": "#203731",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#203731",
       "numeralFill": "#203731",
       "numeralStroke": "#FFFFFF"
@@ -1738,6 +1846,7 @@
       "fill": "#A71930",
       "ring": "#000000",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -1754,6 +1863,7 @@
       "fill": "#101820",
       "ring": "#0085CA",
       "mark": "#0085CA",
+      "text": "#A5ACAF",
       "textOnFill": "#ffffff",
       "numeralFill": "#101820",
       "numeralStroke": "#0085CA"
@@ -1770,6 +1880,7 @@
       "fill": "#000000",
       "ring": "#97233F",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#000000",
       "numeralStroke": "#FFFFFF"
@@ -1786,6 +1897,7 @@
       "fill": "#F0EBE0",
       "ring": "#003594",
       "mark": "#FFA300",
+      "text": "#FFA300",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#F0EBE0"
@@ -1802,6 +1914,7 @@
       "fill": "#03202F",
       "ring": "#0072CE",
       "mark": "#0072CE",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#03202F",
       "numeralStroke": "#0072CE"
@@ -1818,6 +1931,7 @@
       "fill": "#A71930",
       "ring": "#FFFFFF",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#FFFFFF",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -1834,6 +1948,7 @@
       "fill": "#FFFFFF",
       "ring": "#A71930",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#A71930",
       "numeralFill": "#A71930",
       "numeralStroke": "#FFFFFF"
@@ -1850,6 +1965,7 @@
       "fill": "#241773",
       "ring": "#FFFFFF",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#FFFFFF",
       "numeralFill": "#241773",
       "numeralStroke": "#FFFFFF"
@@ -1866,6 +1982,7 @@
       "fill": "#FFFFFF",
       "ring": "#241773",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#241773",
       "numeralFill": "#241773",
       "numeralStroke": "#FFFFFF"
@@ -1882,6 +1999,7 @@
       "fill": "#5A1414",
       "ring": "#FFFFFF",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#FFFFFF",
       "numeralFill": "#5A1414",
       "numeralStroke": "#FFFFFF"
@@ -1898,6 +2016,7 @@
       "fill": "#FFFFFF",
       "ring": "#5A1414",
       "mark": "#FFB612",
+      "text": "#FFB612",
       "textOnFill": "#5A1414",
       "numeralFill": "#5A1414",
       "numeralStroke": "#FFFFFF"
@@ -1914,6 +2033,7 @@
       "fill": "#003594",
       "ring": "#FFD100",
       "mark": "#FFD100",
+      "text": "#FFD100",
       "textOnFill": "#FFD100",
       "numeralFill": "#003594",
       "numeralStroke": "#FFD100"
@@ -1930,6 +2050,7 @@
       "fill": "#FFFFFF",
       "ring": "#003594",
       "mark": "#FFD100",
+      "text": "#FFD100",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#FFFFFF"
@@ -1946,6 +2067,7 @@
       "fill": "#FFD100",
       "ring": "#003594",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#FFD100"
@@ -1962,6 +2084,7 @@
       "fill": "#FFFFFF",
       "ring": "#003594",
       "mark": "#FFFFFF",
+      "text": "#FFFFFF",
       "textOnFill": "#003594",
       "numeralFill": "#003594",
       "numeralStroke": "#FFFFFF"
@@ -1978,6 +2101,7 @@
       "fill": "#949399",
       "ring": "#00338D",
       "mark": "#C60C30",
+      "text": "#949399",
       "textOnFill": "#15161a",
       "numeralFill": "#00338D",
       "numeralStroke": "#949399"
@@ -1994,6 +2118,7 @@
       "fill": "#34302B",
       "ring": "#D50A0A",
       "mark": "#D50A0A",
+      "text": "#FFFFFF",
       "textOnFill": "#ffffff",
       "numeralFill": "#34302B",
       "numeralStroke": "#D50A0A"

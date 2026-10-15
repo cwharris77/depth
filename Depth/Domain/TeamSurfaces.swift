@@ -98,6 +98,15 @@ enum TeamSurfaces {
             ?? colors.primary
     }
 
+    /// Small text that floats on the app ground: overlines, status labels, a coach's tenure
+    /// line. `mark` is judged at the 3:1 graphical-object bar, right for an underline and
+    /// wrong for 12pt type. Same candidate order, judged at 4.5:1; where no real kit color
+    /// reaches it the text is plain white, the same non-team fallback `numeral` uses.
+    static func text(_ colors: JerseyColors) -> String {
+        [colors.secondary, colors.accent, colors.primary]
+            .first { contrastRatio($0, darkBackgroundHex) >= textMin } ?? white
+    }
+
     /// Text painted on a team-colored fill. Prefers the kit's own contrast color so the pair
     /// reads as the team, and falls back to white/near-black where the two jersey colors are
     /// too close (Chiefs gold-on-red is 2.72, Dolphins orange-on-aqua 1.16). The fallback isn't

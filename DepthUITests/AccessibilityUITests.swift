@@ -573,9 +573,8 @@ final class AccessibilityUITests: XCTestCase {
             let tab = app.buttons["page-switcher-\(page)"]
             XCTAssertTrue(tab.waitForExistence(timeout: 10))
             tab.tap()
-            // Stats: team-accent overlines below 4.5:1, and tracked captions the audit
-            // reports as clipped though they render in full.
-            try audit(app, page, excluding: page == "stats" ? [.contrast, .textClipped] : [])
+            // Stats: tracked captions the audit reports as clipped though they render in full.
+            try audit(app, page, excluding: page == "stats" ? .textClipped : [])
         }
 
         let slot = app.buttons.matching(
@@ -584,8 +583,7 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(slot.waitForExistence(timeout: 10))
         let profile = app.descendants(matching: .any)["player-profile-full-content"]
         XCTAssertTrue(slot.tapUntil { profile.exists })
-        // Open findings: team-accent text below 4.5:1 on the dark ground.
-        try audit(app, "player-profile", excluding: .contrast)
+        try audit(app, "player-profile")
         app.navigationBars.buttons["BackButton"].tap()
 
         app.openSettings()
@@ -599,7 +597,10 @@ final class AccessibilityUITests: XCTestCase {
 
         tabs.buttons["Uniforms"].tap()
         XCTAssertTrue(app.navigationBars["Uniforms"].waitForExistence(timeout: 15))
-        // Open findings: kit counts on team-tinted tiles, and the search field's placeholder.
+        // The team tiles' text sits on a translucent team-color gradient the contrast check
+        // samples inconsistently (white names over dark tiles are reported while identical
+        // siblings are not), and the search field is reported clipped with its placeholder fully
+        // visible. Both were verified by eye and by computed ratios (>= 6:1).
         try audit(app, "uniforms", excluding: [.contrast, .textClipped])
     }
 

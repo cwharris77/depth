@@ -112,6 +112,10 @@ private struct PlayerProfileScreen: View {
     private var markColor: Color {
         jersey.map { Color(hex: TeamSurfaces.mark($0)) } ?? DesignTokens.Colors.accent
     }
+    /// The kit color for small type on the app ground; `markColor` is for non-text marks.
+    private var textColor: Color {
+        jersey.map { Color(hex: TeamSurfaces.text($0)) } ?? DesignTokens.Colors.textPrimary
+    }
     /// Text painted on the jersey band's fill.
     private var onBandColor: Color {
         jersey.map { Color(hex: TeamSurfaces.textOnFill($0)) } ?? DesignTokens.Colors.accent
@@ -357,7 +361,7 @@ private struct PlayerProfileScreen: View {
     // MARK: - Identity
 
     private var identity: some View {
-        let accent = markColor
+        let accent = textColor
         let position = Text(player.position.fullName)
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(DesignTokens.Colors.textSecondary)
@@ -593,7 +597,7 @@ private struct PlayerProfileScreen: View {
     }
 
     private func depthRowLabel(_ p: Player, isCurrent: Bool) -> some View {
-        DepthRowContent(player: p, isCurrent: isCurrent, accent: markColor)
+        DepthRowContent(player: p, isCurrent: isCurrent, accent: textColor)
             .padding(.vertical, DesignTokens.Spacing.sm)
             .frame(minHeight: 44)
             // The whole row accepts the tap, not just its glyphs.
