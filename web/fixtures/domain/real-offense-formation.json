@@ -863,7 +863,7 @@
         "group": null,
         "preferredPosition": null,
         "familyPosition": null,
-        "x": 10,
+        "x": 5,
         "y": 54,
         "label": "WR",
         "onLine": false
@@ -875,8 +875,8 @@
         "group": null,
         "preferredPosition": null,
         "familyPosition": null,
-        "x": 24,
-        "y": 56,
+        "x": 21,
+        "y": 54,
         "label": "WR",
         "onLine": false
       },
@@ -1003,7 +1003,7 @@
         "group": null,
         "preferredPosition": null,
         "familyPosition": null,
-        "x": 10,
+        "x": 5,
         "y": 54,
         "label": "WR",
         "onLine": false
@@ -1015,8 +1015,8 @@
         "group": null,
         "preferredPosition": null,
         "familyPosition": null,
-        "x": 24,
-        "y": 56,
+        "x": 21,
+        "y": 54,
         "label": "WR",
         "onLine": false
       },

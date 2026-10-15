@@ -389,16 +389,19 @@ struct DepthChartFieldLayoutTests {
         assertNoTouching(slots, layout: filled)
     }
 
-    @Test("generic offense seats its left receiver no deeper than a real formation does")
-    func genericLeftReceiverMatchesRealFormationDepth() throws {
+    @Test("generic offense brings its slot receiver closer without crowding the line")
+    func genericSlotReceiverMovesCloserToLine() throws {
         // Past seasons have no formation rows and fall back to offenseFormation, so its
-        // off-line receiver must sit where a charted real formation puts one.
+        // off-line receivers should sit close to a charted real formation without
+        // making their dots touch on narrow phones.
         let realOffLine = buildRealFormation(alignment: "SHOTGUN", code: "11")
             .filter { $0.label == "WR" && !$0.onLine }
         let deepestReal = try #require(realOffLine.map(\.y).max())
         let left = try #require(offenseFormation.first { $0.id == "off-wr-1" })
+        let slot = try #require(offenseFormation.first { $0.id == "off-wr-2" })
         #expect(left.y <= deepestReal, "left receiver at y=\(left.y) is deeper than \(deepestReal)")
-        #expect(left.x <= 10, "left receiver should reach the left edge, got x=\(left.x)")
+        #expect(left.x <= 5, "left receiver should reach the left edge, got x=\(left.x)")
+        #expect(slot.y <= deepestReal, "slot receiver at y=\(slot.y) is too deep")
     }
 
     @Test("empty input yields a safe default layout")

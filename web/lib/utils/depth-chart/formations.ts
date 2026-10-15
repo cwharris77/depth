@@ -233,8 +233,8 @@ const OL_SLOTS: FormationSlot[] = [
 // Exactly 7 onLine, per the rule.
 export const OFFENSE_FORMATION: FormationSlot[] = [
   { id: 'off-wr-0', position: 'WR', index: 0, x: 88, y: 51, label: 'WR', onLine: true },
-  { id: 'off-wr-1', position: 'WR', index: 1, x: 10, y: 54, label: 'WR', onLine: false },
-  { id: 'off-wr-2', position: 'WR', index: 2, x: 24, y: 56, label: 'WR', onLine: false },
+  { id: 'off-wr-1', position: 'WR', index: 1, x: 5, y: 54, label: 'WR', onLine: false },
+  { id: 'off-wr-2', position: 'WR', index: 2, x: 21, y: 54, label: 'WR', onLine: false },
   { id: 'off-te-0', position: 'TE', index: 0, x: 74, y: 51, label: 'TE', onLine: true },
   ...OL_SLOTS,
   { id: 'off-qb-0', position: 'QB', index: 0, x: 50, y: 66, label: 'QB', onLine: false },
