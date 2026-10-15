@@ -68,20 +68,24 @@ enum TeamStatsRankQualifier: String, Sendable {
 
 /// "First in NFL" / "Last in NFL" / "3rd most" / "6th least". `lastRank` is the league
 /// size, so a team ranked last says so rather than "32nd most". Nil rank renders no
-/// caption at all — the value stands alone rather than implying a position.
+/// caption at all — the value stands alone rather than implying a position. A `tied`
+/// rank reads "T-1st in NFL" / "T-3rd most": the rank is the best position the shared
+/// value holds, so it needs the prefix to avoid claiming the spot outright.
 func teamStatsRankLabel(
     _ rank: Int?,
     lastRank: Int,
     qualifier: TeamStatsRankQualifier,
-    qualifiedTeams: Int? = nil
+    qualifiedTeams: Int? = nil,
+    tied: Bool = false
 ) -> String? {
     guard let rank, rank > 0 else { return nil }
+    let prefix = tied ? "T-" : ""
     if let qualifiedTeams, qualifiedTeams < lastRank {
-        return "\(ordinal(rank)) of \(qualifiedTeams) qualified teams"
+        return "\(prefix)\(ordinal(rank)) of \(qualifiedTeams) qualified teams"
     }
-    if rank == 1 { return "First in NFL" }
+    if rank == 1 { return tied ? "T-1st in NFL" : "First in NFL" }
     if rank == lastRank { return "Last in NFL" }
-    return "\(ordinal(rank)) \(qualifier.rawValue)"
+    return "\(prefix)\(ordinal(rank)) \(qualifier.rawValue)"
 }
 
 struct TeamStatsMetricSpec: Identifiable, Sendable {
@@ -94,6 +98,8 @@ struct TeamStatsMetricSpec: Identifiable, Sendable {
     /// KeyPath because KeyPath is not Sendable, and this catalog is a static let under
     /// Swift 6 strict concurrency.
     let rank: @Sendable (TeamStatsRanks) -> Int?
+    /// The `TeamStatsRanks.tiedMetrics` key for this metric's rank.
+    let tieKey: String
     let qualifier: TeamStatsRankQualifier
 }
 
@@ -150,22 +156,23 @@ enum TeamStatsMetricCatalog {
                 TeamStatsMetricSpec(
                     id: "epa-per-play", label: "EPA / PLAY",
                     value: { $0.offensiveEPAPerPlay }, format: TeamStatsMetricFormat.signed(2),
-                    rank: { $0.offensiveEPAPerPlay }, qualifier: .overall
+                    rank: { $0.offensiveEPAPerPlay }, tieKey: "offensiveEPAPerPlay",
+                    qualifier: .overall
                 ),
                 TeamStatsMetricSpec(
                     id: "sack-rate", label: "SACK RATE",
                     value: { $0.sackRate }, format: TeamStatsMetricFormat.percent,
-                    rank: { $0.sackRate }, qualifier: .least
+                    rank: { $0.sackRate }, tieKey: "sackRate", qualifier: .least
                 ),
                 TeamStatsMetricSpec(
                     id: "pass-epa", label: "PASS EPA",
                     value: { $0.passingEPA }, format: TeamStatsMetricFormat.decimal(1),
-                    rank: { $0.passingEPA }, qualifier: .most
+                    rank: { $0.passingEPA }, tieKey: "passingEPA", qualifier: .most
                 ),
                 TeamStatsMetricSpec(
                     id: "rush-epa", label: "RUSH EPA",
                     value: { $0.rushingEPA }, format: TeamStatsMetricFormat.decimal(1),
-                    rank: { $0.rushingEPA }, qualifier: .most
+                    rank: { $0.rushingEPA }, tieKey: "rushingEPA", qualifier: .most
                 ),
                 // Labelled INTS THROWN, not INTERCEPTIONS: DEFENSE carries its own
                 // INTERCEPTIONS row two groups down meaning the opposite thing. Compare's
@@ -176,13 +183,14 @@ enum TeamStatsMetricCatalog {
                     id: "ints-thrown", label: "INTS THROWN",
                     value: { $0.passingInterceptions.map(Double.init) },
                     format: TeamStatsMetricFormat.integer,
-                    rank: { $0.passingInterceptions }, qualifier: .least
+                    rank: { $0.passingInterceptions }, tieKey: "passingInterceptions",
+                    qualifier: .least
                 ),
                 TeamStatsMetricSpec(
                     id: "fumbles-lost", label: "FUMBLES LOST",
                     value: { $0.fumblesLost.map(Double.init) },
                     format: TeamStatsMetricFormat.integer,
-                    rank: { $0.fumblesLost }, qualifier: .least
+                    rank: { $0.fumblesLost }, tieKey: "fumblesLost", qualifier: .least
                 ),
             ]),
         TeamStatsMetricGroup(
@@ -191,24 +199,26 @@ enum TeamStatsMetricCatalog {
                 TeamStatsMetricSpec(
                     id: "sacks", label: "SACKS",
                     value: { $0.defensiveSacks }, format: TeamStatsMetricFormat.decimal(1),
-                    rank: { $0.defensiveSacks }, qualifier: .most
+                    rank: { $0.defensiveSacks }, tieKey: "defensiveSacks", qualifier: .most
                 ),
                 TeamStatsMetricSpec(
                     id: "qb-hits-per-game", label: "QB HITS / GM",
                     value: { $0.quarterbackHitsPerGame }, format: TeamStatsMetricFormat.decimal(1),
-                    rank: { $0.quarterbackHitsPerGame }, qualifier: .most
+                    rank: { $0.quarterbackHitsPerGame }, tieKey: "quarterbackHitsPerGame",
+                    qualifier: .most
                 ),
                 TeamStatsMetricSpec(
                     id: "takeaways", label: "TAKEAWAYS",
                     value: { $0.defensiveTakeaways.map(Double.init) },
                     format: TeamStatsMetricFormat.integer,
-                    rank: { $0.defensiveTakeaways }, qualifier: .most
+                    rank: { $0.defensiveTakeaways }, tieKey: "defensiveTakeaways", qualifier: .most
                 ),
                 TeamStatsMetricSpec(
                     id: "interceptions", label: "INTERCEPTIONS",
                     value: { $0.defensiveInterceptions.map(Double.init) },
                     format: TeamStatsMetricFormat.integer,
-                    rank: { $0.defensiveInterceptions }, qualifier: .most
+                    rank: { $0.defensiveInterceptions }, tieKey: "defensiveInterceptions",
+                    qualifier: .most
                 ),
             ]),
         TeamStatsMetricGroup(
@@ -217,24 +227,28 @@ enum TeamStatsMetricCatalog {
                 TeamStatsMetricSpec(
                     id: "field-goal-pct", label: "FIELD GOAL %",
                     value: { $0.fieldGoalPercentage }, format: TeamStatsMetricFormat.percent,
-                    rank: { $0.fieldGoalPercentage }, qualifier: .overall
+                    rank: { $0.fieldGoalPercentage }, tieKey: "fieldGoalPercentage",
+                    qualifier: .overall
                 ),
                 TeamStatsMetricSpec(
                     id: "net-punt-per-att", label: "NET PUNT / ATT",
                     value: { $0.netPuntYardsPerAttempt }, format: TeamStatsMetricFormat.decimal(1),
-                    rank: { $0.netPuntYardsPerAttempt }, qualifier: .most
+                    rank: { $0.netPuntYardsPerAttempt }, tieKey: "netPuntYardsPerAttempt",
+                    qualifier: .most
                 ),
                 TeamStatsMetricSpec(
                     id: "punt-ret-avg", label: "PUNT RET AVG",
                     value: { $0.puntReturnYardsPerAttempt },
                     format: TeamStatsMetricFormat.decimal(1),
-                    rank: { $0.puntReturnYardsPerAttempt }, qualifier: .most
+                    rank: { $0.puntReturnYardsPerAttempt }, tieKey: "puntReturnYardsPerAttempt",
+                    qualifier: .most
                 ),
                 TeamStatsMetricSpec(
                     id: "kick-ret-avg", label: "KICK RET AVG",
                     value: { $0.kickoffReturnYardsPerAttempt },
                     format: TeamStatsMetricFormat.decimal(1),
-                    rank: { $0.kickoffReturnYardsPerAttempt }, qualifier: .most
+                    rank: { $0.kickoffReturnYardsPerAttempt },
+                    tieKey: "kickoffReturnYardsPerAttempt", qualifier: .most
                 ),
             ]),
     ]
@@ -262,7 +276,8 @@ enum TeamStatsMetricCatalog {
                     rankCaption: showRanks
                         ? teamStatsRankLabel(
                             ranks.flatMap(spec.rank), lastRank: lastRank,
-                            qualifier: spec.qualifier
+                            qualifier: spec.qualifier,
+                            tied: ranks?.tiedMetrics.contains(spec.tieKey) ?? false
                         )
                         : nil
                 )
@@ -292,6 +307,7 @@ enum TeamLineMetricCatalog {
         let value: @Sendable (TeamLineStats) -> Double?
         let format: @Sendable (Double) -> String
         let rank: @Sendable (TeamStatsRanks) -> Int?
+        let tieKey: String
         let rankPopulation: @Sendable (TeamStatsRanks) -> Int?
         let qualifier: TeamStatsRankQualifier
     }
@@ -303,60 +319,63 @@ enum TeamLineMetricCatalog {
         TeamLineMetricSpec(
             id: "adj-line-yards", label: "ADJ LINE YDS",
             value: { $0.adjustedLineYards }, format: TeamStatsMetricFormat.decimal(2),
-            rank: { $0.adjustedLineYards },
+            rank: { $0.adjustedLineYards }, tieKey: "adjustedLineYards",
             rankPopulation: { $0.lineRankPopulation["adjustedLineYards"] },
             qualifier: .most
         ),
         TeamLineMetricSpec(
             id: "stuffed-rate", label: "STUFFED %",
             value: { $0.stuffedRate }, format: TeamStatsMetricFormat.percent,
-            rank: { $0.stuffedRate }, rankPopulation: { $0.lineRankPopulation["stuffedRate"] },
+            rank: { $0.stuffedRate }, tieKey: "stuffedRate",
+            rankPopulation: { $0.lineRankPopulation["stuffedRate"] },
             qualifier: .least
         ),
         TeamLineMetricSpec(
             id: "power-success", label: "POWER SUCCESS",
             value: { $0.powerSuccessRate }, format: TeamStatsMetricFormat.percent,
-            rank: { $0.powerSuccessRate },
+            rank: { $0.powerSuccessRate }, tieKey: "powerSuccessRate",
             rankPopulation: { $0.lineRankPopulation["powerSuccessRate"] },
             qualifier: .most
         ),
         TeamLineMetricSpec(
             id: "second-level-per-rush", label: "2ND LEVEL / RUSH",
             value: { $0.secondLevelYardsPerRush }, format: TeamStatsMetricFormat.decimal(2),
-            rank: { $0.secondLevelYardsPerRush },
+            rank: { $0.secondLevelYardsPerRush }, tieKey: "secondLevelYardsPerRush",
             rankPopulation: { $0.lineRankPopulation["secondLevelYardsPerRush"] },
             qualifier: .most
         ),
         TeamLineMetricSpec(
             id: "open-field-per-rush", label: "OPEN FIELD / RUSH",
             value: { $0.openFieldYardsPerRush }, format: TeamStatsMetricFormat.decimal(2),
-            rank: { $0.openFieldYardsPerRush },
+            rank: { $0.openFieldYardsPerRush }, tieKey: "openFieldYardsPerRush",
             rankPopulation: { $0.lineRankPopulation["openFieldYardsPerRush"] },
             qualifier: .most
         ),
         TeamLineMetricSpec(
             id: "line-sack-rate", label: "SACK RATE",
             value: { $0.sackRate }, format: TeamStatsMetricFormat.percent,
-            rank: { $0.lineSackRate }, rankPopulation: { $0.lineRankPopulation["lineSackRate"] },
+            rank: { $0.lineSackRate }, tieKey: "lineSackRate",
+            rankPopulation: { $0.lineRankPopulation["lineSackRate"] },
             qualifier: .least
         ),
         TeamLineMetricSpec(
             id: "pressure-rate", label: "PRESSURE RATE",
             value: { $0.pressureRate }, format: TeamStatsMetricFormat.percent,
-            rank: { $0.pressureRate }, rankPopulation: { $0.lineRankPopulation["pressureRate"] },
+            rank: { $0.pressureRate }, tieKey: "pressureRate",
+            rankPopulation: { $0.lineRankPopulation["pressureRate"] },
             qualifier: .least
         ),
         TeamLineMetricSpec(
             id: "time-to-throw", label: "TIME TO THROW",
             value: { $0.avgTimeToThrow }, format: TeamStatsMetricFormat.decimal(2),
-            rank: { $0.avgTimeToThrow },
+            rank: { $0.avgTimeToThrow }, tieKey: "avgTimeToThrow",
             rankPopulation: { $0.lineRankPopulation["avgTimeToThrow"] },
             qualifier: .overall
         ),
         TeamLineMetricSpec(
             id: "pass-rushers", label: "PASS RUSHERS",
             value: { $0.avgPassRushers }, format: TeamStatsMetricFormat.decimal(1),
-            rank: { $0.avgPassRushers },
+            rank: { $0.avgPassRushers }, tieKey: "avgPassRushers",
             rankPopulation: { $0.lineRankPopulation["avgPassRushers"] },
             qualifier: .overall
         ),
@@ -381,7 +400,8 @@ enum TeamLineMetricCatalog {
                 rankCaption: showRanks
                     ? teamStatsRankLabel(
                         ranks.flatMap(spec.rank), lastRank: lastRank, qualifier: spec.qualifier,
-                        qualifiedTeams: ranks.flatMap(spec.rankPopulation)
+                        qualifiedTeams: ranks.flatMap(spec.rankPopulation),
+                        tied: ranks?.tiedMetrics.contains(spec.tieKey) ?? false
                     )
                     : nil
             )

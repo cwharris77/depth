@@ -298,7 +298,9 @@ struct TeamStatsView: View {
                                 .foregroundStyle(teamAccent)
                         }
                         if let caption = teamStatsRankLabel(
-                            ranks(for: stats)?.winPercent, lastRank: leagueSize, qualifier: .overall
+                            ranks(for: stats)?.winPercent, lastRank: leagueSize,
+                            qualifier: .overall,
+                            tied: ranks(for: stats)?.tiedMetrics.contains("winPercent") ?? false
                         ) {
                             Text(verbatim: caption)
                                 .font(.caption.bold())
