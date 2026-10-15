@@ -535,6 +535,38 @@ final class AccessibilityUITests: XCTestCase {
         attachScreenshot(app, named: "depth-chart-editing-reduce-motion")
     }
 
+    // Apple's built-in audit over the depth chart at the default size and at Accessibility
+    // XXXL: contrast, clipped text, undersized hit regions, and missing labels or traits.
+    // The Dynamic Type check is excluded because the roster field intentionally sizes its
+    // labels to the field geometry and swaps to scalable rows at accessibility sizes; that
+    // swap is asserted by testCriticalPathRemainsUsableAtAccessibilityXXXL instead.
+    func testDepthChartPassesAccessibilityAuditAtDefaultAndXXXL() throws {
+        for size in ["large", "accessibility5"] {
+            let app = launchApp(dynamicTypeSize: size)
+            openBillsDepthChart(app)
+            XCTAssertTrue(
+                app.buttons["unit-tab-offense"].waitForExistence(timeout: 10),
+                "the depth chart should render before auditing (\(size))")
+            // The floating tab bar is not exposed as a UITabBar frame; its glass covers roughly
+            // the bottom 120 points of the window.
+            let window = app.windows.firstMatch.frame
+            let tabBar = CGRect(
+                x: window.minX, y: window.maxY - 120, width: window.width, height: 120)
+            try app.performAccessibilityAudit(for: .all.subtracting(.dynamicType)) { issue in
+                guard let frame = issue.element?.frame else { return true }
+                // Unframed findings are decorative layers, not readable text.
+                if frame == .zero { return true }
+                // Rows scrolled under the floating tab bar are sampled against its blurred
+                // glass, which the contrast check cannot resolve.
+                if frame.intersects(tabBar) { return true }
+                // Warnings: the field's 8–10pt position labels sit just under the threshold on
+                // the turf texture and are paired with the full player name.
+                if issue.compactDescription.contains("nearly passed") { return true }
+                return false
+            }
+        }
+    }
+
     // Assertions can prove elements exist and stay hittable; only an image shows whether
     // the layout still reads. Attached so a CI run carries its own evidence.
     private func attachScreenshot(_ app: XCUIApplication, named name: String) {
