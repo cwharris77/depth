@@ -105,6 +105,14 @@ final class FeatureFlagStore {
                 }
             }
         }
+        // Store-listing captures show only shipped behavior, whatever the build's defaults.
+        if isInternalBuild,
+            ProcessInfo.processInfo.arguments.contains("UI_TESTING_APPSTORE_SCREENSHOTS")
+        {
+            for definition in definitions {
+                overrides[definition.key] = definition.launched
+            }
+        }
         self.overrides = overrides
     }
 
