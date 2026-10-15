@@ -16,6 +16,9 @@ struct TeamListPickerSheet: View {
     var events: any AppEventsRecording = NoOpAppEventsRecorder()
     let title: String
     let selectedTeamId: String
+    /// An optional non-team choice pinned above the list. Picking it follows
+    /// `dismissOnSelect` like a team does.
+    var leadingOption: TeamListLeadingOption? = nil
     let onSelectTeam: (String) -> Void
     var onSelectPlayer: ((PlayerHit) -> Void)? = nil
     /// `true` (the Depth Charts team switcher) dismisses the sheet after a selection;
@@ -44,7 +47,17 @@ struct TeamListPickerSheet: View {
             TeamListView(
                 repository: repository,
                 events: events,
-                selectedTeamId: selectedTeamId
+                selectedTeamId: selectedTeamId,
+                leadingOption: leadingOption.map { option in
+                    TeamListLeadingOption(
+                        title: option.title,
+                        identifier: option.identifier,
+                        isSelected: option.isSelected
+                    ) {
+                        option.action()
+                        if dismissOnSelect { dismiss() }
+                    }
+                }
             ) { teamId in
                 onSelectTeam(teamId)
                 if dismissOnSelect { dismiss() }

@@ -172,7 +172,10 @@ final class NotificationSettingsUITests: XCTestCase {
         XCTAssertTrue(toggle.label.contains("Bills"), "got \"\(toggle.label)\"")
 
         // Removing the favorite leaves nothing to notify about.
-        app.buttons["settings-favorite-remove"].tap()
+        app.buttons["settings-favorite-team"].tap()
+        let noFavorite = app.buttons["team-picker-no-favorite"]
+        XCTAssertTrue(noFavorite.waitForExistence(timeout: 10))
+        noFavorite.tap()
         XCTAssertTrue(choose.waitForExistence(timeout: 5))
     }
 

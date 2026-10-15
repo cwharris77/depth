@@ -112,7 +112,8 @@ struct SettingsView: View {
                 repository: DepthEnvironment.repository,
                 events: events,
                 title: "Favorite Team",
-                selectedTeamId: settingsStore.favoriteTeamId ?? ""
+                selectedTeamId: settingsStore.favoriteTeamId ?? "",
+                leadingOption: .noFavorite(in: settingsStore)
             ) { teamId in
                 settingsStore.selectTeam(teamId)
             }
@@ -165,13 +166,6 @@ struct SettingsView: View {
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
                     .frame(minHeight: SettingsMetrics.rowHeight)
                     .accessibilityIdentifier("settings-start-on-favorite")
-                Button("Remove Favorite") { settingsStore.selectTeam(nil) }
-                    .font(.subheadline)
-                    .foregroundStyle(DesignTokens.Colors.textMuted)
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("settings-favorite-remove")
             }
             if let updateError = settingsStore.updateError {
                 Text(updateError)

@@ -259,3 +259,21 @@ private func isolatedPreferences() throws -> UserPreferences {
 
     #expect(announced == ["bills", "dolphins", nil])
 }
+
+@Test @MainActor func noFavoriteOptionClearsTheFavorite() async {
+    let service = RecordingSettingsService()
+    await service.store(favorite: "chiefs", startOnFavorite: true)
+    let store = UserSettingsStore(remote: service, sessionStore: await settledSession())
+    await store.load()
+
+    let option = TeamListLeadingOption.noFavorite(in: store)
+    #expect(option.isSelected == false)
+    option.action()
+    await store.awaitPendingWrites()
+
+    #expect(store.favoriteTeamId == nil)
+    let patches = await service.recordedPatches()
+    #expect(patches.count == 1)
+    #expect(patches[0].columns[.favoriteTeamID] == .some(nil))
+    #expect(TeamListLeadingOption.noFavorite(in: store).isSelected == true)
+}
