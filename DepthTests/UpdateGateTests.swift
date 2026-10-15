@@ -6,12 +6,12 @@ import Testing
 // forced-update gate coverage. The gate is the one place the app deliberately
 // blocks rather than degrades, so its decision table is pinned here directly: block
 // below the minimum, allow at or above it, fail open when the config is unreachable and
-// nothing was ever cached, and — the property exists for — resolve from cache
-// before any network read so no other fetch can start ahead of it.
+// nothing was ever cached, and — the property it exists for — hold on `.checking` until the
+// live read answers so no other fetch can start ahead of it and a stale cached allow never
+// mounts the app first.
 
 /// Counts `appConfig()` calls and can be held open, so a test can observe the gate's
-/// state *while* the live read is still in flight — the window the cached fast path
-/// exists to cover.
+/// state *while* the live read is still in flight.
 private actor FakeConfigRepository: DepthRepository {
     var configResult: Result<AppConfig, Error>
     private(set) var appConfigCallCount = 0
@@ -152,36 +152,90 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
         #expect(gate.isChecking)
     }
 
-    @Test @MainActor func cachedConfigDecidesBeforeTheNetworkReadCompletes() async {
+    @Test @MainActor func coldLaunchHoldsOnCheckingUntilTheLiveReadAnswers() async {
         let store = inMemoryStore()
-        try? await store.saveAppConfig(config(minimum: 10), cachedAt: Date())
+        try? await store.saveAppConfig(config(minimum: 1), cachedAt: Date())
         let underlying = FakeConfigRepository(configResult: .success(config(minimum: 10)))
         await underlying.hold()
         let repository = CachingDepthRepository(underlying: underlying, store: store)
-        let gate = UpdateGateViewModel(repository: repository, currentBuild: 9)
+        let gate = UpdateGateViewModel(
+            repository: repository, currentBuild: 9, liveReadTimeout: .seconds(30))
 
         let checking = Task { await gate.check() }
-
-        // Spin until the cached phase has applied, with the live read still suspended.
-        while gate.isChecking {
-            await Task.yield()
-        }
-        #expect(
-            gate.state == .blocked,
-            "the cached config must decide the gate without waiting on the network")
-
-        // Then wait for the live read to actually enter the (held) repository call. The
-        // cached phase completing does NOT imply the network call has started — `check()`
-        // applies the cache and only then awaits `appConfig()`, so asserting the count
-        // immediately here races the task getting that far.
         while await underlying.appConfigCallCount == 0 {
             await Task.yield()
         }
-        #expect(await underlying.appConfigCallCount == 1, "the live read is in flight, not skipped")
+        #expect(
+            gate.isChecking,
+            "a cached allow must not mount the app while the live read is still in flight")
 
         await underlying.release()
         await checking.value
+        #expect(gate.state == .blocked, "the live read wins over the stale cached allow")
+    }
+
+    @Test @MainActor func timeoutFallsBackToTheCachedConfig() async {
+        let store = inMemoryStore()
+        try? await store.saveAppConfig(config(minimum: 10), cachedAt: Date())
+        let underlying = FakeConfigRepository(configResult: .success(config(minimum: 1)))
+        await underlying.hold()
+        let repository = CachingDepthRepository(underlying: underlying, store: store)
+        let gate = UpdateGateViewModel(
+            repository: repository, currentBuild: 9, liveReadTimeout: .milliseconds(20))
+
+        await gate.check()
+
+        #expect(gate.state == .blocked, "a slow live read falls back to the cached config")
+        await underlying.release()
+    }
+
+    @Test @MainActor func timeoutWithNothingCachedFailsOpen() async {
+        let underlying = FakeConfigRepository(configResult: .success(config(minimum: 1)))
+        await underlying.hold()
+        let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+        let gate = UpdateGateViewModel(
+            repository: repository, currentBuild: 9, liveReadTimeout: .milliseconds(20))
+
+        await gate.check()
+
+        #expect(gate.state == .allowed, "an outage with no cache must never brick the app")
+        await underlying.release()
+    }
+
+    @Test @MainActor func lateLiveReadStillTightensTheGateAfterATimeout() async {
+        let underlying = FakeConfigRepository(configResult: .success(config(minimum: 10)))
+        await underlying.hold()
+        let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+        let gate = UpdateGateViewModel(
+            repository: repository, currentBuild: 9, liveReadTimeout: .milliseconds(20))
+
+        await gate.check()
+        #expect(gate.state == .allowed)
+
+        await underlying.release()
+        while gate.state != .blocked {
+            await Task.yield()
+        }
         #expect(gate.state == .blocked)
+    }
+
+    @Test @MainActor func foregroundRecheckNeverReturnsToChecking() async {
+        let underlying = FakeConfigRepository(configResult: .success(config(minimum: 1)))
+        let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+        let gate = UpdateGateViewModel(repository: repository, currentBuild: 9)
+        await gate.check()
+        #expect(gate.state == .allowed)
+
+        await underlying.hold()
+        let recheck = Task { await gate.check() }
+        while await underlying.appConfigCallCount < 2 {
+            await Task.yield()
+        }
+        #expect(gate.state == .allowed, "a re-check must not flash the checking view")
+
+        await underlying.release()
+        await recheck.value
+        #expect(gate.state == .allowed)
     }
 
     @Test @MainActor func liveConfigCorrectsAStaleCachedAllow() async {

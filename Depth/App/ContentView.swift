@@ -7,6 +7,7 @@ struct ContentView: View {
     /// Drives the foreground re-check below, so a server-side minimum-build flip
     /// reaches already-running installs and not just cold launches.
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var updateGate = UpdateGateViewModel(repository: DepthEnvironment.repository)
     @State private var authSessionStore = DepthEnvironment.authSessionStore
     @State private var currentTeamStore = DepthEnvironment.currentTeamStore
@@ -38,14 +39,15 @@ struct ContentView: View {
         Group {
             if updateGate.isChecking {
                 // The gate must resolve before any other data fetch starts, so
-                // nothing that reads Supabase may mount here. This branch is reached only
-                // on a first-ever launch with no cached app_config — every later launch
-                // takes the cached fast path and skips it. It intentionally mirrors the
-                // launch storyboard (LaunchScreen: the mark on #0A0E1A), so the hold
-                // reads as the launch screen persisting rather than as a new screen.
+                // nothing that reads Supabase may mount here. A cold launch holds here
+                // until the live app_config read answers (or times out). The view
+                // continues the launch storyboard, so the hold reads as the launch
+                // screen persisting rather than as a new screen.
                 UpdateGateCheckingView()
+                    .transition(.opacity)
             } else if updateGate.isBlocked {
                 BlockingUpdateView(maintenanceMessage: updateGate.maintenanceMessage)
+                    .transition(.opacity)
             } else {
                 RootTabView(
                     sessionStore: authSessionStore, currentTeamStore: currentTeamStore,
@@ -60,8 +62,13 @@ struct ContentView: View {
                 .coachmarkOverlay { anchors, proxy in
                     CoachmarkOverlayView(controller: onboarding, anchors: anchors, proxy: proxy)
                 }
+                .transition(.opacity)
             }
         }
+        // Crossfade out of the checking view; no animation under Reduce Motion.
+        .animation(
+            gateTransitionDisabled ? nil : .easeInOut(duration: 0.25), value: updateGate.state
+        )
         .fullScreenCover(isPresented: $isWelcomeShowing) {
             Group {
                 switch onboarding.phase {
@@ -177,6 +184,11 @@ struct ContentView: View {
             }
         }
         .modifier(UITestingDynamicTypeOverride())
+    }
+
+    private var gateTransitionDisabled: Bool {
+        reduceMotion
+            || ProcessInfo.processInfo.arguments.contains("UI_TESTING_REDUCE_MOTION")
     }
 
     private func evaluateBigMomentPrompt() async {

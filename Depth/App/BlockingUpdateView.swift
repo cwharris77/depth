@@ -2,12 +2,13 @@ import SwiftUI
 import UIKit
 
 // Shown when the installed build is below `app_config.minimum_supported_build`.
-// Deliberately offers no dismiss, no "continue anyway", and no navigation: an old client
-// whole purpose is that an old client cannot reach a backend that has moved past it, so
-// this is the one screen in the app that blocks rather than degrades (the explicit,
-// must not reach a backend that has moved past it.
+// Deliberately offers no dismiss, no "continue anyway", and no navigation: the whole
+// purpose is that an old client cannot reach a backend that has moved past it, so this is
+// the one screen in the app that blocks rather than degrades.
 //
-// A centered dialog over a dimmed brand backdrop, with a single Update action.
+// A centered dialog over the same backdrop and mark the launch screen and the checking
+// view draw, so the transition into the blocked state never moves or redraws the mark: the
+// dialog sits in the half of the screen below it.
 //
 // Built as a dialog rather than a system `.alert` for two reasons, both load-bearing:
 //   * iOS 26 leading-aligns an alert's title and message and exposes no API to center
@@ -23,16 +24,16 @@ struct BlockingUpdateView: View {
 
     var body: some View {
         ZStack {
-            DesignTokens.Colors.bg.ignoresSafeArea()
-            // Anchored to the top rather than centered: the dialog sits mid-screen, so a
-            // centered mark would read as a smudge behind it instead of as branding.
-            VStack {
-                DepthBrandMark(size: 96)
-                    .padding(.top, DesignTokens.Spacing.xl)
-                Spacer()
+            StartupBackdrop()
+            // Two equal halves: the mark owns the center of the screen, so the dialog
+            // starts below the mark's bottom edge in the lower half.
+            VStack(spacing: 0) {
+                Color.clear
+                dialog
+                    .padding(.horizontal, DesignTokens.Spacing.xl)
+                    .padding(.top, StartupBackdrop.markSize / 2 + DesignTokens.Spacing.lg)
+                    .frame(maxHeight: .infinity, alignment: .top)
             }
-            dialog
-                .padding(.horizontal, DesignTokens.Spacing.xl)
         }
     }
 
@@ -71,16 +72,60 @@ struct BlockingUpdateView: View {
     }
 }
 
-// Held on screen while the update gate resolves, before anything that reads
-// Supabase mounts. Only a first-ever launch (no cached app_config) ever sees it; it
-// mirrors the launch storyboard so that hold reads as the launch screen persisting
-// rather than as a distinct screen flashing by.
-struct UpdateGateCheckingView: View {
+/// The launch screen's backdrop and mark, drawn at the same size and position as
+/// `LaunchScreen.storyboard` (180 pt, centered on the full screen, `LaunchBackground`
+/// color, the same `LaunchMark.png`) so the handoff from the storyboard is invisible.
+/// Every startup state that follows draws on top of this and must never move the mark.
+struct StartupBackdrop: View {
+    static let markSize: CGFloat = 180
+
     var body: some View {
-        DepthBrandMark(size: 96)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(DesignTokens.Colors.bg)
-            .accessibilityIdentifier("update-gate-checking")
+        ZStack {
+            Color("LaunchBackground")
+            mark
+        }
+        .ignoresSafeArea()
+    }
+
+    @ViewBuilder private var mark: some View {
+        if let image = UIImage(named: "LaunchMark") {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(width: Self.markSize, height: Self.markSize)
+        } else {
+            DepthBrandMark(size: Self.markSize)
+        }
+    }
+}
+
+// Held on screen while the update gate waits on the live `app_config` read, before
+// anything that reads Supabase mounts. It continues the launch storyboard: same mark, same
+// position, same background. A thin spinner fades in below the mark only if the wait runs
+// past `cueDelay`, so a fast launch never shows it; it is offset rather than stacked with
+// the mark so it cannot shift the mark.
+struct UpdateGateCheckingView: View {
+    var cueDelay: Duration = .milliseconds(400)
+
+    @State private var isCueVisible = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ZStack {
+            StartupBackdrop()
+            ProgressView()
+                .tint(DesignTokens.Colors.accent)
+                .opacity(isCueVisible ? 1 : 0)
+                .offset(y: StartupBackdrop.markSize / 2 + DesignTokens.Spacing.xl)
+                .accessibilityIdentifier("update-gate-loading")
+        }
+        .accessibilityIdentifier("update-gate-checking")
+        .task {
+            try? await Task.sleep(for: cueDelay)
+            withAnimation(reduceMotion ? nil : .easeIn(duration: 0.3)) {
+                isCueVisible = true
+            }
+        }
     }
 }
 
