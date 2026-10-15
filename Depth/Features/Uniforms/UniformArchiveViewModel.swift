@@ -32,6 +32,9 @@ final class UniformArchiveViewModel {
     /// True when a pull-to-refresh failed over content already on screen. The content stays
     /// and the view says the refresh didn't land.
     private(set) var refreshFailed = false
+    /// Bumped each time a forced load lands, so art already on screen re-fetches after the
+    /// image cache is evicted instead of keeping the old picture until its cell is rebuilt.
+    private(set) var artRefreshToken = 0
 
     var query = ""
     var viewMode: ViewMode = .team
@@ -57,6 +60,7 @@ final class UniformArchiveViewModel {
             loadState = .loaded
             refreshFailed = false
             if forceRefresh {
+                artRefreshToken += 1
                 await repository.refreshRelatedInBackground(teamId: nil, after: .uniforms)
             }
         } catch let error as DepthError {

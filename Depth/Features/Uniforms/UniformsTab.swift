@@ -73,6 +73,7 @@ struct UniformsTab: View {
                     )
                 }
         }
+        .environment(\.uniformArtRefreshToken, viewModel.artRefreshToken)
         .task { await viewModel.load() }
         .onChange(of: DepthEnvironment.onboarding.activeTab) { _, tab in
             guard tab != .uniforms else { return }
@@ -543,6 +544,10 @@ struct UniformArchiveAboutSheet: View {
 /// keeps the whole figure visible either way. Internal (not private): UniformPickerSheet reuses
 /// this same component in its carousel for drop-in parity with the
 /// archive, rather than re-implementing jersey rendering there.
+private extension EnvironmentValues {
+    @Entry var uniformArtRefreshToken = 0
+}
+
 enum UniformArtworkRetryPolicy {
     static func shouldRetry(after failures: Int) -> Bool {
         failures < 1
@@ -554,6 +559,7 @@ struct UniformThumb: View {
     let size: CGFloat
     var heightMultiplier: CGFloat = 2.7
     @State private var failureCount = 0
+    @Environment(\.uniformArtRefreshToken) private var refreshToken
 
     var body: some View {
         AsyncImage(url: url) { phase in
@@ -575,7 +581,7 @@ struct UniformThumb: View {
                 Color.clear
             }
         }
-        .id("\(url?.absoluteString ?? "none")-\(failureCount)")
+        .id("\(url?.absoluteString ?? "none")-\(failureCount)-\(refreshToken)")
         .onChange(of: url) { _, _ in failureCount = 0 }
         .frame(width: size, height: size * heightMultiplier)
         .accessibilityHidden(true)

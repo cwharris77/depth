@@ -146,37 +146,14 @@ final class AppStoreScreenshotsUITests: XCTestCase {
             element(app, identifier: "stats-content").waitForExistence(timeout: 20),
             "the stats page should render production content"
         )
-        // Switch to a completed season before capturing. Unlike Compare — which detects an
-        // empty current season and falls back on its own (see `compare-season-fallback`) —
-        // the stats page honours the current season literally, so before week 1 it renders
-        // an all-zero page: 0-0 record, 0 points for, 0 against. Accurate, but it reads as
-        // a broken app in a store listing.
-        //
-        // The year is pinned rather than derived: the picker's identifiers are
-        // season-numbered, and a manually-run release tool is better off failing loudly on
-        // a stale constant than silently capturing whatever season happens to sort first.
-        // Bump this once the current season has real data.
-        let seasonTrigger = app.buttons["stats-season-trigger"]
-        XCTAssertTrue(
-            seasonTrigger.waitForExistence(timeout: 10),
-            "the stats page should expose a season picker")
-        seasonTrigger.tap()
-        let completedSeason = app.buttons["stats-season-2025"]
-        XCTAssertTrue(
-            completedSeason.waitForExistence(timeout: 10),
-            "the season sheet should offer 2025 — bump this year once the current season has data"
-        )
-        completedSeason.tap()
-        XCTAssertTrue(
-            element(app, identifier: "stats-content").waitForExistence(timeout: 20),
-            "the stats page should re-render for the selected season"
-        )
+        // No season pinning: before week 1 the page opens on the last season with games
+        // played rather than the empty current one.
         attachScreenshot(name: "04-team-stats")
 
-        // 5. Postseason ladder — the newest schedule surface. The Rams won a
-        // wild-card, divisional and conference round in 2025, so the pinned season has a
-        // multi-round run to show. Pin the completed season for
-        // the same reason the stats shot does: the current season is before week 1.
+        // 5. Postseason ladder — the newest schedule surface. The Rams won a wild-card,
+        // divisional and conference round in 2025, so the pinned season has a multi-round run
+        // to show. Pin the completed season because the schedule page opens on the current
+        // season, which is empty before week 1.
         selectTeam(
             named: "Rams", rowIdentifier: "team-row-rams", switcher: switcher, app: app)
         let scheduleTab = app.buttons["page-switcher-schedule"]

@@ -53,6 +53,9 @@ struct TeamStatsRanks: Equatable, Codable, Sendable {
     /// Per-metric populations after the line-stat coverage/null filters. This prevents a
     /// qualified subset from being presented as a rank across all 32 NFL teams.
     var lineRankPopulation: [String: Int] = [:]
+    /// Property names of the metrics whose value this team shares with at least one other
+    /// team, so the caption can say "T-1st" instead of claiming the rank outright.
+    var tiedMetrics: Set<String> = []
 }
 
 extension TeamStatsRanks {
@@ -64,7 +67,7 @@ extension TeamStatsRanks {
         case netPuntYardsPerAttempt, puntReturnYardsPerAttempt, kickoffReturnYardsPerAttempt
         case adjustedLineYards, stuffedRate, powerSuccessRate, secondLevelYardsPerRush
         case openFieldYardsPerRush, lineSackRate, pressureRate, avgTimeToThrow, avgPassRushers
-        case lineRankPopulation
+        case lineRankPopulation, tiedMetrics
     }
 
     init(from decoder: any Decoder) throws {
@@ -109,6 +112,8 @@ extension TeamStatsRanks {
         avgPassRushers = try container.decodeIfPresent(Int.self, forKey: .avgPassRushers)
         lineRankPopulation =
             try container.decodeIfPresent([String: Int].self, forKey: .lineRankPopulation) ?? [:]
+        tiedMetrics =
+            try container.decodeIfPresent(Set<String>.self, forKey: .tiedMetrics) ?? []
     }
 }
 
@@ -137,6 +142,19 @@ enum TeamLeagueRanks {
             .sorted { order == .descending ? $0 > $1 : $0 < $1 }
         guard let index = values.firstIndex(of: teamValue) else { return nil }
         return index + 1
+    }
+
+    /// True when another team holds exactly the value `teamId` has for this metric.
+    static func isTied<Row, Value: Comparable>(
+        _ rows: [Row],
+        teamId: String,
+        id: (Row) -> String,
+        value: (Row) -> Value?
+    ) -> Bool {
+        guard let teamRow = rows.first(where: { id($0) == teamId }),
+            let teamValue = value(teamRow)
+        else { return false }
+        return rows.filter { value($0) == teamValue }.count > 1
     }
 
     static func rankWithPopulation<Row, Value: Comparable>(
@@ -222,63 +240,103 @@ extension TeamLeagueRanks {
             let (season, recordRows) = entry
             let rows = nflverseBySeason[season] ?? []
             let lineRows = lineBySeason[season] ?? []
+            var tied: Set<String> = []
             let espnRank = {
-                (order: Order, value: @escaping (TeamSeasonRecordRankValues) -> Double?) in
-                rank(recordRows, teamId: teamId, id: \.teamId, order: order, value: value)
+                (
+                    order: Order, key: String,
+                    value: @escaping (TeamSeasonRecordRankValues) -> Double?
+                ) in
+                if isTied(recordRows, teamId: teamId, id: \.teamId, value: value) {
+                    tied.insert(key)
+                }
+                return rank(recordRows, teamId: teamId, id: \.teamId, order: order, value: value)
             }
-            let nflRank = { (order: Order, value: @escaping (TeamSeasonRankValues) -> Double?) in
-                rank(rows, teamId: teamId, id: \.teamId, order: order, value: value)
+            let nflRank = {
+                (order: Order, key: String, value: @escaping (TeamSeasonRankValues) -> Double?)
+                in
+                if isTied(rows, teamId: teamId, id: \.teamId, value: value) { tied.insert(key) }
+                return rank(rows, teamId: teamId, id: \.teamId, order: order, value: value)
             }
             let lineRank = {
-                (order: Order, value: @escaping (TeamSeasonLineRankValues) -> Double?) in
-                rankWithPopulation(
+                (
+                    order: Order, key: String,
+                    value: @escaping (TeamSeasonLineRankValues) -> Double?
+                ) in
+                if isTied(lineRows, teamId: teamId, id: \.teamId, value: value) {
+                    tied.insert(key)
+                }
+                return rankWithPopulation(
                     lineRows, teamId: teamId, id: \.teamId, order: order, value: value)
             }
-            let adjustedLineYards = lineRank(.descending) { $0.adjustedLineYards }
-            let stuffedRate = lineRank(.ascending) { $0.stuffedRate }
-            let powerSuccessRate = lineRank(.descending) { $0.powerSuccessRate }
-            let secondLevelYardsPerRush = lineRank(.descending) { $0.secondLevelYardsPerRush }
-            let openFieldYardsPerRush = lineRank(.descending) { $0.openFieldYardsPerRush }
-            let lineSackRate = lineRank(.ascending) { $0.sackRate }
-            let pressureRate = lineRank(.ascending) { $0.pressureRate }
-            let avgTimeToThrow = lineRank(.ascending) { $0.avgTimeToThrow }
-            let avgPassRushers = lineRank(.descending) { $0.avgPassRushers }
+            let adjustedLineYards = lineRank(.descending, "adjustedLineYards") {
+                $0.adjustedLineYards
+            }
+            let stuffedRate = lineRank(.ascending, "stuffedRate") { $0.stuffedRate }
+            let powerSuccessRate = lineRank(.descending, "powerSuccessRate") { $0.powerSuccessRate }
+            let secondLevelYardsPerRush = lineRank(.descending, "secondLevelYardsPerRush") {
+                $0.secondLevelYardsPerRush
+            }
+            let openFieldYardsPerRush = lineRank(.descending, "openFieldYardsPerRush") {
+                $0.openFieldYardsPerRush
+            }
+            let lineSackRate = lineRank(.ascending, "lineSackRate") { $0.sackRate }
+            let pressureRate = lineRank(.ascending, "pressureRate") { $0.pressureRate }
+            let avgTimeToThrow = lineRank(.ascending, "avgTimeToThrow") { $0.avgTimeToThrow }
+            let avgPassRushers = lineRank(.descending, "avgPassRushers") { $0.avgPassRushers }
 
-            result[season] = TeamStatsRanks(
-                winPercent: espnRank(.descending) { $0.winPercent },
-                pointsFor: espnRank(.descending) { $0.pointsFor.map(Double.init) },
+            var seasonRanks = TeamStatsRanks(
+                winPercent: espnRank(.descending, "winPercent") { $0.winPercent },
+                pointsFor: espnRank(.descending, "pointsFor") { $0.pointsFor.map(Double.init) },
                 // Fewer points allowed is better.
-                pointsAgainst: espnRank(.ascending) { $0.pointsAgainst.map(Double.init) },
-                pointDifferential: espnRank(.descending) { $0.pointDifferential.map(Double.init) },
-                passingYards: nflRank(.descending) { $0.passingYards.map(Double.init) },
-                rushingYards: nflRank(.descending) { $0.rushingYards.map(Double.init) },
-                turnoverMargin: nflRank(.descending) { $0.derived.turnoverMargin.map(Double.init) },
+                pointsAgainst: espnRank(.ascending, "pointsAgainst") {
+                    $0.pointsAgainst.map(Double.init)
+                },
+                pointDifferential: espnRank(.descending, "pointDifferential") {
+                    $0.pointDifferential.map(Double.init)
+                },
+                passingYards: nflRank(.descending, "passingYards") {
+                    $0.passingYards.map(Double.init)
+                },
+                rushingYards: nflRank(.descending, "rushingYards") {
+                    $0.rushingYards.map(Double.init)
+                },
+                turnoverMargin: nflRank(.descending, "turnoverMargin") {
+                    $0.derived.turnoverMargin.map(Double.init)
+                },
                 // Offense. Sack rate, interceptions thrown, and fumbles lost rank
                 // ascending — for these, fewer is better.
-                offensiveEPAPerPlay: nflRank(.descending) { $0.derived.offensiveEPAPerPlay },
-                sackRate: nflRank(.ascending) { $0.derived.sackRate },
-                passingEPA: nflRank(.descending) { $0.passingEPA },
-                rushingEPA: nflRank(.descending) { $0.rushingEPA },
-                passingInterceptions: nflRank(.ascending) {
+                offensiveEPAPerPlay: nflRank(.descending, "offensiveEPAPerPlay") {
+                    $0.derived.offensiveEPAPerPlay
+                },
+                sackRate: nflRank(.ascending, "sackRate") { $0.derived.sackRate },
+                passingEPA: nflRank(.descending, "passingEPA") { $0.passingEPA },
+                rushingEPA: nflRank(.descending, "rushingEPA") { $0.rushingEPA },
+                passingInterceptions: nflRank(.ascending, "passingInterceptions") {
                     $0.passingInterceptions.map(Double.init)
                 },
-                fumblesLost: nflRank(.ascending) { $0.fumblesLost.map(Double.init) },
+                fumblesLost: nflRank(.ascending, "fumblesLost") { $0.fumblesLost.map(Double.init) },
                 // Defense
-                defensiveSacks: nflRank(.descending) { $0.defensiveSacks },
-                quarterbackHitsPerGame: nflRank(.descending) { $0.derived.quarterbackHitsPerGame },
-                defensiveTakeaways: nflRank(.descending) {
+                defensiveSacks: nflRank(.descending, "defensiveSacks") { $0.defensiveSacks },
+                quarterbackHitsPerGame: nflRank(.descending, "quarterbackHitsPerGame") {
+                    $0.derived.quarterbackHitsPerGame
+                },
+                defensiveTakeaways: nflRank(.descending, "defensiveTakeaways") {
                     $0.derived.defensiveTakeaways.map(Double.init)
                 },
-                defensiveInterceptions: nflRank(.descending) {
+                defensiveInterceptions: nflRank(.descending, "defensiveInterceptions") {
                     $0.defensiveInterceptions.map(Double.init)
                 },
                 // Special teams
-                fieldGoalPercentage: nflRank(.descending) { $0.derived.fieldGoalPercentage },
-                netPuntYardsPerAttempt: nflRank(.descending) { $0.derived.netPuntYardsPerAttempt },
-                puntReturnYardsPerAttempt: nflRank(.descending) {
+                fieldGoalPercentage: nflRank(.descending, "fieldGoalPercentage") {
+                    $0.derived.fieldGoalPercentage
+                },
+                netPuntYardsPerAttempt: nflRank(.descending, "netPuntYardsPerAttempt") {
+                    $0.derived.netPuntYardsPerAttempt
+                },
+                puntReturnYardsPerAttempt: nflRank(.descending, "puntReturnYardsPerAttempt") {
                     $0.derived.puntReturnYardsPerAttempt
                 },
-                kickoffReturnYardsPerAttempt: nflRank(.descending) {
+                kickoffReturnYardsPerAttempt: nflRank(.descending, "kickoffReturnYardsPerAttempt") {
                     $0.derived.kickoffReturnYardsPerAttempt
                 },
                 // Offensive line
@@ -303,6 +361,8 @@ extension TeamLeagueRanks {
                     "avgPassRushers": avgPassRushers?.population,
                 ].compactMapValues { $0 }
             )
+            seasonRanks.tiedMetrics = tied
+            result[season] = seasonRanks
         }
     }
 }

@@ -6,7 +6,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
     {
       id: 'broncos-home-2024',
       slug: 'home',
-      sleeveNike: 'white',
+      sleeveNike: 'navy',
       name: 'Home',
       kind: 'home',
       jersey: 'orange',
@@ -101,7 +101,7 @@ export const BRONCOS_CATALOG: TeamCatalog = {
     {
       id: 'broncos-orange-alt-2024',
       slug: 'orange-alt',
-      sleeveNike: 'white',
+      sleeveNike: 'navy',
       name: 'Orange Alternate',
       kind: 'alternate',
       jersey: 'orange',

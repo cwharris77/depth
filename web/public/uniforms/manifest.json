@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "1bb2c576f6b4c5985a7c6d39c2abbfbd8a7123291e1af1996a1ae179f821456a",
-  "revision": "fd3c2783d91f0979",
+  "sourceDigest": "077357f8113532eeec9379fc81939e944a7d66a98db048151305f48294f268ae",
+  "revision": "ecf412e6a0034cc5",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -347,15 +347,15 @@
     {
       "catalogId": "broncos-home-2024",
       "constructionKey": "home",
-      "revision": "48404826463a70e1",
+      "revision": "6b491d60521ec8c9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-home-2024.webp",
-          "sha256": "094b5b3335d8dbb5ca837ea6b02157a03a5e9cfb15603de3f554e37500e74b8c"
+          "sha256": "91f612d6a54951df24a8762b1376ae1dc738f92ebfc170a886190f82fb84ca74"
         },
         "full": {
           "path": "/uniforms/broncos-home-2024-full.webp",
-          "sha256": "d9ddbc8836b8c6c08dd7fcbef34566093f002ada94d8fab426ecb72bfa2d0ff1"
+          "sha256": "c88a2a450b360478bd3b76070b4da0c6abfa1ddd0b1e6cde80ed992f30f3abb6"
         }
       },
       "combinations": [
@@ -364,7 +364,7 @@
           "label": "Navy socks",
           "full": {
             "path": "/uniforms/broncos-home-2024--navy-socks-full.webp",
-            "sha256": "6cac40a8df87ebcddd20f5c0091bc2fda092a8ea654aea1dff7f1cce6e8e0ff0"
+            "sha256": "2257c80e378b89781bde7ece7a78a9c56ce105981e932febdd3fcf10a72dfe3b"
           }
         }
       ]
@@ -372,15 +372,15 @@
     {
       "catalogId": "broncos-orange-alt-2024",
       "constructionKey": "orange-alt",
-      "revision": "c1b369dbe5596b30",
+      "revision": "76426afb488a40fc",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-alt-2024.webp",
-          "sha256": "094b5b3335d8dbb5ca837ea6b02157a03a5e9cfb15603de3f554e37500e74b8c"
+          "sha256": "91f612d6a54951df24a8762b1376ae1dc738f92ebfc170a886190f82fb84ca74"
         },
         "full": {
           "path": "/uniforms/broncos-orange-alt-2024-full.webp",
-          "sha256": "f7a5a510889a0718c33fe8f9ed6862ddee68a0e918e44679511e5b2e3b6035eb"
+          "sha256": "aa12d4a443adc631b50911e493e68dd22643fd6e3579aa17898487d78e0a9f02"
         }
       },
       "combinations": [
@@ -389,7 +389,7 @@
           "label": "Orange socks",
           "full": {
             "path": "/uniforms/broncos-orange-alt-2024--orange-socks-full.webp",
-            "sha256": "4b09d8f2e59550bff7b8811b24983fe8a6640fec704b752937523bf78fd9ebfb"
+            "sha256": "991c80f253f7b0ecf70420e5f0254918d2c7a566b82d3a23ee688940ba8fa04c"
           }
         },
         {
@@ -397,7 +397,7 @@
           "label": "White socks",
           "full": {
             "path": "/uniforms/broncos-orange-alt-2024--white-socks-full.webp",
-            "sha256": "865c0cbbea85a00276c5bb593eb1465f503f0420ccb1b509cf03a73e37ccd57d"
+            "sha256": "4ef702636734a1c94f07a21dfb38a70b3e21d9f19275098b7459741ba28cf401"
           }
         }
       ]

@@ -55,6 +55,62 @@ private func metrics(
         #expect(teamStatsRankLabel(nil, lastRank: 32, qualifier: .most) == nil)
         #expect(teamStatsRankLabel(0, lastRank: 32, qualifier: .most) == nil)
     }
+
+    @Test func prefixesATiedRankWithT() {
+        #expect(teamStatsRankLabel(1, lastRank: 32, qualifier: .most, tied: true) == "T-1st in NFL")
+        #expect(teamStatsRankLabel(3, lastRank: 32, qualifier: .most, tied: true) == "T-3rd most")
+        #expect(
+            teamStatsRankLabel(4, lastRank: 32, qualifier: .overall, tied: true)
+                == "T-4th overall")
+        #expect(
+            teamStatsRankLabel(1, lastRank: 32, qualifier: .most, qualifiedTeams: 29, tied: true)
+                == "T-1st of 29 qualified teams")
+    }
+
+    @Test func leavesAnUntiedRankUnprefixed() {
+        #expect(
+            teamStatsRankLabel(1, lastRank: 32, qualifier: .most, tied: false) == "First in NFL")
+    }
+}
+
+@Suite struct TeamLeagueRankTieTests {
+    private func record(_ teamId: String, _ winPercent: Double?)
+        -> TeamSeasonRecordRankValues
+    {
+        TeamSeasonRecordRankValues(
+            teamId: teamId, season: 2026, winPercent: winPercent, pointsFor: nil,
+            pointsAgainst: nil, pointDifferential: nil)
+    }
+
+    @Test func flagsAMetricWhenAnotherTeamSharesTheValue() {
+        let ranks = TeamLeagueRanks.build(
+            teamId: "SEA",
+            record: [record("SEA", 1.0), record("LAR", 1.0), record("NE", 0.5)],
+            nflverse: []
+        )[2026]
+        #expect(ranks?.winPercent == 1)
+        #expect(ranks?.tiedMetrics.contains("winPercent") == true)
+    }
+
+    @Test func doesNotFlagASoleLeader() {
+        let ranks = TeamLeagueRanks.build(
+            teamId: "SEA",
+            record: [record("SEA", 1.0), record("LAR", 0.5), record("NE", 0.5)],
+            nflverse: []
+        )[2026]
+        #expect(ranks?.winPercent == 1)
+        #expect(ranks?.tiedMetrics.contains("winPercent") == false)
+    }
+
+    @Test func catalogCaptionCarriesTheTiePrefix() {
+        var ranks = TeamStatsRanks()
+        ranks.offensiveEPAPerPlay = 1
+        ranks.tiedMetrics = ["offensiveEPAPerPlay"]
+        let groups = TeamStatsMetricCatalog.resolve(
+            metrics: metrics(offensiveEPAPerPlay: 0.09), ranks: ranks, lastRank: 32,
+            showRanks: true)
+        #expect(groups.first?.metrics.first?.rankCaption == "T-1st in NFL")
+    }
 }
 
 @Suite struct TeamStatsMetricCatalogTests {

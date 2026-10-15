@@ -556,6 +556,49 @@ struct LeaderLineRoutingTests {
                 < 0.001)
     }
 
+    @Test("a crowded offensive name can take a shorter clear path above its dot")
+    func crowdedOffensiveNamesTakeShortestClearPath() {
+        let names = [
+            "Justin Jefferson", "Jordan Addison", "T.J. Hockenson", "Sam Darnold",
+            "Aaron Jones", "Christian Darrisaw", "Blake Brandel", "Garrett Bradbury",
+            "Ed Ingram", "Brian O'Neill", "Josh Oliver", "Jalen Nailor",
+        ]
+        var shorterPathsAbove = 0
+        for alignment in ["UNDER CENTER", "SHOTGUN", "PISTOL"] {
+            for code in ["11", "12", "21"] {
+                let slots = buildRealFormation(alignment: alignment, code: code).enumerated()
+                    .map { index, formationSlot in
+                        RenderSlot(
+                            key: formationSlot.id, x: formationSlot.x, y: formationSlot.y,
+                            label: formationSlot.label,
+                            player: Player(
+                                id: "p\(index)", name: names[index % names.count], position: .wr,
+                                depthRank: 1, number: index),
+                            onLine: formationSlot.onLine)
+                    }
+                let layout = DepthChartFieldLayout.compute(
+                    slots: slots, fieldSize: CGSize(width: 370, height: 650), fillWidth: true,
+                    zoomToUnit: false)
+                #expect(!layout.nameCallouts.isEmpty, "\(alignment) \(code) should crowd names")
+                for slot in slots where ["WR", "TE"].contains(slot.label) {
+                    guard let callout = layout.nameCallouts[slot.key],
+                        let dot = layout.positions[slot.key]
+                    else { continue }
+                    if callout.y < dot.y {
+                        let belowDistance =
+                            layout.dotSize / 2 + DepthChartFieldLayout.labelTopGap
+                            + DepthChartFieldLayout.labelBlockHeight + 12
+                        #expect(
+                            hypot(callout.x - dot.x, callout.y - dot.y) < belowDistance,
+                            "\(alignment) \(code): \(slot.key)'s route above should be shorter")
+                        shorterPathsAbove += 1
+                    }
+                }
+            }
+        }
+        #expect(shorterPathsAbove > 0, "a clear, shorter route above should be available")
+    }
+
     @Test("segment/rect test catches a crossing that misses both endpoints")
     func segmentAvoidanceCatchesMidCrossings() {
         let rect = CGRect(x: 40, y: -5, width: 20, height: 10)

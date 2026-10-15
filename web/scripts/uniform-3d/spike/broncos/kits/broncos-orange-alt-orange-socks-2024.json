@@ -1,0 +1,217 @@
+{
+  "id": "broncos-orange-alt-orange-socks-2024",
+  "combination": "web/lib/uniforms/teams/broncos/catalog.ts broncos-orange-alt-2024 / orange-socks",
+  "references": [
+    "Combination: orange jersey, white pants, orange socks, navy helmet, worn vs Jacksonville 2026-09-20 https://www.denverbroncos.com/news/broncos-to-wear-sunset-orange-jerseys-summit-white-pants-vs-jaguars",
+    "Shoulder band geometry: Midnight Navy jersey single-shoulder close-up (left sleeve, front to the left), Mile High Collection gallery. Band edges measured in the sleeve-cap side frame; only colors differ between jerseys.",
+    "Shoulder band colors: stacked-jerseys close-up (orange jersey: white band with navy swoosh, navy band, orange sleeve rising in a peak) agrees with the season reference sheet front view and web/lib/uniforms/teams/broncos/jerseys/orange.ts shoulderPanel (white l, navy m)",
+    "White jersey cross-check, same band shapes with orange and navy bands: https://static.clubs.nfl.com/image/upload/t_new_photo_album/f_auto/broncos/rtxklthct8nfr4u77z7u.jpg",
+    "Helmet side, logo box: https://static.clubs.nfl.com/image/upload/t_new_photo_album/f_auto/broncos/g98xoavyulpoueybszt3.jpg",
+    "Crown triangle strips (white helmet detail): https://static.clubs.nfl.com/image/upload/t_new_photo_album/f_auto/broncos/i29m9nqcpfoxqwx8pc4v.jpg, plus the season reference sheet centre-stripe swatch",
+    "Pant stripe detail (navy pants): https://static.clubs.nfl.com/image/upload/t_new_photo_album/f_auto/broncos/axzmq1ps1emmkau4u4po.jpg",
+    "Denver 2025 season reference sheet: white-pants side panel (navy full length with 5280, orange ending in a slanted cut), pants swoosh on the wearer's left hip, chest wordmark navy"
+  ],
+  "palette": {
+    "from": "web/lib/uniforms/teams/broncos/parts.ts#BRONCOS_PALETTE",
+    "extra": {
+      "pantsNumeral": "#0043AF"
+    }
+  },
+  "jersey": {
+    "body": "orange",
+    "number": {
+      "glyph": "web/lib/uniforms/teams/broncos/marks/numbers.ts#BRONCOS_NUMBER_THREE",
+      "fill": "white",
+      "outline": {
+        "color": "navy",
+        "width": 12
+      },
+      "front": {
+        "top": 0.37,
+        "height": 0.4
+      },
+      "back": {
+        "top": 0.31,
+        "height": 0.5
+      }
+    },
+    "chest_wordmark": {
+      "glyph": "web/lib/uniforms/teams/broncos/marks/paths.ts#BRONCOS_CHEST_WORDMARK",
+      "color": "navy",
+      "top": 0.287,
+      "height": 0.039
+    },
+    "name": {
+      "text": "PLAYER",
+      "font": "DIN Condensed Bold.ttf",
+      "tracking": 0.04,
+      "color": "white",
+      "top": 0.19,
+      "height": 0.075
+    },
+    "collar_mark": {
+      "type": "triangle",
+      "color": "navy",
+      "width": 0.028,
+      "height": 0.028
+    },
+    "sleeve_cap": {
+      "seam_psi": 90,
+      "bands": [
+        {
+          "color": "white",
+          "top": [
+            [-422, -159],
+            [-383, -68],
+            [-318, 12],
+            [-214, 73],
+            [-84, 93],
+            [45, 79],
+            [175, 46],
+            [305, -22],
+            [396, -114],
+            [461, -261]
+          ],
+          "bottom": [
+            [-435, -193],
+            [-409, -154],
+            [-344, -102],
+            [-214, -57],
+            [-84, -39],
+            [45, -46],
+            [175, -85],
+            [305, -148],
+            [409, -227],
+            [442, -285]
+          ]
+        },
+        {
+          "color": "navy",
+          "top": [
+            [-435, -193],
+            [-409, -154],
+            [-344, -102],
+            [-214, -57],
+            [-84, -39],
+            [45, -46],
+            [175, -85],
+            [305, -148],
+            [409, -227],
+            [442, -285]
+          ],
+          "bottom": [
+            [-435, -251],
+            [-344, -227],
+            [-214, -200],
+            [0, -154],
+            [84, -307],
+            [266, -375],
+            [435, -432]
+          ]
+        }
+      ],
+      "mark": {
+        "color": "navy",
+        "centre": [58, 3],
+        "size": [320, 121]
+      }
+    }
+  },
+  "pants": {
+    "body": "white",
+    "stripes": [
+      {
+        "color": "navy",
+        "from": -0.03,
+        "to": 0
+      },
+      {
+        "color": "orange",
+        "from": 0,
+        "to": 0.03,
+        "until": [0.37, 0.43]
+      }
+    ],
+    "side_text": {
+      "text": "5280",
+      "font": "DIN Alternate Bold.ttf",
+      "color": "pantsNumeral",
+      "at": 0.265,
+      "arc": -0.015,
+      "length": 0.1,
+      "height": 0.018
+    },
+    "manufacturer_mark": {
+      "color": "navy",
+      "side": 1,
+      "centre": [0.13, 0.07],
+      "size": [0.055, 0.027]
+    }
+  },
+  "socks": {
+    "color": "orange"
+  },
+  "floating_layout": {
+    "jersey_pants_overlap": 0.097080588,
+    "pants_socks_gap": 0.078777462,
+    "helmet_jersey_gap": 0.046063781
+  },
+  "helmet": {
+    "shell": "navy",
+    "facemask": "navy",
+    "side_decal": {
+      "type": "logo",
+      "layers": [
+        {
+          "glyph": "web/lib/uniforms/teams/broncos/marks/paths.ts#BRONCOS_DECAL_MANE_PATH",
+          "color": "orange"
+        },
+        {
+          "glyph": "web/lib/uniforms/teams/broncos/marks/paths.ts#BRONCOS_DECAL_HORSE_PATH",
+          "color": "white"
+        },
+        {
+          "glyph": "web/lib/uniforms/teams/broncos/marks/paths.ts#BRONCOS_DECAL_EYE_PATH",
+          "color": "orange"
+        }
+      ],
+      "box": {
+        "back": [0.055, 0.747],
+        "top": [0.165, 0.505]
+      }
+    },
+    "crown_triangle_stripe": {
+      "color": "orange",
+      "gap": 0.004,
+      "width": 0.03,
+      "from_deg": -40,
+      "to_deg": 100,
+      "taper": 0.6,
+      "pitch": [0.0038, 0.0032],
+      "base": 0.65,
+      "height": 0.75
+    },
+    "bumper": {
+      "plate": "white",
+      "ink": "orange",
+      "text": "5280",
+      "font": "DIN Alternate Bold.ttf",
+      "tracking": 0,
+      "width": 0.09,
+      "height": 0.028,
+      "corner": 0.35,
+      "taper": 0.08,
+      "text_height": 0.62,
+      "above_brow": 0.004
+    }
+  },
+  "todo": [
+    "Shoulder band edges are measured from a perspective photo of the navy jersey, about +-25 frame px; recheck against an orange-jersey side photo",
+    "Crown triangle strip size, gap, pitch and start/end angles are estimated from a straight-on detail photo with no scale and the reference sheet swatch",
+    "Front bumper reads as orange on a light plate at photo resolution; plate color and lettering unverified",
+    "5280 on the white pants uses the reference sheet drawing's blue and a stand-in squared font",
+    "Rear bumper text and rear helmet number are not painted: the helmet side photo shows orange lettering on a light rear bumper, which needs a back view",
+    "Under-sleeve perforated triangles and dissipating number perforations are not modelled",
+    "NFL shield on the pants (wearer's right hip) and helmet back-side shield are not modelled"
+  ]
+}

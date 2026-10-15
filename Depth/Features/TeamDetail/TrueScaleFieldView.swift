@@ -26,6 +26,8 @@ struct TrueScaleFieldView: View {
     var formation: TeamFormation? = nil
     var formations: [TeamFormation] = []
     var onSelectFormation: (TeamFormation) -> Void = { _ in }
+    /// The name style chosen in Settings, honored here as on the depth chart.
+    var nameMode: FieldNameMode = .callouts
 
     /// nil until the user pans: the opening position depends on the window size, which is
     /// only known inside the GeometryReader.
@@ -40,7 +42,9 @@ struct TrueScaleFieldView: View {
     /// Height of the floating header row; the field below it stays visible through the glass.
     private static let headerHeight: CGFloat = 44
 
-    private var layout: TrueScaleFieldLayout { TrueScaleFieldLayout(slots: slots, unit: unit) }
+    private var layout: TrueScaleFieldLayout {
+        TrueScaleFieldLayout(slots: slots, unit: unit, nameMode: nameMode)
+    }
 
     var body: some View {
         let layout = layout
@@ -307,7 +311,6 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
     let onDeselect: () -> Void
     let onChip: (TrueScaleFieldLayout.EdgeChip) -> Void
 
-    private static let labelHeight: CGFloat = 28
     private static let calloutHeight: CGFloat = 40
     /// Gap between the selected dot's edge and its callout, spanned by the leader line.
     private static let leaderLength: CGFloat = 22
@@ -333,6 +336,9 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
                 ForEach(visible) { dot in
                     // The callout carries the selected player's name, so his label steps aside.
                     if dot.key != selectedKey {
+                        if let tag = dot.nameCallout {
+                            nameTag(for: dot, at: tag)
+                        }
                         label(for: dot)
                     }
                     dotButton(dot)
@@ -368,30 +374,60 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
     }
 
     private func label(for dot: TrueScaleFieldLayout.Dot) -> some View {
-        let size = TrueScaleFieldLayout.dotSize
-        let width = TrueScaleFieldLayout.labelWidth(for: dot)
+        let rect = layout.labelRect(for: dot)
         // Centred on the dot, then pinned inside the window so panning never slices a
         // name against the gutter.
-        let x = min(window.size.width - width / 2 - 4, max(width / 2 + 4, dot.center.x + pan.x))
+        let x = min(
+            window.size.width - rect.width / 2 - 4, max(rect.width / 2 + 4, rect.midX + pan.x))
         return VStack(spacing: 1) {
             Text(verbatim: dot.label)
                 .font(.system(size: 10, weight: .semibold))
                 .tracking(0.4)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
-            Text(verbatim: formatLastName(dot.player.name))
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(DesignTokens.Colors.textPrimary)
+            if dot.showsName {
+                Text(verbatim: formatLastName(dot.player.name))
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
+            }
         }
         .lineLimit(1)
         .fixedSize()
-        .frame(height: Self.labelHeight)
+        // The block hangs below the dot, or above it where something is underneath; the
+        // layout reserved exactly this rectangle, so the text is anchored to the dot's side.
+        .frame(height: rect.height, alignment: dot.labelAbove ? .bottom : .top)
         .shadow(color: .black.opacity(0.7), radius: 1, y: 1)
-        // Hangs below the dot, or above it for alternate dots in a tight row.
-        .position(
-            x: x,
-            y: dot.center.y + pan.y + (size / 2 + 4 + Self.labelHeight / 2)
-                * (dot.labelAbove ? -1 : 1)
-        )
+        .position(x: x, y: rect.midY + pan.y)
+        .accessibilityHidden(true)
+    }
+
+    /// A name with no room beside its dot: its own tag in free grass, on a leader line back
+    /// to the dot — the depth chart's callout style.
+    private func nameTag(for dot: TrueScaleFieldLayout.Dot, at tag: CGPoint) -> some View {
+        let dotCenter = CGPoint(x: dot.center.x + pan.x, y: dot.center.y + pan.y)
+        let center = CGPoint(x: tag.x + pan.x, y: tag.y + pan.y)
+        return ZStack(alignment: .topLeading) {
+            Path { path in
+                path.move(to: dotCenter)
+                path.addLine(to: center)
+            }
+            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+
+            Text(verbatim: formatLastName(dot.player.name))
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(DesignTokens.Colors.textPrimary)
+                .lineLimit(1)
+                .fixedSize()
+                .padding(.horizontal, 6)
+                .frame(height: TrueScaleFieldLayout.calloutHeight)
+                .background(
+                    Color.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 6)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6).strokeBorder(Color.white.opacity(0.16))
+                )
+                .position(center)
+        }
+        .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
 

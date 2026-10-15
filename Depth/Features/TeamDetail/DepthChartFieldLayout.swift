@@ -407,13 +407,8 @@ struct DepthChartFieldLayout: Equatable {
         }
         guard !crowded.isEmpty else { return [:] }
 
-        // Each callout looks for the nearest
-        // free spot to ITS OWN dot rather than every tag marching to one shared half of the
-        // field. Sending them all the same way dragged a deep player's name (a fullback's,
-        // say) all the way across the formation and over the line of scrimmage when there
-        // was open grass just below-left of him. Candidates step outward from the dot,
-        // trying the side facing away from the formation first and allowing a sideways
-        // nudge, so the leader line stays short and the tag lands in real empty space.
+        // Each callout searches around its own dot. Candidate tags are ordered by
+        // leader-line length, then checked for collisions and a clear route.
         let formationMidY = named.map { center($0).y }.reduce(0, +) / CGFloat(named.count)
         let step: CGFloat = 24
         var placedTags: [CGRect] = []
@@ -467,27 +462,50 @@ struct DepthChartFieldLayout: Equatable {
                 } && otherLabelZones.allSatisfy { segment(dot, anchor, avoids: $0) }
             }
 
+            // Search nearby positions on either side and choose the shortest clear leader
+            // line. A position below the dot must clear its own position tag; defensive
+            // callouts below the dot also stop before the line of scrimmage.
+            let underneath = dotSize / 2 + labelTopGap + labelBlockHeight + 12
+            let losY: CGFloat? =
+                slot.y < FieldYardScale.lineOfScrimmage
+                ? named.filter { $0.onLine == true && $0.y < FieldYardScale.lineOfScrimmage }
+                    .map { center($0).y + dotSize / 2 + 3 }.max()
+                : nil
+            let offsets: [CGFloat] =
+                (0..<8).flatMap { ring in
+                    [away, -away].map { $0 * (firstRing + CGFloat(ring) * step) }
+                } + [underneath, underneath + step]
+            let horizontalOffsets: [CGFloat] = [0, -w * 0.7, w * 0.7, -w * 1.4, w * 1.4]
+            var candidates: [CGPoint] = []
+            for offset in offsets {
+                for dx in horizontalOffsets {
+                    let x = min(max(w / 2 + 2, dot.x + dx), width - w / 2 - 2)
+                    candidates.append(CGPoint(x: x, y: dot.y + offset))
+                }
+            }
+            candidates.sort {
+                hypot($0.x - dot.x, $0.y - dot.y) < hypot($1.x - dot.x, $1.y - dot.y)
+            }
+
             var best: CGPoint?
             search: for requireClearLine in [true, false] {
-                for ring in 0..<8 {
-                    for direction in [away, -away] {
-                        for dx in [CGFloat(0), -w * 0.7, w * 0.7, -w * 1.4, w * 1.4] {
-                            let x = min(max(w / 2 + 2, dot.x + dx), width - w / 2 - 2)
-                            let y = dot.y + direction * (firstRing + CGFloat(ring) * step)
-                            let tag = CGRect(x: x - w / 2, y: y - 9, width: w, height: 18)
-                            guard field.contains(tag) else { continue }
-                            let padded = tag.insetBy(dx: -6, dy: -2)
-                            let blocked =
-                                others.contains { $0.intersects(padded) }
-                                || placedLabels.contains { $0.intersects(padded) }
-                                || placedTags.contains { $0.intersects(padded) }
-                                || ownLabelZone.intersects(padded)
-                            if blocked { continue }
-                            if requireClearLine, !lineIsClear(to: CGPoint(x: x, y: y)) { continue }
-                            best = CGPoint(x: x, y: y)
-                            break search
-                        }
-                    }
+                for candidate in candidates {
+                    let x = candidate.x
+                    let y = candidate.y
+                    let offset = y - dot.y
+                    let tag = CGRect(x: x - w / 2, y: y - 9, width: w, height: 18)
+                    guard field.contains(tag) else { continue }
+                    if let losY, offset > 0, tag.maxY > losY { continue }
+                    let padded = tag.insetBy(dx: -6, dy: -2)
+                    let blocked =
+                        others.contains { $0.intersects(padded) }
+                        || placedLabels.contains { $0.intersects(padded) }
+                        || placedTags.contains { $0.intersects(padded) }
+                        || ownLabelZone.intersects(padded)
+                    if blocked { continue }
+                    if requireClearLine, !lineIsClear(to: CGPoint(x: x, y: y)) { continue }
+                    best = CGPoint(x: x, y: y)
+                    break search
                 }
             }
             if let best {

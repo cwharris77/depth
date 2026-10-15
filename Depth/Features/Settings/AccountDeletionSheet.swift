@@ -119,12 +119,9 @@ struct AccountDeletionSheet: View {
     ) -> some View {
         let button = Button(action: action) {
             Text(title)
-                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(DesignTokens.Colors.danger)
+        .buttonStyle(.depth(.destructive))
         .disabled(viewModel.isSubmitting)
-        .frame(maxWidth: .infinity, minHeight: 44)
         if let identifier {
             button.accessibilityIdentifier(identifier)
         } else {

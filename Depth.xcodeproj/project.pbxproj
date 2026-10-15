@@ -205,6 +205,7 @@
 		BC722D8E91C6C886838011CF /* DepthChartFieldLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E372B1C3FDDFC4260939314C /* DepthChartFieldLayoutTests.swift */; };
 		BC786357DAB17986863FF90E /* DepthSignposts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F9DA82B880B33391B6E216 /* DepthSignposts.swift */; };
 		BCA0AEE81DE806BB93DBCC24 /* ShareCardContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32CF7D3E3A42BD02111EB0D6 /* ShareCardContentTests.swift */; };
+		BD4DAECC75E5CEBDF800376B /* DepthButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165B3852D3C514B7412622A9 /* DepthButtonStyle.swift */; };
 		BDC16651BCF7C07924F4DEC1 /* AccountDeletionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9152627F4CAC783C2C1E5E6 /* AccountDeletionViewModel.swift */; };
 		BE6C87AC708D604A3B2E7E7D /* PlayerStatCategoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052B44E58BFD1E99397D7393 /* PlayerStatCategoryTests.swift */; };
 		BED59061572203ADA429575F /* BlockingUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90067E10E437365481EFD0E3 /* BlockingUpdateView.swift */; };
@@ -308,6 +309,7 @@
 		15AED7FA002B19217B8B64B4 /* AccessibilityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityUITests.swift; sourceTree = "<group>"; };
 		15E05C8017C7EC40B861ADFD /* depthChartFieldOffense.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = depthChartFieldOffense.1.png; sourceTree = "<group>"; };
 		164BCAD09CA2571FECFC6FD2 /* StatFilesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatFilesTests.swift; sourceTree = "<group>"; };
+		165B3852D3C514B7412622A9 /* DepthButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthButtonStyle.swift; sourceTree = "<group>"; };
 		16777E464D29CE02F612C8FD /* TeamDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailView.swift; sourceTree = "<group>"; };
 		16C0FDCCDD9727C03B7D48E5 /* NotificationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationResponse.swift; sourceTree = "<group>"; };
 		17204145C78040EBF5A20FDC /* UniformArchiveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformArchiveViewModel.swift; sourceTree = "<group>"; };
@@ -918,6 +920,7 @@
 				923AAAB0A437C4B6B9B25F95 /* CompareRouteStore.swift */,
 				34803FD110C2C303B40AA906 /* CurrentTeamStore.swift */,
 				926872EFF68F2D404BCDB79B /* DepthBrandMark.swift */,
+				165B3852D3C514B7412622A9 /* DepthButtonStyle.swift */,
 				FCEB2197DF04D84335401768 /* DepthEnvironment.swift */,
 				1AA545C79710D8790FF97CE8 /* DepthFlowLayout.swift */,
 				BD38FD984114AE1ED01BE296 /* DepthSearchField.swift */,
@@ -1338,6 +1341,7 @@
 				A679EA8A657241CB1099B1C3 /* DepthAppDelegate.swift in Sources */,
 				C11893E533C74A67E2CEA185 /* DepthAuthService.swift in Sources */,
 				3BE0BC25CD2DC9ABA9525140 /* DepthBrandMark.swift in Sources */,
+				BD4DAECC75E5CEBDF800376B /* DepthButtonStyle.swift in Sources */,
 				72B3BE2B76D243F3EFBA4849 /* DepthChartFieldLayout.swift in Sources */,
 				1EAD5ECB38956C0395E81458 /* DepthChartFieldView.swift in Sources */,
 				64BB6EC2B752CD639C86321D /* DepthChartShareButton.swift in Sources */,
