@@ -111,6 +111,12 @@ final class UpdateGateViewModel {
     }
 
     nonisolated static func installedBuildNumber() -> Int {
+        #if UITEST_FIXTURES
+            // Below any fixture minimum, so a UI test can reach the blocked state.
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FORCE_UPDATE_GATE") {
+                return 0
+            }
+        #endif
         guard
             let raw = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
             let build = Int(raw)

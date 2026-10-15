@@ -274,6 +274,20 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
     }
 }
 
+@Suite struct UpdateAlertPresenterTests {
+    @Test @MainActor func startsPresented() {
+        #expect(UpdateAlertPresenter().isPresented)
+    }
+
+    @Test @MainActor func isRepresentedAfterEveryDismissal() async {
+        let presenter = UpdateAlertPresenter()
+        for _ in 0..<3 {
+            await presenter.didDismiss()
+            #expect(presenter.isPresented, "a dismissed update alert must come straight back")
+        }
+    }
+}
+
 extension FakeConfigRepository {
     func setConfigResult(_ result: Result<AppConfig, Error>) { configResult = result }
 }
