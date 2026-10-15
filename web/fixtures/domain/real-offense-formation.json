@@ -852,9 +852,9 @@
         "preferredPosition": null,
         "familyPosition": null,
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true
+        "onLine": false
       },
       {
         "id": "off-wr-1",
@@ -864,9 +864,9 @@
         "preferredPosition": null,
         "familyPosition": null,
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false
+        "onLine": true
       },
       {
         "id": "off-wr-2",
@@ -875,8 +875,8 @@
         "group": null,
         "preferredPosition": null,
         "familyPosition": null,
-        "x": 24,
-        "y": 56,
+        "x": 21,
+        "y": 54,
         "label": "WR",
         "onLine": false
       },
@@ -992,9 +992,9 @@
         "preferredPosition": null,
         "familyPosition": null,
         "x": 88,
-        "y": 51,
+        "y": 54,
         "label": "WR",
-        "onLine": true
+        "onLine": false
       },
       {
         "id": "off-wr-1",
@@ -1004,9 +1004,9 @@
         "preferredPosition": null,
         "familyPosition": null,
         "x": 12,
-        "y": 55,
+        "y": 51,
         "label": "WR",
-        "onLine": false
+        "onLine": true
       },
       {
         "id": "off-wr-2",
@@ -1015,8 +1015,8 @@
         "group": null,
         "preferredPosition": null,
         "familyPosition": null,
-        "x": 24,
-        "y": 56,
+        "x": 21,
+        "y": 54,
         "label": "WR",
         "onLine": false
       },

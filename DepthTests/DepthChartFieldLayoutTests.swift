@@ -333,7 +333,7 @@ struct DepthChartFieldLayoutTests {
         let filled = DepthChartFieldLayout.compute(
             slots: slots, fieldSize: iphoneField, fillWidth: true, zoomToUnit: false)
 
-        // The outermost WRs (flanker off-wr-1 at x=12, split end off-wr-0 at x=88) are
+        // The outermost WRs (flanker off-wr-1 at x=10, split end off-wr-0 at x=88) are
         // pinned to the field edges — the offense takes the full width.
         let leftWR = filled.positions["off-wr-1"]?.x ?? .zero
         let rightWR = filled.positions["off-wr-0"]?.x ?? .zero
@@ -387,6 +387,22 @@ struct DepthChartFieldLayoutTests {
         #expect(filled.dotSize <= DepthChartFieldLayout.maxDotSize)
 
         assertNoTouching(slots, layout: filled)
+    }
+
+    @Test("generic offense places the left X on the line and slot close behind")
+    func genericSlotReceiverMovesCloserToLine() throws {
+        // Past seasons have no formation rows and fall back to offenseFormation.
+        // Keep seven on the line by moving the right flanker off it.
+        let realOffLine = buildRealFormation(alignment: "SHOTGUN", code: "11")
+            .filter { $0.label == "WR" && !$0.onLine }
+        let deepestReal = try #require(realOffLine.map(\.y).max())
+        let left = try #require(offenseFormation.first { $0.id == "off-wr-1" })
+        let slot = try #require(offenseFormation.first { $0.id == "off-wr-2" })
+        let right = try #require(offenseFormation.first { $0.id == "off-wr-0" })
+        #expect(left.x == 12 && left.y == 51 && left.onLine)
+        #expect(right.x == 88 && right.y == 54 && !right.onLine)
+        #expect(slot.y <= deepestReal + 1, "slot receiver at y=\(slot.y) is too deep")
+        #expect(offenseFormation.filter(\.onLine).count == 7)
     }
 
     @Test("empty input yields a safe default layout")

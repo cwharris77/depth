@@ -228,13 +228,14 @@ const OL_SLOTS: FormationSlot[] = [
 //
 // Coords are percentages: x = 0–100 across, y = 0–100 down. y=50 = line of scrimmage.
 
-// Base 11-personnel look. The OL + TE + the split-end WR sit ON the line of scrimmage
-// (y just past 50); slot/flanker WRs are off the line, QB under center, RB behind.
+// Base 11-personnel look. The OL + TE + the left split-end WR sit ON the line of scrimmage
+// (y just past 50); the right flanker and left slot WR are off the line, QB under center,
+// RB behind.
 // Exactly 7 onLine, per the rule.
 export const OFFENSE_FORMATION: FormationSlot[] = [
-  { id: 'off-wr-0', position: 'WR', index: 0, x: 88, y: 51, label: 'WR', onLine: true },
-  { id: 'off-wr-1', position: 'WR', index: 1, x: 12, y: 55, label: 'WR', onLine: false },
-  { id: 'off-wr-2', position: 'WR', index: 2, x: 24, y: 56, label: 'WR', onLine: false },
+  { id: 'off-wr-0', position: 'WR', index: 0, x: 88, y: 54, label: 'WR', onLine: false },
+  { id: 'off-wr-1', position: 'WR', index: 1, x: 12, y: 51, label: 'WR', onLine: true },
+  { id: 'off-wr-2', position: 'WR', index: 2, x: 21, y: 54, label: 'WR', onLine: false },
   { id: 'off-te-0', position: 'TE', index: 0, x: 74, y: 51, label: 'TE', onLine: true },
   ...OL_SLOTS,
   { id: 'off-qb-0', position: 'QB', index: 0, x: 50, y: 66, label: 'QB', onLine: false },
