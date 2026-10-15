@@ -329,8 +329,12 @@ final class CompareViewModel {
             // A failed forced team-list read keeps the list already on screen and still
             // refreshes both sides below; the team list is the least likely thing to have
             // changed, so it does not gate them.
-            guard forceRefresh, keepsContent else {
+            guard keepsContent else {
                 loadState = .failed(error as? DepthError ?? .server("\(error)"))
+                return
+            }
+            if !forceRefresh {
+                refreshFailed = true
                 return
             }
             refreshDidFail = true
