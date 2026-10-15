@@ -151,6 +151,15 @@ struct TeamDetailView: View {
         viewModel.snapshot.map { "\($0.team.city) \($0.team.name)" } ?? "Team"
     }
 
+    /// The abbreviation in the nav bar, the full name where there is room for it
+    /// (accessibility sizes render the pill in the page body).
+    private var chipTitleText: String {
+        guard !dynamicTypeSize.isAccessibilitySize, let team = viewModel.snapshot?.team else {
+            return navigationTitleText
+        }
+        return team.abbrev
+    }
+
     /// The selected uniform's palette recolors the field dots (web's kit selection);
     /// nil keeps the team's own colors. Prefers the live-previewed kit (while the picker
     /// is open) over the committed/persisted one, so swiping the carousel recolors the
@@ -569,10 +578,11 @@ struct TeamDetailView: View {
         var label: String { rawValue.uppercased() }
     }
 
-    /// The switcher trigger is a team-fill pill — `colors.primary` background with a
-    /// `colors.secondary` ring (web's TeamBadge vocabulary)
-    /// and the full "City Name", since the page switcher left the nav bar and there's
-    /// room again. Text is readableTextOn(primary) (web: `readableTextOn(team.colors.primary)`).
+    /// The switcher trigger is a compact team-fill chip — `colors.primary` background with a
+    /// `colors.secondary` ring (web's TeamBadge vocabulary) — showing the team abbreviation
+    /// so it shares the nav bar with the feed and account buttons without crowding them.
+    /// At accessibility text sizes it moves into the page body and spells out the full
+    /// "City Name". Text is readableTextOn(primary) (web: `readableTextOn(team.colors.primary)`).
     private var teamSwitcherPill: some View {
         let colors = viewModel.snapshot?.team.colors
         let fill = (colors?.primary).map(Color.init(hex:)) ?? DesignTokens.Colors.surfaceChip
@@ -582,7 +592,7 @@ struct TeamDetailView: View {
             ?? DesignTokens.Colors.textPrimary
         return Button(action: onOpenTeamSwitcher) {
             HStack(spacing: 4) {
-                Text(navigationTitleText)
+                Text(chipTitleText)
                     .font(.headline)
                     .foregroundStyle(textColor)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)

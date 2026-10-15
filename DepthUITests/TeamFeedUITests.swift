@@ -154,6 +154,8 @@ final class TeamFeedUITests: XCTestCase {
         XCTAssertTrue(app.waitForDepthChart())
         let pill = app.buttons["team-switcher-button"]
         XCTAssertTrue(pill.label.contains("Seattle Seahawks"))
+        XCTAssertTrue(pill.staticTexts["SEA"].exists, "the chip shows the abbreviation")
+        XCTAssertGreaterThanOrEqual(pill.frame.height, 44 - 0.001)
         let feed = app.buttons["team-feed-button"]
         let account = app.buttons["account-button"]
         keepScreenshot(app, name: "long-team-navbar")
