@@ -20,6 +20,7 @@ export const SAINTS_JERSEY_BLACK: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 185,
     fill: 'gold',
     outline: 'white',
     outlineWeight: 'regular',

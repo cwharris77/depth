@@ -32,6 +32,7 @@ export const BROWNS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 185,
     fill: 'brown',
     outline: 'white',
     outlineWeight: 'none',

@@ -15,6 +15,7 @@ export const RAVENS_JERSEY_PURPLE_2026: CompleteJerseySpec = {
   ...RAVENS_JERSEY_PURPLE,
   shoulderNumber: { fill: 'white', outline: 'midnight' },
   number: {
+    height: 200,
     fill: 'white',
     outline: 'midnight',
     outlineWeight: 'thin',
@@ -46,6 +47,7 @@ export const RAVENS_JERSEY_WHITE_2026: CompleteJerseySpec = {
   },
   shoulderNumber: { fill: 'purple', outline: 'midnight' },
   number: {
+    height: 200,
     fill: 'purple',
     outline: 'midnight',
     outlineWeight: 'thin',

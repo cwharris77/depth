@@ -22,6 +22,7 @@ export const DOLPHINS_JERSEY_1972: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'white',
     outline: 'orange',
     outlineWeight: 'regular',

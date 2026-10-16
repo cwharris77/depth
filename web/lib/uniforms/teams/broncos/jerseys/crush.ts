@@ -20,6 +20,7 @@ export const BRONCOS_JERSEY_CRUSH: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'white',
     outline: 'royal',
     outlineWeight: 'thin',

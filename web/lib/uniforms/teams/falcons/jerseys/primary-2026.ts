@@ -10,6 +10,7 @@ export const FALCONS_JERSEY_RED_2026: CompleteJerseySpec = {
   ...FALCONS_JERSEY_RED,
   shoulderNumber: { fill: 'white', outline: 'black' },
   number: {
+    height: 195,
     fill: 'white',
     outline: 'black',
     outlineWeight: 'thin',
@@ -38,6 +39,7 @@ export const FALCONS_JERSEY_WHITE_2026: CompleteJerseySpec = {
   },
   shoulderNumber: { fill: 'red', outline: 'black' },
   number: {
+    height: 195,
     fill: 'red',
     outline: 'black',
     outlineWeight: 'thin',

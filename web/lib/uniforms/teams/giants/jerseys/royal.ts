@@ -21,6 +21,7 @@ export const GIANTS_JERSEY_ROYAL: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 185,
     fill: 'white',
     outline: 'white',
     outlineWeight: 'thin',

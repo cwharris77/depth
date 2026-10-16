@@ -22,6 +22,7 @@ export const BENGALS_JERSEY_COLOR_RUSH: CompleteJerseySpec = {
   cuff: { color: 'black', size: 'm' },
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'black',
     outline: 'black',
     outlineWeight: 'none',

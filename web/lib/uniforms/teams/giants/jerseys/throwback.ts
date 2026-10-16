@@ -22,6 +22,7 @@ export const GIANTS_JERSEY_THROWBACK: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: { fill: 'white' },
   number: {
+    height: 185,
     fill: 'white',
     outline: 'red',
     outlineWeight: 'regular',

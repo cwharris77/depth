@@ -22,6 +22,7 @@ export const EAGLES_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: { color: 'black', size: 'm' },
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'green',
     outline: 'black',
     outlineWeight: 'regular',

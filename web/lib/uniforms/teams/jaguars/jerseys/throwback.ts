@@ -25,6 +25,7 @@ export const JAGUARS_JERSEY_THROWBACK: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'white',
     outline: 'throwbackGold',
     outlineWeight: 'regular',

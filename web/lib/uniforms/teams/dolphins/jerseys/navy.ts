@@ -2,7 +2,7 @@ import { DOLPHINS_RIVALRIES_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { DOLPHINS_RIVALRIES_TRIM } from '../marks/construction';
 
-// Rivalries: navy body, a teal wedge with an orange slash on each sleeve and an orange-lined
+// Rivalries: navy body, an aqua lower-sleeve band crossed by orange and an orange-lined
 // keylined collar, teal numerals.
 export const DOLPHINS_JERSEY_NAVY: CompleteJerseySpec = {
   body: 'navy',
@@ -22,6 +22,7 @@ export const DOLPHINS_JERSEY_NAVY: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'teal',
     outline: 'teal',
     outlineWeight: 'thin',

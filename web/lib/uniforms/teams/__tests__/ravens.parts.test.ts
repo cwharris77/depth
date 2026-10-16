@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { RAVENS_PARTS } from '../ravens';
 import { RAVENS_CATALOG } from '../ravens/catalog';
 import { RAVENS_NUMBER_THREE } from '../ravens/marks/numbers';
+import { boundsOf } from '../core/marks';
 
 describe('Ravens jersey parts', () => {
   // One `it` per jersey so a failure names the offending kit.
@@ -26,7 +27,12 @@ describe('Ravens jersey parts', () => {
 describe('Ravens numerals', () => {
   it('draws every jersey with the round 3 on the chest and both shoulders', () => {
     for (const part of Object.values(RAVENS_PARTS.jerseys)) {
-      expect(part.number?.glyphPath).toBe(RAVENS_NUMBER_THREE);
+      const glyph = part.number?.glyphPath ?? '';
+      expect(glyph.replace(/-?\d+(?:\.\d+)?/g, '')).toBe(
+        RAVENS_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, '')
+      );
+      const [x0, top, x1] = boundsOf(RAVENS_NUMBER_THREE);
+      expect(boundsOf(glyph)).toEqual([x0, top, x1, top + 200]);
       const shoulder = part.layers.find((layer) => layer.id.endsWith('-shoulder-number-left'));
       // The shared block numeral has no curves.
       expect(shoulder?.d).toContain('Q');

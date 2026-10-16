@@ -15,7 +15,13 @@ export const SEAHAWKS_JERSEY_NAVY: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'wolfGrey', outline: 'green', outlineWeight: 'x-heavy', texture: 'mesh' },
+  number: {
+    height: 190,
+    fill: 'wolfGrey',
+    outline: 'green',
+    outlineWeight: 'x-heavy',
+    texture: 'mesh',
+  },
   marks: [
     anchoredMark({
       paint: 'over',

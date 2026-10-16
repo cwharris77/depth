@@ -27,6 +27,8 @@ export const COMMANDERS_NUMBER_PATTERNS: Record<string, PatternDef> = {
   'commanders-number-stipple': {
     width: 588,
     height: 820,
+    // Keep the printed fade aligned with the taller 195-unit chest numeral.
+    transform: `translate(0 539) scale(1 ${195 / 155}) translate(0 -539)`,
     shapes: [
       { d: 'M0,0 H588 V820 H0 Z', fill: 'burgundy' },
       { d: stipple(), fill: 'white' },

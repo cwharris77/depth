@@ -29,7 +29,7 @@ export const RAMS_JERSEY_CLASSIC_SOL: CompleteJerseySpec = {
   },
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'royal', outline: 'royal', outlineWeight: 'none', texture: 'plain' },
+  number: { height: 190, fill: 'royal', outline: 'royal', outlineWeight: 'none', texture: 'plain' },
   marks: [],
 };
 
@@ -52,6 +52,6 @@ export const RAMS_JERSEY_FEARSOME_WHITE: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: { fill: 'royal', outline: 'navy' },
-  number: { fill: 'royal', outline: 'navy', outlineWeight: 'thin', texture: 'plain' },
+  number: { height: 190, fill: 'royal', outline: 'navy', outlineWeight: 'thin', texture: 'plain' },
   marks: [{ paint: 'over', mark: ramsFullSleeveHorn('royal') }],
 };

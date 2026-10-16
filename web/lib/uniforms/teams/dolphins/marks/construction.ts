@@ -6,7 +6,6 @@ import {
   DOLPHINS_DECAL_SUNBURST_PATH,
   DOLPHINS_SLASH_LEFT,
   DOLPHINS_SLASH_RIGHT,
-  DOLPHINS_SLASH_WIDTH,
   DOLPHINS_SLEEVE_X_LEFT,
   DOLPHINS_SLEEVE_X_RIGHT,
   DOLPHINS_TB_DECAL_DOLPHIN_PATH,
@@ -54,8 +53,7 @@ export const DOLPHINS_THROWBACK_DECAL = placed([
   decalLayer('dolphins-decal-dolphin', DOLPHINS_TB_DECAL_DOLPHIN_PATH, 'teal'),
 ]);
 
-// The five-band sleeve set (white over orange), floating mid-sleeve rather than running to the
-// hem.
+// The five-band sleeve set (white over orange), ending at the sleeve hem.
 const sleeveBands = (): PartLayer[] => {
   const out: PartLayer[] = [];
   const sides: [UniformSurface, number[]][] = [
@@ -80,7 +78,7 @@ const sleeveBands = (): PartLayer[] => {
 };
 export const DOLPHINS_THROWBACK_SLEEVE_BANDS = placed(sleeveBands());
 
-// A teal wedge on each sleeve cut by an orange slash.
+// The aqua lower-sleeve band crossed by the thinner orange stripe.
 export const DOLPHINS_RIVALRIES_TRIM = placed([
   {
     id: 'dolphins-wedge-left',
@@ -103,17 +101,15 @@ export const DOLPHINS_RIVALRIES_TRIM = placed([
     surface: 'sleeve-left',
     d: DOLPHINS_SLASH_LEFT,
     clip: true,
-    kind: 'stroke',
-    stroke: 'orange',
-    strokeWidth: DOLPHINS_SLASH_WIDTH,
+    kind: 'fill',
+    fill: 'orange',
   },
   {
     id: 'dolphins-slash-right',
     surface: 'sleeve-right',
     d: DOLPHINS_SLASH_RIGHT,
     clip: true,
-    kind: 'stroke',
-    stroke: 'orange',
-    strokeWidth: DOLPHINS_SLASH_WIDTH,
+    kind: 'fill',
+    fill: 'orange',
   },
 ]);

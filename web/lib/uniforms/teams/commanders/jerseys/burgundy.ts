@@ -21,6 +21,7 @@ export const COMMANDERS_JERSEY_BURGUNDY: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'gold',
     outline: 'white',
     outlineWeight: 'regular',

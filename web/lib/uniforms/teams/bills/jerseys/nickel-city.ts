@@ -30,6 +30,7 @@ export const BILLS_JERSEY_NICKEL_CITY: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'navy',
     outline: 'white',
     outlineWeight: 'thin',

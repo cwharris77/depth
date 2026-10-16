@@ -21,6 +21,7 @@ export const BILLS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'rivalriesNumber',
     outline: 'navy',
     outlineWeight: 'regular',

@@ -27,6 +27,7 @@ export const VIKINGS_JERSEY_PURPLE_CLASSIC: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: { fill: 'white' },
   number: {
+    height: 195,
     fill: 'white',
     outline: 'gold',
     outlineWeight: 'regular',

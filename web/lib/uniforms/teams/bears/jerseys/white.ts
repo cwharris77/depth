@@ -28,6 +28,7 @@ export const BEARS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 175,
     fill: 'navy',
     outline: 'orange',
     outlineWeight: 'thin',

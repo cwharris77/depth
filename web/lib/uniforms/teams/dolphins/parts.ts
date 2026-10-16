@@ -14,6 +14,7 @@ export const DOLPHINS_PALETTE = {
   orange: '#FC4C02',
   white: '#FFFFFF',
   navy: '#101820',
+  logoNavy: '#005778',
 };
 
 export const DOLPHINS_SPEC: TeamSpec = {
