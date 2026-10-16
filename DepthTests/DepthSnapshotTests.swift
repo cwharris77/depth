@@ -26,7 +26,9 @@
         /// independent of whatever simulator the test happens to run on.
         private static let phone = SwiftUISnapshotLayout.fixed(width: 393, height: 852)
 
-        /// The blocking update gate — pure copy, no data. Renders the brand mark + dialog.
+        /// The blocking update gate's backdrop — the launch-screen mark on the launch background.
+        /// The update alert itself is a system presentation a synchronous image snapshot cannot
+        /// capture; `testForcedUpdateAlertIsRepresentedAfterTappingUpdate` covers it.
         @Test func blockingUpdate() {
             assertSnapshot(
                 of: BlockingUpdateView(
