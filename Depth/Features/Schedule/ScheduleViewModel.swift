@@ -28,6 +28,7 @@ final class ScheduleViewModel {
 
     private let repository: DepthRepository
     private var latestRequestID = 0
+    @ObservationIgnored private let revalidation = RevalidationSwap<TeamSchedule>()
 
     init(teamId: String, repository: DepthRepository) {
         self.teamId = teamId
@@ -63,6 +64,18 @@ final class ScheduleViewModel {
         return isDecided ? .missed : .notStarted
     }
 
+    /// Holds a revalidated schedule back while the user is mid-interaction (an open sheet, a
+    /// picker), applying it when the hold lifts.
+    func holdRevalidation(_ held: Bool) {
+        revalidation.hold(held)
+    }
+
+    /// Resolves once the revalidate started by the last cache-hit load has been applied,
+    /// held back, or dropped.
+    func settleRevalidation() async {
+        await revalidation.settled()
+    }
+
     /// `forceRefresh` is the pull-to-refresh path: it reads through the network instead of
     /// the cache window.
     func load(forceRefresh: Bool = false) async {
@@ -82,6 +95,7 @@ final class ScheduleViewModel {
     private func fetch(season: Int?, forceRefresh: Bool = false) async {
         latestRequestID += 1
         let requestID = latestRequestID
+        revalidation.cancel()
         // Re-fetching the season already on screen (pull-to-refresh) keeps it visible until
         // the reload resolves, and keeps it if the reload fails; a different season clears
         // to the loading state.
@@ -106,6 +120,20 @@ final class ScheduleViewModel {
             loadState = result.games.isEmpty ? .empty : .loaded
             if forceRefresh {
                 await repository.refreshRelatedInBackground(teamId: teamId, after: .schedule)
+            } else {
+                // Only a still-current season may be swapped: a later pick bumps the request
+                // id and cancels this watch, so a late result never replaces another season.
+                revalidation.watch(
+                    current: { [weak self] in self?.schedule },
+                    apply: { [weak self] fresh in
+                        guard let self, requestID == latestRequestID else { return }
+                        schedule = fresh
+                        loadState = fresh.games.isEmpty ? .empty : .loaded
+                    },
+                    revalidated: { [repository, teamId] in
+                        await repository.revalidatedTeamSchedule(
+                            teamId: teamId, season: season)
+                    })
             }
         } catch let error as DepthError {
             guard requestID == latestRequestID else { return }

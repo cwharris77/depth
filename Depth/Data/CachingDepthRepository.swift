@@ -56,6 +56,15 @@ actor CachingDepthRepository: DepthRepository {
     private var inFlightScheduleFetches: [String: Task<TeamSchedule, Error>] = [:]
     private var inFlightUniformListFetch: Task<[UniformListing], Error>?
 
+    // The background revalidate a cache hit started, kept so the screen that was served the
+    // cached value can wait for the fresh one (see the `revalidated*` reads). One slot per
+    // key, replaced by the next cache hit and cleared once read; a failed fetch resolves nil.
+    private var teamListRevalidation: Task<[Team]?, Never>?
+    private var snapshotRevalidations: [String: Task<TeamSnapshot?, Never>] = [:]
+    private var statsRevalidations: [String: Task<TeamStatsPage?, Never>] = [:]
+    private var scheduleRevalidations: [String: Task<TeamSchedule?, Never>] = [:]
+    private var uniformListRevalidation: Task<[UniformListing]?, Never>?
+
     init(underlying: DepthRepository, store: CachedSnapshotStore) {
         self.underlying = underlying
         self.store = store
@@ -65,7 +74,7 @@ actor CachingDepthRepository: DepthRepository {
 
     func teams() async throws -> [Team] {
         if let cached = try? await store.teamList(), !cached.teams.isEmpty {
-            refreshTeamListInBackground()
+            trackTeamListRevalidation()
             return cached.teams
         }
         return try await refreshTeamList()
@@ -89,14 +98,33 @@ actor CachingDepthRepository: DepthRepository {
         Task { try? await self.refreshTeamList() }
     }
 
+    private func trackTeamListRevalidation() {
+        guard inFlightListFetch == nil else { return }
+        teamListRevalidation = Task { try? await self.refreshTeamList() }
+    }
+
+    func revalidatedTeams() async -> [Team]? {
+        guard let task = teamListRevalidation else { return nil }
+        let teams = await task.value
+        if teamListRevalidation == task { teamListRevalidation = nil }
+        return teams
+    }
+
     // MARK: - Team snapshot
 
     func teamSnapshot(teamId: String) async throws -> TeamSnapshot {
         if let cached = try? await store.teamSnapshot(teamId: teamId) {
-            refreshSnapshotInBackground(teamId: teamId)
+            trackSnapshotRevalidation(teamId: teamId)
             return cached
         }
         return try await refreshSnapshot(teamId: teamId)
+    }
+
+    func revalidatedTeamSnapshot(teamId: String) async -> TeamSnapshot? {
+        guard let task = snapshotRevalidations[teamId] else { return nil }
+        let snapshot = await task.value
+        if snapshotRevalidations[teamId] == task { snapshotRevalidations[teamId] = nil }
+        return snapshot
     }
 
     func teamSnapshotCachedAt(teamId: String) async -> Date? {
@@ -119,7 +147,7 @@ actor CachingDepthRepository: DepthRepository {
             let cachedAt = try? await store.teamScheduleCachedAt(teamId: teamId, season: season),
             !isScheduleExpired(cachedAt)
         {
-            refreshScheduleInBackground(teamId: teamId, season: season)
+            trackScheduleRevalidation(teamId: teamId, season: season)
             return cached
         }
         do {
@@ -163,6 +191,22 @@ actor CachingDepthRepository: DepthRepository {
         Task { try? await self.refreshSchedule(teamId: teamId, season: season) }
     }
 
+    private func trackScheduleRevalidation(teamId: String, season: Int?) {
+        let key = scheduleCacheKey(teamId: teamId, season: season)
+        guard inFlightScheduleFetches[key] == nil else { return }
+        scheduleRevalidations[key] = Task {
+            try? await self.refreshSchedule(teamId: teamId, season: season)
+        }
+    }
+
+    func revalidatedTeamSchedule(teamId: String, season: Int?) async -> TeamSchedule? {
+        let key = scheduleCacheKey(teamId: teamId, season: season)
+        guard let task = scheduleRevalidations[key] else { return nil }
+        let schedule = await task.value
+        if scheduleRevalidations[key] == task { scheduleRevalidations[key] = nil }
+        return schedule
+    }
+
     // MARK: - Team stats (round-4 Stats page)
 
     /// TTL-bounded, same shape as `teamSchedule` (see the cache policy above):
@@ -175,7 +219,7 @@ actor CachingDepthRepository: DepthRepository {
             let cachedAt = try? await store.teamStatsCachedAt(teamId: teamId),
             !isStatsExpired(cachedAt)
         {
-            refreshStatsInBackground(teamId: teamId)
+            trackStatsRevalidation(teamId: teamId)
             return cached
         }
         do {
@@ -212,6 +256,18 @@ actor CachingDepthRepository: DepthRepository {
     private func refreshStatsInBackground(teamId: String) {
         guard inFlightStatsFetches[teamId] == nil else { return }
         Task { try? await self.refreshStats(teamId: teamId) }
+    }
+
+    private func trackStatsRevalidation(teamId: String) {
+        guard inFlightStatsFetches[teamId] == nil else { return }
+        statsRevalidations[teamId] = Task { try? await self.refreshStats(teamId: teamId) }
+    }
+
+    func revalidatedTeamStats(teamId: String) async -> TeamStatsPage? {
+        guard let task = statsRevalidations[teamId] else { return nil }
+        let page = await task.value
+        if statsRevalidations[teamId] == task { statsRevalidations[teamId] = nil }
+        return page
     }
 
     /// Player stats are a separate on-demand read; snapshot-cache restructuring would
@@ -256,7 +312,7 @@ actor CachingDepthRepository: DepthRepository {
     /// Cache-first exactly like the team list — the all-32-kits read is stable and small.
     func listUniforms() async throws -> [UniformListing] {
         if let cached = try? await store.uniformList() {
-            refreshUniformListInBackground()
+            trackUniformListRevalidation()
             return cached
         }
         return try await refreshUniformList()
@@ -278,6 +334,18 @@ actor CachingDepthRepository: DepthRepository {
     private func refreshUniformListInBackground() {
         guard inFlightUniformListFetch == nil else { return }
         Task { try? await self.refreshUniformList() }
+    }
+
+    private func trackUniformListRevalidation() {
+        guard inFlightUniformListFetch == nil else { return }
+        uniformListRevalidation = Task { try? await self.refreshUniformList() }
+    }
+
+    func revalidatedUniforms() async -> [UniformListing]? {
+        guard let task = uniformListRevalidation else { return nil }
+        let listings = await task.value
+        if uniformListRevalidation == task { uniformListRevalidation = nil }
+        return listings
     }
 
     // MARK: - User-initiated refresh
@@ -347,6 +415,11 @@ actor CachingDepthRepository: DepthRepository {
     private func refreshSnapshotInBackground(teamId: String) {
         guard inFlightSnapshotFetches[teamId] == nil else { return }
         Task { try? await self.refreshSnapshot(teamId: teamId) }
+    }
+
+    private func trackSnapshotRevalidation(teamId: String) {
+        guard inFlightSnapshotFetches[teamId] == nil else { return }
+        snapshotRevalidations[teamId] = Task { try? await self.refreshSnapshot(teamId: teamId) }
     }
 
     /// Never cached: see the protocol.

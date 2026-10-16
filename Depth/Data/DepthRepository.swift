@@ -79,6 +79,16 @@ protocol DepthRepository: Sendable {
     /// opens with current data. `refreshed` is the read the caller has just fetched, which is
     /// skipped. Returns once the work is started, not when it finishes.
     func refreshRelatedInBackground(teamId: String?, after refreshed: RefreshedRead) async
+
+    /// Each resolves with the value a cache hit's background revalidate fetched and stored,
+    /// once that revalidate finishes, so the screen that was served the cached copy can swap
+    /// the fresh one in. Nil when no revalidate was started, or it failed (the cached copy
+    /// stays). Repositories with no cache have nothing to revalidate and return nil.
+    func revalidatedTeams() async -> [Team]?
+    func revalidatedTeamSnapshot(teamId: String) async -> TeamSnapshot?
+    func revalidatedTeamStats(teamId: String) async -> TeamStatsPage?
+    func revalidatedTeamSchedule(teamId: String, season: Int?) async -> TeamSchedule?
+    func revalidatedUniforms() async -> [UniformListing]?
 }
 
 /// The cached read a user-initiated refresh fetched itself.
@@ -99,6 +109,11 @@ extension DepthRepository {
     }
     func freshUniforms() async throws -> [UniformListing] { try await listUniforms() }
     func refreshRelatedInBackground(teamId: String?, after refreshed: RefreshedRead) async {}
+    func revalidatedTeams() async -> [Team]? { nil }
+    func revalidatedTeamSnapshot(teamId: String) async -> TeamSnapshot? { nil }
+    func revalidatedTeamStats(teamId: String) async -> TeamStatsPage? { nil }
+    func revalidatedTeamSchedule(teamId: String, season: Int?) async -> TeamSchedule? { nil }
+    func revalidatedUniforms() async -> [UniformListing]? { nil }
     func recentParticipation(teamId: String) async throws -> RecentParticipation? { nil }
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { nil }

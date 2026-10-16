@@ -9,6 +9,8 @@ struct ScheduleView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: ScheduleViewModel
     @State private var showSeasonPicker = false
+    /// A scroll is dragging or settling; a revalidated schedule waits so it never moves under it.
+    @State private var isScrolling = false
     private let isEmbedded: Bool
     /// Schedule fetches no team/uniform data of its own (lightweight read), so it reads the
     /// kit-resolved accent TeamDetailView publishes here instead — same store the tab tint and
@@ -43,6 +45,8 @@ struct ScheduleView: View {
             ?? DesignTokens.Colors.accent
     }
 
+    private var isInteracting: Bool { isScrolling || showSeasonPicker }
+
     var body: some View {
         Group {
             if isEmbedded {
@@ -56,6 +60,8 @@ struct ScheduleView: View {
         .onAppear { DepthEnvironment.onboarding.pageDidAppear(.schedule) }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load(forceRefresh: true) }
+        .onScrollPhaseChange { _, phase in isScrolling = phase.isScrolling }
+        .onChange(of: isInteracting, initial: true) { _, held in viewModel.holdRevalidation(held) }
         .sheet(isPresented: $showSeasonPicker) {
             // `defaultSeason != nil` rather than a binding: the value itself is unused here
             // (seasonOptions already derives from it and is empty without it), it is only the

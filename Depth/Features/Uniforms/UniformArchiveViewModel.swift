@@ -41,14 +41,28 @@ final class UniformArchiveViewModel {
     var filters = UniformArchive.Filters()
 
     private let repository: DepthRepository
+    @ObservationIgnored private let revalidation = RevalidationSwap<[UniformListing]>()
 
     init(repository: DepthRepository) {
         self.repository = repository
     }
 
+    /// Holds a revalidated archive back while the user is mid-interaction (an open sheet, a
+    /// picker), applying it when the hold lifts.
+    func holdRevalidation(_ held: Bool) {
+        revalidation.hold(held)
+    }
+
+    /// Resolves once the revalidate started by the last cache-hit load has been applied,
+    /// held back, or dropped.
+    func settleRevalidation() async {
+        await revalidation.settled()
+    }
+
     /// `forceRefresh` is the pull-to-refresh path: it reads through the network instead of
     /// the cached archive, and a failed read keeps the archive already on screen.
     func load(forceRefresh: Bool = false) async {
+        if forceRefresh { revalidation.cancel() }
         // A refresh over loaded content keeps it on screen until the reload resolves.
         let keepsContent = loadState == .loaded
         if !keepsContent { loadState = .loading }
@@ -62,6 +76,11 @@ final class UniformArchiveViewModel {
             if forceRefresh {
                 artRefreshToken += 1
                 await repository.refreshRelatedInBackground(teamId: nil, after: .uniforms)
+            } else {
+                revalidation.watch(
+                    current: { [weak self] in self?.listings },
+                    apply: { [weak self] fresh in self?.listings = fresh },
+                    revalidated: { [repository] in await repository.revalidatedUniforms() })
             }
         } catch let error as DepthError {
             if keepsContent {
