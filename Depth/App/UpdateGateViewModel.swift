@@ -31,40 +31,78 @@ final class UpdateGateViewModel {
 
     private let repository: CachingDepthRepository
     private let currentBuild: Int
+    private let liveReadTimeout: Duration
+    private var launchCheck: Task<Void, Never>?
 
     var isBlocked: Bool { state == .blocked }
 
-    /// True only while the gate has made no decision at all — the first-ever launch with
-    /// no cached config. ContentView holds first render here; every later launch skips
-    /// straight past it on the cached fast path.
+    /// True only until the gate has made its first decision. ContentView holds first
+    /// render on the checking view for the whole of a cold launch's live read.
     var isChecking: Bool { state == .checking }
 
     init(
         repository: CachingDepthRepository,
-        currentBuild: Int = UpdateGateViewModel.installedBuildNumber()
+        currentBuild: Int = UpdateGateViewModel.installedBuildNumber(),
+        liveReadTimeout: Duration = .seconds(2)
     ) {
         self.repository = repository
         self.currentBuild = currentBuild
+        self.liveReadTimeout = liveReadTimeout
     }
 
-    /// Resolves the gate. Two phases, deliberately: the cached config decides
-    /// provisionally so a warm launch never stalls behind a network round trip, then the
-    /// live read confirms or corrects. On a first-ever launch there is no cache, so the
-    /// app holds on `.checking` until the network answers — the only launch that pays a
-    /// wait, and the only one where proceeding blind would be unsafe.
+    /// Resolves the gate. The first call (cold launch) holds on `.checking` until the live
+    /// `app_config` read answers, so a stale cached "allowed" can never mount the app just
+    /// before the update dialog appears. The wait is bounded by `liveReadTimeout`; on
+    /// timeout or failure the cached config decides, and with nothing cached the gate
+    /// fails open rather than brick the app during a backend outage. Later calls
+    /// (foreground re-checks) never return to `.checking`: they only apply a live answer.
     func check() async {
-        if let cached = await repository.cachedAppConfig() {
-            apply(cached)
-        }
-
-        guard let fresh = try? await repository.appConfig() else {
-            // Unreachable config with nothing cached: fail open rather than brick the
-            // app during a backend outage. `apply` above already ran if a cache existed,
-            // so this only downgrades a still-undecided gate.
-            if state == .checking { state = .allowed }
+        guard state == .checking else {
+            if let fresh = try? await repository.appConfig() { apply(fresh) }
             return
         }
-        apply(fresh)
+        // A scene-phase change at launch can call in again while the first check is
+        // still running; share it rather than start a second race.
+        let task = launchCheck ?? Task { await self.resolveLaunch() }
+        launchCheck = task
+        await task.value
+    }
+
+    private func resolveLaunch() async {
+        // Raced through a stream rather than a task group: a group would wait for the
+        // still-running read after the timer wins, defeating the timeout.
+        let (answers, deliver) = AsyncStream<AppConfig?>.makeStream()
+        let live = Task { [repository] in
+            let config = try? await repository.appConfig()
+            deliver.yield(config)
+            return config
+        }
+        let timeout = liveReadTimeout
+        let timer = Task {
+            try? await Task.sleep(for: timeout)
+            deliver.yield(nil)
+        }
+        var fresh: AppConfig?
+        for await answer in answers {
+            fresh = answer
+            break
+        }
+        timer.cancel()
+
+        if let fresh {
+            apply(fresh)
+        } else if let cached = await repository.cachedAppConfig() {
+            apply(cached)
+            // A read that merely ran long can still answer; it may only tighten the gate.
+            Task {
+                if let late = await live.value { apply(late) }
+            }
+        } else {
+            state = .allowed
+            Task {
+                if let late = await live.value { apply(late) }
+            }
+        }
     }
 
     private func apply(_ config: AppConfig) {
@@ -73,6 +111,12 @@ final class UpdateGateViewModel {
     }
 
     nonisolated static func installedBuildNumber() -> Int {
+        #if UITEST_FIXTURES
+            // Below any fixture minimum, so a UI test can reach the blocked state.
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FORCE_UPDATE_GATE") {
+                return 0
+            }
+        #endif
         guard
             let raw = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
             let build = Int(raw)

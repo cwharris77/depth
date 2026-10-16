@@ -120,6 +120,24 @@ final class DepthUITests: XCTestCase {
         add(attachment)
     }
 
+    func testForcedUpdateAlertIsRepresentedAfterTappingUpdate() throws {
+        let app = XCUIApplication()
+        app.launchArguments =
+            XCUIApplication.hermeticLaunchArguments + [
+                "UI_TESTING_FORCE_UPDATE_GATE"
+            ]
+        app.launch()
+
+        let alert = app.alerts["Update is available!"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 10), "a build below the minimum is blocked")
+        alert.buttons["Update"].tap()
+
+        // The alert is dismissed by its button and must come straight back.
+        XCTAssertTrue(
+            alert.waitForExistence(timeout: 5), "the update alert must be re-presented")
+        XCTAssertFalse(app.buttons["unit-tab-offense"].exists, "the app must not mount behind it")
+    }
+
     func testAppLaunches() throws {
         let app = XCUIApplication()
         // Still the configured live backend. The argument only marks the process as a UI
