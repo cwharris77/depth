@@ -1,3 +1,4 @@
+import { FALCONS_SLEEVE_LOGOS } from '../marks/sleeves';
 import { FALCONS_2020_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { falconsSideStripes } from '../marks/construction';
@@ -27,5 +28,8 @@ export const FALCONS_JERSEY_BLACK: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: FALCONS_2020_NUMBER_THREE,
   },
-  marks: [{ paint: 'under', mark: falconsSideStripes('red') }],
+  marks: [
+    { paint: 'under', mark: falconsSideStripes('red') },
+    { paint: 'over', mark: FALCONS_SLEEVE_LOGOS },
+  ],
 };

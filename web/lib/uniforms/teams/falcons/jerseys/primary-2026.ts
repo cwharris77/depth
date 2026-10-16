@@ -1,11 +1,8 @@
+import { FALCONS_SLEEVE_LOGOS } from '../marks/sleeves';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { FALCONS_JERSEY_RED } from './red';
 import { FALCONS_NUMBER_THREE } from '../marks/numbers';
-import {
-  FALCONS_2026_SLEEVE_LOGOS,
-  FALCONS_2026_HOME_WORDMARK,
-  FALCONS_2026_AWAY_WORDMARK,
-} from '../marks/primary-2026';
+import { FALCONS_2026_HOME_WORDMARK, FALCONS_2026_AWAY_WORDMARK } from '../marks/primary-2026';
 
 // Red body and collar, white block numerals keylined black on the chest and shoulders, the
 // falcon on each sleeve.
@@ -21,7 +18,7 @@ export const FALCONS_JERSEY_RED_2026: CompleteJerseySpec = {
     glyphLabel: '3',
   },
   marks: [
-    { paint: 'over', mark: FALCONS_2026_SLEEVE_LOGOS },
+    { paint: 'over', mark: FALCONS_SLEEVE_LOGOS },
     { paint: 'over', mark: FALCONS_2026_HOME_WORDMARK },
   ],
 };
@@ -49,7 +46,7 @@ export const FALCONS_JERSEY_WHITE_2026: CompleteJerseySpec = {
     glyphLabel: '3',
   },
   marks: [
-    { paint: 'over', mark: FALCONS_2026_SLEEVE_LOGOS },
+    { paint: 'over', mark: FALCONS_SLEEVE_LOGOS },
     { paint: 'over', mark: FALCONS_2026_AWAY_WORDMARK },
   ],
 };
