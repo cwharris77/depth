@@ -23,6 +23,7 @@ final class TeamListViewModel {
 
     private let repository: CachingDepthRepository
     private let events: any AppEventsRecording
+    @ObservationIgnored private let revalidation = RevalidationSwap<[Team]>()
     /// Monotonic id so a late search response from an earlier keystroke can never
     /// overwrite the hits for the query the user is actually looking at (same
     /// request-invalidation pattern as PlayerProfileViewModel).
@@ -46,9 +47,22 @@ final class TeamListViewModel {
         }
     }
 
+    /// Holds a revalidated list back while the user is mid-interaction (an open sheet, a
+    /// picker), applying it when the hold lifts.
+    func holdRevalidation(_ held: Bool) {
+        revalidation.hold(held)
+    }
+
+    /// Resolves once the revalidate started by the last cache-hit load has been applied,
+    /// held back, or dropped.
+    func settleRevalidation() async {
+        await revalidation.settled()
+    }
+
     /// `forceRefresh` is the pull-to-refresh path: it reads through the network instead of
     /// the cached list.
     func load(forceRefresh: Bool = false) async {
+        if forceRefresh { revalidation.cancel() }
         // A refresh over loaded content keeps it on screen until the reload resolves, and
         // keeps it if the reload fails.
         let keepsContent = loadState == .loaded
@@ -62,6 +76,11 @@ final class TeamListViewModel {
             refreshFailed = false
             if forceRefresh {
                 await repository.refreshRelatedInBackground(teamId: nil, after: .teams)
+            } else {
+                revalidation.watch(
+                    current: { [weak self] in self?.teams },
+                    apply: { [weak self] fresh in self?.teams = fresh },
+                    revalidated: { [repository] in await repository.revalidatedTeams() })
             }
         } catch let error as DepthError {
             if keepsContent {

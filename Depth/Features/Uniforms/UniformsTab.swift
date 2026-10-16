@@ -20,6 +20,8 @@ struct UniformsTab: View {
     @State private var showAbout = false
     @State private var selectedKit: UniformListing?
     @State private var path: [String] = []
+    /// A scroll is dragging or settling; a revalidated archive waits so it never moves under it.
+    @State private var isScrolling = false
     @Namespace private var teamZoom
 
     /// Jumps to a team's depth chart on the Depth Charts tab — the kit sheet's primary
@@ -30,6 +32,11 @@ struct UniformsTab: View {
     init(repository: DepthRepository, onOpenDepthChart: @escaping (String, String) -> Void) {
         _viewModel = State(initialValue: UniformArchiveViewModel(repository: repository))
         self.onOpenDepthChart = onOpenDepthChart
+    }
+
+    private var isInteracting: Bool {
+        isScrolling || showAccount || showFilterSheet || showAbout || selectedKit != nil
+            || !path.isEmpty
     }
 
     var body: some View {
@@ -75,6 +82,8 @@ struct UniformsTab: View {
         }
         .environment(\.uniformArtRefreshToken, viewModel.artRefreshToken)
         .task { await viewModel.load() }
+        .onScrollPhaseChange { _, phase in isScrolling = phase.isScrolling }
+        .onChange(of: isInteracting, initial: true) { _, held in viewModel.holdRevalidation(held) }
         .onChange(of: DepthEnvironment.onboarding.activeTab) { _, tab in
             guard tab != .uniforms else { return }
             showAccount = false

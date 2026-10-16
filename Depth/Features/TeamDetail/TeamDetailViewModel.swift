@@ -25,6 +25,7 @@ final class TeamDetailViewModel {
 
     private let repository: CachingDepthRepository
     private let events: any AppEventsRecording
+    @ObservationIgnored private let revalidation = RevalidationSwap<TeamSnapshot>()
 
     init(
         teamId: String, repository: CachingDepthRepository,
@@ -40,9 +41,34 @@ final class TeamDetailViewModel {
         return CachingDepthRepository.isStale(cachedAt)
     }
 
+    /// Holds a revalidated snapshot back while the user is mid-interaction (an open sheet, a
+    /// reorder), applying it when the hold lifts.
+    func holdRevalidation(_ held: Bool) {
+        revalidation.hold(held)
+    }
+
+    /// Resolves once the revalidate started by the last cache-hit load has been applied,
+    /// held back, or dropped.
+    func settleRevalidation() async {
+        await revalidation.settled()
+    }
+
+    private func watchRevalidation() {
+        revalidation.watch(
+            current: { [weak self] in self?.snapshot },
+            apply: { [weak self] fresh in
+                self?.snapshot = fresh
+                self?.cachedAt = Date()
+            },
+            revalidated: { [repository, teamId] in
+                await repository.revalidatedTeamSnapshot(teamId: teamId)
+            })
+    }
+
     /// `forceRefresh` is the pull-to-refresh path: it reads through the network instead of
     /// the cache-first path, and a failure still leaves the snapshot on screen.
     func load(forceRefresh: Bool = false) async {
+        if forceRefresh { revalidation.cancel() }
         let firstLoad = snapshot == nil
         if snapshot == nil {
             loadState = .loading
@@ -59,6 +85,7 @@ final class TeamDetailViewModel {
                 await repository.refreshRelatedInBackground(teamId: teamId, after: .snapshot)
             }
             loadState = .loaded
+            if !forceRefresh { watchRevalidation() }
             // Closes the app-launch signpost on the first screen with real, user-visible
             // content. As of the 2026-08-15 navigation-parity change that is this depth
             // chart — the launch destination — not the team list, which now only loads

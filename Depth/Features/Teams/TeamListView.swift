@@ -32,6 +32,8 @@ struct TeamListView: View {
     /// this seeds once on first load and never again (a later refresh must not undo the
     /// user's picker choice).
     @State private var didSeedConference = false
+    /// A scroll is dragging or settling; a revalidated list waits so it never moves under it.
+    @State private var isScrolling = false
     /// The sheet's overlay close X (TeamListPickerSheet) is
     /// positioned assuming the nav bar's title band is present above the conference
     /// picker. `.searchable` collapses that title band the moment the search field is
@@ -71,6 +73,10 @@ struct TeamListView: View {
             .searchable(text: $viewModel.searchText, prompt: "Search teams and players")
             .searchFocused($isSearchFieldFocused)
             .task { await viewModel.load() }
+            .onScrollPhaseChange { _, phase in isScrolling = phase.isScrolling }
+            .onChange(of: isScrolling || isSearchFieldFocused, initial: true) { _, held in
+                viewModel.holdRevalidation(held)
+            }
             .task(id: viewModel.searchText) { await viewModel.searchPlayers() }
             .onChange(of: viewModel.loadState) { _, _ in
                 // Seed the picker from the selected team's conference, mirroring the web

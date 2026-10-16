@@ -31,6 +31,8 @@ struct TeamDetailView: View {
     /// Latched after the roster and overrides resolve, before navigation can hide this
     /// root and cancel its task. An interrupted load retries on the next appearance.
     @State private var didInitialLoad = false
+    /// A scroll is dragging or settling; a revalidated snapshot waits so it never moves under it.
+    @State private var isScrolling = false
     /// The name-presentation style chosen in Settings. Shared with SettingsView
     /// through the same defaults key.
     @AppStorage(FieldNameMode.storageKey) private var fieldNameMode: FieldNameMode = .callouts
@@ -196,6 +198,13 @@ struct TeamDetailView: View {
         }
     }
 
+    /// The user is scrolling, reordering, or has a sheet or pushed screen open.
+    private var isInteracting: Bool {
+        isScrolling || editMode.isActive || selectedPlayer != nil || reorderPlayer != nil
+            || showAccount || showFeed || showHistory || showUniformPicker || showFormations
+            || showTrueScale || showResetConfirmation
+    }
+
     var body: some View {
         content
             // The team identity lives in the switcher pill (full "City Name"),
@@ -281,6 +290,10 @@ struct TeamDetailView: View {
                     await loadOverrides()
                 }
                 if isFeedAvailable { await feedViewModel.load() }
+            }
+            .onScrollPhaseChange { _, phase in isScrolling = phase.isScrolling }
+            .onChange(of: isInteracting, initial: true) { _, held in
+                viewModel.holdRevalidation(held)
             }
             .onChange(of: unit) { _, newValue in
                 preferences.lastUnit = newValue

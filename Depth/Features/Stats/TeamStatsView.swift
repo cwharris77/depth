@@ -15,6 +15,8 @@ struct TeamStatsView: View {
     @State private var scopeExpanded = false
     @State private var openLens: TeamStatsLens?
     @State private var profilePlayer: Player?
+    /// A scroll is dragging or settling; a revalidated page waits so it never moves under it.
+    @State private var isScrolling = false
     private let repository: DepthRepository
     /// Stats fetches no uniform data of its own (lightweight read,
     /// invariant 5), so it reads the kit-resolved accent TeamDetailView publishes here
@@ -32,6 +34,10 @@ struct TeamStatsView: View {
         self.currentTeamStore = currentTeamStore
     }
 
+    private var isInteracting: Bool {
+        isScrolling || showSeasonPicker || openLens != nil || profilePlayer != nil
+    }
+
     var body: some View {
         content
             // The roster and schedule pages paint no explicit background, so they
@@ -40,6 +46,10 @@ struct TeamStatsView: View {
             // other two pages. No explicit background here = the same surface they use.
             .task { await viewModel.load() }
             .refreshable { await viewModel.load(forceRefresh: true) }
+            .onScrollPhaseChange { _, phase in isScrolling = phase.isScrolling }
+            .onChange(of: isInteracting, initial: true) { _, held in
+                viewModel.holdRevalidation(held)
+            }
             .sheet(isPresented: $showSeasonPicker) {
                 if let selectedSeason = viewModel.selectedSeason {
                     SeasonPickerSheet(
