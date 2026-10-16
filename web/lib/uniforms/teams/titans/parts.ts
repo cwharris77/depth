@@ -20,6 +20,8 @@ export const TITANS_PALETTE = {
   red: '#C8102E',
   white: '#FFFFFF',
   silver: '#A5ACAF',
+  wolfGrey: '#A2AAAD',
+  steelGrey: '#54585A',
   lightBlue2026: '#4495D2',
   red2026: '#D50A0A',
   ...Object.fromEntries(TITANS_FLAMING_T_PATHS.map(({ fill }) => [fill, fill])),
