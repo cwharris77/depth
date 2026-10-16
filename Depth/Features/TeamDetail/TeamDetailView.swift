@@ -569,10 +569,7 @@ struct TeamDetailView: View {
         var label: String { rawValue.uppercased() }
     }
 
-    /// The switcher trigger is a team-fill pill — `colors.primary` background with a
-    /// `colors.secondary` ring (web's TeamBadge vocabulary)
-    /// and the full "City Name", since the page switcher left the nav bar and there's
-    /// room again. Text is readableTextOn(primary) (web: `readableTextOn(team.colors.primary)`).
+    /// A team-fill switcher with the full city and name.
     private var teamSwitcherPill: some View {
         let colors = viewModel.snapshot?.team.colors
         let fill = (colors?.primary).map(Color.init(hex:)) ?? DesignTokens.Colors.surfaceChip
@@ -594,8 +591,6 @@ struct TeamDetailView: View {
             .padding(.leading, 12)
             .padding(.trailing, 8)
             .padding(.vertical, 6)
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
             .background {
                 if dynamicTypeSize.isAccessibilitySize {
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.lg).fill(fill)
@@ -611,6 +606,8 @@ struct TeamDetailView: View {
                     Capsule().strokeBorder(ring, lineWidth: 1)
                 }
             }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("team-switcher-button")
