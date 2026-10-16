@@ -33,6 +33,7 @@ export function placed(layers: readonly PartLayer[]): PlacedMark {
 }
 
 export type AnchorName =
+  | 'chest-left'
   | 'helmet-side'
   | 'sleeve-left'
   | 'sleeve-right'
@@ -42,6 +43,8 @@ export type AnchorName =
   | 'pants-nike'
   | 'sleeve-top-left'
   | 'sleeve-top-right'
+  | 'sleeve-wrap-left'
+  | 'sleeve-wrap-right'
   | 'sleeve-logo-left'
   | 'sleeve-logo-right'
   | 'collar-narrow-v';
@@ -63,6 +66,8 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
   'pants-nike': { surface: 'pants', x0: 360, w: 40, cy: 865, mirror: false, idSuffix: '' },
   // The shield over the narrow V's point, at the shared collar shield's size.
   'collar-narrow-v': { surface: 'collar', x0: 284.5, w: 19, cy: 490, mirror: false, idSuffix: '' },
+  // The small team badge over the wearer's heart.
+  'chest-left': { surface: 'jersey', x0: 388, w: 54, cy: 484, mirror: false, idSuffix: '' },
   'helmet-side': { surface: 'helmet', x0: 154, w: 310, cy: 293, mirror: false, idSuffix: '' },
   'sleeve-left': {
     surface: 'sleeve-left',
@@ -119,6 +124,23 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
   // A team logo worn small on the lower outer sleeve: its far side runs past the sleeve's outer
   // edge and the jersey clip crops it, leaving the near horn. Drawn for the right sleeve, so the
   // logo reads mirrored there and native on the left.
+  // A wide emblem wrapping around the arm; only its forward section is visible.
+  'sleeve-wrap-left': {
+    surface: 'sleeve-left',
+    x0: -40,
+    w: 120,
+    cy: 506,
+    mirror: false,
+    idSuffix: '-left',
+  },
+  'sleeve-wrap-right': {
+    surface: 'sleeve-right',
+    x0: 508,
+    w: 120,
+    cy: 506,
+    mirror: true,
+    idSuffix: '-right',
+  },
   'sleeve-logo-left': {
     surface: 'sleeve-left',
     x0: -4,
@@ -298,13 +320,14 @@ export function placeMark<S extends string>(
   });
 }
 
-export type AnchorPair = 'sleeves' | 'shoulders' | 'sleeve-tops' | 'sleeve-logos';
+export type AnchorPair = 'sleeves' | 'shoulders' | 'sleeve-tops' | 'sleeve-logos' | 'sleeve-wraps';
 
 const PAIR_SIDE = {
   sleeves: 'sleeve',
   shoulders: 'shoulder',
   'sleeve-tops': 'sleeve-top',
   'sleeve-logos': 'sleeve-logo',
+  'sleeve-wraps': 'sleeve-wrap',
 } as const;
 
 // Both sleeves, both shoulders or both sleeve tops, interleaved left then right for each slot, the

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "077357f8113532eeec9379fc81939e944a7d66a98db048151305f48294f268ae",
-  "revision": "ecf412e6a0034cc5",
+  "sourceDigest": "ed44357c4f926da7bc797138de810a87fd6ac1897a21233b2d9921f81a06f92a",
+  "revision": "9b444543a744eb75",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1246,15 +1246,15 @@
     {
       "catalogId": "jaguars-away-2018",
       "constructionKey": "away",
-      "revision": "8aea9b85e6d31e59",
+      "revision": "c0bb61df5984c71b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-away-2018.webp",
-          "sha256": "73c495dfe700cbf07ca77e12a527437d3f72ce35c114e4a9328e1a36be82e85b"
+          "sha256": "baf4be53e717d3194b0c93765c839ad9578c6982d31d5f6f46a3d8bdd413f1b2"
         },
         "full": {
           "path": "/uniforms/jaguars-away-2018-full.webp",
-          "sha256": "7673c77506894d8917e8c3cd8ff4b2d093696be40943b8006ba1f354776fdc4b"
+          "sha256": "ee3b39029e89b917a686c4bec5ed334a68c22ce95427480d3e2e8014a2a0863a"
         }
       },
       "combinations": [
@@ -1263,7 +1263,7 @@
           "label": "Teal pants",
           "full": {
             "path": "/uniforms/jaguars-away-2018--teal-pants-full.webp",
-            "sha256": "df64af5339450b6340d0cc31d0e6cbd2448122435dd6ebd592836f42497cfbd9"
+            "sha256": "5c00606e9d83cbdfc044c64d4f445cfd0df83eb19636c13b6acbb0ff4edfd6ab"
           }
         },
         {
@@ -1271,7 +1271,7 @@
           "label": "Black pants",
           "full": {
             "path": "/uniforms/jaguars-away-2018--black-pants-full.webp",
-            "sha256": "1a481a0e15fbb1cdf463eafa374b970bd7c870b7c69c04987024a4a9fe69eca1"
+            "sha256": "e88333f704190769108928d68ad98e0616f6771a2c6c78c701943d44b3cba2f3"
           }
         }
       ]
@@ -1279,30 +1279,30 @@
     {
       "catalogId": "jaguars-black-alt-2018",
       "constructionKey": "black-alt",
-      "revision": "a70b78e3547a95c6",
+      "revision": "bf901c246a543caa",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-black-alt-2018.webp",
-          "sha256": "2fc19b8b0f2e9679647fb7d0cf166b3bc5ab9eb779e3845a29c6109fc731afe0"
+          "sha256": "f0264ae52920f8c43addffceb1e13e7014ffee63f38bd180c875bf65d9a6a5cd"
         },
         "full": {
           "path": "/uniforms/jaguars-black-alt-2018-full.webp",
-          "sha256": "7758fec387228588fb701a6e470d409d8112e29c538448adae49b6727c2fe297"
+          "sha256": "89629147415a1b15f46131a49060ec4349f831e43f29c5750130ff981b561992"
         }
       }
     },
     {
       "catalogId": "jaguars-home-2018",
       "constructionKey": "home",
-      "revision": "4f35b484aa5e4b6f",
+      "revision": "8ea3760ab07fc861",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-home-2018.webp",
-          "sha256": "33ddf82f4c00bddd9f9ee07165c8efa36b68bc1d62cd45b01631581f0f2f5e82"
+          "sha256": "aef8b7cb49b1dc01b7191ada1c8ec64f9ec732fcb4f924b327dafa8062507498"
         },
         "full": {
           "path": "/uniforms/jaguars-home-2018-full.webp",
-          "sha256": "eedb7d38a7ce374818902d865a513f884567de290f0d1361ee241ae8d6f84739"
+          "sha256": "1107bf889cc8c3d8afcf49f91b36ac106bed356cb13f734681d6ebb8c742b1b5"
         }
       },
       "combinations": [
@@ -1311,7 +1311,7 @@
           "label": "Teal pants",
           "full": {
             "path": "/uniforms/jaguars-home-2018--teal-pants-full.webp",
-            "sha256": "f26cf9516477448f48e364660d2b4d59c2d505fae8f0ebdaab27f0a3bdb3f79a"
+            "sha256": "424396ea507158fa9a97d4a0f775f63595e7e743ed85922ba10b632cd3dab81b"
           }
         }
       ]
@@ -1319,15 +1319,15 @@
     {
       "catalogId": "jaguars-teal-throwback-1998",
       "constructionKey": "teal-throwback",
-      "revision": "bd245cfe3b1ff2d3",
+      "revision": "66de8b1be0d27c35",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-teal-throwback-1998.webp",
-          "sha256": "a42a40248a7230b9321c783985656d528e97b13be4320860ead763a2da9d3d37"
+          "sha256": "4dc4ad9ef8f3e4ce8dc959bfbefb54a2cbe6870a057061a1906d543a20018517"
         },
         "full": {
           "path": "/uniforms/jaguars-teal-throwback-1998-full.webp",
-          "sha256": "7cdaa934801abb5bae8aefdad974a1ddf26ec2031167f173d0762566184b9e90"
+          "sha256": "6944972f0d5e5dee9415ed9ee8a5fa3969a13cea753e93ac55cbce6c974e00bd"
         }
       }
     },

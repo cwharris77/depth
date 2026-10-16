@@ -1,10 +1,12 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { JAGUARS_THROWBACK_NUMBER_THREE } from '../marks/numbers';
-import { JAGUARS_THROWBACK_BLOCKS } from '../marks/construction';
+import {
+  JAGUARS_THROWBACK_BLOCKS,
+  JAGUARS_PROWLER_SLEEVES,
+  JAGUARS_THROWBACK_CUFF,
+  JAGUARS_THROWBACK_NUMBER_OUTLINE,
+} from '../marks/construction';
 
-// Teal body with a black V collar band and black back bar, white shoulder numerals, a gold block
-// (drawn by the blocks mark) flush above a black hem band on each sleeve, and white numerals
-// outlined in gold.
 export const JAGUARS_JERSEY_THROWBACK: CompleteJerseySpec = {
   body: 'teal',
   collar: {
@@ -18,16 +20,21 @@ export const JAGUARS_JERSEY_THROWBACK: CompleteJerseySpec = {
   },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
-  shoulderNumber: { fill: 'white', outline: 'none' },
+  shoulderNumber: { fill: 'white', outline: 'throwbackGold' },
   sleeveStripes: 'none',
-  cuff: { color: 'black', size: 'm' },
+  cuff: 'none',
   sleeveNumber: 'none',
   number: {
     fill: 'white',
-    outline: 'gold',
+    outline: 'throwbackGold',
     outlineWeight: 'regular',
     texture: 'mesh',
     glyphPath: JAGUARS_THROWBACK_NUMBER_THREE,
   },
-  marks: [{ paint: 'over', mark: JAGUARS_THROWBACK_BLOCKS }],
+  marks: [
+    { paint: 'over', mark: JAGUARS_THROWBACK_NUMBER_OUTLINE },
+    { paint: 'over', mark: JAGUARS_PROWLER_SLEEVES },
+    { paint: 'over', mark: JAGUARS_THROWBACK_CUFF },
+    { paint: 'over', mark: JAGUARS_THROWBACK_BLOCKS },
+  ],
 };

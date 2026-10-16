@@ -1,22 +1,13 @@
 // Jacksonville as a complete team spec: every helmet, jersey, pants and socks part, with its own
 // art drawn by the marks in ./marks.
 import type { TeamSpec } from '../core/team-spec';
-import { JAGUARS_DECAL_PATHS } from './marks/decal';
 import { JAGUARS_HELMET_DECAL } from './marks/construction';
 import { JAGUARS_JERSEY_BLACK_ALT } from './jerseys/black-alt';
 import { JAGUARS_JERSEY_TEAL } from './jerseys/teal';
 import { JAGUARS_JERSEY_THROWBACK } from './jerseys/throwback';
 import { JAGUARS_JERSEY_WHITE } from './jerseys/white';
 
-// Teal, gold, black and white are the physical colours. Every decal fill is kept from the
-// supplied artwork, including its minor shading, and is its own key.
-export const JAGUARS_PALETTE = {
-  teal: '#006778',
-  gold: '#D7A22A',
-  black: '#101820',
-  white: '#FFFFFF',
-  ...Object.fromEntries(JAGUARS_DECAL_PATHS.map(({ fill }) => [fill, fill])),
-};
+export { JAGUARS_PALETTE } from './palette';
 
 const none = 'none' as const;
 
