@@ -14,6 +14,7 @@ export const CARDINALS_JERSEY_RED: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 175,
     fill: 'white',
     outline: 'red',
     outlineWeight: 'none',

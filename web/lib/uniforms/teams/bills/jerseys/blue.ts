@@ -28,6 +28,7 @@ export const BILLS_JERSEY_BLUE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'white',
     outline: 'red',
     outlineWeight: 'regular',

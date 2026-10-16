@@ -21,6 +21,7 @@ export const RAVENS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 200,
     fill: 'purple',
     outline: 'gold',
     outlineWeight: 'regular',

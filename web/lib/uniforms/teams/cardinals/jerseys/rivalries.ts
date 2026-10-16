@@ -14,6 +14,7 @@ export const CARDINALS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 175,
     fill: 'rivalRed',
     outline: 'rivalOrange',
     outlineWeight: 'thin',

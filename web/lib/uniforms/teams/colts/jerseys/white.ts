@@ -26,6 +26,7 @@ export const COLTS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: { fill: 'navy' },
   number: {
+    height: 195,
     fill: 'navy',
     outline: 'white',
     outlineWeight: 'none',

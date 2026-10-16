@@ -26,7 +26,13 @@ export const SEAHAWKS_JERSEY_THROWBACK: CompleteJerseySpec = {
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
-  number: { fill: 'white', outline: 'throwbackRoyal', outlineWeight: 'x-heavy', texture: 'mesh' },
+  number: {
+    height: 190,
+    fill: 'white',
+    outline: 'throwbackRoyal',
+    outlineWeight: 'x-heavy',
+    texture: 'mesh',
+  },
   marks: [
     // Seattle's smaller shoulder numeral, not the spec's; the throwback has no band or cap.
     anchoredMark({

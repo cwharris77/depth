@@ -21,6 +21,7 @@ export const BENGALS_JERSEY_ORANGE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'white',
     outline: 'black',
     outlineWeight: 'thin',

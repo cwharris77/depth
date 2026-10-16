@@ -22,6 +22,7 @@ export const BUCCANEERS_JERSEY_RED: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'white',
     outline: 'orange',
     outlineWeight: 'thin',

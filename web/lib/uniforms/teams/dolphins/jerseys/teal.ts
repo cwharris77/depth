@@ -1,3 +1,4 @@
+import { DOLPHINS_MODERN_SLEEVE_MARKS } from '../marks/sleeves';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { DOLPHINS_NUMBER_THREE } from '../marks/numbers';
 
@@ -20,11 +21,12 @@ export const DOLPHINS_JERSEY_TEAL: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'white',
     outline: 'orange',
     outlineWeight: 'regular',
     texture: 'mesh',
     glyphPath: DOLPHINS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: DOLPHINS_MODERN_SLEEVE_MARKS }],
 };

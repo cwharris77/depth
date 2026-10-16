@@ -28,6 +28,7 @@ export const COWBOYS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 180,
     fill: 'navy',
     outline: 'navy',
     outlineWeight: 'thin',

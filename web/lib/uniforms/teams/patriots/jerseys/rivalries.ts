@@ -21,6 +21,7 @@ export const PATRIOTS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 185,
     fill: 'white',
     outline: 'navy',
     outlineWeight: 'regular',

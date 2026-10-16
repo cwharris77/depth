@@ -21,6 +21,7 @@ export const RAIDERS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: { fill: 'black' },
   number: {
+    height: 185,
     fill: 'black',
     outline: 'silver',
     outlineWeight: 'thin',

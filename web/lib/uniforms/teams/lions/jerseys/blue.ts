@@ -22,6 +22,7 @@ export const LIONS_JERSEY_BLUE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 185,
     fill: 'white',
     outline: 'silver',
     outlineWeight: 'thin',

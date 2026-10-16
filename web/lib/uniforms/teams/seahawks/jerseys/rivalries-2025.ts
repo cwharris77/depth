@@ -32,6 +32,7 @@ export const SEAHAWKS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'rivalriesJerseyOlive',
     outline: 'rivalriesJerseyNavy',
     outlineWeight: 'thin',

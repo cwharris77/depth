@@ -14,7 +14,7 @@ export const COMMANDERS_JERSEY_BURGUNDY_2026: CompleteJerseySpec = {
     edge: 'none',
     position: 'hem',
   },
-  number: { fill: 'white', outline: 'gold', outlineWeight: 'thin', texture: 'mesh' },
+  number: { height: 195, fill: 'white', outline: 'gold', outlineWeight: 'thin', texture: 'mesh' },
   marks: [],
 };
 export const COMMANDERS_JERSEY_WHITE_2026: CompleteJerseySpec = {
@@ -30,5 +30,11 @@ export const COMMANDERS_JERSEY_WHITE_2026: CompleteJerseySpec = {
     edge: 'none',
     position: 'hem',
   },
-  number: { fill: 'burgundy', outline: 'gold', outlineWeight: 'thin', texture: 'mesh' },
+  number: {
+    height: 195,
+    fill: 'burgundy',
+    outline: 'gold',
+    outlineWeight: 'thin',
+    texture: 'mesh',
+  },
 };

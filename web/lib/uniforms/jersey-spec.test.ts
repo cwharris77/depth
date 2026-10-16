@@ -646,3 +646,39 @@ describe('jersey marks', () => {
     expect(expandJersey('t', { ...base, marks: [] })).toEqual(expandJersey('t', base));
   });
 });
+
+describe('construction-specific chest numeral height', () => {
+  const make = (height?: number) =>
+    expandJersey('height', {
+      body: 'navy',
+      collar: { style: 'none' },
+      shoulderNumber: { fill: 'white' },
+      sleeveNumber: { fill: 'white' },
+      number: {
+        fill: 'white',
+        outline: 'gold',
+        outlineWeight: 'thin',
+        outerOutline: 'black',
+        ...(height === undefined ? {} : { height }),
+      },
+    });
+  it('extends the chest numeral down while preserving its width, top and TV numerals', () => {
+    const before = make();
+    const after = make(200);
+    const [x0, y0, x1] = boundsOf(JERSEY_NUMBER_THREE);
+    const glyph = after.number?.glyphPath;
+    if (!glyph) throw new Error('Missing resized chest numeral');
+    expect(boundsOf(glyph)).toEqual([x0, y0, x1, y0 + 200]);
+    expect(after.layers.filter((l) => l.surface.startsWith('sleeve-'))).toEqual(
+      before.layers.filter((l) => l.surface.startsWith('sleeve-'))
+    );
+    expect(after.layers.find((l) => l.id.endsWith('-number-outer-outline'))?.d).toBe(
+      after.number?.glyphPath
+    );
+    expect(after.number?.texture).toBe('mesh');
+    expect(before.number).not.toHaveProperty('glyphPath');
+  });
+  it.each([0, -20, Infinity, NaN])('rejects invalid chest height %s', (height) => {
+    expect(() => make(height)).toThrow(/height/);
+  });
+});

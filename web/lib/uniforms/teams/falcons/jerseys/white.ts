@@ -23,6 +23,7 @@ export const FALCONS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'black',
     outline: 'red',
     outlineWeight: 'thin',

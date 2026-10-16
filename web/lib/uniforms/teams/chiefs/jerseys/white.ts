@@ -28,6 +28,7 @@ export const CHIEFS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'red',
     outline: 'gold',
     outlineWeight: 'thin',

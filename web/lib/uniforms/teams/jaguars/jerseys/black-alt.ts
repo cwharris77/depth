@@ -12,6 +12,7 @@ export const JAGUARS_JERSEY_BLACK_ALT: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'white',
     outline: 'black',
     outlineWeight: 'none',

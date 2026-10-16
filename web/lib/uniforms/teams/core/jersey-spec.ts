@@ -51,6 +51,8 @@ export function anchoredMark<S extends string>(use: {
 export type JerseyMarkUse = { paint: 'under' | 'over'; mark: PlacedMark } | AnchoredJerseyMark;
 
 export interface JerseyNumber {
+  // Optional chest-only height, extending downward from the authored top.
+  height?: number;
   fill: string;
   outline: string;
   outlineWeight: 'none' | 'thin' | 'regular' | 'heavy' | 'x-heavy';
@@ -178,6 +180,20 @@ function numeralAt(
   }
   let j = 0;
   return d.replace(/#/g, () => out[j++]);
+}
+
+// Stretch only the chest glyph; shoulder and sleeve placements retain their authored aspect.
+function chestNumeral(glyph: string, height: number): string {
+  if (!Number.isFinite(height) || height <= 0) throw new Error('Invalid chest numeral height');
+  const values = (glyph.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+  const ys = values.filter((_, i) => i % 2 === 1);
+  const top = Math.min(...ys);
+  const scale = height / (Math.max(...ys) - top);
+  let index = 0;
+  return glyph.replace(/-?\d+(?:\.\d+)?/g, (value) => {
+    const y = index++ % 2 === 1;
+    return y ? String(Math.round((top + (Number(value) - top) * scale) * 100) / 100) : value;
+  });
 }
 
 // Small and upright, centred on the lower outer face of the sleeve.
@@ -393,6 +409,11 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
 
   layers.push(...collarLayers(prefix, spec));
 
+  const chestPath =
+    spec.number.height === undefined
+      ? spec.number.glyphPath
+      : chestNumeral(spec.number.glyphPath ?? JERSEY_NUMBER_THREE, spec.number.height);
+
   if (spec.number.outerOutline) {
     layers.push({
       id: `${prefix}-number-outer-outline`,
@@ -401,7 +422,7 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
       kind: 'stroke',
       stroke: spec.number.outerOutline,
       strokeWidth: OUTLINE_PX[spec.number.outlineWeight] + OUTER_OUTLINE_EXTRA,
-      d: spec.number.glyphPath ?? JERSEY_NUMBER_THREE,
+      d: chestPath ?? JERSEY_NUMBER_THREE,
     });
   }
 
@@ -412,8 +433,8 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
       fill: spec.number.fill,
       outline: spec.number.outline,
       outlineWidth: OUTLINE_PX[spec.number.outlineWeight],
-      ...(spec.number.glyphPath
-        ? { glyphPath: spec.number.glyphPath, texture: spec.number.texture ?? 'mesh' }
+      ...(chestPath
+        ? { glyphPath: chestPath, texture: spec.number.texture ?? 'mesh' }
         : spec.number.texture === 'plain' && { glyphPath: JERSEY_NUMBER_THREE }),
       ...(spec.number.glyphLabel && { glyphLabel: spec.number.glyphLabel }),
     },

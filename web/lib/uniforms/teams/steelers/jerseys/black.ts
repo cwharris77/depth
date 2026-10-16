@@ -21,6 +21,7 @@ export const STEELERS_JERSEY_BLACK: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 175,
     fill: 'white',
     outline: 'black',
     outlineWeight: 'none',

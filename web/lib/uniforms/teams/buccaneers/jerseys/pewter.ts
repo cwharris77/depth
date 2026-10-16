@@ -23,6 +23,7 @@ export const BUCCANEERS_JERSEY_PEWTER: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'white',
     outline: 'red',
     outlineWeight: 'regular',

@@ -13,6 +13,7 @@ export const EAGLES_JERSEY_KELLY_ORIGINAL: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'white',
     outline: 'silver',
     outlineWeight: 'regular',

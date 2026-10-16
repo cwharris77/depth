@@ -31,6 +31,7 @@ export const PACKERS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 185,
     fill: 'green',
     outline: 'green',
     outlineWeight: 'none',

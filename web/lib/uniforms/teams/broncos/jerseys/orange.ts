@@ -26,6 +26,7 @@ export const BRONCOS_JERSEY_ORANGE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 175,
     fill: 'white',
     outline: 'navy',
     outlineWeight: 'thin',

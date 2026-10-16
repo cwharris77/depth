@@ -20,6 +20,7 @@ export const BUCCANEERS_JERSEY_CREAMSICLE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'white',
     outline: 'crimson',
     outlineWeight: 'regular',

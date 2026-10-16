@@ -21,6 +21,7 @@ export const COMMANDERS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 195,
     fill: 'pattern:commanders-number-stipple',
     outline: 'black',
     outlineWeight: 'thin',

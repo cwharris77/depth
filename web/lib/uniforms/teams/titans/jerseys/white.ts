@@ -20,6 +20,7 @@ export const JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'navy',
     outline: 'lightBlue',
     outlineWeight: 'regular',

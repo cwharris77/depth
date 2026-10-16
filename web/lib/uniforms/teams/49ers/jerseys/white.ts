@@ -28,6 +28,7 @@ export const NINERS_JERSEY_WHITE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 185,
     fill: 'red',
     outline: 'red',
     outlineWeight: 'none',

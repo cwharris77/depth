@@ -25,6 +25,7 @@ export const PANTHERS_JERSEY_BLUE: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 190,
     fill: 'white',
     outline: 'black',
     outlineWeight: 'regular',

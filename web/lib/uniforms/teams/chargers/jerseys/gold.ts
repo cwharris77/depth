@@ -21,6 +21,7 @@ export const CHARGERS_JERSEY_GOLD: CompleteJerseySpec = {
   cuff: 'none',
   sleeveNumber: 'none',
   number: {
+    height: 200,
     fill: 'white',
     outline: 'powderBlue',
     outlineWeight: 'thin',
