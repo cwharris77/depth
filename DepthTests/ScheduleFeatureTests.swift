@@ -647,3 +647,73 @@ private actor DelayedScheduleRepository: DepthRepository {
     await refresh.value
     #expect(await viewModel.loadState == .loaded)
 }
+
+// MARK: - Super Bowl emphasis
+
+private func postseasonGame(
+    isHome: Bool = false, result: ScheduleResult?, team: Int? = nil, opponent: Int? = nil
+) -> ScheduleGame {
+    ScheduleGame(
+        week: 22, isBye: false, date: "2026-02-08", isHome: isHome,
+        opponent: scheduleTeam(id: "chiefs", abbrev: "KC"), teamScore: team,
+        opponentScore: opponent, result: result)
+}
+
+@Test func onlyADecidedSuperBowlShowsTheTrophy() {
+    let won = PostseasonRound(
+        kind: .superBowl, game: postseasonGame(result: .win, team: 31, opponent: 24))
+    let lost = PostseasonRound(
+        kind: .superBowl, game: postseasonGame(result: .loss, team: 20, opponent: 24))
+    let upcoming = PostseasonRound(kind: .superBowl, game: postseasonGame(result: nil))
+    let empty = PostseasonRound(kind: .superBowl, game: nil)
+    #expect(won.showsTrophy && lost.showsTrophy)
+    #expect(!upcoming.showsTrophy && !empty.showsTrophy)
+    for kind in PostseasonRoundKind.allCases where kind != .superBowl {
+        let round = PostseasonRound(
+            kind: kind, game: postseasonGame(result: .win, team: 31, opponent: 24))
+        #expect(!round.showsTrophy && !round.emphasizesResult && !round.isChampionship)
+    }
+}
+
+@Test func superBowlEmphasisFollowsTheGameNotTheResult() {
+    #expect(PostseasonRound(kind: .superBowl, game: postseasonGame(result: nil)).emphasizesResult)
+    #expect(!PostseasonRound(kind: .superBowl, game: nil).emphasizesResult)
+}
+
+@Test func onlyAWonSuperBowlIsAChampionship() {
+    #expect(
+        PostseasonRound(
+            kind: .superBowl, game: postseasonGame(result: .win, team: 31, opponent: 24)
+        ).isChampionship)
+    #expect(
+        !PostseasonRound(
+            kind: .superBowl, game: postseasonGame(result: .loss, team: 20, opponent: 24)
+        ).isChampionship)
+    #expect(!PostseasonRound(kind: .superBowl, game: postseasonGame(result: nil)).isChampionship)
+}
+
+@Test func championshipLabelEndsInChampions() {
+    let won = PostseasonRound(
+        kind: .superBowl, game: postseasonGame(result: .win, team: 31, opponent: 24))
+    #expect(
+        won.accessibilityLabel(season: 2025, dateText: "FEB 8")
+            == "SUPER BOWL LX, at KC, W 31-24, FEB 8, champions")
+    let lost = PostseasonRound(
+        kind: .superBowl, game: postseasonGame(isHome: true, result: .loss, team: 20, opponent: 24))
+    #expect(
+        lost.accessibilityLabel(season: 2025, dateText: "FEB 8")
+            == "SUPER BOWL LX, vs KC, L 20-24, FEB 8")
+}
+
+@Test func scoreSummaryWaitsForAResultAndBothScores() {
+    #expect(postseasonGame(result: .win, team: 29, opponent: 13).scoreSummary == "W 29-13")
+    #expect(postseasonGame(result: nil).scoreSummary == "Upcoming")
+    #expect(postseasonGame(result: .win, team: 29, opponent: nil).scoreSummary == "Upcoming")
+}
+
+@Test func championsBeatLandsAfterTheBarSweep() {
+    let timing = PostseasonLadderTiming(terminalIndex: 3)
+    #expect(
+        abs(timing.championsDelay - (timing.sweepDelay + PostseasonLadderTiming.sweepDuration))
+            < 1e-9)
+}

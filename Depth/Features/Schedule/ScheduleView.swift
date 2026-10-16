@@ -415,10 +415,12 @@ private struct PostseasonRunView: View {
 /// Canvas 3c's choreography, derived from its two frames (a Divisional exit and a Super
 /// Bowl win): each reached round lands half a second after the one above, and the rail's
 /// single eased draw ends just as the terminal round's pip fills and its bar sweeps.
-private struct PostseasonLadderTiming {
+struct PostseasonLadderTiming {
     let terminalIndex: Int?
 
     static let railDelay = 0.1
+    /// The terminal round's bottom bar sweep.
+    static let sweepDuration = 0.5
     private let step = 0.5
 
     var railDuration: Double { 1.3 + 0.25 * Double(terminalIndex ?? 0) }
@@ -431,6 +433,9 @@ private struct PostseasonLadderTiming {
     }
 
     var sweepDelay: Double { railEnd - 0.1 }
+
+    /// A won Super Bowl's trophy beat lands once the bar has finished sweeping.
+    var championsDelay: Double { sweepDelay + Self.sweepDuration }
 }
 
 private enum PostseasonRoundStage {
@@ -456,6 +461,9 @@ private struct PostseasonLadder: View {
     /// Flipped on appear, so every staged element animates from its entrance state. Reduce
     /// Motion renders the settled state from the first frame instead.
     @State private var hasPlayed = false
+    /// Counts the one-time champions beat (trophy rise, glint, pip pulse, haptic). It stays 0
+    /// for a loss and under Reduce Motion, where the trophy renders settled instead.
+    @State private var championsBeat = 0
 
     private var reduceMotion: Bool { settlesMotion(environmentReduceMotion) }
     private var isShown: Bool { hasPlayed || reduceMotion }
@@ -478,6 +486,7 @@ private struct PostseasonLadder: View {
                         accent: accent,
                         terminalColor: terminalColor,
                         isShown: isShown,
+                        championsBeat: championsBeat,
                         timing: timing,
                         index: index
                     )
@@ -498,6 +507,13 @@ private struct PostseasonLadder: View {
             .accessibilityHidden(true)
         }
         .onAppear { hasPlayed = true }
+        .task(id: isShown) {
+            guard isShown, !reduceMotion, run.rounds.last?.isChampionship == true else { return }
+            try? await Task.sleep(for: .seconds(timing.championsDelay))
+            guard !Task.isCancelled else { return }
+            championsBeat += 1
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: championsBeat)
     }
 
     private func stage(_ index: Int) -> PostseasonRoundStage {
@@ -568,7 +584,16 @@ private struct PostseasonLadder: View {
                 .opacity(isShown ? 1 : 0)
                 .animation(
                     reduceMotion ? nil : .easeOut(duration: 0.3).delay(timing.pipDelay(index)),
-                    value: isShown)
+                    value: isShown
+                )
+                .keyframeAnimator(initialValue: 1.0, trigger: championsBeat) { view, scale in
+                    view.scaleEffect(scale)
+                } keyframes: { _ in
+                    KeyframeTrack {
+                        CubicKeyframe(1.4, duration: 0.18)
+                        SpringKeyframe(1.0, duration: 0.4, spring: .snappy)
+                    }
+                }
         }
     }
 }
@@ -590,10 +615,22 @@ private struct PostseasonRoundCard: View {
     let accent: Color
     let terminalColor: Color
     let isShown: Bool
+    let championsBeat: Int
     let timing: PostseasonLadderTiming
     let index: Int
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     private var reduceMotion: Bool { settlesMotion(environmentReduceMotion) }
+
+    /// The Super Bowl card carries a stronger fill, border, height and score.
+    private var isEmphasized: Bool { round.emphasizesResult }
+
+    /// A won title's trophy waits for the champions beat; a loss, an earlier render or
+    /// Reduce Motion shows it from the first frame.
+    private var trophyIsSettled: Bool {
+        !round.isChampionship || reduceMotion || championsBeat > 0
+    }
 
     /// An absent Wild Card game for a bye-earning seed is the bye, not an unreached round.
     private var isBye: Bool {
@@ -610,8 +647,9 @@ private struct PostseasonRoundCard: View {
 
     var body: some View {
         content
-            .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isEmphasized ? 96 : 78, alignment: .leading)
             .padding(.horizontal, 14)
+            .background(isEmphasized ? terminalColor.opacity(0.09) : .clear, in: cardShape)
             .background(
                 isEmptyRound ? DesignTokens.Colors.surfaceCard2 : DesignTokens.Colors.surfaceCard,
                 in: cardShape
@@ -625,8 +663,9 @@ private struct PostseasonRoundCard: View {
                         .animation(
                             reduceMotion
                                 ? nil
-                                : .timingCurve(0.4, 0, 0.2, 1, duration: 0.5).delay(
-                                    timing.sweepDelay),
+                                : .timingCurve(
+                                    0.4, 0, 0.2, 1, duration: PostseasonLadderTiming.sweepDuration
+                                ).delay(timing.sweepDelay),
                             value: isShown
                         )
                 }
@@ -637,6 +676,8 @@ private struct PostseasonRoundCard: View {
                     cardShape.strokeBorder(
                         DesignTokens.Colors.borderInput,
                         style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                } else if isEmphasized {
+                    cardShape.strokeBorder(terminalColor, lineWidth: 1.5)
                 } else {
                     cardShape.strokeBorder(
                         isEmptyRound
@@ -653,8 +694,11 @@ private struct PostseasonRoundCard: View {
                 value: isShown
             )
             .accessibilityElement(children: .combine)
+            .modifier(CardLabel(round: round, season: season, dateText: dateText))
             .accessibilityIdentifier("schedule-playoffs-\(round.kind.rawValue)")
     }
+
+    private var dateText: String { round.game.map(dateLabel) ?? "" }
 
     private var isEmptyRound: Bool { round.game == nil }
 
@@ -669,32 +713,87 @@ private struct PostseasonRoundCard: View {
                     .foregroundStyle(accent)
             }
         } else if let game = round.game {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                VStack(alignment: .leading, spacing: 5) {
-                    roundTitle
-                    if let opponent = game.opponent {
-                        HStack(spacing: 6) {
-                            TeamIconView(team: opponent, size: 22)
-                            Text(
-                                verbatim: game.isHome
-                                    ? "vs \(opponent.abbrev)" : "at \(opponent.abbrev)"
-                            )
-                            .font(.subheadline.weight(.heavy))
-                        }
-                    }
+            if isEmphasized && dynamicTypeSize.isAccessibilitySize {
+                // Accessibility sizes stack the trophy, matchup and score so nothing clips.
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+                    if round.showsTrophy { trophy }
+                    matchup(game)
+                    score(game, alignment: .leading)
                 }
-                Spacer()
-                VStack(alignment: .trailing, spacing: DesignTokens.Spacing.xs) {
-                    Text(verbatim: scoreLabel(game))
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(resultColor(game.result))
-                    Text(verbatim: dateLabel(game))
-                        .font(.caption2.bold())
-                        .foregroundStyle(DesignTokens.Colors.textFaint)
+                .padding(.vertical, DesignTokens.Spacing.md)
+            } else {
+                HStack(spacing: DesignTokens.Spacing.sm) {
+                    if round.showsTrophy {
+                        trophy.padding(.trailing, DesignTokens.Spacing.xs)
+                    }
+                    matchup(game)
+                    Spacer()
+                    score(game, alignment: .trailing)
                 }
             }
         } else {
             roundTitle
+        }
+    }
+
+    private func matchup(_ game: ScheduleGame) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            roundTitle
+            if let opponent = game.opponent {
+                HStack(spacing: 6) {
+                    TeamIconView(team: opponent, size: 22)
+                    Text(
+                        verbatim: game.isHome ? "vs \(opponent.abbrev)" : "at \(opponent.abbrev)"
+                    )
+                    .font(.subheadline.weight(.heavy))
+                }
+            }
+        }
+    }
+
+    private func score(_ game: ScheduleGame, alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: DesignTokens.Spacing.xs) {
+            Text(verbatim: game.scoreSummary)
+                .font(isEmphasized ? .title3.bold() : .subheadline.weight(.semibold))
+                .foregroundStyle(resultColor(game.result))
+            Text(verbatim: dateLabel(game))
+                .font(.caption2.bold())
+                .foregroundStyle(DesignTokens.Colors.textFaint)
+        }
+    }
+
+    /// The trophy at 48 pt. A won title rises in and takes one glint on the champions beat;
+    /// every other decided Super Bowl shows it static.
+    private var trophy: some View {
+        LombardiTrophy()
+            .frame(height: 48)
+            .overlay { glint }
+            .opacity(trophyIsSettled ? 1 : 0)
+            .scaleEffect(trophyIsSettled ? 1 : 0.8)
+            .offset(y: trophyIsSettled ? 0 : 8)
+            .animation(
+                reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.7),
+                value: championsBeat)
+    }
+
+    /// A soft diagonal highlight, clipped to the trophy, that crosses once left to right. At
+    /// rest it sits past the right edge, so a settled trophy shows no band.
+    @ViewBuilder
+    private var glint: some View {
+        if round.isChampionship {
+            LinearGradient(
+                colors: [.clear, .white.opacity(0.7), .clear], startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(width: 12)
+            .rotationEffect(.degrees(20))
+            .scaleEffect(y: 2)
+            .offset(x: championsBeat > 0 || reduceMotion ? 28 : -28)
+            .animation(
+                reduceMotion ? nil : .easeInOut(duration: 0.7).delay(0.2), value: championsBeat
+            )
+            .mask { LombardiTrophy() }
+            .allowsHitTesting(false)
         }
     }
 
@@ -723,15 +822,6 @@ private struct PostseasonRoundCard: View {
         }
     }
 
-    private func scoreLabel(_ game: ScheduleGame) -> String {
-        guard let result = game.result, let teamScore = game.teamScore,
-            let opponentScore = game.opponentScore
-        else {
-            return "Upcoming"
-        }
-        return "\(result.rawValue) \(teamScore)-\(opponentScore)"
-    }
-
     private func dateLabel(_ game: ScheduleGame) -> String {
         guard let date = game.date, let parsed = Self.inputFormatter.date(from: date) else {
             return "DATE TBD"
@@ -746,4 +836,21 @@ private struct PostseasonRoundCard: View {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()
+}
+
+/// Replaces the combined label only when the round has something extra to say; other cards
+/// keep the label SwiftUI combines from their text.
+private struct CardLabel: ViewModifier {
+    let round: PostseasonRound
+    let season: Int
+    let dateText: String
+
+    func body(content: Content) -> some View {
+        if round.isChampionship {
+            content.accessibilityLabel(
+                round.accessibilityLabel(season: season, dateText: dateText))
+        } else {
+            content
+        }
+    }
 }

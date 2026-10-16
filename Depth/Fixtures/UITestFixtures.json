@@ -6975,6 +6975,2349 @@
     }
   },
   "schedules" : {
+    "bills:2022" : {
+      "conference" : "AFC",
+      "games" : [
+        {
+          "date" : "2025-09-07",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "ravens",
+            "impliedWinProbability" : 0.4572564612326044,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : -130,
+            "opponentSpreadOdds" : -118,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : 110,
+            "teamSpread" : 1.5,
+            "teamSpreadOdds" : -102,
+            "totalLine" : 50.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "BAL",
+            "city" : "Baltimore",
+            "colors" : {
+              "accent" : "#9E7C0C",
+              "primary" : "#241773",
+              "secondary" : "#000000"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "ravens",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/bal.png",
+            "name" : "Ravens"
+          },
+          "opponentScore" : 40,
+          "result" : "W",
+          "teamScore" : 41,
+          "week" : 1
+        },
+        {
+          "date" : "2025-09-14",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7135512302607419,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 235,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -110,
+            "source" : "nflverse",
+            "teamMoneyline" : -290,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 47.5,
+            "underOdds" : -110,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NYJ",
+            "city" : "New York",
+            "colors" : {
+              "accent" : "#FFFFFF",
+              "primary" : "#125740",
+              "secondary" : "#FFFFFF"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "jets",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/nyj.png",
+            "name" : "Jets"
+          },
+          "opponentScore" : 10,
+          "result" : "W",
+          "teamScore" : 30,
+          "week" : 2
+        },
+        {
+          "date" : "2025-09-18",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8524590163934427,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 550,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -800,
+            "teamSpread" : -12.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 50.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "MIA",
+            "city" : "Miami",
+            "colors" : {
+              "accent" : "#FC4C02",
+              "primary" : "#008E97",
+              "secondary" : "#FC4C02"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "dolphins",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/mia.png",
+            "name" : "Dolphins"
+          },
+          "opponentScore" : 21,
+          "result" : "W",
+          "teamScore" : 31,
+          "week" : 3
+        },
+        {
+          "date" : "2025-09-28",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8933823529411765,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 800,
+            "opponentSpreadOdds" : -115,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -1350,
+            "teamSpread" : -15.5,
+            "teamSpreadOdds" : -105,
+            "totalLine" : 48.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NO",
+            "city" : "New Orleans",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#D3BC8D",
+              "secondary" : "#101820"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "saints",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/no.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/no.png",
+            "name" : "Saints"
+          },
+          "opponentScore" : 19,
+          "result" : "W",
+          "teamScore" : 31,
+          "week" : 4
+        },
+        {
+          "date" : "2025-10-05",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7659021045164341,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 310,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -395,
+            "teamSpread" : -7.5,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 49.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NE",
+            "city" : "New England",
+            "colors" : {
+              "accent" : "#B0B7BC",
+              "primary" : "#002244",
+              "secondary" : "#C60C30"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "patriots",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ne.png",
+            "name" : "Patriots"
+          },
+          "opponentScore" : 23,
+          "result" : "L",
+          "teamScore" : 20,
+          "week" : 5
+        },
+        {
+          "date" : "2025-10-13",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.644729178800233,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 170,
+            "opponentSpreadOdds" : 100,
+            "overOdds" : -118,
+            "source" : "nflverse",
+            "teamMoneyline" : -205,
+            "teamSpread" : -3.5,
+            "teamSpreadOdds" : -120,
+            "totalLine" : 49.5,
+            "underOdds" : -102,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "ATL",
+            "city" : "Atlanta",
+            "colors" : {
+              "accent" : "#000000",
+              "primary" : "#A71930",
+              "secondary" : "#000000"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "falcons",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/atl.png",
+            "name" : "Falcons"
+          },
+          "opponentScore" : 24,
+          "result" : "L",
+          "teamScore" : 14,
+          "week" : 6
+        },
+        {
+          "isBye" : true,
+          "isHome" : false,
+          "week" : 7
+        },
+        {
+          "date" : "2025-10-26",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7659021045164341,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 310,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -395,
+            "teamSpread" : -7,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 47.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CAR",
+            "city" : "Carolina",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#0085CA",
+              "secondary" : "#101820"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "panthers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/car.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/car.png",
+            "name" : "Panthers"
+          },
+          "opponentScore" : 9,
+          "result" : "W",
+          "teamScore" : 40,
+          "week" : 8
+        },
+        {
+          "date" : "2025-11-02",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "chiefs",
+            "impliedWinProbability" : 0.448558885283451,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : -135,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : 114,
+            "teamSpread" : 2.5,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 53.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "KC",
+            "city" : "Kansas City",
+            "colors" : {
+              "accent" : "#FFB81C",
+              "primary" : "#E31837",
+              "secondary" : "#FFB81C"
+            },
+            "conference" : "AFC",
+            "division" : "West",
+            "id" : "chiefs",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/kc.png",
+            "name" : "Chiefs"
+          },
+          "opponentScore" : 21,
+          "result" : "W",
+          "teamScore" : 28,
+          "week" : 9
+        },
+        {
+          "date" : "2025-11-09",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7867435158501441,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 350,
+            "opponentSpreadOdds" : -115,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -455,
+            "teamSpread" : -8.5,
+            "teamSpreadOdds" : -105,
+            "totalLine" : 50.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "MIA",
+            "city" : "Miami",
+            "colors" : {
+              "accent" : "#FC4C02",
+              "primary" : "#008E97",
+              "secondary" : "#FC4C02"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "dolphins",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/mia.png",
+            "name" : "Dolphins"
+          },
+          "opponentScore" : 30,
+          "result" : "L",
+          "teamScore" : 13,
+          "week" : 10
+        },
+        {
+          "date" : "2025-11-16",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7095435684647302,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 230,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -285,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 46.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "TB",
+            "city" : "Tampa Bay",
+            "colors" : {
+              "accent" : "#FF7900",
+              "primary" : "#D50A0A",
+              "secondary" : "#34302B"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "buccaneers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/tb.png",
+            "name" : "Buccaneers"
+          },
+          "opponentScore" : 32,
+          "result" : "W",
+          "teamScore" : 44,
+          "week" : 11
+        },
+        {
+          "date" : "2025-11-20",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.690792883054068,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 210,
+            "opponentSpreadOdds" : -112,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : -258,
+            "teamSpread" : -5.5,
+            "teamSpreadOdds" : -108,
+            "totalLine" : 43.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "HOU",
+            "city" : "Houston",
+            "colors" : {
+              "accent" : "#A71930",
+              "primary" : "#03202F",
+              "secondary" : "#A71930"
+            },
+            "conference" : "AFC",
+            "division" : "South",
+            "id" : "texans",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/hou.png",
+            "name" : "Texans"
+          },
+          "opponentScore" : 23,
+          "result" : "L",
+          "teamScore" : 19,
+          "week" : 12
+        },
+        {
+          "date" : "2025-11-30",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.5996387718242023,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 140,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -166,
+            "teamSpread" : -3,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 44.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "PIT",
+            "city" : "Pittsburgh",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#FFB612",
+              "secondary" : "#101820"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "steelers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/pit.png",
+            "name" : "Steelers"
+          },
+          "opponentScore" : 7,
+          "result" : "W",
+          "teamScore" : 26,
+          "week" : 13
+        },
+        {
+          "date" : "2025-12-07",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7095435684647302,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 230,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -285,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 54.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CIN",
+            "city" : "Cincinnati",
+            "colors" : {
+              "accent" : "#000000",
+              "primary" : "#FB4F14",
+              "secondary" : "#000000"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "bengals",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/cin.png",
+            "name" : "Bengals"
+          },
+          "opponentScore" : 34,
+          "result" : "W",
+          "teamScore" : 39,
+          "week" : 14
+        },
+        {
+          "date" : "2025-12-14",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.5634920634920635,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 120,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : -142,
+            "teamSpread" : -2.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 49.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NE",
+            "city" : "New England",
+            "colors" : {
+              "accent" : "#B0B7BC",
+              "primary" : "#002244",
+              "secondary" : "#C60C30"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "patriots",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ne.png",
+            "name" : "Patriots"
+          },
+          "opponentScore" : 31,
+          "result" : "W",
+          "teamScore" : 35,
+          "week" : 15
+        },
+        {
+          "date" : "2025-12-21",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.817258883248731,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 425,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -102,
+            "source" : "nflverse",
+            "teamMoneyline" : -575,
+            "teamSpread" : -10.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 41.5,
+            "underOdds" : -118,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CLE",
+            "city" : "Cleveland",
+            "colors" : {
+              "accent" : "#FF3C00",
+              "primary" : "#311D00",
+              "secondary" : "#FF3C00"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "browns",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/cle.png",
+            "name" : "Browns"
+          },
+          "opponentScore" : 20,
+          "result" : "W",
+          "teamScore" : 23,
+          "week" : 16
+        },
+        {
+          "date" : "2025-12-28",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.6037569709421778,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 142,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -170,
+            "teamSpread" : -3,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 45.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "PHI",
+            "city" : "Philadelphia",
+            "colors" : {
+              "accent" : "#A5ACAF",
+              "primary" : "#004C54",
+              "secondary" : "#A5ACAF"
+            },
+            "conference" : "NFC",
+            "division" : "East",
+            "id" : "eagles",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/phi.png",
+            "name" : "Eagles"
+          },
+          "opponentScore" : 13,
+          "result" : "L",
+          "teamScore" : 12,
+          "week" : 17
+        },
+        {
+          "date" : "2026-01-04",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8524590163934427,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 550,
+            "opponentSpreadOdds" : -112,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -800,
+            "teamSpread" : -12.5,
+            "teamSpreadOdds" : -108,
+            "totalLine" : 39.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NYJ",
+            "city" : "New York",
+            "colors" : {
+              "accent" : "#FFFFFF",
+              "primary" : "#125740",
+              "secondary" : "#FFFFFF"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "jets",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/nyj.png",
+            "name" : "Jets"
+          },
+          "opponentScore" : 8,
+          "result" : "W",
+          "teamScore" : 35,
+          "week" : 18
+        }
+      ],
+      "postseason" : {
+        "rounds" : [
+          {
+            "kind" : "wildCard"
+          },
+          {
+            "game" : {
+              "date" : "2023-01-21",
+              "isBye" : false,
+              "isHome" : true,
+              "opponent" : {
+                "abbrev" : "BAL",
+                "city" : "Baltimore",
+                "colors" : {
+                  "accent" : "#9E7C0C",
+                  "primary" : "#241773",
+                  "secondary" : "#000000"
+                },
+                "conference" : "AFC",
+                "division" : "North",
+                "id" : "ravens",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/bal.png",
+                "name" : "Ravens"
+              },
+              "opponentScore" : 17,
+              "result" : "W",
+              "teamScore" : 24,
+              "week" : 20
+            },
+            "kind" : "divisional"
+          },
+          {
+            "game" : {
+              "date" : "2023-01-29",
+              "isBye" : false,
+              "isHome" : true,
+              "opponent" : {
+                "abbrev" : "KC",
+                "city" : "Kansas City",
+                "colors" : {
+                  "accent" : "#FFB81C",
+                  "primary" : "#E31837",
+                  "secondary" : "#FFB81C"
+                },
+                "conference" : "AFC",
+                "division" : "West",
+                "id" : "chiefs",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/kc.png",
+                "name" : "Chiefs"
+              },
+              "opponentScore" : 24,
+              "result" : "W",
+              "teamScore" : 27,
+              "week" : 21
+            },
+            "kind" : "conference"
+          },
+          {
+            "game" : {
+              "date" : "2023-02-12",
+              "isBye" : false,
+              "isHome" : false,
+              "opponent" : {
+                "abbrev" : "PHI",
+                "city" : "Philadelphia",
+                "colors" : {
+                  "accent" : "#A5ACAF",
+                  "primary" : "#004C54",
+                  "secondary" : "#A5ACAF"
+                },
+                "conference" : "NFC",
+                "division" : "East",
+                "id" : "eagles",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/phi.png",
+                "name" : "Eagles"
+              },
+              "week" : 22
+            },
+            "kind" : "superBowl"
+          }
+        ],
+        "seed" : 1
+      },
+      "preseason" : [
+
+      ],
+      "season" : 2022
+    },
+    "bills:2023" : {
+      "conference" : "AFC",
+      "games" : [
+        {
+          "date" : "2025-09-07",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "ravens",
+            "impliedWinProbability" : 0.4572564612326044,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : -130,
+            "opponentSpreadOdds" : -118,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : 110,
+            "teamSpread" : 1.5,
+            "teamSpreadOdds" : -102,
+            "totalLine" : 50.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "BAL",
+            "city" : "Baltimore",
+            "colors" : {
+              "accent" : "#9E7C0C",
+              "primary" : "#241773",
+              "secondary" : "#000000"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "ravens",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/bal.png",
+            "name" : "Ravens"
+          },
+          "opponentScore" : 40,
+          "result" : "W",
+          "teamScore" : 41,
+          "week" : 1
+        },
+        {
+          "date" : "2025-09-14",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7135512302607419,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 235,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -110,
+            "source" : "nflverse",
+            "teamMoneyline" : -290,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 47.5,
+            "underOdds" : -110,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NYJ",
+            "city" : "New York",
+            "colors" : {
+              "accent" : "#FFFFFF",
+              "primary" : "#125740",
+              "secondary" : "#FFFFFF"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "jets",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/nyj.png",
+            "name" : "Jets"
+          },
+          "opponentScore" : 10,
+          "result" : "W",
+          "teamScore" : 30,
+          "week" : 2
+        },
+        {
+          "date" : "2025-09-18",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8524590163934427,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 550,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -800,
+            "teamSpread" : -12.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 50.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "MIA",
+            "city" : "Miami",
+            "colors" : {
+              "accent" : "#FC4C02",
+              "primary" : "#008E97",
+              "secondary" : "#FC4C02"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "dolphins",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/mia.png",
+            "name" : "Dolphins"
+          },
+          "opponentScore" : 21,
+          "result" : "W",
+          "teamScore" : 31,
+          "week" : 3
+        },
+        {
+          "date" : "2025-09-28",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8933823529411765,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 800,
+            "opponentSpreadOdds" : -115,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -1350,
+            "teamSpread" : -15.5,
+            "teamSpreadOdds" : -105,
+            "totalLine" : 48.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NO",
+            "city" : "New Orleans",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#D3BC8D",
+              "secondary" : "#101820"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "saints",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/no.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/no.png",
+            "name" : "Saints"
+          },
+          "opponentScore" : 19,
+          "result" : "W",
+          "teamScore" : 31,
+          "week" : 4
+        },
+        {
+          "date" : "2025-10-05",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7659021045164341,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 310,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -395,
+            "teamSpread" : -7.5,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 49.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NE",
+            "city" : "New England",
+            "colors" : {
+              "accent" : "#B0B7BC",
+              "primary" : "#002244",
+              "secondary" : "#C60C30"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "patriots",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ne.png",
+            "name" : "Patriots"
+          },
+          "opponentScore" : 23,
+          "result" : "L",
+          "teamScore" : 20,
+          "week" : 5
+        },
+        {
+          "date" : "2025-10-13",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.644729178800233,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 170,
+            "opponentSpreadOdds" : 100,
+            "overOdds" : -118,
+            "source" : "nflverse",
+            "teamMoneyline" : -205,
+            "teamSpread" : -3.5,
+            "teamSpreadOdds" : -120,
+            "totalLine" : 49.5,
+            "underOdds" : -102,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "ATL",
+            "city" : "Atlanta",
+            "colors" : {
+              "accent" : "#000000",
+              "primary" : "#A71930",
+              "secondary" : "#000000"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "falcons",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/atl.png",
+            "name" : "Falcons"
+          },
+          "opponentScore" : 24,
+          "result" : "L",
+          "teamScore" : 14,
+          "week" : 6
+        },
+        {
+          "isBye" : true,
+          "isHome" : false,
+          "week" : 7
+        },
+        {
+          "date" : "2025-10-26",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7659021045164341,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 310,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -395,
+            "teamSpread" : -7,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 47.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CAR",
+            "city" : "Carolina",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#0085CA",
+              "secondary" : "#101820"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "panthers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/car.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/car.png",
+            "name" : "Panthers"
+          },
+          "opponentScore" : 9,
+          "result" : "W",
+          "teamScore" : 40,
+          "week" : 8
+        },
+        {
+          "date" : "2025-11-02",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "chiefs",
+            "impliedWinProbability" : 0.448558885283451,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : -135,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : 114,
+            "teamSpread" : 2.5,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 53.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "KC",
+            "city" : "Kansas City",
+            "colors" : {
+              "accent" : "#FFB81C",
+              "primary" : "#E31837",
+              "secondary" : "#FFB81C"
+            },
+            "conference" : "AFC",
+            "division" : "West",
+            "id" : "chiefs",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/kc.png",
+            "name" : "Chiefs"
+          },
+          "opponentScore" : 21,
+          "result" : "W",
+          "teamScore" : 28,
+          "week" : 9
+        },
+        {
+          "date" : "2025-11-09",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7867435158501441,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 350,
+            "opponentSpreadOdds" : -115,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -455,
+            "teamSpread" : -8.5,
+            "teamSpreadOdds" : -105,
+            "totalLine" : 50.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "MIA",
+            "city" : "Miami",
+            "colors" : {
+              "accent" : "#FC4C02",
+              "primary" : "#008E97",
+              "secondary" : "#FC4C02"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "dolphins",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/mia.png",
+            "name" : "Dolphins"
+          },
+          "opponentScore" : 30,
+          "result" : "L",
+          "teamScore" : 13,
+          "week" : 10
+        },
+        {
+          "date" : "2025-11-16",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7095435684647302,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 230,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -285,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 46.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "TB",
+            "city" : "Tampa Bay",
+            "colors" : {
+              "accent" : "#FF7900",
+              "primary" : "#D50A0A",
+              "secondary" : "#34302B"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "buccaneers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/tb.png",
+            "name" : "Buccaneers"
+          },
+          "opponentScore" : 32,
+          "result" : "W",
+          "teamScore" : 44,
+          "week" : 11
+        },
+        {
+          "date" : "2025-11-20",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.690792883054068,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 210,
+            "opponentSpreadOdds" : -112,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : -258,
+            "teamSpread" : -5.5,
+            "teamSpreadOdds" : -108,
+            "totalLine" : 43.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "HOU",
+            "city" : "Houston",
+            "colors" : {
+              "accent" : "#A71930",
+              "primary" : "#03202F",
+              "secondary" : "#A71930"
+            },
+            "conference" : "AFC",
+            "division" : "South",
+            "id" : "texans",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/hou.png",
+            "name" : "Texans"
+          },
+          "opponentScore" : 23,
+          "result" : "L",
+          "teamScore" : 19,
+          "week" : 12
+        },
+        {
+          "date" : "2025-11-30",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.5996387718242023,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 140,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -166,
+            "teamSpread" : -3,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 44.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "PIT",
+            "city" : "Pittsburgh",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#FFB612",
+              "secondary" : "#101820"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "steelers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/pit.png",
+            "name" : "Steelers"
+          },
+          "opponentScore" : 7,
+          "result" : "W",
+          "teamScore" : 26,
+          "week" : 13
+        },
+        {
+          "date" : "2025-12-07",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7095435684647302,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 230,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -285,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 54.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CIN",
+            "city" : "Cincinnati",
+            "colors" : {
+              "accent" : "#000000",
+              "primary" : "#FB4F14",
+              "secondary" : "#000000"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "bengals",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/cin.png",
+            "name" : "Bengals"
+          },
+          "opponentScore" : 34,
+          "result" : "W",
+          "teamScore" : 39,
+          "week" : 14
+        },
+        {
+          "date" : "2025-12-14",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.5634920634920635,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 120,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : -142,
+            "teamSpread" : -2.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 49.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NE",
+            "city" : "New England",
+            "colors" : {
+              "accent" : "#B0B7BC",
+              "primary" : "#002244",
+              "secondary" : "#C60C30"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "patriots",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ne.png",
+            "name" : "Patriots"
+          },
+          "opponentScore" : 31,
+          "result" : "W",
+          "teamScore" : 35,
+          "week" : 15
+        },
+        {
+          "date" : "2025-12-21",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.817258883248731,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 425,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -102,
+            "source" : "nflverse",
+            "teamMoneyline" : -575,
+            "teamSpread" : -10.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 41.5,
+            "underOdds" : -118,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CLE",
+            "city" : "Cleveland",
+            "colors" : {
+              "accent" : "#FF3C00",
+              "primary" : "#311D00",
+              "secondary" : "#FF3C00"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "browns",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/cle.png",
+            "name" : "Browns"
+          },
+          "opponentScore" : 20,
+          "result" : "W",
+          "teamScore" : 23,
+          "week" : 16
+        },
+        {
+          "date" : "2025-12-28",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.6037569709421778,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 142,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -170,
+            "teamSpread" : -3,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 45.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "PHI",
+            "city" : "Philadelphia",
+            "colors" : {
+              "accent" : "#A5ACAF",
+              "primary" : "#004C54",
+              "secondary" : "#A5ACAF"
+            },
+            "conference" : "NFC",
+            "division" : "East",
+            "id" : "eagles",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/phi.png",
+            "name" : "Eagles"
+          },
+          "opponentScore" : 13,
+          "result" : "L",
+          "teamScore" : 12,
+          "week" : 17
+        },
+        {
+          "date" : "2026-01-04",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8524590163934427,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 550,
+            "opponentSpreadOdds" : -112,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -800,
+            "teamSpread" : -12.5,
+            "teamSpreadOdds" : -108,
+            "totalLine" : 39.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NYJ",
+            "city" : "New York",
+            "colors" : {
+              "accent" : "#FFFFFF",
+              "primary" : "#125740",
+              "secondary" : "#FFFFFF"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "jets",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/nyj.png",
+            "name" : "Jets"
+          },
+          "opponentScore" : 8,
+          "result" : "W",
+          "teamScore" : 35,
+          "week" : 18
+        }
+      ],
+      "postseason" : {
+        "rounds" : [
+          {
+            "game" : {
+              "date" : "2024-01-14",
+              "isBye" : false,
+              "isHome" : false,
+              "opponent" : {
+                "abbrev" : "PIT",
+                "city" : "Pittsburgh",
+                "colors" : {
+                  "accent" : "#101820",
+                  "primary" : "#FFB612",
+                  "secondary" : "#101820"
+                },
+                "conference" : "AFC",
+                "division" : "North",
+                "id" : "steelers",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/pit.png",
+                "name" : "Steelers"
+              },
+              "opponentScore" : 17,
+              "result" : "W",
+              "teamScore" : 31,
+              "week" : 19
+            },
+            "kind" : "wildCard"
+          },
+          {
+            "game" : {
+              "date" : "2024-01-21",
+              "isBye" : false,
+              "isHome" : false,
+              "opponent" : {
+                "abbrev" : "BAL",
+                "city" : "Baltimore",
+                "colors" : {
+                  "accent" : "#9E7C0C",
+                  "primary" : "#241773",
+                  "secondary" : "#000000"
+                },
+                "conference" : "AFC",
+                "division" : "North",
+                "id" : "ravens",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/bal.png",
+                "name" : "Ravens"
+              },
+              "opponentScore" : 10,
+              "result" : "W",
+              "teamScore" : 17,
+              "week" : 20
+            },
+            "kind" : "divisional"
+          },
+          {
+            "game" : {
+              "date" : "2024-01-28",
+              "isBye" : false,
+              "isHome" : true,
+              "opponent" : {
+                "abbrev" : "KC",
+                "city" : "Kansas City",
+                "colors" : {
+                  "accent" : "#FFB81C",
+                  "primary" : "#E31837",
+                  "secondary" : "#FFB81C"
+                },
+                "conference" : "AFC",
+                "division" : "West",
+                "id" : "chiefs",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/kc.png",
+                "name" : "Chiefs"
+              },
+              "week" : 21
+            },
+            "kind" : "conference"
+          },
+          {
+            "kind" : "superBowl"
+          }
+        ],
+        "seed" : 5
+      },
+      "preseason" : [
+
+      ],
+      "season" : 2023
+    },
+    "bills:2024" : {
+      "conference" : "AFC",
+      "games" : [
+        {
+          "date" : "2025-09-07",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "ravens",
+            "impliedWinProbability" : 0.4572564612326044,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : -130,
+            "opponentSpreadOdds" : -118,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : 110,
+            "teamSpread" : 1.5,
+            "teamSpreadOdds" : -102,
+            "totalLine" : 50.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "BAL",
+            "city" : "Baltimore",
+            "colors" : {
+              "accent" : "#9E7C0C",
+              "primary" : "#241773",
+              "secondary" : "#000000"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "ravens",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/bal.png",
+            "name" : "Ravens"
+          },
+          "opponentScore" : 40,
+          "result" : "W",
+          "teamScore" : 41,
+          "week" : 1
+        },
+        {
+          "date" : "2025-09-14",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7135512302607419,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 235,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -110,
+            "source" : "nflverse",
+            "teamMoneyline" : -290,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 47.5,
+            "underOdds" : -110,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NYJ",
+            "city" : "New York",
+            "colors" : {
+              "accent" : "#FFFFFF",
+              "primary" : "#125740",
+              "secondary" : "#FFFFFF"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "jets",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/nyj.png",
+            "name" : "Jets"
+          },
+          "opponentScore" : 10,
+          "result" : "W",
+          "teamScore" : 30,
+          "week" : 2
+        },
+        {
+          "date" : "2025-09-18",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8524590163934427,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 550,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -800,
+            "teamSpread" : -12.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 50.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "MIA",
+            "city" : "Miami",
+            "colors" : {
+              "accent" : "#FC4C02",
+              "primary" : "#008E97",
+              "secondary" : "#FC4C02"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "dolphins",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/mia.png",
+            "name" : "Dolphins"
+          },
+          "opponentScore" : 21,
+          "result" : "W",
+          "teamScore" : 31,
+          "week" : 3
+        },
+        {
+          "date" : "2025-09-28",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8933823529411765,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 800,
+            "opponentSpreadOdds" : -115,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -1350,
+            "teamSpread" : -15.5,
+            "teamSpreadOdds" : -105,
+            "totalLine" : 48.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NO",
+            "city" : "New Orleans",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#D3BC8D",
+              "secondary" : "#101820"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "saints",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/no.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/no.png",
+            "name" : "Saints"
+          },
+          "opponentScore" : 19,
+          "result" : "W",
+          "teamScore" : 31,
+          "week" : 4
+        },
+        {
+          "date" : "2025-10-05",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7659021045164341,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 310,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -395,
+            "teamSpread" : -7.5,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 49.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NE",
+            "city" : "New England",
+            "colors" : {
+              "accent" : "#B0B7BC",
+              "primary" : "#002244",
+              "secondary" : "#C60C30"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "patriots",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ne.png",
+            "name" : "Patriots"
+          },
+          "opponentScore" : 23,
+          "result" : "L",
+          "teamScore" : 20,
+          "week" : 5
+        },
+        {
+          "date" : "2025-10-13",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.644729178800233,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 170,
+            "opponentSpreadOdds" : 100,
+            "overOdds" : -118,
+            "source" : "nflverse",
+            "teamMoneyline" : -205,
+            "teamSpread" : -3.5,
+            "teamSpreadOdds" : -120,
+            "totalLine" : 49.5,
+            "underOdds" : -102,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "ATL",
+            "city" : "Atlanta",
+            "colors" : {
+              "accent" : "#000000",
+              "primary" : "#A71930",
+              "secondary" : "#000000"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "falcons",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/atl.png",
+            "name" : "Falcons"
+          },
+          "opponentScore" : 24,
+          "result" : "L",
+          "teamScore" : 14,
+          "week" : 6
+        },
+        {
+          "isBye" : true,
+          "isHome" : false,
+          "week" : 7
+        },
+        {
+          "date" : "2025-10-26",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7659021045164341,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 310,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -395,
+            "teamSpread" : -7,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 47.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CAR",
+            "city" : "Carolina",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#0085CA",
+              "secondary" : "#101820"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "panthers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/car.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/car.png",
+            "name" : "Panthers"
+          },
+          "opponentScore" : 9,
+          "result" : "W",
+          "teamScore" : 40,
+          "week" : 8
+        },
+        {
+          "date" : "2025-11-02",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "chiefs",
+            "impliedWinProbability" : 0.448558885283451,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : -135,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : 114,
+            "teamSpread" : 2.5,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 53.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "KC",
+            "city" : "Kansas City",
+            "colors" : {
+              "accent" : "#FFB81C",
+              "primary" : "#E31837",
+              "secondary" : "#FFB81C"
+            },
+            "conference" : "AFC",
+            "division" : "West",
+            "id" : "chiefs",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/kc.png",
+            "name" : "Chiefs"
+          },
+          "opponentScore" : 21,
+          "result" : "W",
+          "teamScore" : 28,
+          "week" : 9
+        },
+        {
+          "date" : "2025-11-09",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7867435158501441,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 350,
+            "opponentSpreadOdds" : -115,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -455,
+            "teamSpread" : -8.5,
+            "teamSpreadOdds" : -105,
+            "totalLine" : 50.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "MIA",
+            "city" : "Miami",
+            "colors" : {
+              "accent" : "#FC4C02",
+              "primary" : "#008E97",
+              "secondary" : "#FC4C02"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "dolphins",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/mia.png",
+            "name" : "Dolphins"
+          },
+          "opponentScore" : 30,
+          "result" : "L",
+          "teamScore" : 13,
+          "week" : 10
+        },
+        {
+          "date" : "2025-11-16",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7095435684647302,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 230,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -285,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 46.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "TB",
+            "city" : "Tampa Bay",
+            "colors" : {
+              "accent" : "#FF7900",
+              "primary" : "#D50A0A",
+              "secondary" : "#34302B"
+            },
+            "conference" : "NFC",
+            "division" : "South",
+            "id" : "buccaneers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/tb.png",
+            "name" : "Buccaneers"
+          },
+          "opponentScore" : 32,
+          "result" : "W",
+          "teamScore" : 44,
+          "week" : 11
+        },
+        {
+          "date" : "2025-11-20",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.690792883054068,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 210,
+            "opponentSpreadOdds" : -112,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : -258,
+            "teamSpread" : -5.5,
+            "teamSpreadOdds" : -108,
+            "totalLine" : 43.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "HOU",
+            "city" : "Houston",
+            "colors" : {
+              "accent" : "#A71930",
+              "primary" : "#03202F",
+              "secondary" : "#A71930"
+            },
+            "conference" : "AFC",
+            "division" : "South",
+            "id" : "texans",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/hou.png",
+            "name" : "Texans"
+          },
+          "opponentScore" : 23,
+          "result" : "L",
+          "teamScore" : 19,
+          "week" : 12
+        },
+        {
+          "date" : "2025-11-30",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.5996387718242023,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 140,
+            "opponentSpreadOdds" : -105,
+            "overOdds" : -108,
+            "source" : "nflverse",
+            "teamMoneyline" : -166,
+            "teamSpread" : -3,
+            "teamSpreadOdds" : -115,
+            "totalLine" : 44.5,
+            "underOdds" : -112,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "PIT",
+            "city" : "Pittsburgh",
+            "colors" : {
+              "accent" : "#101820",
+              "primary" : "#FFB612",
+              "secondary" : "#101820"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "steelers",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/pit.png",
+            "name" : "Steelers"
+          },
+          "opponentScore" : 7,
+          "result" : "W",
+          "teamScore" : 26,
+          "week" : 13
+        },
+        {
+          "date" : "2025-12-07",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.7095435684647302,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 230,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -112,
+            "source" : "nflverse",
+            "teamMoneyline" : -285,
+            "teamSpread" : -6,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 54.5,
+            "underOdds" : -108,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CIN",
+            "city" : "Cincinnati",
+            "colors" : {
+              "accent" : "#000000",
+              "primary" : "#FB4F14",
+              "secondary" : "#000000"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "bengals",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/cin.png",
+            "name" : "Bengals"
+          },
+          "opponentScore" : 34,
+          "result" : "W",
+          "teamScore" : 39,
+          "week" : 14
+        },
+        {
+          "date" : "2025-12-14",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.5634920634920635,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 120,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -115,
+            "source" : "nflverse",
+            "teamMoneyline" : -142,
+            "teamSpread" : -2.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 49.5,
+            "underOdds" : -105,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NE",
+            "city" : "New England",
+            "colors" : {
+              "accent" : "#B0B7BC",
+              "primary" : "#002244",
+              "secondary" : "#C60C30"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "patriots",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ne.png",
+            "name" : "Patriots"
+          },
+          "opponentScore" : 31,
+          "result" : "W",
+          "teamScore" : 35,
+          "week" : 15
+        },
+        {
+          "date" : "2025-12-21",
+          "isBye" : false,
+          "isHome" : false,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.817258883248731,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 425,
+            "opponentSpreadOdds" : -110,
+            "overOdds" : -102,
+            "source" : "nflverse",
+            "teamMoneyline" : -575,
+            "teamSpread" : -10.5,
+            "teamSpreadOdds" : -110,
+            "totalLine" : 41.5,
+            "underOdds" : -118,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "CLE",
+            "city" : "Cleveland",
+            "colors" : {
+              "accent" : "#FF3C00",
+              "primary" : "#311D00",
+              "secondary" : "#FF3C00"
+            },
+            "conference" : "AFC",
+            "division" : "North",
+            "id" : "browns",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/cle.png",
+            "name" : "Browns"
+          },
+          "opponentScore" : 20,
+          "result" : "W",
+          "teamScore" : 23,
+          "week" : 16
+        },
+        {
+          "date" : "2025-12-28",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.6037569709421778,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 142,
+            "opponentSpreadOdds" : -108,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -170,
+            "teamSpread" : -3,
+            "teamSpreadOdds" : -112,
+            "totalLine" : 45.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "PHI",
+            "city" : "Philadelphia",
+            "colors" : {
+              "accent" : "#A5ACAF",
+              "primary" : "#004C54",
+              "secondary" : "#A5ACAF"
+            },
+            "conference" : "NFC",
+            "division" : "East",
+            "id" : "eagles",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/phi.png",
+            "name" : "Eagles"
+          },
+          "opponentScore" : 13,
+          "result" : "L",
+          "teamScore" : 12,
+          "week" : 17
+        },
+        {
+          "date" : "2026-01-04",
+          "isBye" : false,
+          "isHome" : true,
+          "market" : {
+            "favoriteTeamId" : "bills",
+            "impliedWinProbability" : 0.8524590163934427,
+            "isNeutralSite" : false,
+            "isPickEm" : false,
+            "opponentMoneyline" : 550,
+            "opponentSpreadOdds" : -112,
+            "overOdds" : -105,
+            "source" : "nflverse",
+            "teamMoneyline" : -800,
+            "teamSpread" : -12.5,
+            "teamSpreadOdds" : -108,
+            "totalLine" : 39.5,
+            "underOdds" : -115,
+            "updatedAt" : "2026-08-24T21:20:44.541+00:00"
+          },
+          "opponent" : {
+            "abbrev" : "NYJ",
+            "city" : "New York",
+            "colors" : {
+              "accent" : "#FFFFFF",
+              "primary" : "#125740",
+              "secondary" : "#FFFFFF"
+            },
+            "conference" : "AFC",
+            "division" : "East",
+            "id" : "jets",
+            "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png",
+            "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/nyj.png",
+            "name" : "Jets"
+          },
+          "opponentScore" : 8,
+          "result" : "W",
+          "teamScore" : 35,
+          "week" : 18
+        }
+      ],
+      "postseason" : {
+        "rounds" : [
+          {
+            "kind" : "wildCard"
+          },
+          {
+            "game" : {
+              "date" : "2025-01-18",
+              "isBye" : false,
+              "isHome" : true,
+              "opponent" : {
+                "abbrev" : "KC",
+                "city" : "Kansas City",
+                "colors" : {
+                  "accent" : "#FFB81C",
+                  "primary" : "#E31837",
+                  "secondary" : "#FFB81C"
+                },
+                "conference" : "AFC",
+                "division" : "West",
+                "id" : "chiefs",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/kc.png",
+                "name" : "Chiefs"
+              },
+              "opponentScore" : 24,
+              "result" : "W",
+              "teamScore" : 27,
+              "week" : 20
+            },
+            "kind" : "divisional"
+          },
+          {
+            "game" : {
+              "date" : "2025-01-26",
+              "isBye" : false,
+              "isHome" : false,
+              "opponent" : {
+                "abbrev" : "BAL",
+                "city" : "Baltimore",
+                "colors" : {
+                  "accent" : "#9E7C0C",
+                  "primary" : "#241773",
+                  "secondary" : "#000000"
+                },
+                "conference" : "AFC",
+                "division" : "North",
+                "id" : "ravens",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/bal.png",
+                "name" : "Ravens"
+              },
+              "opponentScore" : 24,
+              "result" : "W",
+              "teamScore" : 28,
+              "week" : 21
+            },
+            "kind" : "conference"
+          },
+          {
+            "game" : {
+              "date" : "2025-02-09",
+              "isBye" : false,
+              "isHome" : false,
+              "opponent" : {
+                "abbrev" : "PHI",
+                "city" : "Philadelphia",
+                "colors" : {
+                  "accent" : "#A5ACAF",
+                  "primary" : "#004C54",
+                  "secondary" : "#A5ACAF"
+                },
+                "conference" : "NFC",
+                "division" : "East",
+                "id" : "eagles",
+                "logo" : "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+                "logoDark" : "https://a.espncdn.com/i/teamlogos/nfl/500-dark/phi.png",
+                "name" : "Eagles"
+              },
+              "opponentScore" : 40,
+              "result" : "L",
+              "teamScore" : 22,
+              "week" : 22
+            },
+            "kind" : "superBowl"
+          }
+        ],
+        "seed" : 2
+      },
+      "preseason" : [
+
+      ],
+      "season" : 2024
+    },
     "bills:2025" : {
       "conference" : "AFC",
       "games" : [

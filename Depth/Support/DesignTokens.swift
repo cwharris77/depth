@@ -101,6 +101,12 @@ enum DesignTokens {
         /// broadcast/bracket-graphic red/blue is the right fit.
         static let conferenceAFC = Color(hex: "#D50A0A")
         static let conferenceNFC = Color(hex: "#013369")
+        /// Native-only. The Super Bowl trophy's three flat silvers — the lit face, the
+        /// shaded face and the turned-away bowl. Fixed colors: the trophy never takes a
+        /// team color.
+        static let trophySilverLight = Color(hex: "#D9DDE2")
+        static let trophySilverShade = Color(hex: "#9AA1AA")
+        static let trophySilverMid = Color(hex: "#B4BAC2")
     }
 
     /// 8-point spacing scale.

@@ -147,6 +147,29 @@ struct PostseasonRound: Equatable, Sendable, Codable, Identifiable {
     let game: ScheduleGame?
 
     var id: PostseasonRoundKind { kind }
+
+    /// The Super Bowl card gets the stronger treatment whenever it has a game, including
+    /// one that has not been played yet.
+    var emphasizesResult: Bool { kind == .superBowl && game != nil }
+
+    /// The trophy marks a decided Super Bowl, win or loss.
+    var showsTrophy: Bool { kind == .superBowl && game?.result != nil }
+
+    /// A won Super Bowl is the title.
+    var isChampionship: Bool { kind == .superBowl && game?.result == .win }
+
+    /// The card's spoken label. A won Super Bowl ends in "champions".
+    func accessibilityLabel(season: Int, dateText: String) -> String {
+        var parts = [kind.title(season: season)]
+        guard let game else { return parts[0] }
+        if let opponent = game.opponent {
+            parts.append("\(game.isHome ? "vs" : "at") \(opponent.abbrev)")
+        }
+        parts.append(game.scoreSummary)
+        parts.append(dateText)
+        if isChampionship { parts.append("champions") }
+        return parts.joined(separator: ", ")
+    }
 }
 
 enum ScheduleResult: String, Equatable, Sendable, Codable {
@@ -191,6 +214,12 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
     }
 
     var id: Int { week }
+
+    /// "W 29-13", or "Upcoming" until the game has a result and both scores.
+    var scoreSummary: String {
+        guard let result, let teamScore, let opponentScore else { return "Upcoming" }
+        return "\(result.rawValue) \(teamScore)-\(opponentScore)"
+    }
 
     /// Card eyebrow and accessibility prefix. Week 0 only exists in the preseason: the
     /// ESPN preseason ingest (web/lib/espn/preseason.ts) numbers the Hall of Fame game 0 and

@@ -39,6 +39,7 @@
 		222EC1E89727F72F26E9AAA0 /* RecordStatFilesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7127D5DACEAD449AA811820E /* RecordStatFilesTests.swift */; };
 		22B53EC4C0FD7BD74239D1C8 /* PlayerKnownForTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84579C36C333E739456B2B51 /* PlayerKnownForTests.swift */; };
 		2661E1BF50815374697138E1 /* TeamStatsMetricCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD96534B7946BF3DA420CEE9 /* TeamStatsMetricCatalog.swift */; };
+		269CED70D78D6F25059B9128 /* SuperBowlResultUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCB3DD95D336FB51AE5BFD3 /* SuperBowlResultUITests.swift */; };
 		26EFE06F99AA2710AA8298C6 /* RecordStatFilesMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C0A53E32792A6FE8F1EC95 /* RecordStatFilesMapper.swift */; };
 		2754CA9D0AA7DEA552A2D9DF /* TeamEventCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B04F2A604A0A389EFA93C14 /* TeamEventCard.swift */; };
 		28BE2E5939AE5607BB4CC133 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4163276566B599870A6F754E /* Assets.xcassets */; };
@@ -119,6 +120,7 @@
 		696E37190EEF6FDA91B5BBB6 /* OnboardingControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952FA1238A438E45AD02C4E9 /* OnboardingControllerTests.swift */; };
 		6A57B746F3F2CBE5A0C99B04 /* DepthUnitTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06AB46EC302CCCD06C89EE95 /* DepthUnitTabBar.swift */; };
 		6BC9A8F1F9CD661CD8FB9C45 /* ForcedRefreshViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC6E6AE42A599AEAC1C9ACB /* ForcedRefreshViewModelTests.swift */; };
+		6C6C441D0D9345422945256E /* LombardiTrophy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AF687F84C0F2E92F6F57FB /* LombardiTrophy.swift */; };
 		6D9E2B4F5E3894A277C2BD17 /* RecentParticipationDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9D8878CEE6F531310761A9 /* RecentParticipationDTO.swift */; };
 		6F9514F25DCF231B32CB5E66 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8DBF3EB4D70F6DF2E44420 /* ScheduleView.swift */; };
 		6FBBE3C7BF9740F866ED53E9 /* TapTargetAuditFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91DA147FBE8D9441516DBA32 /* TapTargetAuditFixture.swift */; };
@@ -510,6 +512,7 @@
 		C97FD1B3B972D4063D8A72A2 /* DepthAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthAuthService.swift; sourceTree = "<group>"; };
 		CA629F12F994F6278119BF12 /* FixtureDepthRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureDepthRepositoryTests.swift; sourceTree = "<group>"; };
 		CD96534B7946BF3DA420CEE9 /* TeamStatsMetricCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsMetricCatalog.swift; sourceTree = "<group>"; };
+		CDCB3DD95D336FB51AE5BFD3 /* SuperBowlResultUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuperBowlResultUITests.swift; sourceTree = "<group>"; };
 		CDCEEFA1B9C29B9B8CBAB6D9 /* StatsFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsFeatureTests.swift; sourceTree = "<group>"; };
 		CEE16E2DA9E2543931C3B960 /* PlayerSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerSearchTests.swift; sourceTree = "<group>"; };
 		D250B90FB2B6E6C1379C9B01 /* HistoryFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryFeatureTests.swift; sourceTree = "<group>"; };
@@ -540,6 +543,7 @@
 		E4DEDD4585BE6DB5DDCFBD10 /* TeamStatFilesDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatFilesDTO.swift; sourceTree = "<group>"; };
 		E5A218C128DC97B0923883AE /* Depth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Depth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5A513A3097F4E1337598E22 /* StatFilesClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatFilesClient.swift; sourceTree = "<group>"; };
+		E5AF687F84C0F2E92F6F57FB /* LombardiTrophy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LombardiTrophy.swift; sourceTree = "<group>"; };
 		E5C829A959B4ABCC6DBF5B46 /* DepthSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthSheet.swift; sourceTree = "<group>"; };
 		E636B964C5DE055FDAD2CB44 /* AppEventsRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEventsRecorder.swift; sourceTree = "<group>"; };
 		E67531979ED38F349577206E /* AuthAndSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAndSettingsTests.swift; sourceTree = "<group>"; };
@@ -775,6 +779,7 @@
 				4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */,
 				3E4ABA72E3E79758B2719A8A /* PositionReorderUITests.swift */,
 				E147E349DAED0C3DFF5A965C /* ShareUITests.swift */,
+				CDCB3DD95D336FB51AE5BFD3 /* SuperBowlResultUITests.swift */,
 				A73476DCB1B6AC0017CF2A84 /* TapTargetUITests.swift */,
 				922DAA241A27DFF68D2ABF57 /* TeamFeedUITests.swift */,
 				D6FEC19F7D0FBA18F515F016 /* TeamRouteUITests.swift */,
@@ -993,6 +998,7 @@
 		CB261C562DD1AE80756810D1 /* Schedule */ = {
 			isa = PBXGroup;
 			children = (
+				E5AF687F84C0F2E92F6F57FB /* LombardiTrophy.swift */,
 				1F8DBF3EB4D70F6DF2E44420 /* ScheduleView.swift */,
 				D8FC6EE7ED8FF20B422D809B /* ScheduleViewModel.swift */,
 			);
@@ -1380,6 +1386,7 @@
 				6906FAA57C5B9DC926729482 /* HistorySeasonSheet.swift in Sources */,
 				EFF8B47F7B414593005AA116 /* HistoryViewModel.swift in Sources */,
 				02A4DF8EF0CE82AC81793F7B /* LoadStateTransition.swift in Sources */,
+				6C6C441D0D9345422945256E /* LombardiTrophy.swift in Sources */,
 				91106CA5B3104205E5DC31AE /* NameFormat.swift in Sources */,
 				A4DDF9C0704B94A741895C74 /* NetworkMonitor.swift in Sources */,
 				8BC68C594149C9B09F40FC12 /* NotificationAuthorizing.swift in Sources */,
@@ -1502,6 +1509,7 @@
 				CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */,
 				B0E1539CA5B29646DEACA198 /* PositionReorderUITests.swift in Sources */,
 				D693C9DD2EB4D028D38891D4 /* ShareUITests.swift in Sources */,
+				269CED70D78D6F25059B9128 /* SuperBowlResultUITests.swift in Sources */,
 				E6C8CDFCF0797B8F4692EB34 /* TapTargetUITests.swift in Sources */,
 				01A59E855D454A4AC15C68A2 /* TeamFeedUITests.swift in Sources */,
 				9D0C720AE274C08E293925C0 /* TeamRouteUITests.swift in Sources */,

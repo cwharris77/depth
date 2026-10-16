@@ -15,6 +15,10 @@ used under the **Creative Commons Attribution 3.0 Unported (CC BY 3.0)** license
   (`web/components/UniformFigure.tsx`); each region is recolored per kit from `TeamColors`.
   Manufacturer logos, patches, wordmarks, and back views are omitted.
 
+## Super Bowl trophy
+
+The trophy on a decided Super Bowl card (`Depth/Features/Schedule/LombardiTrophy.swift`) is original flat artwork drawn for the app, its silhouette informed by the trophy's general form. It carries no league logo, shield, wordmark or text, and no league logo asset is used.
+
 ## Team marks
 
 Some team modules under `web/lib/uniforms/teams/` include a helmet decal path; the set grows as teams
