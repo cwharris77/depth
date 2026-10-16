@@ -1,3 +1,4 @@
+import { FALCONS_GRADIENT_PATTERNS } from './marks/gradient-2020';
 import { compileParts, type TeamPartsDefinition } from '../core/parts';
 import { catalogKits } from '../core/catalog';
 import { expandTeamSpec } from '../core/team-spec';
@@ -7,6 +8,7 @@ import { FALCONS_CATALOG } from './catalog';
 export const FALCONS_PARTS: TeamPartsDefinition = {
   teamId: 'falcons',
   palette: FALCONS_PALETTE,
+  patterns: FALCONS_GRADIENT_PATTERNS,
   ...expandTeamSpec('falcons', FALCONS_SPEC),
   kits: catalogKits(FALCONS_CATALOG),
 };
