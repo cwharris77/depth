@@ -1,24 +1,15 @@
+import { JAGUARS_CHEST_HEAD, JAGUARS_CUFF, JAGUARS_MODERN_COLLAR } from '../marks/construction';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { JAGUARS_NUMBER_THREE } from '../marks/numbers';
 
-// White body with a black V collar band keylined grey, a white back bar, black shoulder numerals,
-// a black sleeve hem band and plain black numerals.
 export const JAGUARS_JERSEY_WHITE: CompleteJerseySpec = {
   body: 'white',
-  collar: {
-    style: 'inset-v',
-    color: 'black',
-    trim: 'none',
-    inside: 'body',
-    lining: 'none',
-    backBar: 'white',
-    outline: true,
-  },
+  collar: { style: 'none' },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
   shoulderNumber: { fill: 'black', outline: 'none' },
   sleeveStripes: 'none',
-  cuff: { color: 'black', size: 'l' },
+  cuff: 'none',
   sleeveNumber: 'none',
   number: {
     fill: 'black',
@@ -27,5 +18,9 @@ export const JAGUARS_JERSEY_WHITE: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: JAGUARS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [
+    { paint: 'over', mark: JAGUARS_CHEST_HEAD },
+    { paint: 'over', mark: JAGUARS_MODERN_COLLAR('white', 'black') },
+    { paint: 'over', mark: JAGUARS_CUFF('black') },
+  ],
 };

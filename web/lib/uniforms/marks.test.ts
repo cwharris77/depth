@@ -169,3 +169,9 @@ describe('placeMarkOnPair', () => {
     }
   });
 });
+
+it('keeps the left-chest badge on the torso without mirroring it', () => {
+  const [layer] = placeMark('chest', SQUARE, 'chest-left', { a: 'gold' });
+  expect(layer).toMatchObject({ surface: 'jersey', clip: true, fill: 'gold' });
+  expect(layer.d).toBe('M388.0,457.0 L442.0,457.0 L442.0,511.0 Z');
+});
