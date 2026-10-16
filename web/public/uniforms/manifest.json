@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "f8e4fe84f7c0bf57794158d756aebd1c820b009e5c879c19aaa4bf36639fcd14",
-  "revision": "87098d2753582c56",
+  "sourceDigest": "730d508899796dba2eadde04de4d3f0af92161ae1aa0d8f469e83394f1965d1f",
+  "revision": "9609c3985f163831",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -162,15 +162,15 @@
     {
       "catalogId": "bengals-home-2021",
       "constructionKey": "home",
-      "revision": "9bf1285e3a4bc021",
+      "revision": "e9f9c5abad3bccad",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-home-2021.webp",
-          "sha256": "67583420855ad57ad2e32029fcd162403395eb2bab5b58594efad84e1702e57e"
+          "sha256": "4de70c5511dbf8c4c9feb5a9dbd56a29e0680986ef561fece648a21cb10901c6"
         },
         "full": {
           "path": "/uniforms/bengals-home-2021-full.webp",
-          "sha256": "05903e7713bcf6b234a543ac4ddce4e6123739b94fb5bbc5102c7fa68e523865"
+          "sha256": "f49d3a186605e2b4a2f8f6aec860957b98bfbd17ec9ffc29c4b634dd3fbe5fde"
         }
       },
       "combinations": [
@@ -179,7 +179,7 @@
           "label": "Black pants, orange socks",
           "full": {
             "path": "/uniforms/bengals-home-2021--black-orange-socks-full.webp",
-            "sha256": "231ede42d6614c46474cf96e9eac9322d04866e42e1e70f62c3d4e3d585d4fde"
+            "sha256": "54f5ff6198a9633ed86eb6259ae7e93d4dcc7d46160a504f682ec1f5d00c4f96"
           }
         },
         {
@@ -187,7 +187,7 @@
           "label": "White pants, orange socks",
           "full": {
             "path": "/uniforms/bengals-home-2021--white-pants-full.webp",
-            "sha256": "b98a28590c67336077cd455af4bf8fcaf7575385885947936eba64b8443e83e4"
+            "sha256": "64e13e1e910da7f3468b3b2cfea600c0a5d0416bacc86154086584158fa1b9f0"
           }
         },
         {
@@ -195,7 +195,7 @@
           "label": "Orange pants, black socks",
           "full": {
             "path": "/uniforms/bengals-home-2021--orange-pants-full.webp",
-            "sha256": "a94c4cd8aff74a9540c538dc173de2a3e6b43658abc704cbbd8b2075e254ce70"
+            "sha256": "05bca35083571c910a4a1f5338c1b7945a2e7a0973dac8c9b9c7574e7b42d1f8"
           }
         }
       ]
