@@ -647,3 +647,144 @@ private actor DelayedScheduleRepository: DepthRepository {
     await refresh.value
     #expect(await viewModel.loadState == .loaded)
 }
+
+// MARK: - Super Bowl emphasis
+
+private func postseasonGame(
+    isHome: Bool = false, isNeutralSite: Bool = false, result: ScheduleResult?, team: Int? = nil,
+    opponent: Int? = nil
+) -> ScheduleGame {
+    ScheduleGame(
+        week: 22, isBye: false, date: "2026-02-08", isHome: isHome, isNeutralSite: isNeutralSite,
+        opponent: scheduleTeam(id: "chiefs", abbrev: "KC"), teamScore: team,
+        opponentScore: opponent, result: result)
+}
+
+@Test func onlyADecidedSuperBowlShowsTheTrophy() {
+    let won = PostseasonRound(
+        kind: .superBowl, game: postseasonGame(result: .win, team: 31, opponent: 24))
+    let lost = PostseasonRound(
+        kind: .superBowl, game: postseasonGame(result: .loss, team: 20, opponent: 24))
+    let upcoming = PostseasonRound(kind: .superBowl, game: postseasonGame(result: nil))
+    let empty = PostseasonRound(kind: .superBowl, game: nil)
+    #expect(won.showsTrophy && lost.showsTrophy)
+    #expect(!upcoming.showsTrophy && !empty.showsTrophy)
+    for kind in PostseasonRoundKind.allCases where kind != .superBowl {
+        let round = PostseasonRound(
+            kind: kind, game: postseasonGame(result: .win, team: 31, opponent: 24))
+        #expect(!round.showsTrophy && !round.emphasizesResult && !round.isChampionship)
+    }
+}
+
+@Test func superBowlEmphasisFollowsTheGameNotTheResult() {
+    #expect(PostseasonRound(kind: .superBowl, game: postseasonGame(result: nil)).emphasizesResult)
+    #expect(!PostseasonRound(kind: .superBowl, game: nil).emphasizesResult)
+}
+
+@Test func onlyAWonSuperBowlIsAChampionship() {
+    #expect(
+        PostseasonRound(
+            kind: .superBowl, game: postseasonGame(result: .win, team: 31, opponent: 24)
+        ).isChampionship)
+    #expect(
+        !PostseasonRound(
+            kind: .superBowl, game: postseasonGame(result: .loss, team: 20, opponent: 24)
+        ).isChampionship)
+    #expect(!PostseasonRound(kind: .superBowl, game: postseasonGame(result: nil)).isChampionship)
+}
+
+@Test func championshipLabelEndsInChampions() {
+    let won = PostseasonRound(
+        kind: .superBowl, game: postseasonGame(result: .win, team: 31, opponent: 24))
+    #expect(
+        won.accessibilityLabel(season: 2025, dateText: "FEB 8")
+            == "SUPER BOWL LX, at KC, W 31-24, FEB 8, champions")
+    let lost = PostseasonRound(
+        kind: .superBowl, game: postseasonGame(isHome: true, result: .loss, team: 20, opponent: 24))
+    #expect(
+        lost.accessibilityLabel(season: 2025, dateText: "FEB 8")
+            == "SUPER BOWL LX, vs KC, L 20-24, FEB 8")
+    let neutral = PostseasonRound(
+        kind: .superBowl,
+        game: postseasonGame(isNeutralSite: true, result: .win, team: 29, opponent: 13))
+    #expect(
+        neutral.accessibilityLabel(season: 2025, dateText: "FEB 8")
+            == "SUPER BOWL LX, vs KC, W 29-13, FEB 8, champions")
+}
+
+@Test func opponentPrefixIsVsAtHomeOrANeutralSiteAndAtOtherwise() {
+    let kc = scheduleTeam(id: "chiefs", abbrev: "KC")
+    #expect(postseasonGame(isHome: true, result: .win).opponentLine(for: kc) == "vs KC")
+    #expect(postseasonGame(isNeutralSite: true, result: .win).opponentLine(for: kc) == "vs KC")
+    #expect(postseasonGame(result: .win).opponentLine(for: kc) == "at KC")
+}
+
+@Test func scheduleGameDecodesWithoutANeutralSiteFlagAsNotNeutral() throws {
+    let game = postseasonGame(isNeutralSite: true, result: .win, team: 29, opponent: 13)
+    let encoded = try JSONEncoder().encode(game)
+    #expect(try JSONDecoder().decode(ScheduleGame.self, from: encoded).isNeutralSite)
+    var object = try #require(try JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+    object.removeValue(forKey: "isNeutralSite")
+    let legacy = try JSONSerialization.data(withJSONObject: object)
+    #expect(try JSONDecoder().decode(ScheduleGame.self, from: legacy).isNeutralSite == false)
+}
+
+@MainActor
+@Test func celebrationPlaysOncePerTeamAndSeasonPerLaunch() {
+    let ledger = SuperBowlCelebrationLedger(replaysEveryVisit: false)
+    #expect(!ledger.hasPlayed(teamId: "seahawks", season: 2025))
+    #expect(ledger.claim(teamId: "seahawks", season: 2025))
+    #expect(ledger.hasPlayed(teamId: "seahawks", season: 2025))
+    #expect(!ledger.claim(teamId: "seahawks", season: 2025))
+    #expect(ledger.claim(teamId: "seahawks", season: 2024))
+    #expect(ledger.claim(teamId: "bills", season: 2025))
+    ledger.reset()
+    #expect(!ledger.hasPlayed(teamId: "seahawks", season: 2025))
+    #expect(ledger.claim(teamId: "seahawks", season: 2025))
+}
+
+@MainActor
+@Test func replayHookTreatsEveryVisitAsTheFirst() {
+    let ledger = SuperBowlCelebrationLedger(replaysEveryVisit: true)
+    #expect(ledger.claim(teamId: "seahawks", season: 2025))
+    #expect(!ledger.hasPlayed(teamId: "seahawks", season: 2025))
+    #expect(ledger.claim(teamId: "seahawks", season: 2025))
+}
+
+@Test func superBowlTextReadsOnEveryFill() {
+    // Seahawks navy takes white; Steelers gold takes near-black.
+    let navy = SuperBowlPalette(
+        colors: JerseyColors(primary: "#002244", secondary: "#69BE28", accent: "#A5ACAF"))
+    #expect(navy.fillHex == "#002244" && navy.accentHex == "#69BE28" && navy.inkHex == "#ffffff")
+    let gold = SuperBowlPalette(
+        colors: JerseyColors(primary: "#FFB612", secondary: "#101820", accent: "#101820"))
+    #expect(gold.inkHex == darkBackgroundHex)
+    #expect(contrastRatio(gold.inkHex, gold.fillHex) >= 4.5)
+    #expect(contrastRatio(navy.inkHex, navy.fillHex) >= 4.5)
+}
+
+@Test func confettiFallsAndFadesOutByTheEndOfTheBurst() {
+    let fleck = ConfettiFleck(
+        velocity: CGVector(dx: 100, dy: -600), spin: 3, phase: 0, colorIndex: 0)
+    #expect(fleck.offset(at: 0.3).y < 0)
+    #expect(fleck.offset(at: 1.7).y > fleck.offset(at: 0.6).y)
+    #expect(ConfettiFleck.opacity(at: 0.2) == 1)
+    #expect(ConfettiFleck.opacity(at: SuperBowlTiming.confettiDuration) == 0)
+    #expect(ConfettiFleck.burst().count == 48)
+}
+
+@Test func scoreSummaryWaitsForAResultAndBothScores() {
+    #expect(postseasonGame(result: .win, team: 29, opponent: 13).scoreSummary == "W 29-13")
+    #expect(postseasonGame(result: nil).scoreSummary == "Upcoming")
+    #expect(postseasonGame(result: .win, team: 29, opponent: nil).scoreSummary == "Upcoming")
+}
+
+@Test func championsBeatLandsAfterTheBarSweep() {
+    let timing = PostseasonLadderTiming(terminalIndex: 3)
+    #expect(
+        abs(timing.championsDelay - (timing.sweepDelay + PostseasonLadderTiming.sweepDuration))
+            < 1e-9)
+    #expect(
+        abs(timing.championsBeatDelay - (timing.championsDelay + SuperBowlTiming.sweepDuration))
+            < 1e-9)
+}

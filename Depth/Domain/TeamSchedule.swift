@@ -147,6 +147,29 @@ struct PostseasonRound: Equatable, Sendable, Codable, Identifiable {
     let game: ScheduleGame?
 
     var id: PostseasonRoundKind { kind }
+
+    /// The Super Bowl card gets the stronger treatment whenever it has a game, including
+    /// one that has not been played yet.
+    var emphasizesResult: Bool { kind == .superBowl && game != nil }
+
+    /// The trophy marks a decided Super Bowl, win or loss.
+    var showsTrophy: Bool { kind == .superBowl && game?.result != nil }
+
+    /// A won Super Bowl is the title.
+    var isChampionship: Bool { kind == .superBowl && game?.result == .win }
+
+    /// The card's spoken label. A won Super Bowl ends in "champions".
+    func accessibilityLabel(season: Int, dateText: String) -> String {
+        var parts = [kind.title(season: season)]
+        guard let game else { return parts[0] }
+        if let opponent = game.opponent {
+            parts.append(game.opponentLine(for: opponent))
+        }
+        parts.append(game.scoreSummary)
+        parts.append(dateText)
+        if isChampionship { parts.append("champions") }
+        return parts.joined(separator: ", ")
+    }
 }
 
 enum ScheduleResult: String, Equatable, Sendable, Codable {
@@ -160,6 +183,8 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
     let isBye: Bool
     let date: String?
     let isHome: Bool
+    /// True for a neutral-site game (the Super Bowl), which is neither home nor away.
+    let isNeutralSite: Bool
     let opponent: Team?
     let teamScore: Int?
     let opponentScore: Int?
@@ -173,6 +198,7 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
         isBye: Bool,
         date: String?,
         isHome: Bool,
+        isNeutralSite: Bool = false,
         opponent: Team?,
         teamScore: Int?,
         opponentScore: Int?,
@@ -183,6 +209,7 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
         self.isBye = isBye
         self.date = date
         self.isHome = isHome
+        self.isNeutralSite = isNeutralSite
         self.opponent = opponent
         self.teamScore = teamScore
         self.opponentScore = opponentScore
@@ -190,7 +217,33 @@ struct ScheduleGame: Equatable, Identifiable, Sendable, Codable {
         self.market = market
     }
 
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        week = try container.decode(Int.self, forKey: .week)
+        isBye = try container.decode(Bool.self, forKey: .isBye)
+        date = try container.decodeIfPresent(String.self, forKey: .date)
+        isHome = try container.decode(Bool.self, forKey: .isHome)
+        // Schedules cached before this field existed decode as not neutral.
+        isNeutralSite = try container.decodeIfPresent(Bool.self, forKey: .isNeutralSite) ?? false
+        opponent = try container.decodeIfPresent(Team.self, forKey: .opponent)
+        teamScore = try container.decodeIfPresent(Int.self, forKey: .teamScore)
+        opponentScore = try container.decodeIfPresent(Int.self, forKey: .opponentScore)
+        result = try container.decodeIfPresent(ScheduleResult.self, forKey: .result)
+        market = try container.decodeIfPresent(ScheduleGameMarket.self, forKey: .market)
+    }
+
     var id: Int { week }
+
+    /// "vs NE" at home or at a neutral site, "at NE" on the road.
+    func opponentLine(for opponent: Team) -> String {
+        "\(isHome || isNeutralSite ? "vs" : "at") \(opponent.abbrev)"
+    }
+
+    /// "W 29-13", or "Upcoming" until the game has a result and both scores.
+    var scoreSummary: String {
+        guard let result, let teamScore, let opponentScore else { return "Upcoming" }
+        return "\(result.rawValue) \(teamScore)-\(opponentScore)"
+    }
 
     /// Card eyebrow and accessibility prefix. Week 0 only exists in the preseason: the
     /// ESPN preseason ingest (web/lib/espn/preseason.ts) numbers the Hall of Fame game 0 and
