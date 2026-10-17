@@ -204,6 +204,10 @@ enum DepthEnvironment {
     @MainActor static let networkMonitor = NetworkMonitor()
     /// Compiled-in feature flags plus internal-build overrides (see FeatureFlag).
     @MainActor static let featureFlags = FeatureFlagStore()
+    #if INTERNAL_BUILD
+        /// Internal-build-only toggles (see DeveloperSettings).
+        @MainActor static let developerSettings = DeveloperSettings()
+    #endif
     /// The device's team-notification choice.
     @MainActor static let notificationSettings = NotificationSettingsStore(
         service: pushSubscriptionService,

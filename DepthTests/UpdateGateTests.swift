@@ -74,6 +74,17 @@ private func config(minimum: Int, message: String? = nil) -> AppConfig {
         #expect(gate.isBlocked)
     }
 
+    @Test @MainActor func bypassAllowsABuildBelowTheMinimum() async {
+        let underlying = FakeConfigRepository(configResult: .success(config(minimum: 10)))
+        let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())
+        let gate = UpdateGateViewModel(
+            repository: repository, currentBuild: 9, isBypassed: { true })
+
+        await gate.check()
+
+        #expect(gate.state == .allowed)
+    }
+
     @Test @MainActor func allowsWhenInstalledBuildEqualsMinimum() async {
         let underlying = FakeConfigRepository(configResult: .success(config(minimum: 10)))
         let repository = CachingDepthRepository(underlying: underlying, store: inMemoryStore())

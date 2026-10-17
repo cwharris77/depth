@@ -16,6 +16,9 @@ struct BlockingUpdateView: View {
     /// specific outage or release be explained without shipping a build — the same
     /// "flip one row" property the minimum build itself has. Falls back to generic copy.
     var maintenanceMessage: String?
+    /// Internal builds only: turns the update-gate bypass back on so a blocked build can
+    /// never lock the developer out of the Settings toggle.
+    var onBypass: (() -> Void)?
 
     @State private var presenter = UpdateAlertPresenter()
 
@@ -37,6 +40,11 @@ struct BlockingUpdateView: View {
                         UIApplication.shared.open(url)
                     }
                 }
+                #if INTERNAL_BUILD
+                    if let onBypass {
+                        Button("Bypass (internal build)", action: onBypass)
+                    }
+                #endif
             } message: {
                 Text(maintenanceMessage ?? "Good news! A new version of the app is available.")
             }
