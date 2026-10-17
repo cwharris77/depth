@@ -2,11 +2,18 @@ import { CARDINALS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { CARDINALS_RIVALRIES_JERSEY_ART } from '../marks/jersey-art';
 
-// Speckled cream body with a dark feather patch on each sleeve and red numerals offset in orange.
-// The feathered collar carries rays at the neck; all of it is drawn as art.
+// Speckled cream body with state flag sleeve patches and an orange numeral shadow.
 export const CARDINALS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   body: 'cream',
-  collar: { style: 'none' },
+  collar: {
+    style: 'inset-v',
+    color: 'cream',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
   shoulderNumber: 'none',
@@ -17,8 +24,8 @@ export const CARDINALS_JERSEY_RIVALRIES: CompleteJerseySpec = {
     height: 175,
     fill: 'rivalRed',
     outline: 'rivalOrange',
-    outlineWeight: 'thin',
-    texture: 'mesh',
+    outlineWeight: 'none',
+    texture: 'plain',
     glyphPath: CARDINALS_NUMBER_THREE,
   },
   marks: [{ paint: 'over', mark: CARDINALS_RIVALRIES_JERSEY_ART }],

@@ -1,3 +1,4 @@
+import { CARDINALS_PANTS_SPECKLES } from './marks/speckles';
 // Arizona as a complete team spec: every helmet, jersey, pants and socks part, with its own art
 // drawn by the marks in ./marks.
 //
@@ -109,7 +110,7 @@ export const CARDINALS_SPEC: TeamSpec = {
         gap: 'none',
         edge: 'none',
       },
-      marks: [],
+      marks: [{ paint: 'under', mark: CARDINALS_PANTS_SPECKLES }],
     },
   },
   socks: {

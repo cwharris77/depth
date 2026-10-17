@@ -3,10 +3,18 @@ import { CARDINALS_NUMBER_THREE } from '../marks/numbers';
 import { CARDINALS_AWAY_JERSEY_ART } from '../marks/jersey-art';
 
 // White body with two cardinal sleeve bands around a white label block and cardinal numerals
-// keylined in black. The feathered collar is a body-coloured cut drawn as art with a grey keyline.
+// keylined in black.
 export const CARDINALS_JERSEY_WHITE: CompleteJerseySpec = {
   body: 'white',
-  collar: { style: 'none' },
+  collar: {
+    style: 'inset-v',
+    color: 'white',
+    trim: 'none',
+    inside: 'body',
+    lining: 'none',
+    backBar: 'none',
+    outline: true,
+  },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
   shoulderNumber: 'none',

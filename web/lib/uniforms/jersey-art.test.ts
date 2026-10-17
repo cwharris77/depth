@@ -52,7 +52,7 @@ describe('jersey artwork', () => {
     'renders the Cardinals %s collar lettering as paths',
     (slug) => {
       const svg = render('cardinals', slug);
-      expect(svg).toContain('cardinals-collar-seam');
+      expect(svg).toContain('-collar-placket');
       expect(svg).not.toContain('<text');
       expect(svg).toContain('cardinals-neck');
     }
