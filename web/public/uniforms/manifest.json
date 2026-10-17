@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "3033beb378e2b88d6073109ba27e881e7a55d8cf8bbee9515cdd9bfd3cc92de4",
-  "revision": "ca1f26abf2d7fc0f",
+  "sourceDigest": "677894cbce22c5a354a5912a6faa33fad55aed0b64b6309b93e8fd37678f6a15",
+  "revision": "bd0677d72cc0a815",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -998,15 +998,15 @@
     {
       "catalogId": "dolphins-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "d71474bfec0398e3",
+      "revision": "29af58675f8fa624",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-rivalries-2025-2025.webp",
-          "sha256": "b21d1d834487ca020c7e32ca03e966d42b5d488878649f7a72e58eecfa7c4fe4"
+          "sha256": "ec31dce599390bc8ae0222f60a1fcb1ccf83b9a089669b2debeb79fd7acef93d"
         },
         "full": {
           "path": "/uniforms/dolphins-rivalries-2025-2025-full.webp",
-          "sha256": "950a53e4c6b38ca5d9446ce1c341a2f6d399502427e914a97ae154d7997a4083"
+          "sha256": "f50c2f620513102feb099884eff3dd6e048fd7d2fb7f008189d8c4300cbffe13"
         }
       }
     },
