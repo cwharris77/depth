@@ -99,6 +99,7 @@ enum ScheduleMapper {
             isBye: false,
             date: game.gameday,
             isHome: isHome,
+            isNeutralSite: game.location?.lowercased() == "neutral",
             opponent: opponent,
             teamScore: teamScore,
             opponentScore: opponentScore,

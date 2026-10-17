@@ -176,7 +176,9 @@ struct ScheduleView: View {
                 season: schedule.season,
                 standing: [schedule.conference, schedule.regularSeasonRecord].compactMap { $0 }
                     .joined(separator: " · "),
-                accent: teamAccent
+                accent: teamAccent,
+                teamId: viewModel.teamId,
+                colors: currentTeamStore.colors
             )
         case .missed:
             ContentUnavailableView {
@@ -385,6 +387,9 @@ private struct PostseasonRunView: View {
     /// "NFC · 11-6" — conference (when resolved) and regular-season record.
     let standing: String
     let accent: Color
+    let teamId: String
+    /// The kit's jersey colors, for the Super Bowl card; nil until a team resolves.
+    let colors: JerseyColors?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -406,7 +411,11 @@ private struct PostseasonRunView: View {
             .accessibilityIdentifier("schedule-playoffs-seed")
             .padding(.bottom, DesignTokens.Spacing.md)
 
-            PostseasonLadder(run: run, season: season, accent: accent)
+            PostseasonLadder(
+                run: run, season: season, accent: accent, teamId: teamId, colors: colors
+            )
+            // A new team or season is a new ladder: its celebration state starts over.
+            .id("\(teamId):\(season)")
         }
         .accessibilityIdentifier("schedule-playoffs-content")
     }
@@ -434,8 +443,11 @@ struct PostseasonLadderTiming {
 
     var sweepDelay: Double { railEnd - 0.1 }
 
-    /// A won Super Bowl's trophy beat lands once the bar has finished sweeping.
+    /// A won Super Bowl's gradient sweep starts once the bar has finished sweeping.
     var championsDelay: Double { sweepDelay + Self.sweepDuration }
+
+    /// The champions beat (trophy, text, glint, confetti, haptic) lands when that sweep ends.
+    var championsBeatDelay: Double { championsDelay + SuperBowlTiming.sweepDuration }
 }
 
 private enum PostseasonRoundStage {
@@ -458,12 +470,41 @@ private struct PostseasonLadder: View {
     let run: PostseasonRun
     let season: Int
     let accent: Color
+    let teamId: String
+    let colors: JerseyColors?
     /// Flipped on appear, so every staged element animates from its entrance state. Reduce
     /// Motion renders the settled state from the first frame instead.
     @State private var hasPlayed = false
-    /// Counts the one-time champions beat (trophy rise, glint, pip pulse, haptic). It stays 0
-    /// for a loss and under Reduce Motion, where the trophy renders settled instead.
+    /// The gradient sweep of a won title's first view has begun.
+    @State private var sweepStarted = false
+    /// Counts the end of that sweep (trophy rise, text, confetti, pip pulse, haptic). It stays 0
+    /// for a loss, a revisit and Reduce Motion, which render settled instead.
     @State private var championsBeat = 0
+    /// Counts glint crossings: one at the champions beat, or one for a revisit.
+    @State private var glintBeat = 0
+    /// Whether this title's celebration already played this launch, read once when the ladder
+    /// appears so playing it here does not flip the same view into the revisit.
+    @State private var isRevisit: Bool
+
+    init(run: PostseasonRun, season: Int, accent: Color, teamId: String, colors: JerseyColors?) {
+        self.run = run
+        self.season = season
+        self.accent = accent
+        self.teamId = teamId
+        self.colors = colors
+        _isRevisit = State(
+            initialValue: SuperBowlCelebrationLedger.shared.hasPlayed(
+                teamId: teamId, season: season))
+    }
+
+    private var celebrationMode: SuperBowlCelebrationMode {
+        if reduceMotion { return .settled }
+        return isRevisit ? .revisit : .first
+    }
+
+    private var palette: SuperBowlPalette {
+        colors.map(SuperBowlPalette.init(colors:)) ?? .neutral
+    }
 
     private var reduceMotion: Bool { settlesMotion(environmentReduceMotion) }
     private var isShown: Bool { hasPlayed || reduceMotion }
@@ -478,25 +519,14 @@ private struct PostseasonLadder: View {
             Color.clear.frame(width: 2)
             VStack(spacing: DesignTokens.Spacing.sm) {
                 ForEach(Array(run.rounds.enumerated()), id: \.element.id) { index, round in
-                    PostseasonRoundCard(
-                        round: round,
-                        season: season,
-                        seed: run.seed,
-                        stage: stage(index),
-                        accent: accent,
-                        terminalColor: terminalColor,
-                        isShown: isShown,
-                        championsBeat: championsBeat,
-                        timing: timing,
-                        index: index
-                    )
-                    // Measured on a background so the card's rise-in offset never drags
-                    // its pip along with it.
-                    .background {
-                        Color.clear.anchorPreference(key: RoundBoundsKey.self, value: .bounds) {
-                            [index: $0]
+                    roundCard(round, index: index)
+                        // Measured on a background so the card's rise-in offset never drags
+                        // its pip along with it.
+                        .background {
+                            Color.clear.anchorPreference(key: RoundBoundsKey.self, value: .bounds) {
+                                [index: $0]
+                            }
                         }
-                    }
                 }
             }
         }
@@ -507,13 +537,67 @@ private struct PostseasonLadder: View {
             .accessibilityHidden(true)
         }
         .onAppear { hasPlayed = true }
-        .task(id: isShown) {
-            guard isShown, !reduceMotion, run.rounds.last?.isChampionship == true else { return }
-            try? await Task.sleep(for: .seconds(timing.championsDelay))
-            guard !Task.isCancelled else { return }
-            championsBeat += 1
+        .task(id: isShown) { await playCelebration() }
+        .sensoryFeedback(.impact(weight: .medium), trigger: championsBeat)
+    }
+
+    @ViewBuilder
+    private func roundCard(_ round: PostseasonRound, index: Int) -> some View {
+        if round.showsTrophy, let game = round.game {
+            SuperBowlResultCard(
+                round: round,
+                game: game,
+                season: season,
+                palette: palette,
+                terminalColor: terminalColor,
+                mode: celebrationMode,
+                sweepStarted: sweepStarted,
+                beat: championsBeat,
+                glintBeat: glintBeat,
+                isShown: isShown,
+                reduceMotion: reduceMotion,
+                barSweepDelay: timing.sweepDelay
+            )
+            .opacity(!isShown ? 0 : 1)
+            .offset(y: !isShown ? 10 : 0)
+            .animation(
+                reduceMotion ? nil : .easeOut(duration: 0.35).delay(timing.cardDelay(index)),
+                value: isShown
+            )
+            .accessibilityIdentifier("schedule-playoffs-\(round.kind.rawValue)")
+        } else {
+            PostseasonRoundCard(
+                round: round,
+                season: season,
+                seed: run.seed,
+                stage: stage(index),
+                accent: accent,
+                terminalColor: terminalColor,
+                isShown: isShown,
+                timing: timing,
+                index: index
+            )
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: championsBeat)
+    }
+
+    /// A won title's beats. A first view sweeps the gradient, then lands the champions beat; a
+    /// revisit takes one glint where the sweep would have run. Reduce Motion plays nothing.
+    private func playCelebration() async {
+        guard isShown, !reduceMotion, run.rounds.last?.isChampionship == true else { return }
+        if isRevisit {
+            try? await Task.sleep(for: .seconds(timing.sweepDelay))
+            guard !Task.isCancelled else { return }
+            glintBeat += 1
+            return
+        }
+        try? await Task.sleep(for: .seconds(timing.championsDelay))
+        guard !Task.isCancelled else { return }
+        SuperBowlCelebrationLedger.shared.claim(teamId: teamId, season: season)
+        sweepStarted = true
+        try? await Task.sleep(for: .seconds(SuperBowlTiming.sweepDuration))
+        guard !Task.isCancelled else { return }
+        championsBeat += 1
+        glintBeat += 1
     }
 
     private func stage(_ index: Int) -> PostseasonRoundStage {
@@ -615,22 +699,14 @@ private struct PostseasonRoundCard: View {
     let accent: Color
     let terminalColor: Color
     let isShown: Bool
-    let championsBeat: Int
     let timing: PostseasonLadderTiming
     let index: Int
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
     private var reduceMotion: Bool { settlesMotion(environmentReduceMotion) }
 
-    /// The Super Bowl card carries a stronger fill, border, height and score.
+    /// An upcoming Super Bowl carries a stronger fill, border, height and score; a decided one
+    /// is drawn by `SuperBowlResultCard`.
     private var isEmphasized: Bool { round.emphasizesResult }
-
-    /// A won title's trophy waits for the champions beat; a loss, an earlier render or
-    /// Reduce Motion shows it from the first frame.
-    private var trophyIsSettled: Bool {
-        !round.isChampionship || reduceMotion || championsBeat > 0
-    }
 
     /// An absent Wild Card game for a bye-earning seed is the bye, not an unreached round.
     private var isBye: Bool {
@@ -694,11 +770,8 @@ private struct PostseasonRoundCard: View {
                 value: isShown
             )
             .accessibilityElement(children: .combine)
-            .modifier(CardLabel(round: round, season: season, dateText: dateText))
             .accessibilityIdentifier("schedule-playoffs-\(round.kind.rawValue)")
     }
-
-    private var dateText: String { round.game.map(dateLabel) ?? "" }
 
     private var isEmptyRound: Bool { round.game == nil }
 
@@ -713,23 +786,10 @@ private struct PostseasonRoundCard: View {
                     .foregroundStyle(accent)
             }
         } else if let game = round.game {
-            if isEmphasized && dynamicTypeSize.isAccessibilitySize {
-                // Accessibility sizes stack the trophy, matchup and score so nothing clips.
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-                    if round.showsTrophy { trophy }
-                    matchup(game)
-                    score(game, alignment: .leading)
-                }
-                .padding(.vertical, DesignTokens.Spacing.md)
-            } else {
-                HStack(spacing: DesignTokens.Spacing.sm) {
-                    if round.showsTrophy {
-                        trophy.padding(.trailing, DesignTokens.Spacing.xs)
-                    }
-                    matchup(game)
-                    Spacer()
-                    score(game, alignment: .trailing)
-                }
+            HStack(spacing: DesignTokens.Spacing.sm) {
+                matchup(game)
+                Spacer()
+                score(game, alignment: .trailing)
             }
         } else {
             roundTitle
@@ -742,10 +802,8 @@ private struct PostseasonRoundCard: View {
             if let opponent = game.opponent {
                 HStack(spacing: 6) {
                     TeamIconView(team: opponent, size: 22)
-                    Text(
-                        verbatim: game.isHome ? "vs \(opponent.abbrev)" : "at \(opponent.abbrev)"
-                    )
-                    .font(.subheadline.weight(.heavy))
+                    Text(verbatim: game.opponentLine(for: opponent))
+                        .font(.subheadline.weight(.heavy))
                 }
             }
         }
@@ -756,44 +814,9 @@ private struct PostseasonRoundCard: View {
             Text(verbatim: game.scoreSummary)
                 .font(isEmphasized ? .title3.bold() : .subheadline.weight(.semibold))
                 .foregroundStyle(resultColor(game.result))
-            Text(verbatim: dateLabel(game))
+            Text(verbatim: postseasonDateLabel(game))
                 .font(.caption2.bold())
                 .foregroundStyle(DesignTokens.Colors.textFaint)
-        }
-    }
-
-    /// The trophy at 48 pt. A won title rises in and takes one glint on the champions beat;
-    /// every other decided Super Bowl shows it static.
-    private var trophy: some View {
-        LombardiTrophy()
-            .frame(height: 48)
-            .overlay { glint }
-            .opacity(trophyIsSettled ? 1 : 0)
-            .scaleEffect(trophyIsSettled ? 1 : 0.8)
-            .offset(y: trophyIsSettled ? 0 : 8)
-            .animation(
-                reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.7),
-                value: championsBeat)
-    }
-
-    /// A soft diagonal highlight, clipped to the trophy, that crosses once left to right. At
-    /// rest it sits past the right edge, so a settled trophy shows no band.
-    @ViewBuilder
-    private var glint: some View {
-        if round.isChampionship {
-            LinearGradient(
-                colors: [.clear, .white.opacity(0.7), .clear], startPoint: .leading,
-                endPoint: .trailing
-            )
-            .frame(width: 12)
-            .rotationEffect(.degrees(20))
-            .scaleEffect(y: 2)
-            .offset(x: championsBeat > 0 || reduceMotion ? 28 : -28)
-            .animation(
-                reduceMotion ? nil : .easeInOut(duration: 0.7).delay(0.2), value: championsBeat
-            )
-            .mask { LombardiTrophy() }
-            .allowsHitTesting(false)
         }
     }
 
@@ -821,36 +844,20 @@ private struct PostseasonRoundCard: View {
         case .tie, nil: DesignTokens.Colors.textMuted
         }
     }
-
-    private func dateLabel(_ game: ScheduleGame) -> String {
-        guard let date = game.date, let parsed = Self.inputFormatter.date(from: date) else {
-            return "DATE TBD"
-        }
-        return parsed.formatted(.dateTime.month(.abbreviated).day()).uppercased()
-    }
-
-    private static let inputFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
 }
 
-/// Replaces the combined label only when the round has something extra to say; other cards
-/// keep the label SwiftUI combines from their text.
-private struct CardLabel: ViewModifier {
-    let round: PostseasonRound
-    let season: Int
-    let dateText: String
-
-    func body(content: Content) -> some View {
-        if round.isChampionship {
-            content.accessibilityLabel(
-                round.accessibilityLabel(season: season, dateText: dateText))
-        } else {
-            content
-        }
+/// "FEB 8", or "DATE TBD" when the game has no usable date.
+@MainActor func postseasonDateLabel(_ game: ScheduleGame) -> String {
+    guard let date = game.date, let parsed = postseasonDateParser.date(from: date) else {
+        return "DATE TBD"
     }
+    return parsed.formatted(.dateTime.month(.abbreviated).day()).uppercased()
 }
+
+@MainActor private let postseasonDateParser: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter
+}()

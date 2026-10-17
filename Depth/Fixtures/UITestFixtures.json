@@ -7728,6 +7728,7 @@
               "date" : "2023-02-12",
               "isBye" : false,
               "isHome" : false,
+              "isNeutralSite" : true,
               "opponent" : {
                 "abbrev" : "PHI",
                 "city" : "Philadelphia",
@@ -9288,6 +9289,7 @@
               "date" : "2025-02-09",
               "isBye" : false,
               "isHome" : false,
+              "isNeutralSite" : true,
               "opponent" : {
                 "abbrev" : "PHI",
                 "city" : "Philadelphia",
@@ -12561,6 +12563,7 @@
               "date" : "2026-02-08",
               "isBye" : false,
               "isHome" : false,
+              "isNeutralSite" : true,
               "market" : {
                 "favoriteTeamId" : "seahawks",
                 "impliedWinProbability" : 0.6750312469954812,
