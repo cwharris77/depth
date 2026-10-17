@@ -1,3 +1,5 @@
+import { BENGALS_CHEST_WORDMARK_BLACK } from '../marks/wordmark';
+import { BENGALS_PAUL_BROWN_SIGNATURE_BLACK } from '../marks/signature';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { BENGALS_NUMBER_THREE } from '../marks/numbers';
 import { bengalsSleeveTigers } from '../marks/construction';
@@ -25,8 +27,12 @@ export const BENGALS_JERSEY_ORANGE: CompleteJerseySpec = {
     fill: 'white',
     outline: 'black',
     outlineWeight: 'thin',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: BENGALS_NUMBER_THREE,
   },
-  marks: [{ paint: 'under', mark: bengalsSleeveTigers('black') }],
+  marks: [
+    { paint: 'under', mark: bengalsSleeveTigers('black') },
+    { paint: 'over', mark: BENGALS_CHEST_WORDMARK_BLACK },
+    { paint: 'over', mark: BENGALS_PAUL_BROWN_SIGNATURE_BLACK },
+  ],
 };

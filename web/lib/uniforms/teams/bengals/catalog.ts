@@ -41,7 +41,7 @@ export const BENGALS_CATALOG: TeamCatalog = {
     {
       id: 'bengals-away-2021',
       slug: 'away',
-      sleeveNike: 'black',
+      sleeveNike: 'orange',
       sleeveNikePlacement: 'lower',
       name: 'Away',
       kind: 'away',
@@ -84,6 +84,8 @@ export const BENGALS_CATALOG: TeamCatalog = {
     {
       id: 'bengals-color-rush-2016',
       slug: 'color-rush',
+      sleeveNike: 'orange',
+      sleeveNikePlacement: 'lower',
       name: 'Color Rush',
       kind: 'color-rush',
       jersey: 'color-rush',
