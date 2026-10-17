@@ -47,6 +47,8 @@ export type AnchorName =
   | 'sleeve-wrap-right'
   | 'sleeve-logo-left'
   | 'sleeve-logo-right'
+  | 'sleeve-front-logo-left'
+  | 'sleeve-front-logo-right'
   | 'collar-narrow-v';
 
 interface Anchor {
@@ -155,6 +157,24 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
     w: 78,
     cy: 506,
     mirror: true,
+    idSuffix: '-right',
+  },
+  // Forward-facing emblems at the side of the arm expose their face, with the trailing artwork
+  // continuing beyond the silhouette. The opposite orientation exposes the back of the mark.
+  'sleeve-front-logo-left': {
+    surface: 'sleeve-left',
+    x0: -4,
+    w: 78,
+    cy: 506,
+    mirror: true,
+    idSuffix: '-left',
+  },
+  'sleeve-front-logo-right': {
+    surface: 'sleeve-right',
+    x0: 514,
+    w: 78,
+    cy: 506,
+    mirror: false,
     idSuffix: '-right',
   },
 };
@@ -320,7 +340,8 @@ export function placeMark<S extends string>(
   });
 }
 
-export type AnchorPair = 'sleeves' | 'shoulders' | 'sleeve-tops' | 'sleeve-logos' | 'sleeve-wraps';
+export type AnchorPair =
+  'sleeves' | 'shoulders' | 'sleeve-tops' | 'sleeve-logos' | 'sleeve-wraps' | 'sleeve-front-logos';
 
 const PAIR_SIDE = {
   sleeves: 'sleeve',
@@ -328,6 +349,7 @@ const PAIR_SIDE = {
   'sleeve-tops': 'sleeve-top',
   'sleeve-logos': 'sleeve-logo',
   'sleeve-wraps': 'sleeve-wrap',
+  'sleeve-front-logos': 'sleeve-front-logo',
 } as const;
 
 // Both sleeves, both shoulders or both sleeve tops, interleaved left then right for each slot, the

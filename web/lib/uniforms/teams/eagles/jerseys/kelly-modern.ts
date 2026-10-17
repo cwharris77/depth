@@ -1,5 +1,6 @@
 import { EAGLES_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
+import { eaglesClassicSleeve } from '../marks/construction';
 
 // Kelly-green body with a body-coloured keylined V collar and no sleeve band; white numerals
 // keylined black, the same on the shoulders.
@@ -25,8 +26,8 @@ export const EAGLES_JERSEY_KELLY_MODERN: CompleteJerseySpec = {
     fill: 'white',
     outline: 'black',
     outlineWeight: 'regular',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: EAGLES_BLOCK_NUMBER_THREE,
   },
-  marks: [],
+  marks: [eaglesClassicSleeve()],
 };
