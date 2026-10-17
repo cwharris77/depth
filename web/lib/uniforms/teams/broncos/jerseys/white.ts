@@ -27,10 +27,10 @@ export const BRONCOS_JERSEY_WHITE: CompleteJerseySpec = {
   sleeveNumber: 'none',
   number: {
     height: 175,
-    fill: 'navy',
+    fill: 'pattern:broncos-number-navy',
     outline: 'orange',
     outlineWeight: 'thin',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: BRONCOS_NUMBER_THREE,
   },
   marks: [{ paint: 'over', mark: broncosChestWordmark('white', 'orange') }],

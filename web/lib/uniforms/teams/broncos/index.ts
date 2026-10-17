@@ -3,10 +3,12 @@ import { catalogKits } from '../core/catalog';
 import { expandTeamSpec } from '../core/team-spec';
 import { BRONCOS_PALETTE, BRONCOS_SPEC } from './parts';
 import { BRONCOS_CATALOG } from './catalog';
+import { BRONCOS_NUMBER_PATTERNS } from './marks/numbers';
 
 export const BRONCOS_PARTS: TeamPartsDefinition = {
   teamId: 'broncos',
   palette: BRONCOS_PALETTE,
+  patterns: BRONCOS_NUMBER_PATTERNS,
   ...expandTeamSpec('broncos', BRONCOS_SPEC),
   kits: catalogKits(BRONCOS_CATALOG),
 };
