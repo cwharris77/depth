@@ -3608,5 +3608,472 @@
         "playerId": null
       }
     ]
+  },
+  {
+    "description": "nickel front: a starting safety charted at nickel #1 moves to the nickel spot, the next safety takes his",
+    "unit": "defense",
+    "roster": {
+      "players": [
+        {
+          "id": "lcb",
+          "position": "LCB",
+          "depthRank": 1,
+          "number": 24,
+          "order": null
+        },
+        {
+          "id": "rcb",
+          "position": "RCB",
+          "depthRank": 1,
+          "number": 25,
+          "order": null
+        },
+        {
+          "id": "ss1",
+          "position": "SS",
+          "depthRank": 1,
+          "number": 14,
+          "order": null
+        },
+        {
+          "id": "ss2",
+          "position": "SS",
+          "depthRank": 2,
+          "number": 36,
+          "order": null
+        },
+        {
+          "id": "fs",
+          "position": "FS",
+          "depthRank": 1,
+          "number": 31,
+          "order": null
+        },
+        {
+          "id": "cb3",
+          "position": "CB",
+          "depthRank": 2,
+          "number": 29,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": [
+        {
+          "position": "LCB",
+          "depthRank": 1,
+          "playerId": "lcb"
+        },
+        {
+          "position": "RCB",
+          "depthRank": 1,
+          "playerId": "rcb"
+        },
+        {
+          "position": "SS",
+          "depthRank": 1,
+          "playerId": "ss1"
+        },
+        {
+          "position": "SS",
+          "depthRank": 2,
+          "playerId": "ss2"
+        },
+        {
+          "position": "FS",
+          "depthRank": 1,
+          "playerId": "fs"
+        },
+        {
+          "position": "NB",
+          "depthRank": 1,
+          "playerId": "ss1"
+        },
+        {
+          "position": "NB",
+          "depthRank": 2,
+          "playerId": "cb3"
+        }
+      ]
+    },
+    "realFormation": [
+      {
+        "id": "def-de-0",
+        "position": "DE",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": "LDE",
+        "familyPosition": null,
+        "x": 24,
+        "y": 45,
+        "label": "LDE",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-0",
+        "position": "DT",
+        "index": 0,
+        "group": "DL",
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 41.33333333333333,
+        "y": 45,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-dt-1",
+        "position": "DT",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 58.666666666666664,
+        "y": 45,
+        "label": "DT",
+        "onLine": true
+      },
+      {
+        "id": "def-de-1",
+        "position": "DE",
+        "index": 1,
+        "group": "DL",
+        "preferredPosition": "RDE",
+        "familyPosition": null,
+        "x": 76,
+        "y": 45,
+        "label": "RDE",
+        "onLine": true
+      },
+      {
+        "id": "def-lb-0",
+        "position": "LB",
+        "index": 0,
+        "group": "LB",
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 26,
+        "y": 33,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-lb-1",
+        "position": "LB",
+        "index": 1,
+        "group": "LB",
+        "preferredPosition": null,
+        "familyPosition": null,
+        "x": 74,
+        "y": 33,
+        "label": "LB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-0",
+        "position": "CB",
+        "index": 0,
+        "group": "CB",
+        "preferredPosition": "LCB",
+        "familyPosition": null,
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-1",
+        "position": "CB",
+        "index": 1,
+        "group": "CB",
+        "preferredPosition": "RCB",
+        "familyPosition": null,
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false
+      },
+      {
+        "id": "def-s-0",
+        "position": "S",
+        "index": 0,
+        "group": "S",
+        "preferredPosition": "SS",
+        "familyPosition": null,
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false
+      },
+      {
+        "id": "def-s-1",
+        "position": "S",
+        "index": 1,
+        "group": "S",
+        "preferredPosition": "FS",
+        "familyPosition": null,
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false
+      },
+      {
+        "id": "def-cb-2",
+        "position": "CB",
+        "index": 2,
+        "group": "CB",
+        "preferredPosition": "NB",
+        "familyPosition": null,
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false
+      }
+    ],
+    "resolved": [
+      {
+        "key": "def-de-0",
+        "x": 24,
+        "y": 45,
+        "label": "LDE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-dt-0",
+        "x": 41.33333333333333,
+        "y": 45,
+        "label": "DT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-dt-1",
+        "x": 58.666666666666664,
+        "y": 45,
+        "label": "DT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-de-1",
+        "x": 76,
+        "y": 45,
+        "label": "RDE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-lb-0",
+        "x": 26,
+        "y": 33,
+        "label": "LB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-lb-1",
+        "x": 74,
+        "y": 33,
+        "label": "LB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-cb-0",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false,
+        "playerId": "lcb"
+      },
+      {
+        "key": "def-cb-1",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false,
+        "playerId": "rcb"
+      },
+      {
+        "key": "def-s-0",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false,
+        "playerId": "ss2"
+      },
+      {
+        "key": "def-s-1",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false,
+        "playerId": "fs"
+      },
+      {
+        "key": "def-cb-2",
+        "x": 50,
+        "y": 28,
+        "label": "NB",
+        "onLine": false,
+        "playerId": "ss1"
+      }
+    ]
+  },
+  {
+    "description": "base front: the nickel #1 keeps his base spot when the front has no nickel slot",
+    "unit": "defense",
+    "roster": {
+      "players": [
+        {
+          "id": "lcb",
+          "position": "LCB",
+          "depthRank": 1,
+          "number": 24,
+          "order": null
+        },
+        {
+          "id": "rcb",
+          "position": "RCB",
+          "depthRank": 1,
+          "number": 25,
+          "order": null
+        },
+        {
+          "id": "ss1",
+          "position": "SS",
+          "depthRank": 1,
+          "number": 14,
+          "order": null
+        },
+        {
+          "id": "fs",
+          "position": "FS",
+          "depthRank": 1,
+          "number": 31,
+          "order": null
+        }
+      ],
+      "specialTeams": [],
+      "depthChart": [
+        {
+          "position": "LCB",
+          "depthRank": 1,
+          "playerId": "lcb"
+        },
+        {
+          "position": "RCB",
+          "depthRank": 1,
+          "playerId": "rcb"
+        },
+        {
+          "position": "SS",
+          "depthRank": 1,
+          "playerId": "ss1"
+        },
+        {
+          "position": "FS",
+          "depthRank": 1,
+          "playerId": "fs"
+        },
+        {
+          "position": "NB",
+          "depthRank": 1,
+          "playerId": "ss1"
+        }
+      ]
+    },
+    "realFormation": null,
+    "resolved": [
+      {
+        "key": "def-ss-0",
+        "x": 34,
+        "y": 14,
+        "label": "SS",
+        "onLine": false,
+        "playerId": "ss1"
+      },
+      {
+        "key": "def-fs-0",
+        "x": 66,
+        "y": 14,
+        "label": "FS",
+        "onLine": false,
+        "playerId": "fs"
+      },
+      {
+        "key": "def-lcb-0",
+        "x": 10,
+        "y": 26,
+        "label": "LCB",
+        "onLine": false,
+        "playerId": "lcb"
+      },
+      {
+        "key": "def-rcb-0",
+        "x": 90,
+        "y": 26,
+        "label": "RCB",
+        "onLine": false,
+        "playerId": "rcb"
+      },
+      {
+        "key": "def-wlb-0",
+        "x": 22,
+        "y": 37,
+        "label": "WLB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-lilb-0",
+        "x": 42,
+        "y": 37,
+        "label": "LILB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-rilb-0",
+        "x": 58,
+        "y": 37,
+        "label": "RILB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-slb-0",
+        "x": 78,
+        "y": 37,
+        "label": "SLB",
+        "onLine": false,
+        "playerId": null
+      },
+      {
+        "key": "def-lde-0",
+        "x": 26,
+        "y": 45,
+        "label": "LDE",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-nt-0",
+        "x": 50,
+        "y": 45,
+        "label": "NT",
+        "onLine": true,
+        "playerId": null
+      },
+      {
+        "key": "def-rde-0",
+        "x": 74,
+        "y": 45,
+        "label": "RDE",
+        "onLine": true,
+        "playerId": null
+      }
+    ]
   }
 ]

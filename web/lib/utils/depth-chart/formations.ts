@@ -118,15 +118,22 @@ function resolveGroupedSlots(
   slots: FormationSlot[]
 ): (Player | undefined)[] {
   const result: (Player | undefined)[] = new Array(slots.length).fill(undefined);
+  // The nickel back is a corner or safety who moves into the slot in five-DB fronts, so
+  // the nickel slot seats the best-ranked charted nickel first and he leaves any base spot
+  // he also holds, which the next player at that spot fills.
+  const nickelIdx = slots.findIndex((s) => s.preferredPosition === 'NB');
+  const nickel = nickelIdx === -1 ? undefined : getPlayersByPosition(roster, 'NB')[0];
+  if (nickel) result[nickelIdx] = nickel;
+
   const groups = new Set(
     slots.map((s) => s.group).filter((g): g is PositionGroup => g !== undefined)
   );
   for (const group of groups) {
     const indices: number[] = [];
     slots.forEach((s, i) => {
-      if (s.group === group) indices.push(i);
+      if (s.group === group && !(nickel && i === nickelIdx)) indices.push(i);
     });
-    const pool = getPlayersByPositionGroup(roster, group);
+    const pool = getPlayersByPositionGroup(roster, group).filter((p) => p.id !== nickel?.id);
     const assigned = assignPositionGroup(
       pool,
       indices.map((i) => slots[i])

@@ -789,3 +789,64 @@ describe('generic DB tags fill empty corner and safety slots', () => {
     expect(seated).toEqual({ LCB: 'cb1', RCB: 'cb2', SS: 's1', FS: 'db1', NB: 'db2' });
   });
 });
+
+describe('the nickel slot seats its charted holder before the base spots', () => {
+  const SECONDARY = ['SS', 'FS', 'LCB', 'RCB', 'NB', 'S', 'CB'];
+  const secondary = (r: TeamRosterSeed, formation?: FormationSlot[]) =>
+    Object.fromEntries(
+      resolveUnit(r, 'defense', formation)
+        .filter((s) => SECONDARY.includes(s.label))
+        .map((s) => [s.label, s.player?.id])
+    );
+  const nickelRoster = (extra: TeamRoster['depthChart'] = []): TeamRoster => ({
+    ...roster([
+      player({ id: 'lcb1', position: 'LCB', depthRank: 1, number: 21 }),
+      player({ id: 'rcb1', position: 'RCB', depthRank: 1, number: 22 }),
+      player({ id: 'ss1', position: 'SS', depthRank: 1, number: 14 }),
+      player({ id: 'ss2', position: 'SS', depthRank: 2, number: 36 }),
+      player({ id: 'fs1', position: 'FS', depthRank: 1, number: 32 }),
+      player({ id: 'cb3', position: 'CB', depthRank: 2, number: 29 }),
+    ]),
+    depthChart: [
+      { position: 'LCB', depthRank: 1, playerId: 'lcb1' },
+      { position: 'RCB', depthRank: 1, playerId: 'rcb1' },
+      { position: 'SS', depthRank: 1, playerId: 'ss1' },
+      { position: 'SS', depthRank: 2, playerId: 'ss2' },
+      { position: 'FS', depthRank: 1, playerId: 'fs1' },
+      ...extra,
+    ],
+  });
+
+  it('moves a starting safety charted at nickel #1 to the nickel spot and seats the next safety', () => {
+    const r = nickelRoster([
+      { position: 'NB', depthRank: 1, playerId: 'ss1' },
+      { position: 'NB', depthRank: 2, playerId: 'cb3' },
+    ]);
+    expect(secondary(r, buildRealDefenseFormation('4-2-5'))).toEqual({
+      LCB: 'lcb1',
+      RCB: 'rcb1',
+      SS: 'ss2',
+      FS: 'fs1',
+      NB: 'ss1',
+    });
+  });
+
+  it('keeps a starter charted only at nickel #2 in his base spot', () => {
+    const r = nickelRoster([
+      { position: 'NB', depthRank: 1, playerId: 'cb3' },
+      { position: 'NB', depthRank: 2, playerId: 'ss1' },
+    ]);
+    expect(secondary(r, buildRealDefenseFormation('4-2-5'))).toEqual({
+      LCB: 'lcb1',
+      RCB: 'rcb1',
+      SS: 'ss1',
+      FS: 'fs1',
+      NB: 'cb3',
+    });
+  });
+
+  it('leaves the nickel #1 in his base spot when the front has no nickel slot', () => {
+    const r = nickelRoster([{ position: 'NB', depthRank: 1, playerId: 'ss1' }]);
+    expect(secondary(r)).toEqual({ LCB: 'lcb1', RCB: 'rcb1', SS: 'ss1', FS: 'fs1' });
+  });
+});
