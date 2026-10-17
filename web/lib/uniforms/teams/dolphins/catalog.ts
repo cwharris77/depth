@@ -8,7 +8,6 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
     {
       id: 'dolphins-home-2018',
       slug: 'home',
-      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'teal',
