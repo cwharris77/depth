@@ -13,6 +13,12 @@ the task touches the shared backend or explicitly asks how the web app behaved, 
 rarely hold the answer to an iOS question. Read web only as a reference for an existing
 behavior, and match its behavior rather than its markup: iOS has its own design system.
 
+## Uniform artwork workflow
+
+For any request to add, audit or correct a uniform, load the `uniform-art` skill and read the current private Depth project `CLAUDE.md` in the canonical project knowledge base before collecting references or editing artwork. Follow its mandatory audit, authoring and recheck sequence; do not substitute an unaudited visual pass. The private instructions and linked current authoring brief govern workflow; `web/lib/uniforms/CLAUDE.md` governs repository integration and deterministic rendering. If the private instructions or required audit service are unavailable, report the specific blocker rather than silently reverting to an older workflow.
+
+Uniform artwork is an explicit exception to the default iOS search scope: its source and raster pipeline live under `web/lib/uniforms/`, `web/scripts/` and `web/public/uniforms/`. Keep private evidence, model configuration, credentials and operational reports outside tracked repository files.
+
 ## Design direction
 
 Before changing a user-facing screen, information hierarchy, or UI copy, read [PRODUCT.md](PRODUCT.md) and [DESIGN.md](DESIGN.md). The field remains the casual fan's primary answer; analytical surfaces use overview → evidence → reference and must not make a raw ledger the default experience.

@@ -2,6 +2,10 @@
 
 How a team's uniform art is built and changed. Read this before touching `teams/`. The web app rules in `web/CLAUDE.md` still apply; this file covers the art pipeline only.
 
+## Required workflow before authoring
+
+Before adding, auditing or correcting a uniform, load `uniform-art` and read the private Depth project `CLAUDE.md` in the canonical project knowledge base plus its linked current authoring brief. Complete the mandatory reference/render audit before authoring and the regression recheck after rendering. Preserve a private feature ledger and matched reference/before/final comparisons. Do not silently skip a required audit when its service or private instructions are unavailable; report the blocker. This guide describes deterministic integration and geometry, not a replacement for that workflow.
+
 ## How the art is put together
 
 - Every team is a module in `teams/<team>/`: `source.ts` (raw path data such as decals and wordmarks), `parts.ts` (palette, helmets built with `expandHelmet()`, pants, socks), `jerseys/<name>.ts` (one file per jersey), `index.ts` (assembles the `TeamPartsDefinition` and calls `compileParts`).
@@ -166,7 +170,7 @@ A new palette-independent colour is a new reserved paint in `teams/core/shared.t
 ## Authoring a team
 
 1. Read the team's current module and its committed renders (`ls public/uniforms | grep <team>`; year starts are the kit's first season, not the reference's). Rasters are `web/public/uniforms/<team>-<kitSlug>-<yearStart>[-full].webp`; kits map to jerseys in `<team>/parts.ts` (`kits: { home: { jersey: 'navy', … } }`), so `colts-home-2004` wears `jerseys/navy.ts`. A `-full` raster is 560×1535 px of viewBox `20 45 560 1535`; the jersey crop (`20 372 560 452`) is pixel rows 327–779. The rasters are transparent: composite them on white before comparing.
-2. Read the jersey facts from the reference: body, collar cut and colours (outside, inside, lining, back of neck), sleeve cap bands top to bottom, stripes, cuff, numeral fill and outline. League and manufacturer marks are shared, never drawn in a team module: every `inset-v` and `narrow-v` collar draws the NFL shield, and a combination's `pantsNike` draws the hip shield and swoosh. A sleeve swoosh the reference shows is `anchoredMark()` with `NIKE_MARK` on `sleeve-tops`. Ignore other manufacturer and league marks, collar-tab lettering, numeral textures, one-season patches (memorials, anniversaries, playoffs), and seams the reference sheet draws on every jersey. The grey keylines along a same-colour collar are the exception: keep them with `collar.outline`.
+2. Read the jersey facts from the reference: body, collar cut and colours (outside, inside, lining, back of neck), sleeve cap bands top to bottom, stripes, cuff, numeral fill and outline. League and manufacturer marks are shared, never drawn in a team module: every `inset-v` and `narrow-v` collar draws the NFL shield, and a combination's `pantsNike` draws the hip shield and swoosh. A sleeve swoosh the reference shows is `anchoredMark()` with `NIKE_MARK` on `sleeve-tops`. Inventory verified manufacturer marks, collar-tab lettering, numeral fill and texture, sleeve undersides and torso-side inserts separately. Include construction-specific details supported by period-matched evidence; never inherit another team’s numeral texture. Distinguish recurring artwork from one-game or commemorative patches using dated evidence and the archive’s scope. Unresolved or out-of-scope details need an explicit outcome in the private review ledger. Generic reference-sheet seams are not evidence of construction-specific artwork. The grey keylines along a same-colour collar are the exception: keep them with `collar.outline`.
 
    A kit the reference doesn't show keeps its existing construction and colours: re-express it in the spec rather than recolouring a sibling jersey, and leave anything the spec can't express as it was.
 
