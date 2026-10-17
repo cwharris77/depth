@@ -17,11 +17,11 @@ export const DOLPHINS_TB_DECAL_DOLPHIN_PATH =
 
 // The 1972 five-band sleeve set, ending at the sleeve hem.
 export const DOLPHINS_TB_STRIPE_BOUNDS = [507, 520, 535, 558, 575, 591];
-export const DOLPHINS_SLEEVE_X_LEFT = [30, 92];
-export const DOLPHINS_SLEEVE_X_RIGHT = [496, 558];
+export const DOLPHINS_SLEEVE_X_LEFT = [30, 140];
+export const DOLPHINS_SLEEVE_X_RIGHT = [448, 558];
 
 // The lower outer sleeve shows a short section of the wraparound aqua-and-orange band.
-export const DOLPHINS_WEDGE_LEFT = 'M30,552 L84,544 L80,591 L30,591 Z';
-export const DOLPHINS_WEDGE_RIGHT = 'M558,552 L504,544 L508,591 L558,591 Z';
-export const DOLPHINS_SLASH_LEFT = 'M30,560 L83,552 L82,561 L30,569 Z';
-export const DOLPHINS_SLASH_RIGHT = 'M558,560 L505,552 L506,561 L558,569 Z';
+export const DOLPHINS_WEDGE_LEFT = 'M30,540 Q92,543 140,583 L140,589 H30 Z';
+export const DOLPHINS_WEDGE_RIGHT = 'M558,540 Q496,543 448,583 L448,589 H558 Z';
+export const DOLPHINS_SLASH_LEFT = 'M30,549 Q92,553 140,585 L140,589 Q92,565 30,561 Z';
+export const DOLPHINS_SLASH_RIGHT = 'M558,549 Q496,553 448,585 L448,589 Q496,565 558,561 Z';

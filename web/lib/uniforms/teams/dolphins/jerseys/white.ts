@@ -1,3 +1,6 @@
+import { DOLPHINS_CHEST_WORDMARK } from '../marks/wordmark';
+import { DOLPHINS_MIAMI_COLLAR_LETTERING } from '../marks/collar';
+import { DOLPHINS_HOME_SLEEVE_NIKE } from '../marks/sleeves';
 import { DOLPHINS_MODERN_SLEEVE_MARKS } from '../marks/sleeves';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { DOLPHINS_NUMBER_THREE } from '../marks/numbers';
@@ -25,8 +28,13 @@ export const DOLPHINS_JERSEY_WHITE: CompleteJerseySpec = {
     fill: 'teal',
     outline: 'orange',
     outlineWeight: 'regular',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: DOLPHINS_NUMBER_THREE,
   },
-  marks: [{ paint: 'over', mark: DOLPHINS_MODERN_SLEEVE_MARKS }],
+  marks: [
+    { paint: 'over', mark: DOLPHINS_MODERN_SLEEVE_MARKS },
+    { paint: 'over', mark: DOLPHINS_HOME_SLEEVE_NIKE },
+    { paint: 'over', mark: DOLPHINS_CHEST_WORDMARK },
+    { paint: 'over', mark: DOLPHINS_MIAMI_COLLAR_LETTERING },
+  ],
 };

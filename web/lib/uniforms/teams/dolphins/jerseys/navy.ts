@@ -1,3 +1,5 @@
+import { DOLPHINS_RIVALRIES_WORDMARK, DOLPHINS_RIVALRIES_NECK } from '../marks/rivalries-lettering';
+import { DOLPHINS_HOME_SLEEVE_NIKE } from '../marks/sleeves';
 import { DOLPHINS_RIVALRIES_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { DOLPHINS_RIVALRIES_TRIM } from '../marks/construction';
@@ -26,8 +28,13 @@ export const DOLPHINS_JERSEY_NAVY: CompleteJerseySpec = {
     fill: 'teal',
     outline: 'teal',
     outlineWeight: 'thin',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: DOLPHINS_RIVALRIES_NUMBER_THREE,
   },
-  marks: [{ paint: 'over', mark: DOLPHINS_RIVALRIES_TRIM }],
+  marks: [
+    { paint: 'over', mark: DOLPHINS_RIVALRIES_TRIM },
+    { paint: 'over', mark: DOLPHINS_HOME_SLEEVE_NIKE },
+    { paint: 'over', mark: DOLPHINS_RIVALRIES_WORDMARK },
+    { paint: 'over', mark: DOLPHINS_RIVALRIES_NECK },
+  ],
 };
