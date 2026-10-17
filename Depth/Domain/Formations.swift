@@ -73,6 +73,13 @@ private let groupOverflow: [PositionGroup: Position] = [.cb: .db, .s: .db]
 /// appearance in `slots`, matching JS Set's insertion-order iteration).
 private func resolveGroupedSlots(roster: Roster, slots: [FormationSlot]) -> [Player?] {
     var result = [Player?](repeating: nil, count: slots.count)
+    // The nickel back is a corner or safety who moves into the slot in five-DB fronts, so
+    // the nickel slot seats the best-ranked charted nickel first and he leaves any base spot
+    // he also holds, which the next player at that spot fills.
+    let nickelIdx = slots.firstIndex { $0.preferredPosition == .nb }
+    let nickel = nickelIdx.flatMap { _ in getPlayers(in: roster, at: .nb).first }
+    if let nickelIdx, let nickel { result[nickelIdx] = nickel }
+
     var seenGroups: [PositionGroup] = []
     for slot in slots {
         if let g = slot.group, !seenGroups.contains(g) {
@@ -82,9 +89,10 @@ private func resolveGroupedSlots(roster: Roster, slots: [FormationSlot]) -> [Pla
     for group in seenGroups {
         var indices: [Int] = []
         for (i, s) in slots.enumerated() where s.group == group {
+            if nickel != nil && i == nickelIdx { continue }
             indices.append(i)
         }
-        let pool = players(in: roster, group: group)
+        let pool = players(in: roster, group: group).filter { $0.id != nickel?.id }
         let assigned = assignPositionGroup(pool: pool, slots: indices.map { slots[$0] })
         for (j, slotIdx) in indices.enumerated() {
             result[slotIdx] = assigned[j]

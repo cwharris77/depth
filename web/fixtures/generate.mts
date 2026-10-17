@@ -554,6 +554,46 @@ const resolveUnitCases: {
       { position: 'DB', depthRank: 2, playerId: 'db1' },
     ],
   },
+  {
+    description:
+      'nickel front: a starting safety charted at nickel #1 moves to the nickel spot, the next safety takes his',
+    unit: 'defense',
+    realFormation: buildRealDefenseFormation('4-2-5'),
+    players: [
+      player({ id: 'lcb', position: 'LCB', depthRank: 1, number: 24 }),
+      player({ id: 'rcb', position: 'RCB', depthRank: 1, number: 25 }),
+      player({ id: 'ss1', position: 'SS', depthRank: 1, number: 14 }),
+      player({ id: 'ss2', position: 'SS', depthRank: 2, number: 36 }),
+      player({ id: 'fs', position: 'FS', depthRank: 1, number: 31 }),
+      player({ id: 'cb3', position: 'CB', depthRank: 2, number: 29 }),
+    ],
+    depthChart: [
+      { position: 'LCB', depthRank: 1, playerId: 'lcb' },
+      { position: 'RCB', depthRank: 1, playerId: 'rcb' },
+      { position: 'SS', depthRank: 1, playerId: 'ss1' },
+      { position: 'SS', depthRank: 2, playerId: 'ss2' },
+      { position: 'FS', depthRank: 1, playerId: 'fs' },
+      { position: 'NB', depthRank: 1, playerId: 'ss1' },
+      { position: 'NB', depthRank: 2, playerId: 'cb3' },
+    ],
+  },
+  {
+    description: 'base front: the nickel #1 keeps his base spot when the front has no nickel slot',
+    unit: 'defense',
+    players: [
+      player({ id: 'lcb', position: 'LCB', depthRank: 1, number: 24 }),
+      player({ id: 'rcb', position: 'RCB', depthRank: 1, number: 25 }),
+      player({ id: 'ss1', position: 'SS', depthRank: 1, number: 14 }),
+      player({ id: 'fs', position: 'FS', depthRank: 1, number: 31 }),
+    ],
+    depthChart: [
+      { position: 'LCB', depthRank: 1, playerId: 'lcb' },
+      { position: 'RCB', depthRank: 1, playerId: 'rcb' },
+      { position: 'SS', depthRank: 1, playerId: 'ss1' },
+      { position: 'FS', depthRank: 1, playerId: 'fs' },
+      { position: 'NB', depthRank: 1, playerId: 'ss1' },
+    ],
+  },
 ];
 
 write(

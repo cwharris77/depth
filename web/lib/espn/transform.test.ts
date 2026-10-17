@@ -412,6 +412,81 @@ describe('toTeamRoster: an athlete cross-listed at two positions (DEP-585)', () 
   });
 });
 
+describe('toTeamRoster: the nickel back is a depth-chart job, not a position', () => {
+  const ref = (id: string) => ({
+    $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${id}?lang=en`,
+  });
+  const athlete = (id: string, abbreviation: string) =>
+    ({
+      id,
+      fullName: `Player ${id}`,
+      jersey: id.slice(-2),
+      position: { abbreviation },
+    }) as EspnRoster['athletes'][number]['items'][number];
+
+  const roster: EspnRoster = {
+    season: { year: 2025 },
+    athletes: [
+      {
+        position: 'defense',
+        items: [
+          athlete('3001', 'CB'),
+          athlete('3002', 'S'),
+          athlete('3003', 'S'),
+          athlete('3004', 'CB'),
+          athlete('3005', 'DB'),
+        ],
+      },
+    ],
+  };
+
+  // `nb` iterates before `ss` here, so the first slot seen for 3003 is the nickel.
+  const depthcharts: EspnDepthcharts = {
+    items: [
+      {
+        name: 'Base D',
+        positions: {
+          lcb: { athletes: [{ rank: 1, athlete: ref('3004') }] },
+          nb: {
+            athletes: [
+              { rank: 1, athlete: ref('3003') },
+              { rank: 2, athlete: ref('3001') },
+              { rank: 3, athlete: ref('3002') },
+            ],
+          },
+          ss: { athletes: [{ rank: 1, athlete: ref('3003') }] },
+          fs: { athletes: [{ rank: 1, athlete: ref('3005') }] },
+          rcb: { athletes: [{ rank: 1, athlete: ref('3005') }] },
+        },
+      },
+    ],
+  };
+
+  const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
+  const player = (id: string) => result.players.find((p) => p.id === id);
+
+  it('gives a nickel-only athlete his roster position', () => {
+    expect(player('3001')?.position).toBe('CB');
+    expect(player('3002')?.position).toBe('S');
+  });
+
+  it('gives a nickel back charted elsewhere that other position and its rank', () => {
+    expect(player('3003')?.position).toBe('SS');
+    expect(player('3003')?.depthRank).toBe(1);
+  });
+
+  it('stores no athlete as a nickel back', () => {
+    expect(result.players.filter((p) => p.position === 'NB')).toEqual([]);
+  });
+
+  it('keeps every nickel slot on the depth chart', () => {
+    const nb = result.depthChartSlots
+      .filter((s) => s.position === 'NB')
+      .map((s) => `${s.depthRank}:${s.playerId}`);
+    expect(nb).toEqual(['1:3003', '2:3001', '3:3002']);
+  });
+});
+
 describe('depth-chart athletes the site roster omits (DEP-585)', () => {
   const ref = (id: string) => ({
     $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${id}?lang=en`,

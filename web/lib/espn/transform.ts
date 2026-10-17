@@ -276,6 +276,8 @@ export function toTeamRoster(args: {
   // Reported by the ingest instead of vanishing: a run that drops a player must not
   // record `status: success`.
   const unseated = new Set<string>();
+  // Nickel-back athletes and their best nickel rank, by athlete id.
+  const nickelRanks = new Map<string, number>();
   // Depth-chart position keys ESPN published that the position map doesn't know. Their
   // athletes are not seated under a guessed position; the ingest reports the keys.
   const unmappedKeys = new Set<string>();
@@ -357,11 +359,28 @@ export function toTeamRoster(args: {
           playerId: id,
           number: Number(bio.jersey ?? 0) || 0,
         });
+        // The nickel back is a corner or safety charted for five-DB fronts, so the slot
+        // never decides his position; he is listed under it after this loop.
+        if (position === 'NB') {
+          nickelRanks.set(id, Math.min(rank, nickelRanks.get(id) ?? rank));
+          continue;
+        }
         if (seen.has(id)) continue;
         seen.add(id);
         players.push(toPlayer(bio, position, rank as 1 | 2 | 3));
       }
     }
+  }
+
+  // A nickel back charted nowhere else takes his roster position. One whose roster
+  // position is unknown stays NB rather than being dropped from the chart.
+  for (const [id, rank] of nickelRanks) {
+    if (seen.has(id)) continue;
+    const bio = bios.get(id);
+    if (!bio) continue;
+    seen.add(id);
+    const own = mapBioPosition(bio.position?.abbreviation ?? '') ?? 'NB';
+    players.push(toPlayer(bio, own, rank as 1 | 2 | 3));
   }
 
   // A KR/PR can be a WR/RB ranked well outside our top-3-per-position cap (e.g. a
