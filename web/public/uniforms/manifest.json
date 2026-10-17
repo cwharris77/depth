@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "bf11a1abbf0c6340b8ac7fdd841b683cf24ff877eefd01db481d5e9769e28d15",
-  "revision": "0453ca468cab6644",
+  "sourceDigest": "b0839fc14e79f0a77d57bf64f9ce403e08a811d2b1e9001b4e399efb384714a4",
+  "revision": "cdc95046a5d0e29d",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -983,15 +983,15 @@
     {
       "catalogId": "dolphins-home-2018",
       "constructionKey": "home",
-      "revision": "a09f12ba02f4641a",
+      "revision": "7877317585a48f4b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-home-2018.webp",
-          "sha256": "04ec72604faa6e199fdb01965fc0603f72a20804093b3108dee95ec26e7dd7a4"
+          "sha256": "f2f2896334d22dc003c8d5b7ee11fe279a86d8c7f0db2c275150b11be561ff22"
         },
         "full": {
           "path": "/uniforms/dolphins-home-2018-full.webp",
-          "sha256": "2b8680849b62880dfed0c17e1676a3a7ae2d9e18a072d14d31ac50ba59e58266"
+          "sha256": "efc63496ca75f18af418f07174730f9e657c9ad140a867502c3b26640d3d9622"
         }
       }
     },

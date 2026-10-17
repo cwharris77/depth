@@ -1,3 +1,4 @@
+import { NIKE_MARK } from '../../core/pants-logos';
 import { placed, placeMarkOnPair, type Mark } from '../../core/marks';
 
 // The full-color dolphin retains its white backing on colored jersey fabric.
@@ -29,4 +30,8 @@ export const DOLPHINS_MODERN_SLEEVE_MARKS = placed(
     teal: 'teal',
     logoNavy: 'logoNavy',
   })
+);
+
+export const DOLPHINS_HOME_SLEEVE_NIKE = placed(
+  placeMarkOnPair('dolphins-home-nike', NIKE_MARK, 'sleeve-tops', { nike: 'orange' })
 );
