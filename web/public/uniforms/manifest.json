@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "5156667c6fe1e31f90fab9a4a82531173e40e58b47c13b3dc43f013717f79214",
-  "revision": "e0cf45d048fc5e58",
+  "sourceDigest": "25aa161d525840bc88bb3ceeedc58cba66237d56814c7e4791a14d45d5e17b0b",
+  "revision": "227437c01dedcee4",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2343,15 +2343,15 @@
     {
       "catalogId": "titans-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "62397a82baf00f3e",
+      "revision": "52b67172a272229b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-away-2026-2026.webp",
-          "sha256": "d7743369c117ef8985fa0c16a8b5f07b6429e349265c3f20fbd0c3642b648410"
+          "sha256": "8d70a16c56fe70535faa6b39bf46839c759573771e77c1789f9c579dfd196deb"
         },
         "full": {
           "path": "/uniforms/titans-away-2026-2026-full.webp",
-          "sha256": "0d59c88f4ff36942c64cb4d6ef738fbef1c08ddad19fa398ab6fc670f14caa6f"
+          "sha256": "d12eef1d231d71d09ad64f7de11a97331992eb48afb5ccb7fda160071d8c504a"
         }
       },
       "combinations": [
@@ -2360,7 +2360,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/titans-away-2026-2026--white-pants-full.webp",
-            "sha256": "199df2fe2357cb008b703bbd0fcc7f51003989bdcac2d67bdf30dcb1cd63dd93"
+            "sha256": "c291aa650ddebd6ecacacf505cebe97a12f237fe700867af40e7152fb2616304"
           }
         }
       ]
@@ -2393,15 +2393,15 @@
     {
       "catalogId": "titans-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "028c8e38d90219b9",
+      "revision": "4cb9fa2b87952590",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-home-2026-2026.webp",
-          "sha256": "03c6e445560efd85299b827585140092e55b661b046dc9882c68a6eb3796fb4b"
+          "sha256": "82d650b4e2b541e36a1cf22b9f1c7e50c73b32822969e8915b5c69dd6a3c4d90"
         },
         "full": {
           "path": "/uniforms/titans-home-2026-2026-full.webp",
-          "sha256": "ae9d0e79258543f2b2ddb085b9db6d3b15f2c87834cf31367f4b20a951807a47"
+          "sha256": "0999bff651c22273d23b399f2467257229084e881a17f1732ccc7344f09f28fc"
         }
       }
     },
