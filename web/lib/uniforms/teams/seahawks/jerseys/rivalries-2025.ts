@@ -1,7 +1,6 @@
 import { seahawksSleeveNike } from '../marks/equipment';
 // Seahawks 2025 Rivalries jersey. Hexes are flat approximations of Wolf Grey, College Navy and the
-// reflective olive print; the neck grey represents the shaded opening. The numeral is drawn plain,
-// without the repeating 12 microtexture.
+// reflective olive print; the neck grey represents the shaded opening.
 import type { CompleteJerseySpec } from '../../core/complete';
 import { SEAHAWKS_RIVALRIES_PRINT } from '../marks/rivalries';
 
@@ -33,7 +32,7 @@ export const SEAHAWKS_JERSEY_RIVALRIES: CompleteJerseySpec = {
   sleeveNumber: 'none',
   number: {
     height: 190,
-    fill: 'rivalriesJerseyOlive',
+    fill: 'pattern:seahawks-twelves',
     outline: 'rivalriesJerseyNavy',
     outlineWeight: 'thin',
     texture: 'plain',

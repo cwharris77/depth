@@ -17,10 +17,10 @@ export const SEAHAWKS_JERSEY_NAVY: CompleteJerseySpec = {
   sleeveNumber: 'none',
   number: {
     height: 190,
-    fill: 'wolfGrey',
+    fill: 'pattern:seahawks-feathers-grey',
     outline: 'green',
-    outlineWeight: 'x-heavy',
-    texture: 'mesh',
+    outlineWeight: 'thin',
+    texture: 'plain',
   },
   marks: [
     anchoredMark({
@@ -35,7 +35,7 @@ export const SEAHAWKS_JERSEY_NAVY: CompleteJerseySpec = {
       paint: 'over',
       mark: SEAHAWKS_SHOULDER_WORDMARK,
       anchor: 'shoulder-right',
-      slots: { wordmark: 'navy' },
+      slots: { wordmark: 'jerseyNavy' },
       id: 'shoulder',
     }),
     { paint: 'over', mark: seahawksSleeveNike('navy') },
