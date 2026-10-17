@@ -26,7 +26,7 @@ export const DOLPHINS_JERSEY_1972: CompleteJerseySpec = {
     fill: 'white',
     outline: 'orange',
     outlineWeight: 'regular',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: DOLPHINS_BLOCK_NUMBER_THREE,
   },
   marks: [{ paint: 'over', mark: DOLPHINS_THROWBACK_SLEEVE_BANDS }],
