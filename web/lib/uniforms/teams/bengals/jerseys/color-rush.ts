@@ -1,6 +1,7 @@
+import { BENGALS_COLOR_RUSH_CHEST } from '../marks/chest-b';
 import { BENGALS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
-import { bengalsSleeveTigers } from '../marks/construction';
+import { BENGALS_COLOR_RUSH_SLEEVES } from '../marks/construction';
 
 // All white with a black collar, black sleeve hems and shoulder numerals, black tiger sleeve caps,
 // and plain black numerals.
@@ -26,8 +27,11 @@ export const BENGALS_JERSEY_COLOR_RUSH: CompleteJerseySpec = {
     fill: 'black',
     outline: 'black',
     outlineWeight: 'none',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: BENGALS_BLOCK_NUMBER_THREE,
   },
-  marks: [{ paint: 'under', mark: bengalsSleeveTigers('black') }],
+  marks: [
+    { paint: 'under', mark: BENGALS_COLOR_RUSH_SLEEVES },
+    { paint: 'over', mark: BENGALS_COLOR_RUSH_CHEST },
+  ],
 };

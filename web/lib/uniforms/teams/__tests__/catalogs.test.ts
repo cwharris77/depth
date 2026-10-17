@@ -92,7 +92,7 @@ describe('no leftover hand-written accents for a converted team', () => {
 describe('pants branding in catalog combinations', () => {
   it('places sleeve marks below shoulder graphics for every outlier combination', () => {
     const outliers: Record<string, string[]> = {
-      bengals: ['home', 'away', 'orange-alt'],
+      bengals: ['home', 'away', 'orange-alt', 'color-rush'],
       chargers: ['home', 'away', 'powder-blue', 'charger-power', 'super-chargers'],
       rams: ['home', 'away', 'rivalries-2025'],
     };
