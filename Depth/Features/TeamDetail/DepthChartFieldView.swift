@@ -448,7 +448,7 @@ struct DepthChartFieldView: View {
                 if isNickel {
                     // Centred on the dot's shoulder, so it reads as worn by the dot and
                     // stays inside the 44-point hit area.
-                    NickelPatch(size: dotSize * 0.5)
+                    RolePatch(letter: "N", size: dotSize * 0.5)
                         .offset(x: dotSize * 0.15, y: -dotSize * 0.15)
                 }
             }
@@ -487,20 +487,15 @@ struct DepthChartFieldView: View {
 
     /// Names the patch for anyone who has not met it. Drawn only while a dot wears one.
     private var nickelKey: some View {
-        HStack(spacing: DesignTokens.Spacing.xs) {
-            NickelPatch(size: 14)
-            Text("Nickel back")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(DesignTokens.Colors.textSecondary)
-        }
-        .padding(.leading, 4)
-        .padding(.trailing, DesignTokens.Spacing.sm)
-        .padding(.vertical, 3)
-        .background(Color.black.opacity(0.5), in: Capsule())
-        .overlay(Capsule().strokeBorder(Color.white.opacity(0.16)))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("N marks the nickel back")
-        .accessibilityIdentifier("field-nickel-key")
+        RoleKeyEntry(letter: "N", name: "Nickel back")
+            .padding(.leading, 4)
+            .padding(.trailing, DesignTokens.Spacing.sm)
+            .padding(.vertical, 3)
+            .background(Color.black.opacity(0.5), in: Capsule())
+            .overlay(Capsule().strokeBorder(Color.white.opacity(0.16)))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("N marks the nickel back")
+            .accessibilityIdentifier("field-nickel-key")
     }
 
     /// Web parity (web/components/PlayerDot.tsx): the name size is clamped to the field's
@@ -511,25 +506,6 @@ struct DepthChartFieldView: View {
     /// applies, but the whole range grows at larger accessibility text sizes.
     private func nameFontSize(fieldHeight: CGFloat) -> CGFloat {
         min(maxNameFontSize, max(minNameFontSize, fieldHeight * 1.3 / 100))
-    }
-}
-
-/// The mark a dot wears while its player is the formation's nickel back. The same glyph
-/// appears in the field's key, so the two read as one sign.
-private struct NickelPatch: View {
-    let size: CGFloat
-
-    var body: some View {
-        Circle()
-            .fill(DesignTokens.Colors.textPrimary)
-            .overlay {
-                Text(verbatim: "N")
-                    .font(.system(size: size * 0.68, weight: .heavy))
-                    .foregroundStyle(DesignTokens.Colors.bg)
-            }
-            .overlay { Circle().strokeBorder(DesignTokens.Colors.surfaceField1, lineWidth: 1.5) }
-            .frame(width: size, height: size)
-            .accessibilityHidden(true)
     }
 }
 

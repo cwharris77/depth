@@ -244,6 +244,7 @@
 		DC95DB2C72B7E87E9FE73999 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025761971C890C088DEB466C /* AppConfig.swift */; };
 		DE757576FB1049036BBD5E4E /* StrokedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8521734F1203CA5415C441D8 /* StrokedText.swift */; };
 		DEA6657C52F2D9ACB38F070D /* Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F022703396305729D075AA5 /* Position.swift */; };
+		DFBB014CD2A5ED21325C8CBD /* RolePatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = B296FE91017AC5BE436F6825 /* RolePatch.swift */; };
 		E14C66657BFEECC3262A1E50 /* UserSettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13D35EE3460926AE41CD3A6 /* UserSettingsStoreTests.swift */; };
 		E27FEDA18F25E697ACBE5CC7 /* TeamRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55F5110D99F3D93E1168F2B /* TeamRouteStore.swift */; };
 		E29D241EC90A3F3EC123E26A /* PlayerSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE16E2DA9E2543931C3B960 /* PlayerSearchTests.swift */; };
@@ -484,6 +485,7 @@
 		AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUITests.swift; sourceTree = "<group>"; };
 		B14888EF10F7F9A82139F0BD /* DepthChartFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthChartFieldView.swift; sourceTree = "<group>"; };
 		B1FD643B04AEE1A7AFA70355 /* SuperBowlResultCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuperBowlResultCard.swift; sourceTree = "<group>"; };
+		B296FE91017AC5BE436F6825 /* RolePatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RolePatch.swift; sourceTree = "<group>"; };
 		B4558FF89F64621D95B78D1A /* TeamEventCaption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamEventCaption.swift; sourceTree = "<group>"; };
 		B495246F667E05D90D9DDEEF /* TeamFeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamFeedViewModel.swift; sourceTree = "<group>"; };
 		B5797D0C01507D900A35C148 /* UniformFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniformFilterSheet.swift; sourceTree = "<group>"; };
@@ -716,6 +718,7 @@
 				95DF4DCD706282781A22DE2F /* DepthRowContent.swift */,
 				35D6A549002DA47A8FDFBB04 /* FieldMarkings.swift */,
 				D6771B4C1584D803E4135013 /* PositionReorderSheet.swift */,
+				B296FE91017AC5BE436F6825 /* RolePatch.swift */,
 				16777E464D29CE02F612C8FD /* TeamDetailView.swift */,
 				ED8C07254AA1A7D5B8F4DB53 /* TeamDetailViewModel.swift */,
 				3ABBD274BFCC6B40D56AFC17 /* TrueScaleFieldLayout.swift */,
@@ -1424,6 +1427,7 @@
 				26EFE06F99AA2710AA8298C6 /* RecordStatFilesMapper.swift in Sources */,
 				3C2196BB243C8AC80EA3D29E /* RefreshFailedBanner.swift in Sources */,
 				34F87580EC3B80B45DB1FBCD /* RevalidationSwap.swift in Sources */,
+				DFBB014CD2A5ED21325C8CBD /* RolePatch.swift in Sources */,
 				BFBDC5710E88C1FA28D83FF7 /* RollingValue.swift in Sources */,
 				662A290C858ABB616CC4F769 /* RootTabView.swift in Sources */,
 				F9B69E26A9D64D62D14A4349 /* Roster.swift in Sources */,

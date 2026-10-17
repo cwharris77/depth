@@ -28,6 +28,9 @@ struct TrueScaleFieldView: View {
     var onSelectFormation: (TeamFormation) -> Void = { _ in }
     /// The name style chosen in Settings, honored here as on the depth chart.
     var nameMode: FieldNameMode = .callouts
+    /// Each player's own position, by id. When given, the nickel slot's dot prints its
+    /// holder's own position and wears the nickel patch, as on the depth chart.
+    var ownPositions: [String: Position]? = nil
 
     /// nil until the user pans: the opening position depends on the window size, which is
     /// only known inside the GeometryReader.
@@ -46,8 +49,26 @@ struct TrueScaleFieldView: View {
         TrueScaleFieldLayout(slots: slots, unit: unit, nameMode: nameMode)
     }
 
+    /// The holder's own position for each nickel dot, by dot key. The layout keeps the
+    /// slot's `NB` label, which decides where the dot lines up; only the drawn text changes.
+    static func nickelLabels(
+        _ layout: TrueScaleFieldLayout, ownPositions: [String: Position]?
+    ) -> [String: String] {
+        guard layout.unit == .defense, let ownPositions else { return [:] }
+        var labels: [String: String] = [:]
+        for dot in layout.dots {
+            if let own = nickelHolderLabel(
+                slotLabel: dot.label, playerId: dot.player.id, ownPositions: ownPositions)
+            {
+                labels[dot.key] = own
+            }
+        }
+        return labels
+    }
+
     var body: some View {
         let layout = layout
+        let nickelLabels = Self.nickelLabels(layout, ownPositions: ownPositions)
         GeometryReader { proxy in
             let insets = proxy.safeAreaInsets
             let fullSize = CGSize(
@@ -69,6 +90,7 @@ struct TrueScaleFieldView: View {
                     pan: currentPan,
                     window: window,
                     colors: colors,
+                    nickelLabels: nickelLabels,
                     selectedKey: selectedKey,
                     onSelect: { key in
                         withAnimation(
@@ -121,11 +143,33 @@ struct TrueScaleFieldView: View {
                     .padding(.horizontal, DesignTokens.Spacing.md)
             }
         }
+        // Fixed to the safe area, not the full-bleed field, so it stays put while the field
+        // pans and clears the home indicator. It starts past the leading chip gutter so it
+        // never covers an edge chip.
+        .overlay(alignment: .bottomLeading) {
+            if !nickelLabels.isEmpty {
+                roleLegend
+                    .padding(.leading, TrueScaleFieldLayout.gutter + DesignTokens.Spacing.sm)
+                    .padding(.bottom, DesignTokens.Spacing.sm)
+            }
+        }
         // Selecting a player is a selection tick, like the unit tabs; deselecting is silent.
         .sensoryFeedback(.selection, trigger: selectedKey) { _, new in new != nil }
         .sensoryFeedback(.impact(weight: .light), trigger: jumpFeedbackCount)
         .background(DesignTokens.Colors.surfaceField1.ignoresSafeArea())
         .preferredColorScheme(.dark)
+    }
+
+    /// Names the patch for anyone who has not met it. Drawn only while a dot wears one.
+    private var roleLegend: some View {
+        RoleKeyEntry(letter: "N", name: "Nickel back")
+            .padding(.leading, 6)
+            .padding(.trailing, DesignTokens.Spacing.md)
+            .frame(minHeight: 32)
+            .glassCapsule()
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("N marks the nickel back")
+            .accessibilityIdentifier("true-scale-role-legend")
     }
 
     private var fieldGradient: some View {
@@ -306,6 +350,8 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
     var pan: CGPoint
     let window: TrueScaleFieldLayout.Window
     let colors: TeamColors
+    /// The holder's own position for each nickel dot, by dot key.
+    let nickelLabels: [String: String]
     let selectedKey: String?
     let onSelect: (String) -> Void
     let onDeselect: () -> Void
@@ -373,6 +419,11 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
             alignment: .topLeading)
     }
 
+    /// The position printed for a dot: a nickel holder's own position, else the slot's.
+    private func shownLabel(_ dot: TrueScaleFieldLayout.Dot) -> String {
+        nickelLabels[dot.key] ?? dot.label
+    }
+
     private func label(for dot: TrueScaleFieldLayout.Dot) -> some View {
         let rect = layout.labelRect(for: dot)
         // Centred on the dot, then pinned inside the window so panning never slices a
@@ -380,7 +431,7 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
         let x = min(
             window.size.width - rect.width / 2 - 4, max(rect.width / 2 + 4, rect.midX + pan.x))
         return VStack(spacing: 1) {
-            Text(verbatim: dot.label)
+            Text(verbatim: shownLabel(dot))
                 .font(.system(size: 10, weight: .semibold))
                 .tracking(0.4)
                 .foregroundStyle(DesignTokens.Colors.textMuted)
@@ -504,13 +555,26 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
                         .foregroundStyle(Color(hex: readableTextOn(fill)))
                 }
                 .frame(width: TrueScaleFieldLayout.dotSize, height: TrueScaleFieldLayout.dotSize)
+                .overlay(alignment: .topTrailing) {
+                    if nickelLabels[dot.key] != nil {
+                        // Centred on the dot's shoulder, as on the depth chart, and inside
+                        // the 44-point hit area.
+                        RolePatch(letter: "N", size: TrueScaleFieldLayout.dotSize * 0.5)
+                            .offset(
+                                x: TrueScaleFieldLayout.dotSize * 0.15,
+                                y: -TrueScaleFieldLayout.dotSize * 0.15)
+                    }
+                }
                 .scaleEffect(selected ? Self.selectedScale : 1)
                 .frame(width: 44, height: 44)
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .position(x: dot.center.x + pan.x, y: dot.center.y + pan.y)
-        .accessibilityLabel("\(dot.label), \(dot.player.name)")
+        .accessibilityLabel(
+            nickelLabels[dot.key].map { "\($0), nickel back, \(dot.player.name)" }
+                ?? "\(dot.label), \(dot.player.name)"
+        )
         .accessibilityValue(TrueScaleFieldLayout.lineStatus(for: dot))
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityIdentifier("true-scale-dot-\(dot.key)")
@@ -519,7 +583,7 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
     private func chipButton(_ chip: TrueScaleFieldLayout.EdgeChip) -> some View {
         let arrow = chip.side == .leading ? "\u{2039}" : "\u{203A}"
         let title = chip.dot.map { "\(arrow)\($0.player.number)" } ?? "+\(chip.overflowCount)"
-        let subtitle = chip.dot?.label ?? "MORE"
+        let subtitle = chip.dot.map(shownLabel) ?? "MORE"
         let accent = Color(hex: colors.secondary)
         return Button {
             onChip(chip)
@@ -539,6 +603,14 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
             .background(Color(hex: colors.primary).opacity(0.94))
             .overlay(alignment: .top) { Rectangle().fill(accent.opacity(0.5)).frame(height: 1) }
             .overlay(alignment: .bottom) { Rectangle().fill(accent.opacity(0.5)).frame(height: 1) }
+            // An off-screen nickel keeps his patch on the chip's inner corner, so the legend
+            // never names a mark that nothing on screen wears.
+            .overlay(alignment: chip.side == .leading ? .topTrailing : .topLeading) {
+                if let key = chip.dot?.key, nickelLabels[key] != nil {
+                    RolePatch(letter: "N", size: 12)
+                        .offset(x: chip.side == .leading ? 5 : -5, y: 3)
+                }
+            }
             // The drawn chip is only 30pt wide; the hit area meets 44pt vertically and
             // stays inside the gutter so it can't steal taps from the playfield.
             .frame(minHeight: 44)
@@ -547,7 +619,7 @@ private struct TrueScaleSurface: View, @MainActor Animatable {
         .buttonStyle(.plain)
         .accessibilityLabel(
             chip.dot.map {
-                "\($0.label) \($0.player.name), off screen \(chip.side == .leading ? "left" : "right")"
+                "\(nickelLabels[$0.key].map { "\($0), nickel back," } ?? $0.label) \($0.player.name), off screen \(chip.side == .leading ? "left" : "right")"
             }
                 ?? "\(chip.overflowCount) more players off screen \(chip.side == .leading ? "left" : "right")"
         )
