@@ -485,6 +485,51 @@ describe('toTeamRoster: the nickel back is a depth-chart job, not a position', (
       .map((s) => `${s.depthRank}:${s.playerId}`);
     expect(nb).toEqual(['1:3003', '2:3001', '3:3002']);
   });
+
+  // `fs` iterates before `nb` here, so the safety slot is seen first.
+  const crossGroup = toTeamRoster({
+    meta: META,
+    roster: {
+      season: { year: 2025 },
+      athletes: [
+        {
+          position: 'defense',
+          items: [athlete('3101', 'CB'), athlete('3102', 'S'), athlete('3103', 'S')],
+        },
+      ],
+    },
+    depthcharts: {
+      items: [
+        {
+          name: 'Base D',
+          positions: {
+            fs: {
+              athletes: [
+                { rank: 1, athlete: ref('3102') },
+                { rank: 2, athlete: ref('3103') },
+                { rank: 3, athlete: ref('3101') },
+              ],
+            },
+            nb: { athletes: [{ rank: 1, athlete: ref('3101') }] },
+          },
+        },
+      ],
+    },
+    teamInfo: TEAM_INFO,
+  });
+
+  it('gives a corner charted at a safety slot and nickel his roster position and nickel rank', () => {
+    const corner = crossGroup.players.find((p) => p.id === '3101');
+    expect(corner?.position).toBe('CB');
+    expect(corner?.depthRank).toBe(1);
+  });
+
+  it('keeps that corner on the safety and nickel depth-chart slots', () => {
+    const slots = crossGroup.depthChartSlots
+      .filter((s) => s.playerId === '3101')
+      .map((s) => `${s.position}:${s.depthRank}`);
+    expect(slots).toEqual(['FS:3', 'NB:1']);
+  });
 });
 
 describe('depth-chart athletes the site roster omits (DEP-585)', () => {
