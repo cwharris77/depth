@@ -3,19 +3,19 @@ import { TITANS_BLOCK_NUMBER_THREE } from '../marks/numbers';
 
 export const JERSEY_LIGHT_BLUE: CompleteJerseySpec = {
   body: 'lightBlue',
-  collar: { style: 'rounded', color: 'lightBlue', trim: 'none' },
+  collar: { style: 'rounded', color: 'lightBlue', trim: 'white' },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
   shoulderNumber: 'none',
   sleeveStripes: 'none',
   cuff: 'none',
-  sleeveNumber: { fill: 'white' },
+  sleeveNumber: { fill: 'white', outline: 'red' },
   number: {
     height: 190,
     fill: 'white',
     outline: 'red',
     outlineWeight: 'regular',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: TITANS_BLOCK_NUMBER_THREE,
   },
   marks: [],
