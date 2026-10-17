@@ -1,12 +1,18 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { TITANS_2018_NUMBER_THREE } from '../marks/numbers';
-import { TITANS_2018_SHOULDERS } from '../marks/construction';
+import {
+  TITANS_2018_BLUE_PANELS,
+  TITANS_2018_BLUE_NUMBERS,
+  TITANS_2018_NAVY_NIKE,
+  TITANS_2018_NECK_STARS,
+} from '../marks/construction';
+import { TITANS_2018_BLUE_WORDMARK } from '../marks/wordmark';
 
 export const JERSEY_BLUE_2025: CompleteJerseySpec = {
   body: 'lightBlue',
   collar: {
     style: 'inset-v',
-    color: 'navy',
+    color: 'lightBlue',
     trim: 'none',
     inside: 'body',
     lining: 'none',
@@ -24,8 +30,14 @@ export const JERSEY_BLUE_2025: CompleteJerseySpec = {
     fill: 'navy',
     outline: 'white',
     outlineWeight: 'regular',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: TITANS_2018_NUMBER_THREE,
   },
-  marks: [{ paint: 'under', mark: TITANS_2018_SHOULDERS }],
+  marks: [
+    { paint: 'under', mark: TITANS_2018_BLUE_PANELS },
+    { paint: 'under', mark: TITANS_2018_BLUE_NUMBERS },
+    { paint: 'over', mark: TITANS_2018_NAVY_NIKE },
+    { paint: 'over', mark: TITANS_2018_NECK_STARS },
+    { paint: 'over', mark: TITANS_2018_BLUE_WORDMARK },
+  ],
 };

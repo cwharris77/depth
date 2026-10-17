@@ -209,3 +209,20 @@ export const TITANS_2018_NAVY_NIKE = placed(
     );
   })
 );
+
+export const TITANS_2018_BLUE_PANELS = placed(
+  TITANS_2018_NAVY_PANELS.layers.map((layer) => ({
+    ...layer,
+    fill:
+      layer.kind === 'fill' && layer.fill === 'lightBlue'
+        ? 'navy'
+        : layer.kind === 'fill'
+          ? layer.fill
+          : 'navy',
+  }))
+);
+export const TITANS_2018_BLUE_NUMBERS = placed(
+  TITANS_2018_NAVY_NUMBERS.layers.map((layer) =>
+    layer.kind === 'stroke' ? { ...layer, stroke: 'white' } : layer
+  )
+);
