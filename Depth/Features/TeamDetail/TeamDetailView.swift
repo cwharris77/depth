@@ -492,7 +492,8 @@ struct TeamDetailView: View {
                         formation: activeFormation,
                         formations: currentUnitFormations,
                         onSelectFormation: selectFormation,
-                        nameMode: fieldNameMode
+                        nameMode: fieldNameMode,
+                        ownPositions: ownPositions
                     )
                     // A new formation is a new picture: reopen framed on the ball with
                     // nothing selected rather than keeping a stale pan/selection.
@@ -1022,10 +1023,7 @@ struct TeamDetailView: View {
                     ? chartEvent?.playerId : nil,
                 highlightedPlayerLabel: chartEvent?.type == "depth_change"
                     ? "Depth change" : "New starter",
-                ownPositions: showsRosterRoles
-                    ? Dictionary(
-                        loadedPlayers.map { ($0.id, $0.position) }, uniquingKeysWith: { a, _ in a })
-                    : nil
+                ownPositions: ownPositions
             ) { player in
                 if editMode.isActive {
                     reorderPlayer = player
@@ -1133,6 +1131,14 @@ struct TeamDetailView: View {
 
     private var showsRosterRoles: Bool {
         DepthEnvironment.featureFlags.isEnabled(.rosterRoles)
+    }
+
+    /// Each loaded player's own position, by id, for the field views' nickel mark. Nil while
+    /// roster roles are off, which keeps every slot's own label.
+    private var ownPositions: [String: Position]? {
+        guard showsRosterRoles else { return nil }
+        return Dictionary(
+            loadedPlayers.map { ($0.id, $0.position) }, uniquingKeysWith: { a, _ in a })
     }
 
     /// The roster as loaded, before a saved reorder rewrites the displayed players with

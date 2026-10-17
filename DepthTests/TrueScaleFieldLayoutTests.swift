@@ -247,6 +247,19 @@ struct TrueScaleFieldLayoutTests {
         #expect(TrueScaleFieldView.formationTitle(formation, unit: .defense) == "Nickel 4-2-5")
     }
 
+    // The nickel dot prints its holder's own position while the layout keeps `NB`, which
+    // decides where he lines up. No own positions (roles off) or the offense: no labels.
+    @Test @MainActor func nickelDotTakesItsHoldersOwnPosition() {
+        let layout = TrueScaleFieldLayout(slots: nickelFourTwoFive, unit: .defense)
+        let own: [String: Position] = ["p20": .cb, "p33": .ss]
+        #expect(TrueScaleFieldView.nickelLabels(layout, ownPositions: own) == ["nb": "CB"])
+        #expect(layout.dots.first { $0.key == "nb" }?.label == "NB")
+        #expect(TrueScaleFieldView.nickelLabels(layout, ownPositions: nil).isEmpty)
+        #expect(TrueScaleFieldView.nickelLabels(layout, ownPositions: ["p20": .nb]).isEmpty)
+        let offense = TrueScaleFieldLayout(slots: nickelFourTwoFive, unit: .offense)
+        #expect(TrueScaleFieldView.nickelLabels(offense, ownPositions: own).isEmpty)
+    }
+
     /// The historical path: a season with no formation rows renders `baseDefense`, and the
     /// header falls back to the plain personnel count instead of a formation name. The UI
     /// fixture bundle carries only the current season, so this is the only cover this path
