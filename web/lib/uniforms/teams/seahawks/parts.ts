@@ -25,6 +25,8 @@ export const SEAHAWKS_PALETTE = {
   // Wolf Grey is a construction fact of the modern kit, not a runtime body color: an
   // ESPN-sourced palette sets accent = secondary, so 'accent' would resolve to action green.
   wolfGrey: '#A5ACAF',
+  numberFeatherGrey: '#C3C8CA',
+  numberFeatherNavy: '#28455E',
   white: '#FFFFFF',
   // Shaded insides of the neck opening, one step darker than each body so the opening reads.
   navyNeck: '#001A33',

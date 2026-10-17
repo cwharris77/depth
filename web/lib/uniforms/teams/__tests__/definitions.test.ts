@@ -138,8 +138,7 @@ describe('team uniform definitions', () => {
       jerseyColor: '#24293C',
       pantsColor: '#24293C',
     });
-    // Wolf grey must survive as a literal: resolving it from `accent` would silently paint the
-    // band and the number the same action green as the sleeve cap on every home render.
+    // Wolf grey must survive as a literal on the shoulder band and numeral.
     for (const layerId of [
       'seahawks-jersey-navy-shoulder-number-left',
       'seahawks-jersey-navy-shoulder-band-left',
@@ -152,7 +151,14 @@ describe('team uniform definitions', () => {
     ).toMatchObject({
       fill: '#69BE28',
     });
-    expect(model.number).toMatchObject({ fill: '#A5ACAF', outline: '#69BE28' });
+    expect(model.number).toMatchObject({
+      fill: 'pattern:seahawks-feathers-grey',
+      outline: '#69BE28',
+    });
+    expect(model.patterns['seahawks-feathers-grey'].shapes[0].fill).toBe('#A5ACAF');
+    expect(
+      model.layers.find((layer) => layer.id === 'seahawks-jersey-navy-shoulder-wordmark-right')
+    ).toMatchObject({ fill: '#24293C' });
     for (const displacedLayerId of [
       'generic-helmet-stripe',
       'generic-sleeve-yoke-left',
@@ -194,7 +200,11 @@ describe('team uniform definitions', () => {
     // band resolves from secondary while the sleeve cap takes accent — the inverse of home's
     // token usage for the same painted result.
     expect(model.helmetColor).toBe('#002244');
-    expect(model.number).toMatchObject({ fill: '#002244', outline: '#69BE28' });
+    expect(model.number).toMatchObject({
+      fill: 'pattern:seahawks-feathers-navy',
+      outline: '#69BE28',
+    });
+    expect(model.patterns['seahawks-feathers-navy'].shapes[0].fill).toBe('#002244');
     expect(
       model.layers.find((layer) => layer.id === 'seahawks-jersey-white-shoulder-band-left')
     ).toMatchObject({
@@ -216,7 +226,7 @@ describe('team uniform definitions', () => {
   });
 
   it.each([
-    ['home', 'navy', '#69BE28', '#002244'],
+    ['home', 'navy', '#69BE28', '#24293C'],
     ['away', 'white', '#002244', '#FFFFFF'],
   ])(
     'gives Seahawks %s twelve feathers per collar side and a contrasting wordmark',

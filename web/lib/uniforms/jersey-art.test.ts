@@ -9,6 +9,27 @@ const render = (team: string, slug: string) =>
   renderUniformThumbSVG(colors, `${team}-${slug}`, getTeamUniformDefinition(team));
 
 describe('jersey artwork', () => {
+  it.each(['home', 'away'])(
+    'renders the Seahawks %s numeral with a narrow green border and feather print',
+    (slug) => {
+      const numeral = render('seahawks', slug).match(/<g data-number="3">.*?<\/g>/)?.[0];
+      expect(numeral).toContain('stroke="#69BE28" stroke-width="8"');
+      expect(numeral).toMatch(/fill="url\(#.*-pattern-seahawks-feathers-/);
+      expect(numeral).not.toMatch(/fill="url\(#.*-number-mesh\)/);
+    }
+  );
+
+  it('renders the Rivalries numeral with the twelve print and the throwback numeral plain', () => {
+    const rivalries = render('seahawks', 'rivalries-2025').match(
+      /<g data-number="3">.*?<\/g>/
+    )?.[0];
+    expect(rivalries).toMatch(/fill="url\(#.*-pattern-seahawks-twelves\)/);
+    const throwback = render('seahawks', '1976-throwback').match(
+      /<g data-number="3">.*?<\/g>/
+    )?.[0];
+    expect(throwback).not.toMatch(/fill="url\(#.*-number-mesh\)/);
+  });
+
   it('renders triangle perforations on modern Broncos numerals while retaining historical mesh', () => {
     for (const slug of ['home', 'away', 'orange-alt']) {
       const svg = render('broncos', slug);

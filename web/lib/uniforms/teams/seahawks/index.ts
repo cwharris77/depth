@@ -3,10 +3,12 @@ import { catalogKits } from '../core/catalog';
 import { expandTeamSpec } from '../core/team-spec';
 import { SEAHAWKS_PALETTE, SEAHAWKS_SPEC } from './parts';
 import { SEAHAWKS_CATALOG } from './catalog';
+import { SEAHAWKS_NUMBER_PATTERNS } from './marks/numbers';
 
 export const SEAHAWKS_PARTS: TeamPartsDefinition = {
   teamId: 'seahawks',
   palette: SEAHAWKS_PALETTE,
+  patterns: SEAHAWKS_NUMBER_PATTERNS,
   ...expandTeamSpec('seahawks', SEAHAWKS_SPEC),
   kits: catalogKits(SEAHAWKS_CATALOG),
 };
