@@ -231,6 +231,13 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("settings-take-the-tour")
             #if INTERNAL_BUILD
+                Toggle(
+                    "Bypass forced-update gate",
+                    isOn: Bindable(DepthEnvironment.developerSettings).bypassUpdateGate
+                )
+                .tint(DesignTokens.Colors.accent)
+                .frame(minHeight: SettingsMetrics.linkRowHeight)
+                .accessibilityIdentifier("settings-bypass-update-gate")
                 Button {
                     showFeatureFlags = true
                 } label: {

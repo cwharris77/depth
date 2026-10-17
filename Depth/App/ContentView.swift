@@ -8,7 +8,9 @@ struct ContentView: View {
     /// reaches already-running installs and not just cold launches.
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var updateGate = UpdateGateViewModel(repository: DepthEnvironment.repository)
+    @State private var updateGate = UpdateGateViewModel(
+        repository: DepthEnvironment.repository,
+        isBypassed: ContentView.isUpdateGateBypassed)
     @State private var authSessionStore = DepthEnvironment.authSessionStore
     @State private var currentTeamStore = DepthEnvironment.currentTeamStore
     /// Owns the first-run welcome/coachmark sequence. Mounted here
@@ -46,8 +48,16 @@ struct ContentView: View {
                 UpdateGateCheckingView()
                     .transition(.opacity)
             } else if updateGate.isBlocked {
-                BlockingUpdateView(maintenanceMessage: updateGate.maintenanceMessage)
-                    .transition(.opacity)
+                BlockingUpdateView(
+                    maintenanceMessage: updateGate.maintenanceMessage,
+                    onBypass: {
+                        #if INTERNAL_BUILD
+                            DepthEnvironment.developerSettings.bypassUpdateGate = true
+                            Task { await updateGate.check() }
+                        #endif
+                    }
+                )
+                .transition(.opacity)
             } else {
                 RootTabView(
                     sessionStore: authSessionStore, currentTeamStore: currentTeamStore,
@@ -184,6 +194,16 @@ struct ContentView: View {
             }
         }
         .modifier(UITestingDynamicTypeOverride())
+    }
+
+    @MainActor private static func isUpdateGateBypassed() -> Bool {
+        #if INTERNAL_BUILD
+            // The UI-test launch argument that forces the gate must still reach it.
+            return DepthEnvironment.developerSettings.bypassUpdateGate
+                && !ProcessInfo.processInfo.arguments.contains("UI_TESTING_FORCE_UPDATE_GATE")
+        #else
+            return false
+        #endif
     }
 
     private var gateTransitionDisabled: Bool {
