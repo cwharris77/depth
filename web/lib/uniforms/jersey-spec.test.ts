@@ -156,6 +156,25 @@ describe('expandJersey', () => {
     expect(outer('black')).toMatchObject({ kind: 'stroke', stroke: 'black', strokeWidth: 24 });
   });
 
+  it('allows a narrow outer numeral border without changing the inner border', () => {
+    const jersey = expandJersey('t', {
+      body: 'navy',
+      collar: { style: 'none' },
+      number: {
+        fill: 'white',
+        outline: 'navy',
+        outlineWeight: 'thin',
+        outerOutline: 'gold',
+        outerOutlineWeight: 'regular',
+      },
+    });
+    expect(jersey.number?.outlineWidth).toBe(8);
+    expect(jersey.layers.find((layer) => layer.id === 't-number-outer-outline')).toMatchObject({
+      stroke: 'gold',
+      strokeWidth: 14,
+    });
+  });
+
   it("draws the shoulder numeral from the jersey's own glyph when it has one", () => {
     const glyph = 'M0,0 Q10,0 10,10 L0,10 Z';
     const shoulder = (glyphPath?: string) =>

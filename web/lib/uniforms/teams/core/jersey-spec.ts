@@ -62,6 +62,7 @@ export interface JerseyNumber {
   glyphLabel?: string;
   // A second, wider outline in this colour drawn outside `outline`.
   outerOutline?: string;
+  outerOutlineWeight?: JerseyNumber['outlineWeight'];
 }
 
 export interface JerseySpec {
@@ -422,7 +423,9 @@ export function expandJersey(prefix: string, spec: JerseySpec): UniformPart {
       clip: true,
       kind: 'stroke',
       stroke: spec.number.outerOutline,
-      strokeWidth: OUTLINE_PX[spec.number.outlineWeight] + OUTER_OUTLINE_EXTRA,
+      strokeWidth: spec.number.outerOutlineWeight
+        ? OUTLINE_PX[spec.number.outerOutlineWeight]
+        : OUTLINE_PX[spec.number.outlineWeight] + OUTER_OUTLINE_EXTRA,
       d: chestPath ?? JERSEY_NUMBER_THREE,
     });
   }

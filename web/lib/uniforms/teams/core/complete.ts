@@ -57,8 +57,16 @@ export interface CompleteJerseySpec {
   sleeveStripes: (CompleteStripeStack & { position?: 'hem' }) | None;
   cuff: { color: string; size: JerseySize } | None;
   sleeveNumber: { fill: string; outline?: string } | None;
-  number: Required<Omit<JerseyNumber, 'glyphPath' | 'glyphLabel' | 'outerOutline' | 'height'>> &
-    Pick<JerseyNumber, 'glyphPath' | 'glyphLabel' | 'outerOutline' | 'height'>;
+  number: Required<
+    Omit<
+      JerseyNumber,
+      'glyphPath' | 'glyphLabel' | 'outerOutline' | 'outerOutlineWeight' | 'height'
+    >
+  > &
+    Pick<
+      JerseyNumber,
+      'glyphPath' | 'glyphLabel' | 'outerOutline' | 'outerOutlineWeight' | 'height'
+    >;
   // Empty when the jersey carries no mark.
   marks: readonly JerseyMarkUse[];
 }

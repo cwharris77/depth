@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "681adf3dbd1b6098b07d7ecce5e465954bf235cdd506cc4ea239b32cc42425be",
-  "revision": "d9c94bbd881bb5d9",
+  "sourceDigest": "9119f8cb1e8b415ce853d323780f922081a6a7b43203281773084d27485ff510",
+  "revision": "d1492c3d9190ee11",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -682,15 +682,15 @@
     {
       "catalogId": "chargers-charger-power-2025",
       "constructionKey": "charger-power",
-      "revision": "bacfafd4752d204b",
+      "revision": "60f1c18f7b45a2fb",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-charger-power-2025.webp",
-          "sha256": "f2e17af7e1e361310c66bea5cc42a80eba5b8a2ab51d6d2600629fec15ff95a9"
+          "sha256": "59a6d66da235d4cc4c31f91ed3f9086207943c751e23ea046498e9a6e6a9776f"
         },
         "full": {
           "path": "/uniforms/chargers-charger-power-2025-full.webp",
-          "sha256": "0121c5a09a5fe3b6529c35badc03ddcbafcdec5727de0e335090f63221790e9d"
+          "sha256": "701a047795be1b6dbb7eb978f976f75f74dc8fff34cf0786b2360a2d688e1a50"
         }
       }
     },
@@ -753,15 +753,15 @@
     {
       "catalogId": "chargers-super-chargers-2025",
       "constructionKey": "super-chargers",
-      "revision": "1c234260772ac68c",
+      "revision": "eea7bb223dbb5650",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-super-chargers-2025.webp",
-          "sha256": "32f52b4942d8250328bd8445d10ca03cdf0110a217037a43ac3458edaaec160e"
+          "sha256": "4265093fb256d0422a8e5153ee499c652088819e6a7ec83b1e85b570e2ca0965"
         },
         "full": {
           "path": "/uniforms/chargers-super-chargers-2025-full.webp",
-          "sha256": "2ad246a4e21473abde152ca7ca134573f476c952ac0253d7e85c60cd73345c1d"
+          "sha256": "1ed42ff0943056863822229bf691ac5345258b42528268c1b9266747bba183f2"
         }
       }
     },

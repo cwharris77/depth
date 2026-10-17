@@ -1,8 +1,9 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { chargersNavySleeveBolts } from '../marks/construction';
 import { CHARGERS_NUMBER_THREE } from '../marks/numbers';
+import { SUPER_CHARGERS_NECK_INSCRIPTION } from '../marks/neck-inscriptions';
 
-// A white sleeve bolt inside a navy gap and a narrow gold edge, and white numerals keylined gold.
+// A white sleeve bolt and numeral inside navy and gold outlines.
 export const CHARGERS_JERSEY_NAVY: CompleteJerseySpec = {
   body: 'navy',
   collar: {
@@ -23,10 +24,15 @@ export const CHARGERS_JERSEY_NAVY: CompleteJerseySpec = {
   number: {
     height: 200,
     fill: 'white',
-    outline: 'gold',
+    outline: 'navy',
     outlineWeight: 'thin',
+    outerOutline: 'gold',
+    outerOutlineWeight: 'regular',
     texture: 'mesh',
     glyphPath: CHARGERS_NUMBER_THREE,
   },
-  marks: [{ paint: 'under', mark: chargersNavySleeveBolts() }],
+  marks: [
+    { paint: 'under', mark: chargersNavySleeveBolts() },
+    { paint: 'over', mark: SUPER_CHARGERS_NECK_INSCRIPTION },
+  ],
 };

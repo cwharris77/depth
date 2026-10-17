@@ -87,7 +87,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
     {
       id: 'chargers-charger-power-2025',
       slug: 'charger-power',
-      sleeveNike: 'white',
+      sleeveNike: 'powderBlue',
       sleeveNikePlacement: 'lower',
       name: 'Charger Power',
       kind: 'alternate',

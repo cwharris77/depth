@@ -58,6 +58,30 @@ describe('Charger Power jersey', () => {
     ).toEqual(['powderBlue', 'powderBlue', 'white', 'white']);
     expect(CHARGERS_PARTS.kits['charger-power'].helmet).toBe('white');
   });
+
+  it('uses powder blue for the sleeve manufacturer mark and inside-neck lettering', () => {
+    expect(CHARGERS_PARTS.kits['charger-power'].sleeveNike).toBe('powderBlue');
+    expect(
+      CHARGERS_PARTS.jerseys.gold.layers.find((layer) => layer.id.includes('neck-inscription'))
+    ).toMatchObject({ surface: 'collar', kind: 'fill', fill: 'powderBlue' });
+  });
+});
+
+describe('Super Chargers jersey', () => {
+  it('places a gold outline outside the navy border of the white numeral', () => {
+    const jersey = CHARGERS_PARTS.jerseys.navy;
+    expect(jersey.number).toMatchObject({ fill: 'white', outline: 'navy' });
+    expect(jersey.layers.find((layer) => layer.id.includes('number-outer-outline'))).toMatchObject({
+      kind: 'stroke',
+      stroke: 'gold',
+    });
+  });
+
+  it('uses white inside-neck lettering', () => {
+    expect(
+      CHARGERS_PARTS.jerseys.navy.layers.find((layer) => layer.id.includes('neck-inscription'))
+    ).toMatchObject({ surface: 'collar', kind: 'fill', fill: 'white' });
+  });
 });
 
 describe('Chargers pants parts', () => {
