@@ -174,6 +174,12 @@ function playerBio(birthPlace: EspnAthlete['birthPlace']): string {
   return region ? `Born in ${birthPlace.city}, ${region}` : `Born in ${birthPlace.city}`;
 }
 
+// Charted slots that name a roster position more exactly, so a nickel back keeps them.
+const NICKEL_REFINEMENTS: Partial<Record<Position, Position[]>> = {
+  CB: ['LCB', 'RCB'],
+  S: ['SS', 'FS'],
+};
+
 function toPlayer(a: EspnAthlete, position: Position, depthRank: 1 | 2 | 3): Player {
   return {
     id: a.id,
@@ -289,6 +295,21 @@ export function toTeamRoster(args: {
     pr: null,
   };
 
+  // Nickel backs are collected before seating so the slot order ESPN publishes cannot
+  // decide whether a nickel back's other charted slot is seen first.
+  for (const item of depthcharts.items ?? []) {
+    if (classifyItem(Object.keys(item.positions ?? {})) === 'special') continue;
+    for (const [key, posData] of Object.entries(item.positions ?? {})) {
+      if (mapDepthchartPosition(key) !== 'NB') continue;
+      for (const entry of posData.athletes ?? []) {
+        const rank = entry.rank ?? entry.slot ?? 1;
+        const id = parseAthleteId(entry.athlete.$ref);
+        if (rank > 3 || !id || !bios.has(id)) continue;
+        nickelRanks.set(id, Math.min(rank, nickelRanks.get(id) ?? rank));
+      }
+    }
+  }
+
   for (const item of depthcharts.items ?? []) {
     const kind = classifyItem(Object.keys(item.positions ?? {}));
 
@@ -360,10 +381,14 @@ export function toTeamRoster(args: {
           number: Number(bio.jersey ?? 0) || 0,
         });
         // The nickel back is a corner or safety charted for five-DB fronts, so the slot
-        // never decides his position; he is listed under it after this loop.
-        if (position === 'NB') {
-          nickelRanks.set(id, Math.min(rank, nickelRanks.get(id) ?? rank));
-          continue;
+        // never decides his position. His roster position does, and he is listed under
+        // it after this loop; another charted slot is kept only when it is that same
+        // position with a side or role (CB at LCB, S at SS) or his roster position is
+        // unknown.
+        if (position === 'NB') continue;
+        if (nickelRanks.has(id)) {
+          const own = mapBioPosition(bio.position?.abbreviation ?? '');
+          if (own && !NICKEL_REFINEMENTS[own]?.includes(position)) continue;
         }
         if (seen.has(id)) continue;
         seen.add(id);
@@ -372,8 +397,8 @@ export function toTeamRoster(args: {
     }
   }
 
-  // A nickel back charted nowhere else takes his roster position. One whose roster
-  // position is unknown stays NB rather than being dropped from the chart.
+  // A nickel back not seated above takes his roster position at his nickel rank. One
+  // whose roster position is unknown stays NB rather than being dropped from the chart.
   for (const [id, rank] of nickelRanks) {
     if (seen.has(id)) continue;
     const bio = bios.get(id);
