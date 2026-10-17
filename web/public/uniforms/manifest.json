@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "f8e4fe84f7c0bf57794158d756aebd1c820b009e5c879c19aaa4bf36639fcd14",
-  "revision": "87098d2753582c56",
+  "sourceDigest": "681adf3dbd1b6098b07d7ecce5e465954bf235cdd506cc4ea239b32cc42425be",
+  "revision": "d9c94bbd881bb5d9",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -106,15 +106,15 @@
     {
       "catalogId": "bengals-away-2021",
       "constructionKey": "away",
-      "revision": "8404a8395440b6a8",
+      "revision": "cef6a4a28557cbb6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-away-2021.webp",
-          "sha256": "2efc6f4ac06cf3c28f32bca4395c2b69bbd1ffdfb88179636a5ce1977567c731"
+          "sha256": "bb140c26e8319712631bbfa140e6efc155608fb6dd28d369b047f3fb08d36587"
         },
         "full": {
           "path": "/uniforms/bengals-away-2021-full.webp",
-          "sha256": "bd96d35deecca437433d0b18251b3f8e03a95d273acdac3689f01e3b12660653"
+          "sha256": "edc129b55863a31d54a10bf894da78753ad319ba7654d51ccc19f32477fa466b"
         }
       },
       "combinations": [
@@ -123,7 +123,7 @@
           "label": "White pants, white socks",
           "full": {
             "path": "/uniforms/bengals-away-2021--white-out-full.webp",
-            "sha256": "6ae29677c79cdc0dc615988da75908f6ebe5c5b87b04f8a2cc7457944cf9812d"
+            "sha256": "f6bf48b4ce3b3bfe52619d9801ac64ad0429e7504533c16abc6a79fc0c8564c2"
           }
         },
         {
@@ -131,7 +131,7 @@
           "label": "Black pants, white socks",
           "full": {
             "path": "/uniforms/bengals-away-2021--black-pants-full.webp",
-            "sha256": "6dd36410e9425fb424ecc0ac5d548cc1d1fe704c0289b2dc30f4b5fbfd6d843f"
+            "sha256": "390eb30847c5f6247a5fa5be4e4cdb4391e4304ed9c95f1ce700b52241d0fea2"
           }
         },
         {
@@ -139,7 +139,7 @@
           "label": "Orange pants, white socks",
           "full": {
             "path": "/uniforms/bengals-away-2021--orange-pants-full.webp",
-            "sha256": "47c6db3690dc58fd49920a9f8d50e7b585225d5e93ebcaf8f10e0a089f026013"
+            "sha256": "72ca2f2b185709d4a188f2303398c0db6b2a45d6bddbef833387aa5d1e754d6d"
           }
         }
       ]
@@ -147,30 +147,30 @@
     {
       "catalogId": "bengals-color-rush-2016",
       "constructionKey": "color-rush",
-      "revision": "b7ad1ebb4e5828c2",
+      "revision": "900ea626b4ebf70a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-color-rush-2016.webp",
-          "sha256": "c569195bab8b282e48ea3c65b3d02cee810109f6938556a2b7a6fe714c0dde99"
+          "sha256": "ab6761e92090ca11ad3efe26e887b3a87302710363fde26c17ad670955695461"
         },
         "full": {
           "path": "/uniforms/bengals-color-rush-2016-full.webp",
-          "sha256": "cf671295bb4392fba6d2d7c7663e1491fd35bf7adc68f7708b45b519de845931"
+          "sha256": "28535a6f9d343919c968bc2654514c597d93157b29c6f616bedf004da3e70dfd"
         }
       }
     },
     {
       "catalogId": "bengals-home-2021",
       "constructionKey": "home",
-      "revision": "9bf1285e3a4bc021",
+      "revision": "e9f9c5abad3bccad",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-home-2021.webp",
-          "sha256": "67583420855ad57ad2e32029fcd162403395eb2bab5b58594efad84e1702e57e"
+          "sha256": "4de70c5511dbf8c4c9feb5a9dbd56a29e0680986ef561fece648a21cb10901c6"
         },
         "full": {
           "path": "/uniforms/bengals-home-2021-full.webp",
-          "sha256": "05903e7713bcf6b234a543ac4ddce4e6123739b94fb5bbc5102c7fa68e523865"
+          "sha256": "f49d3a186605e2b4a2f8f6aec860957b98bfbd17ec9ffc29c4b634dd3fbe5fde"
         }
       },
       "combinations": [
@@ -179,7 +179,7 @@
           "label": "Black pants, orange socks",
           "full": {
             "path": "/uniforms/bengals-home-2021--black-orange-socks-full.webp",
-            "sha256": "231ede42d6614c46474cf96e9eac9322d04866e42e1e70f62c3d4e3d585d4fde"
+            "sha256": "54f5ff6198a9633ed86eb6259ae7e93d4dcc7d46160a504f682ec1f5d00c4f96"
           }
         },
         {
@@ -187,7 +187,7 @@
           "label": "White pants, orange socks",
           "full": {
             "path": "/uniforms/bengals-home-2021--white-pants-full.webp",
-            "sha256": "b98a28590c67336077cd455af4bf8fcaf7575385885947936eba64b8443e83e4"
+            "sha256": "64e13e1e910da7f3468b3b2cfea600c0a5d0416bacc86154086584158fa1b9f0"
           }
         },
         {
@@ -195,7 +195,7 @@
           "label": "Orange pants, black socks",
           "full": {
             "path": "/uniforms/bengals-home-2021--orange-pants-full.webp",
-            "sha256": "a94c4cd8aff74a9540c538dc173de2a3e6b43658abc704cbbd8b2075e254ce70"
+            "sha256": "05bca35083571c910a4a1f5338c1b7945a2e7a0973dac8c9b9c7574e7b42d1f8"
           }
         }
       ]
@@ -203,15 +203,15 @@
     {
       "catalogId": "bengals-orange-alt-2021",
       "constructionKey": "orange-alt",
-      "revision": "066353358855e47c",
+      "revision": "5c7fe2bc75acb6db",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bengals-orange-alt-2021.webp",
-          "sha256": "b26e80a4174515ce7d96049530faeacd2be6a4ccc84fb35b76fe168408a4b1e3"
+          "sha256": "dea5b6c1af067a97d5b18c510a8d03a600a215b3c4efbb2bd959efd7f3b20aa9"
         },
         "full": {
           "path": "/uniforms/bengals-orange-alt-2021-full.webp",
-          "sha256": "f4a3eb5fecda64d5d6760931f4b5c4619932b74865cd00c31367ace778266d0b"
+          "sha256": "4ca7664be29bb516bab5a358887acc64a071e5d704ed668ab210f69e904a91d1"
         }
       }
     },
@@ -943,30 +943,30 @@
     {
       "catalogId": "dolphins-1972-throwback-1966",
       "constructionKey": "1972-throwback",
-      "revision": "213bb338a9287af1",
+      "revision": "0726caa0036a89cc",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-1972-throwback-1966.webp",
-          "sha256": "fad25324c617432d9c05bf01f142e1173ec2bc852da59114e5dcf56b3270c58f"
+          "sha256": "39de49e803fcd6b795ecd8affa745edeaaf2416579e0adaafd0f479d299d7258"
         },
         "full": {
           "path": "/uniforms/dolphins-1972-throwback-1966-full.webp",
-          "sha256": "c0b10ee55c486aaf2a29128a63b9213f1230d1cb110f1e37b2768e4ea3123f4f"
+          "sha256": "3b79c5ed449c4dcbb651d9081f4394dc13b31c78e16ac44e5cf0d78c53ef5f58"
         }
       }
     },
     {
       "catalogId": "dolphins-away-2018",
       "constructionKey": "away",
-      "revision": "ad323ab9b4953111",
+      "revision": "3c72b751fe8796b0",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-away-2018.webp",
-          "sha256": "bfaff7c96c421fc9ca519d445e18b3103e1806b48124d6ec65fed8ca5d318bc3"
+          "sha256": "c575d0d3a9e72922eb854b3c51693099bf55d1d5c56e250b76ec9cfc31c7a675"
         },
         "full": {
           "path": "/uniforms/dolphins-away-2018-full.webp",
-          "sha256": "3dec6e3945ff48951ffc33315093fd8bf373270ce67bb7769ee0ab9ad99e2c09"
+          "sha256": "d2f9412bf66b5927dc632a8d64d5ec842a33707b59f6dd958323570633e3e77f"
         }
       },
       "combinations": [
@@ -975,7 +975,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/dolphins-away-2018--white-pants-full.webp",
-            "sha256": "0442fe392ec482adb82a1dad656195ada4b75315f221194f4c4448f51ad32bde"
+            "sha256": "e06502b2e730421b1086ba1a9b7a0e852e074b14c33f0d3b14f25f03583ca24d"
           }
         }
       ]
@@ -983,45 +983,45 @@
     {
       "catalogId": "dolphins-home-2018",
       "constructionKey": "home",
-      "revision": "a09f12ba02f4641a",
+      "revision": "7877317585a48f4b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-home-2018.webp",
-          "sha256": "04ec72604faa6e199fdb01965fc0603f72a20804093b3108dee95ec26e7dd7a4"
+          "sha256": "f2f2896334d22dc003c8d5b7ee11fe279a86d8c7f0db2c275150b11be561ff22"
         },
         "full": {
           "path": "/uniforms/dolphins-home-2018-full.webp",
-          "sha256": "2b8680849b62880dfed0c17e1676a3a7ae2d9e18a072d14d31ac50ba59e58266"
+          "sha256": "efc63496ca75f18af418f07174730f9e657c9ad140a867502c3b26640d3d9622"
         }
       }
     },
     {
       "catalogId": "dolphins-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "db9a4b03c48b84a4",
+      "revision": "29af58675f8fa624",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/dolphins-rivalries-2025-2025.webp",
-          "sha256": "ecc49987181ed78666ddefbce102437723248f8cad05aa1350c56e0038e7b07b"
+          "sha256": "ec31dce599390bc8ae0222f60a1fcb1ccf83b9a089669b2debeb79fd7acef93d"
         },
         "full": {
           "path": "/uniforms/dolphins-rivalries-2025-2025-full.webp",
-          "sha256": "01aa62453d8f618d708094004a36fb871245db5da4959c2568d40d1895d6e23c"
+          "sha256": "f50c2f620513102feb099884eff3dd6e048fd7d2fb7f008189d8c4300cbffe13"
         }
       }
     },
     {
       "catalogId": "eagles-away-1996",
       "constructionKey": "away",
-      "revision": "5cbfabbeea57c734",
+      "revision": "eba5de05f142ede8",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-away-1996.webp",
-          "sha256": "6fa2bd9fe9ae89e9188d963baf9564876569dc9420cc48b0c5afd545353e7560"
+          "sha256": "6ab32c79e05298e7c92c81c7b6e1711734180a5b3c7e1c34aa2745bc1fba212c"
         },
         "full": {
           "path": "/uniforms/eagles-away-1996-full.webp",
-          "sha256": "ffe3de33dc7d34d32e8e56f116de3ba388ba822cdfdf24a39cfdce887ab81ebb"
+          "sha256": "30a4818280ac72f5cde0cf280f7461c6f36433f34f8e657f2e1763140c02048a"
         }
       },
       "combinations": [
@@ -1030,7 +1030,7 @@
           "label": "Green pants",
           "full": {
             "path": "/uniforms/eagles-away-1996--green-pants-full.webp",
-            "sha256": "6811e41d7cc6b18d5f0aab30194488ea7afd37394f6fbe5ce77161aec2bdef2d"
+            "sha256": "9a43f4af14de52d4cb2fecc094bf826ca30fcc57b60a2876a7b14d7f5c3e6ee2"
           }
         },
         {
@@ -1038,7 +1038,7 @@
           "label": "Black pants",
           "full": {
             "path": "/uniforms/eagles-away-1996--black-pants-full.webp",
-            "sha256": "0c9217c44550e97c237312f493ab72a17a73de940dbcd065fffa7d4079cc44e8"
+            "sha256": "25bae571acda5ad476421cd6ab2f7d5b2d725f951141cd2837f93525b68c0e42"
           }
         }
       ]
@@ -1061,15 +1061,15 @@
     {
       "catalogId": "eagles-home-1996",
       "constructionKey": "home",
-      "revision": "d579084d389d9512",
+      "revision": "24769fb0db0e0637",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-home-1996.webp",
-          "sha256": "300e97d1074735e1e5c7663d5729d671c808433034500c3ec72fc0cda0a59b49"
+          "sha256": "c98e003ac61b54879078ea8073390ee0cd08734268c5d9c898e918fd53046a8b"
         },
         "full": {
           "path": "/uniforms/eagles-home-1996-full.webp",
-          "sha256": "93c6db0781de482120067b99a8ad1134583d6be439092d4c48b07dd527d2b828"
+          "sha256": "6d93488559d4da78f399e885ac072268716c43c2fab278eaaa73197af5294a10"
         }
       }
     },
@@ -1091,15 +1091,15 @@
     {
       "catalogId": "eagles-kelly-green-modern-2023",
       "constructionKey": "kelly-green-modern",
-      "revision": "57c4a2f3c78c8396",
+      "revision": "34b6084a32234e56",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-kelly-green-modern-2023.webp",
-          "sha256": "4cc2029ce40198daec3a213020354f0c72c5b2c98498cee3bb64f225b02b8f13"
+          "sha256": "c4d0af2704fe52bf42b7b31ed9a92be790b839d1e7f6662e79b5a1b79807c9aa"
         },
         "full": {
           "path": "/uniforms/eagles-kelly-green-modern-2023-full.webp",
-          "sha256": "39dc8fd2dd75d3e9eda539146a384af6840847ba28ad8bbd29cc5bf65cd16c54"
+          "sha256": "8eb6b1f0cb9495dd87ea44b0b7f9f4a4901c48eb3b56e0e5acfb7ba130fb8564"
         }
       }
     },
@@ -2318,15 +2318,15 @@
     {
       "catalogId": "titans-away-2018",
       "constructionKey": "away",
-      "revision": "ec9b60435114812e",
+      "revision": "3009157303fa9ef9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-away-2018.webp",
-          "sha256": "2ab60fae7be8c4493676bcdb06b11fa7aa31b6882358d654c1c87016c7d505b8"
+          "sha256": "1a2f990f4131ed7e088efcc2e8d40e211667d759a898939db6d2eba39863492e"
         },
         "full": {
           "path": "/uniforms/titans-away-2018-full.webp",
-          "sha256": "b98c6f668da6a773e36a20eb3a2a627ca32d0f369e152bbd479c7b197ffe6813"
+          "sha256": "8b3732b6eaf0e6a42576fbdadf8e4fbd78ef0d87de8a071a4136e4cca9c1f2b0"
         }
       },
       "combinations": [
@@ -2335,7 +2335,7 @@
           "label": "Navy pants",
           "full": {
             "path": "/uniforms/titans-away-2018--navy-pants-full.webp",
-            "sha256": "3a6120a5b66b7e0e20bd3332aaf260e76bb692c803e72958e3c2e8d1f4c91147"
+            "sha256": "91be295fc4fda9814492f2c2e382a15b96b10b60b06a94a7f34dba64dc5882d2"
           }
         }
       ]
@@ -2343,15 +2343,15 @@
     {
       "catalogId": "titans-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "1db3d1546759ed8a",
+      "revision": "52b67172a272229b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-away-2026-2026.webp",
-          "sha256": "e11650a69560a909ae7a093e4923ec53a6cbde400bfe3bafa0aa9dd6823cb31d"
+          "sha256": "8d70a16c56fe70535faa6b39bf46839c759573771e77c1789f9c579dfd196deb"
         },
         "full": {
           "path": "/uniforms/titans-away-2026-2026-full.webp",
-          "sha256": "617ef1337ba9e507787ec4d6d18c3c3efd5e06e7bf56ad76735e37bb22457a75"
+          "sha256": "d12eef1d231d71d09ad64f7de11a97331992eb48afb5ccb7fda160071d8c504a"
         }
       },
       "combinations": [
@@ -2360,7 +2360,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/titans-away-2026-2026--white-pants-full.webp",
-            "sha256": "ac6107de6999cf10f8c1a57368f19a051ecec1ad71bd2280eeaa034eb9421e6f"
+            "sha256": "c291aa650ddebd6ecacacf505cebe97a12f237fe700867af40e7152fb2616304"
           }
         }
       ]
@@ -2368,15 +2368,15 @@
     {
       "catalogId": "titans-home-2018",
       "constructionKey": "home",
-      "revision": "a2c07d205d69099e",
+      "revision": "362d2f2bd8bf2693",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-home-2018.webp",
-          "sha256": "2b55f8d5340c81ec0fce6d6ef2ece65a97ebbe9e0b62cce380416aa4ac931c2e"
+          "sha256": "6e22b69133b2726b5c4dbb14508d8185d8fec2d20701ff2da7c010f4b7a1f78c"
         },
         "full": {
           "path": "/uniforms/titans-home-2018-full.webp",
-          "sha256": "559d524547e019f0b947c609fdb1008a5bcae5584b0b3124987e79041c2b2351"
+          "sha256": "9a23d54673e41e95ded35ba5a56127cddad070d6053049208c37ecc5cfd882d9"
         }
       },
       "combinations": [
@@ -2385,7 +2385,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/titans-home-2018--white-pants-full.webp",
-            "sha256": "a60a49bf8809e06faf7f9d18406dc9d5785c704c77cfc0d3c75152f86bc97a91"
+            "sha256": "42d4e0b76e50280ca57e00429b566fb6009fd3d368c6f8f8d4ffa50b8463f9e0"
           }
         }
       ]
@@ -2393,60 +2393,60 @@
     {
       "catalogId": "titans-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "859760b344bd9a41",
+      "revision": "4cb9fa2b87952590",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-home-2026-2026.webp",
-          "sha256": "3cd66bc1ed6a76be054ddc242e78f378c0d5d7f29bc13ac532b861b39719b154"
+          "sha256": "82d650b4e2b541e36a1cf22b9f1c7e50c73b32822969e8915b5c69dd6a3c4d90"
         },
         "full": {
           "path": "/uniforms/titans-home-2026-2026-full.webp",
-          "sha256": "8b682ff1e00001d5bedbf7c0b5a232e11c5e7be4fbba03ae845dc4fc93d3cf29"
+          "sha256": "0999bff651c22273d23b399f2467257229084e881a17f1732ccc7344f09f28fc"
         }
       }
     },
     {
       "catalogId": "titans-navy-alt-2018",
       "constructionKey": "navy-alt",
-      "revision": "47891c133a784307",
+      "revision": "227e0c456cf4fbbb",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-navy-alt-2018.webp",
-          "sha256": "2b55f8d5340c81ec0fce6d6ef2ece65a97ebbe9e0b62cce380416aa4ac931c2e"
+          "sha256": "6e22b69133b2726b5c4dbb14508d8185d8fec2d20701ff2da7c010f4b7a1f78c"
         },
         "full": {
           "path": "/uniforms/titans-navy-alt-2018-full.webp",
-          "sha256": "559d524547e019f0b947c609fdb1008a5bcae5584b0b3124987e79041c2b2351"
+          "sha256": "9a23d54673e41e95ded35ba5a56127cddad070d6053049208c37ecc5cfd882d9"
         }
       }
     },
     {
       "catalogId": "titans-oilers-throwback-1960",
       "constructionKey": "oilers-throwback",
-      "revision": "620352b49f049bc7",
+      "revision": "062856f531b9d8ad",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-oilers-throwback-1960.webp",
-          "sha256": "abe61d35712f0c0466cc0ef0c09e0bd629648900cffd4b8c217cee1f7617167b"
+          "sha256": "eaa0ca026c826d26fa3aef0d3aba882ae99f5cee7a7b16cb21be7c49fc19ca20"
         },
         "full": {
           "path": "/uniforms/titans-oilers-throwback-1960-full.webp",
-          "sha256": "88a6025677b5c93ab01dd253317ba21aed963b5da105e99ca596f5f47c248a1e"
+          "sha256": "2b504f3d017a06460b09dbaf9e286ef31308d8b3fa1a926470be1b957585eecc"
         }
       }
     },
     {
       "catalogId": "titans-titans-blue-home-2025",
       "constructionKey": "titans-blue-home",
-      "revision": "3d547dec69f71d43",
+      "revision": "e30247c0cdce92bc",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-titans-blue-home-2025.webp",
-          "sha256": "36fe9138b4f8990cf34e6083ca33534482048a939e6e510e154c59ee813014b6"
+          "sha256": "bf216e5bd58f0ea56aecf834ac8933c61a0714500cb8c898ef597fa5ef9f76e1"
         },
         "full": {
           "path": "/uniforms/titans-titans-blue-home-2025-full.webp",
-          "sha256": "880d5cea73edfb860f7d342deaf6766f338c7745ca7b6393cd8fc7ff26f68621"
+          "sha256": "64e3578b2a3ffc71bb25e41a54ac4e8eccb2971219034857b74d0569866d985b"
         }
       }
     },

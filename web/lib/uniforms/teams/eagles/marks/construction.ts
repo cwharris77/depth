@@ -8,6 +8,29 @@ import {
 import { anchoredMark } from '../../core/jersey-spec';
 import { boundsOf, placed, type Mark } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
+import { EAGLES_HEAD_MARK } from './head';
+import { EAGLES_CLASSIC_MARK } from './classic';
+
+export const eaglesClassicSleeve = () =>
+  anchoredMark({
+    paint: 'under',
+    mark: EAGLES_CLASSIC_MARK,
+    anchor: 'sleeve-front-logos',
+    slots: Object.fromEntries(EAGLES_CLASSIC_MARK.paths.map(({ slot }) => [slot, slot])) as Record<
+      (typeof EAGLES_CLASSIC_MARK.paths)[number]['slot'],
+      string
+    >,
+    id: 'sleeve-classic',
+  });
+
+export const eaglesSleeveHead = () =>
+  anchoredMark({
+    paint: 'under',
+    mark: EAGLES_HEAD_MARK,
+    anchor: 'sleeve-front-logos',
+    slots: { white: 'white', logoGreen: 'logoGreen', black: 'black', logoSilver: 'logoSilver' },
+    id: 'sleeve-head',
+  });
 
 const decal = (id: string, d: string, fill: string): PartLayer => ({
   id,

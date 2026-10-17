@@ -32,6 +32,7 @@ final class UpdateGateViewModel {
     private let repository: CachingDepthRepository
     private let currentBuild: Int
     private let liveReadTimeout: Duration
+    private let isBypassed: @MainActor () -> Bool
     private var launchCheck: Task<Void, Never>?
 
     var isBlocked: Bool { state == .blocked }
@@ -43,8 +44,10 @@ final class UpdateGateViewModel {
     init(
         repository: CachingDepthRepository,
         currentBuild: Int = UpdateGateViewModel.installedBuildNumber(),
-        liveReadTimeout: Duration = .seconds(2)
+        liveReadTimeout: Duration = .seconds(2),
+        isBypassed: @escaping @MainActor () -> Bool = { false }
     ) {
+        self.isBypassed = isBypassed
         self.repository = repository
         self.currentBuild = currentBuild
         self.liveReadTimeout = liveReadTimeout
@@ -106,7 +109,8 @@ final class UpdateGateViewModel {
     }
 
     private func apply(_ config: AppConfig) {
-        state = currentBuild < config.minimumSupportedBuild ? .blocked : .allowed
+        let tooOld = currentBuild < config.minimumSupportedBuild
+        state = tooOld && !isBypassed() ? .blocked : .allowed
         maintenanceMessage = config.maintenanceMessage
     }
 

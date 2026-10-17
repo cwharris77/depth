@@ -8,7 +8,6 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
     {
       id: 'dolphins-home-2018',
       slug: 'home',
-      sleeveNike: 'white',
       name: 'Home',
       kind: 'home',
       jersey: 'teal',
@@ -35,7 +34,6 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
     {
       id: 'dolphins-away-2018',
       slug: 'away',
-      sleeveNike: 'teal',
       name: 'Away',
       kind: 'away',
       jersey: 'white',
@@ -69,7 +67,6 @@ export const DOLPHINS_CATALOG: TeamCatalog = {
     {
       id: 'dolphins-rivalries-2025-2025',
       slug: 'rivalries-2025',
-      sleeveNike: 'teal',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'navy',

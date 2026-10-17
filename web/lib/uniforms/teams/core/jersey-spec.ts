@@ -285,7 +285,8 @@ const isPair = (anchor: AnchoredJerseyMark['anchor']): anchor is AnchorPair =>
   anchor === 'sleeves' ||
   anchor === 'shoulders' ||
   anchor === 'sleeve-tops' ||
-  anchor === 'sleeve-logos';
+  anchor === 'sleeve-logos' ||
+  anchor === 'sleeve-front-logos';
 
 // Layers for one mark use: a placed mark's own layers copied as-is, or a mark placed by anchor.
 function markLayers(prefix: string, use: JerseyMarkUse): PartLayer[] {

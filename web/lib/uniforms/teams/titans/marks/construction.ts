@@ -3,6 +3,7 @@ import { HELMET_CROWN_STRIPE_PATH } from '../../core/shared';
 import type { PartLayer } from '../../core/parts';
 import { TITANS_FLAMING_T_PATHS } from './flaming-t';
 import { TITANS_2026_SHIELD } from './shield';
+import { NIKE_MARK } from '../../core/pants-logos';
 
 const fill = (id: string, surface: PartLayer['surface'], d: string, color: string): PartLayer => ({
   id,
@@ -96,3 +97,132 @@ export const TITANS_2026_SLEEVES = placed([
   ...sleeveBand('titans-2026-sleeve-white-bottom', 529, 535, 'white'),
   ...sleeveBand('titans-2026-sleeve-red-bottom', 535, 540, 'red2026'),
 ]);
+
+export const TITANS_2018_NAVY_PANELS = placed([
+  fill(
+    'titans-navy-yoke-left',
+    'sleeve-left',
+    'M20,360 H218 V429 L164,439 Q105,449 78,471 Q50,502 30,548 H20 Z',
+    'wolfGrey'
+  ),
+  fill(
+    'titans-navy-yoke-right',
+    'sleeve-right',
+    'M568,360 H370 V429 L424,439 Q483,449 510,471 Q538,502 558,548 H568 Z',
+    'wolfGrey'
+  ),
+  fill(
+    'titans-navy-yoke-bevel-left',
+    'sleeve-left',
+    'M218,420 L164,430 Q105,440 72,466 Q44,499 20,548 H30 Q50,502 78,471 Q105,449 164,439 L218,429 Z',
+    'steelGrey'
+  ),
+  fill(
+    'titans-navy-yoke-bevel-right',
+    'sleeve-right',
+    'M370,420 L424,430 Q483,440 516,466 Q544,499 568,548 H558 Q538,502 510,471 Q483,449 424,439 L370,429 Z',
+    'steelGrey'
+  ),
+  fill(
+    'titans-underarm-left',
+    'jersey',
+    'M30,565 L130,565 Q143,577 152,607 L155,650 L150,692 L138,683 L141,601 L136,591 L44,589 L34,582 Z',
+    'lightBlue'
+  ),
+  fill(
+    'titans-underarm-right',
+    'jersey',
+    'M558,565 L458,565 Q445,577 436,607 L433,650 L438,692 L450,683 L447,601 L452,591 L544,589 L554,582 Z',
+    'lightBlue'
+  ),
+]);
+
+export const TITANS_2018_NECK_STARS = placed([
+  fill(
+    'titans-neck-star-0',
+    'collar',
+    'M270.00,386.50 L271.35,390.14 L275.23,390.30 L272.19,392.71 L273.23,396.45 L270.00,394.30 L266.77,396.45 L267.81,392.71 L264.77,390.30 L268.65,390.14 Z',
+    'red'
+  ),
+  fill(
+    'titans-neck-star-1',
+    'collar',
+    'M294.00,386.50 L295.35,390.14 L299.23,390.30 L296.19,392.71 L297.23,396.45 L294.00,394.30 L290.77,396.45 L291.81,392.71 L288.77,390.30 L292.65,390.14 Z',
+    'red'
+  ),
+  fill(
+    'titans-neck-star-2',
+    'collar',
+    'M318.00,386.50 L319.35,390.14 L323.23,390.30 L320.19,392.71 L321.23,396.45 L318.00,394.30 L314.77,396.45 L315.81,392.71 L312.77,390.30 L316.65,390.14 Z',
+    'red'
+  ),
+]);
+
+export const TITANS_2018_NAVY_NUMBERS = placed([
+  {
+    id: 'titans-navy-shoulder-number-outline-left',
+    surface: 'sleeve-left',
+    d: 'M157.20,411.00 L158.00,428.00 L126.00,426.26 L124.40,423.52 L120.80,426.26 L101.60,426.26 L96.00,424.33 L96.00,411.00 L111.60,411.00 L106.40,413.87 L106.40,421.75 L115.20,421.75 L125.60,413.06 L136.00,421.75 L146.00,421.75 L146.80,413.87 L141.60,411.00 Z',
+    clip: true,
+    kind: 'stroke',
+    stroke: 'lightBlue',
+    strokeWidth: 2,
+  },
+  fill(
+    'titans-navy-shoulder-number-left',
+    'sleeve-left',
+    'M157.20,411.00 L158.00,428.00 L126.00,426.26 L124.40,423.52 L120.80,426.26 L101.60,426.26 L96.00,424.33 L96.00,411.00 L111.60,411.00 L106.40,413.87 L106.40,421.75 L115.20,421.75 L125.60,413.06 L136.00,421.75 L146.00,421.75 L146.80,413.87 L141.60,411.00 Z',
+    'navy'
+  ),
+  {
+    id: 'titans-navy-shoulder-number-outline-right',
+    surface: 'sleeve-right',
+    d: 'M430.80,411.00 L430.00,428.00 L462.00,426.26 L463.60,423.52 L467.20,426.26 L486.40,426.26 L492.00,424.33 L492.00,411.00 L476.40,411.00 L481.60,413.87 L481.60,421.75 L472.80,421.75 L462.40,413.06 L452.00,421.75 L442.00,421.75 L441.20,413.87 L446.40,411.00 Z',
+    clip: true,
+    kind: 'stroke',
+    stroke: 'lightBlue',
+    strokeWidth: 2,
+  },
+  fill(
+    'titans-navy-shoulder-number-right',
+    'sleeve-right',
+    'M430.80,411.00 L430.00,428.00 L462.00,426.26 L463.60,423.52 L467.20,426.26 L486.40,426.26 L492.00,424.33 L492.00,411.00 L476.40,411.00 L481.60,413.87 L481.60,421.75 L472.80,421.75 L462.40,413.06 L452.00,421.75 L442.00,421.75 L441.20,413.87 L446.40,411.00 Z',
+    'navy'
+  ),
+]);
+
+export const TITANS_2018_NAVY_NIKE = placed(
+  ['left', 'right'].map((side) => {
+    const [x0, y0, x1, y1] = NIKE_MARK.box;
+    let coordinate = 0;
+    const d = NIKE_MARK.paths[0].d.replace(/-?\d+(?:\.\d+)?/g, (n) => {
+      const value = Number(n);
+      if (coordinate++ % 2) return (449 + ((value - y0) * 12) / (y1 - y0)).toFixed(2);
+      const x = 79 - ((value - x0) * 30) / (x1 - x0);
+      return (side === 'left' ? x : 588 - x).toFixed(2);
+    });
+    return fill(
+      `titans-navy-nike-${side}`,
+      side === 'left' ? 'sleeve-left' : 'sleeve-right',
+      d,
+      'red'
+    );
+  })
+);
+
+export const TITANS_2018_BLUE_PANELS = placed(
+  TITANS_2018_NAVY_PANELS.layers.map((layer) => ({
+    ...layer,
+    fill:
+      layer.kind === 'fill' && layer.fill === 'lightBlue'
+        ? 'navy'
+        : layer.kind === 'fill'
+          ? layer.fill
+          : 'navy',
+  }))
+);
+export const TITANS_2018_BLUE_NUMBERS = placed(
+  TITANS_2018_NAVY_NUMBERS.layers.map((layer) =>
+    layer.kind === 'stroke' ? { ...layer, stroke: 'white' } : layer
+  )
+);
