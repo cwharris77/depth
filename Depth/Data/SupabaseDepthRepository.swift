@@ -389,9 +389,9 @@ actor SupabaseDepthRepository: DepthRepository {
         var rows: [T] = []
         var offset = 0
         while true {
-            let query = client.from(table).select(select)
+            var query = client.from(table).select(select)
             if table == "team_season_stats" {
-                query.eq("season_type", value: "REG")
+                query = query.eq("season_type", value: "REG")
             }
             let page: [T] =
                 try await query
