@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "677894cbce22c5a354a5912a6faa33fad55aed0b64b6309b93e8fd37678f6a15",
-  "revision": "bd0677d72cc0a815",
+  "sourceDigest": "681adf3dbd1b6098b07d7ecce5e465954bf235cdd506cc4ea239b32cc42425be",
+  "revision": "d9c94bbd881bb5d9",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1013,15 +1013,15 @@
     {
       "catalogId": "eagles-away-1996",
       "constructionKey": "away",
-      "revision": "5cbfabbeea57c734",
+      "revision": "eba5de05f142ede8",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-away-1996.webp",
-          "sha256": "6fa2bd9fe9ae89e9188d963baf9564876569dc9420cc48b0c5afd545353e7560"
+          "sha256": "6ab32c79e05298e7c92c81c7b6e1711734180a5b3c7e1c34aa2745bc1fba212c"
         },
         "full": {
           "path": "/uniforms/eagles-away-1996-full.webp",
-          "sha256": "ffe3de33dc7d34d32e8e56f116de3ba388ba822cdfdf24a39cfdce887ab81ebb"
+          "sha256": "30a4818280ac72f5cde0cf280f7461c6f36433f34f8e657f2e1763140c02048a"
         }
       },
       "combinations": [
@@ -1030,7 +1030,7 @@
           "label": "Green pants",
           "full": {
             "path": "/uniforms/eagles-away-1996--green-pants-full.webp",
-            "sha256": "6811e41d7cc6b18d5f0aab30194488ea7afd37394f6fbe5ce77161aec2bdef2d"
+            "sha256": "9a43f4af14de52d4cb2fecc094bf826ca30fcc57b60a2876a7b14d7f5c3e6ee2"
           }
         },
         {
@@ -1038,7 +1038,7 @@
           "label": "Black pants",
           "full": {
             "path": "/uniforms/eagles-away-1996--black-pants-full.webp",
-            "sha256": "0c9217c44550e97c237312f493ab72a17a73de940dbcd065fffa7d4079cc44e8"
+            "sha256": "25bae571acda5ad476421cd6ab2f7d5b2d725f951141cd2837f93525b68c0e42"
           }
         }
       ]
@@ -1061,15 +1061,15 @@
     {
       "catalogId": "eagles-home-1996",
       "constructionKey": "home",
-      "revision": "d579084d389d9512",
+      "revision": "24769fb0db0e0637",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-home-1996.webp",
-          "sha256": "300e97d1074735e1e5c7663d5729d671c808433034500c3ec72fc0cda0a59b49"
+          "sha256": "c98e003ac61b54879078ea8073390ee0cd08734268c5d9c898e918fd53046a8b"
         },
         "full": {
           "path": "/uniforms/eagles-home-1996-full.webp",
-          "sha256": "93c6db0781de482120067b99a8ad1134583d6be439092d4c48b07dd527d2b828"
+          "sha256": "6d93488559d4da78f399e885ac072268716c43c2fab278eaaa73197af5294a10"
         }
       }
     },
@@ -1091,15 +1091,15 @@
     {
       "catalogId": "eagles-kelly-green-modern-2023",
       "constructionKey": "kelly-green-modern",
-      "revision": "57c4a2f3c78c8396",
+      "revision": "34b6084a32234e56",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/eagles-kelly-green-modern-2023.webp",
-          "sha256": "4cc2029ce40198daec3a213020354f0c72c5b2c98498cee3bb64f225b02b8f13"
+          "sha256": "c4d0af2704fe52bf42b7b31ed9a92be790b839d1e7f6662e79b5a1b79807c9aa"
         },
         "full": {
           "path": "/uniforms/eagles-kelly-green-modern-2023-full.webp",
-          "sha256": "39dc8fd2dd75d3e9eda539146a384af6840847ba28ad8bbd29cc5bf65cd16c54"
+          "sha256": "8eb6b1f0cb9495dd87ea44b0b7f9f4a4901c48eb3b56e0e5acfb7ba130fb8564"
         }
       }
     },

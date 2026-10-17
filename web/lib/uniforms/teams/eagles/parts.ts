@@ -2,6 +2,8 @@
 // art drawn by the marks in ./marks.
 import type { TeamSpec } from '../core/team-spec';
 import { EAGLES_WING_DECAL } from './marks/construction';
+import { EAGLES_HEAD_PALETTE } from './marks/head';
+import { EAGLES_CLASSIC_PALETTE } from './marks/classic';
 import { EAGLES_JERSEY_BLACK } from './jerseys/black';
 import { EAGLES_JERSEY_GREEN } from './jerseys/green';
 import { EAGLES_JERSEY_KELLY_MODERN } from './jerseys/kelly-modern';
@@ -11,6 +13,8 @@ import { EAGLES_JERSEY_WHITE } from './jerseys/white';
 // Green, kelly, black, white and silver are the physical colours; each kit's primary, secondary
 // and accent slots carry them in different positions, so layers name these keys instead.
 export const EAGLES_PALETTE = {
+  ...EAGLES_HEAD_PALETTE,
+  ...EAGLES_CLASSIC_PALETTE,
   green: '#004C54',
   kelly: '#046A38',
   black: '#000000',
