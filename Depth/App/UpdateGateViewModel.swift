@@ -113,14 +113,8 @@ final class UpdateGateViewModel {
     nonisolated static func installedBuildNumber() -> Int {
         #if UITEST_FIXTURES
             // Below any fixture minimum, so a UI test can reach the blocked state.
-            let arguments = ProcessInfo.processInfo.arguments
-            if arguments.contains("UI_TESTING_FORCE_UPDATE_GATE") {
+            if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FORCE_UPDATE_GATE") {
                 return 0
-            }
-            // A UI-test build carries the placeholder build number, which a live backend's
-            // armed minimum would otherwise block, so UI tests report the newest build.
-            if arguments.contains(where: { $0.hasPrefix("UI_TESTING_") }) {
-                return Int.max
             }
         #endif
         guard
