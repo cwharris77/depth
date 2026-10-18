@@ -2123,5 +2123,39 @@
       "numeralFill": "#34302B",
       "numeralStroke": "#D50A0A"
     }
+  },
+  {
+    "id": "49ers-white-throwback-2018",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#AA0000",
+      "accent": "#B3995D"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#AA0000",
+      "mark": "#B3995D",
+      "text": "#B3995D",
+      "textOnFill": "#AA0000",
+      "numeralFill": "#AA0000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "49ers-red-throwback-2021",
+    "colors": {
+      "primary": "#AA0000",
+      "secondary": "#FFFFFF",
+      "accent": "#B3995D"
+    },
+    "expected": {
+      "fill": "#AA0000",
+      "ring": "#FFFFFF",
+      "mark": "#FFFFFF",
+      "text": "#FFFFFF",
+      "textOnFill": "#FFFFFF",
+      "numeralFill": "#AA0000",
+      "numeralStroke": "#FFFFFF"
+    }
   }
 ]

@@ -1,4 +1,5 @@
-import { NINERS_NUMBER_THREE } from '../marks/numbers';
+import { NINERS_BLACK_CHEST, NINERS_RIVAL_NUMBER_SHADOW } from '../marks/jersey-art';
+import { NINERS_RIVAL_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 
 // Red sleeve stripes and shoulder numerals; red body numerals with a gold outline.
@@ -15,7 +16,7 @@ export const NINERS_JERSEY_BLACK: CompleteJerseySpec = {
   },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
-  shoulderNumber: { fill: 'red', outline: 'none' },
+  shoulderNumber: { fill: 'red', outline: 'gold' },
   sleeveStripes: {
     bands: [
       { color: 'red', size: 'm' },
@@ -31,9 +32,12 @@ export const NINERS_JERSEY_BLACK: CompleteJerseySpec = {
     height: 185,
     fill: 'red',
     outline: 'gold',
-    outlineWeight: 'regular',
-    texture: 'mesh',
-    glyphPath: NINERS_NUMBER_THREE,
+    outlineWeight: 'thin',
+    texture: 'plain',
+    glyphPath: NINERS_RIVAL_NUMBER_THREE,
   },
-  marks: [],
+  marks: [
+    { paint: 'under', mark: NINERS_RIVAL_NUMBER_SHADOW },
+    { paint: 'over', mark: NINERS_BLACK_CHEST },
+  ],
 };
