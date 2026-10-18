@@ -1,3 +1,4 @@
+import { NINERS_WHITE_CHEST } from '../marks/jersey-art';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { NINERS_NUMBER_THREE } from '../marks/numbers';
 
@@ -35,5 +36,5 @@ export const NINERS_JERSEY_WHITE: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: NINERS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: NINERS_WHITE_CHEST }],
 };
