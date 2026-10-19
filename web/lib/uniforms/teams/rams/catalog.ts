@@ -225,7 +225,7 @@ export const RAMS_CATALOG: TeamCatalog = {
           helmet: 'royal-2026',
           pants: 'classic-sol',
           pantsNike: 'royal',
-          socks: 'royal',
+          socks: 'white',
         },
       ],
     },

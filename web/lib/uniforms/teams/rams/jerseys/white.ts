@@ -1,6 +1,7 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { ramsCappedSleeveHorn } from '../marks/construction';
 import { RAMS_NUMBER_THREE } from '../marks/numbers';
+import { RAMS_CHEST_WHITE } from '../marks/labels';
 
 // White body with a body-coloured collar, a split royal horn over each yellow outer sleeve and cuff, and flat royal numerals.
 export const RAMS_JERSEY_WHITE: CompleteJerseySpec = {
@@ -28,5 +29,8 @@ export const RAMS_JERSEY_WHITE: CompleteJerseySpec = {
     glyphPath: RAMS_NUMBER_THREE,
     glyphLabel: '3',
   },
-  marks: [{ paint: 'under', mark: ramsCappedSleeveHorn('royal', 'yellow', 'panel') }],
+  marks: [
+    { paint: 'under', mark: ramsCappedSleeveHorn('royal', 'yellow', 'panel') },
+    { paint: 'over', mark: RAMS_CHEST_WHITE },
+  ],
 };

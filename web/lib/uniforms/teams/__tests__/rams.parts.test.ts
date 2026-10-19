@@ -7,6 +7,10 @@ import { JERSEY_NUMBER_THREE } from '../../jersey-art';
 import { RAMS_NUMBER_THREE } from '../rams/marks/numbers';
 import { boundsOf } from '../core/marks';
 import { RAMS_CATALOG } from '../rams/catalog';
+import {
+  RAMS_JERSEY_CLASSIC_SOL,
+  RAMS_JERSEY_FEARSOME_WHITE,
+} from '../rams/jerseys/alternates-2026';
 
 describe('Rams helmet parts', () => {
   // One `it` per shell so a failure names the offending helmet.
@@ -45,7 +49,7 @@ describe('Rams catalog', () => {
       bone: [['bone', 'bone']],
       'home-2026': [['sol-2026', 'royal']],
       'away-2026': [['white-2026', 'white']],
-      'classic-sol': [['classic-sol', 'royal']],
+      'classic-sol': [['classic-sol', 'white']],
       'fearsome-white': [['fearsome-white', 'white']],
     });
   });
@@ -83,6 +87,37 @@ describe('Rams pants parts', () => {
 });
 
 describe('Rams jerseys', () => {
+  it('gives Classic Sol a wider middle sleeve stripe', () => {
+    expect(RAMS_JERSEY_CLASSIC_SOL.sleeveStripes).toMatchObject({
+      bands: [{ size: 's' }, { size: 'm' }, { size: 's' }],
+    });
+  });
+  it('uses the same Sol paint for the 2020 helmet, pants and white jersey sleeves', () => {
+    const helmet = RAMS_UNIFORMS_FROM_PARTS.kits.away.layers?.find((l) =>
+      l.id.includes('decal-horn')
+    );
+    const cuff = RAMS_UNIFORMS_FROM_PARTS.kits.away.layers?.find((l) => l.id.includes('cuff'));
+    expect(helmet && 'fill' in helmet && helmet.fill).toBe(cuff && 'fill' in cuff && cuff.fill);
+    expect(RAMS_PARTS.palette.gold).toBe(RAMS_PARTS.palette.yellow);
+  });
+
+  it('uses a white outer collar on Fearsome White', () => {
+    expect(RAMS_JERSEY_FEARSOME_WHITE.collar).toMatchObject({ color: 'white' });
+  });
+
+  it('shows the chest label on each 2020-era jersey', () => {
+    for (const name of ['royal', 'white', 'bone'] as const) {
+      expect(
+        RAMS_PARTS.jerseys[name].layers.some((layer) => layer.id.includes('chest-label'))
+      ).toBe(true);
+    }
+  });
+
+  it('shows the Midnight Mode inside-neck inscription', () => {
+    expect(
+      RAMS_PARTS.jerseys.rivalries.layers.some((layer) => layer.id.includes('neck-inscription'))
+    ).toBe(true);
+  });
   it('places Midnight Mode Nike marks midway down the blue sleeve panels', () => {
     const marks = RAMS_UNIFORMS_FROM_PARTS.kits['rivalries-2025'].layers?.filter((l) =>
       l.id.includes('sleeve-nike')

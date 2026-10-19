@@ -1,5 +1,6 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { RAMS_NUMBER_THREE } from '../marks/numbers';
+import { RAMS_CHEST_BONE } from '../marks/labels';
 
 // Bone body with a body-coloured collar and plain sleeves carrying a royal TV number; flat royal numerals.
 export const RAMS_JERSEY_BONE: CompleteJerseySpec = {
@@ -27,5 +28,5 @@ export const RAMS_JERSEY_BONE: CompleteJerseySpec = {
     glyphPath: RAMS_NUMBER_THREE,
     glyphLabel: '3',
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: RAMS_CHEST_BONE }],
 };

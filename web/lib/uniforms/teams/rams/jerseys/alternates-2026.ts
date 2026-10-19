@@ -20,7 +20,7 @@ export const RAMS_JERSEY_CLASSIC_SOL: CompleteJerseySpec = {
   sleeveStripes: {
     bands: [
       { color: 'royal', size: 's' },
-      { color: 'royal', size: 's' },
+      { color: 'royal', size: 'm' },
       { color: 'royal', size: 's' },
     ],
     gap: 'narrow',
@@ -33,18 +33,18 @@ export const RAMS_JERSEY_CLASSIC_SOL: CompleteJerseySpec = {
   marks: [],
 };
 
-// White body with a navy collar, a royal horn curving over each shoulder, sleeve TV numbers and
+// White body with a white collar, a royal horn curving over each shoulder, sleeve TV numbers and
 // royal block numerals keylined in navy.
 export const RAMS_JERSEY_FEARSOME_WHITE: CompleteJerseySpec = {
   body: 'white',
   collar: {
     style: 'inset-v',
-    color: 'navy',
+    color: 'white',
     trim: 'none',
     inside: 'body',
     lining: 'none',
     backBar: 'navy',
-    outline: false,
+    outline: true,
   },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
