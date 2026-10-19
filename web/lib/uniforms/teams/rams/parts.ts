@@ -4,8 +4,7 @@ import { RAMS_JERSEY_CLASSIC_SOL, RAMS_JERSEY_FEARSOME_WHITE } from './jerseys/a
 // jerseys carry a capped-sleeve horn, while Midnight Mode shows a tapered front horn and blue sleeve.
 // Every kit shares the shell horn and a keylined stripe on each pant leg.
 //
-// Two golds and two blues are real here and stay distinct: the modern gold #FFA300 and Rivalries'
-// yellow #FFD100, the club royal #003594 and Rivalries' near-black navy #0D1B3E.
+// The gold and yellow paint slots share the same Sol approximation across the equipment and jersey.
 import type { TeamSpec } from '../core/team-spec';
 import { ramsHelmetHorn, ramsLegStripe } from './marks/construction';
 import { RAMS_JERSEY_BONE } from './jerseys/bone';
@@ -15,7 +14,7 @@ import { RAMS_JERSEY_WHITE } from './jerseys/white';
 
 export const RAMS_PALETTE = {
   royal: '#003594',
-  gold: '#FFA300',
+  gold: '#FFD100',
   navy: '#0D1B3E',
   yellow: '#FFD100',
   bone: '#F0EBE0',
