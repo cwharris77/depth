@@ -206,6 +206,11 @@ Everything in `web/CLAUDE.md` §5's "Any code PR" checklist applies. Additionall
       ```
       scoped to the suites the diff touches — `DepthTests` for data/domain,
       `DepthUITests`/`AccessibilityUITests`/`ShareUITests` for the flows changed.
+- [ ] **Domain or fixture change: `scripts/test-domain.sh` first.** It runs the TS/Swift
+      parity suites and the other Foundation-only `DepthTests` through SwiftPM in seconds,
+      on any Swift 6 toolchain — Linux and cloud sessions included, where `xcodebuild`
+      doesn't exist. A fast first gate, not a substitute for the targeted run above; a
+      suite that grows a dependency outside `Depth/Domain` comes off its list.
 - [ ] **Before push, build Staging once:** `xcodebuild -project Depth.xcodeproj -scheme 'Depth Stage' -destination 'platform=iOS Simulator,id=…' -configuration Staging build-for-testing`. Debug tests can pass while Staging/Release optimization hits different type-checker limits. Inspect `git diff -- Depth.xcodeproj` afterward and regenerate with `xcodegen generate` if Xcode rewrote an unintended scheme.
 - [ ] **Slim the simulator before booting it for anything that doesn't need full system
       services** (UI tests, screenshots, layout checks, manual runs). `simslim` (Homebrew,

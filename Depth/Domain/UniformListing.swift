@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FoundationNetworking)
+    import FoundationNetworking
+#endif
+
 // Mirrors web/lib/uniforms/art.tsx's uniformArtURL and uniformArtFullURL. Web art resolves
 // origin-relative so local dev/preview serve the committed rasters; iOS can't
 // use a relative URL — URLSession needs an absolute one — so this pins the same scheme
