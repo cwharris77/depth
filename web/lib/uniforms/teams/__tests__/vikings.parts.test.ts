@@ -1,5 +1,5 @@
 // Guards the Vikings helmet decal's two-color paint order and shell-specific color mapping. The
-// same path geometry is shared across all three helmets, so a mapping regression affects every kit.
+// same path geometry is shared across both helmets, so a mapping regression affects every kit.
 import { describe, expect, it } from 'vitest';
 import { VIKINGS_PARTS } from '../vikings';
 
@@ -15,16 +15,16 @@ describe('Vikings helmet parts', () => {
     }
   });
 
-  it('keeps gold on purple shells and metallic gray on the Winter Warrior shell', () => {
-    for (const helmet of [VIKINGS_PARTS.helmets.purple, VIKINGS_PARTS.helmets.classic]) {
-      expect(
-        helmet.layers.map((layer) => (layer.kind === 'fill' ? layer.fill : undefined))
-      ).toEqual(['white', 'white', 'gold']);
-    }
+  it('keeps gold on the purple shell and uses the white horn with a purple edge on Winter Warrior', () => {
+    expect(
+      VIKINGS_PARTS.helmets.purple.layers.map((layer) =>
+        layer.kind === 'fill' ? layer.fill : undefined
+      )
+    ).toEqual(['white', 'white', 'gold']);
     expect(
       VIKINGS_PARTS.helmets.white.layers.map((layer) =>
         layer.kind === 'fill' ? layer.fill : undefined
       )
-    ).toEqual(['purple', 'purple', 'metallicGray']);
+    ).toEqual(['purple', 'white', 'metallicGray']);
   });
 });

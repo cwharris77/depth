@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "ef7dae56822f0786d18f417066a476d31c18532e482c59cc27fbeb8149232692",
-  "revision": "095913d63d312f18",
+  "sourceDigest": "177498ba2a00a7e42596796dd1af2a0e7feb8a3036424bd30222702a4f1e7c75",
+  "revision": "6ff9f1d48ab9bf48",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2558,15 +2558,15 @@
     {
       "catalogId": "vikings-away-2013",
       "constructionKey": "away",
-      "revision": "cdf99d6d43944fdc",
+      "revision": "b391db3cab5d5d99",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/vikings-away-2013.webp",
-          "sha256": "db21ebde4b59b388a7bd5905321f9c571409a960ba1895028a058616a6d4cd63"
+          "sha256": "98dd0e88a044ebc105c881495871b1a90353c4aab2227ab8d5d5be3846e99244"
         },
         "full": {
           "path": "/uniforms/vikings-away-2013-full.webp",
-          "sha256": "8de5ac91f29b996fbf85fb5b2967898842e694306d2aea5a1abf7b86aa0cc6c7"
+          "sha256": "66f099c17605e222bb0d89b67b41b6c7fc59b2a776caea22704b66c94aff29ab"
         }
       },
       "combinations": [
@@ -2575,7 +2575,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/vikings-away-2013--white-pants-full.webp",
-            "sha256": "d7a5437cdcd40a32baa33ba61e956437c4efe62b4fa2d8c786ff735d71ec3a9c"
+            "sha256": "41c42d532a400f87a9506e38d865f5622bdf11bd0ce2978a39250fa597561312"
           }
         }
       ]
@@ -2583,15 +2583,15 @@
     {
       "catalogId": "vikings-home-2013",
       "constructionKey": "home",
-      "revision": "fffd234f4b7a9096",
+      "revision": "4236285eafd53c76",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/vikings-home-2013.webp",
-          "sha256": "175ee8a8829371b2dda5f77bde132f11256dfe46235f92e6b1a8e95d5df4fe16"
+          "sha256": "1441209b74b5f6eaee23f0944e99de4e1666aecdefef9067258fe34c19a174b6"
         },
         "full": {
           "path": "/uniforms/vikings-home-2013-full.webp",
-          "sha256": "9c92fc0ebc74882e8ba1b708edba980b29738c9e063aae1b9a01d0bd36e47a64"
+          "sha256": "7e12f3c83243a8b1fc73d5f14b4a1f759d267404a4f686ca9ec1aa06e2176ac6"
         }
       },
       "combinations": [
@@ -2600,38 +2600,23 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/vikings-home-2013--white-pants-full.webp",
-            "sha256": "e71906335e70b1466a7ba78cb0b2c51ba671b12f18ecc29c8936211afe2793e4"
+            "sha256": "eec38618030999bb65255c61d8b44ff6a9adf349b3db8686824351bd1baa7b28"
           }
         }
       ]
     },
     {
-      "catalogId": "vikings-purple-classic-1961",
-      "constructionKey": "purple-classic",
-      "revision": "50cc5344eb20e94a",
-      "artifacts": {
-        "jersey": {
-          "path": "/uniforms/vikings-purple-classic-1961.webp",
-          "sha256": "be9bcbcb9c08dc77b8f6ead7a8f90d0ed9ffef5c5acd24b089f11a9c0d95ecbe"
-        },
-        "full": {
-          "path": "/uniforms/vikings-purple-classic-1961-full.webp",
-          "sha256": "f4efde1dc22cc820a78aad696cca32d6ace5ce6c205bf8cb4f5e09d75ea40c12"
-        }
-      }
-    },
-    {
       "catalogId": "vikings-winter-warrior-2024",
       "constructionKey": "winter-warrior",
-      "revision": "1c8f5125165ede24",
+      "revision": "82d43f50661d485f",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/vikings-winter-warrior-2024.webp",
-          "sha256": "401e98832deb9c921e65fb661589bcc1e985b197dd487e48175b51c7b46d6a9e"
+          "sha256": "92ee9afa8cd2f92fac99706e3f1738a005ecbb49169288a25bc2017a0bd31b7c"
         },
         "full": {
           "path": "/uniforms/vikings-winter-warrior-2024-full.webp",
-          "sha256": "f85e66ba03dc50e95c2e4343d1e84a4f95d7729948c0bcfd5b356a98cf5c995a"
+          "sha256": "d040d8b35a446b18c8d440057f4258c448edea1c1bfd64851a3fc660417067fa"
         }
       }
     }

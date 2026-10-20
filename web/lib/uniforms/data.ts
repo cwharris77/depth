@@ -170,8 +170,7 @@ export const UNIFORMS: UniformSeed[] = [
   catalogRow(JAGUARS_CATALOG, 'teal-throwback'),
   // Washington 1970s burgundy & gold (George Allen gold-helmet era). Hexes: burgundy #5A1414, gold #FFB612. uiAccent reuses the team's gold.
   catalogRow(COMMANDERS_CATALOG, '70s-burgundy'),
-  // Throwbacks (Wave 2b): Vikings 1960s purple classic + Packers 1923 throwback (eyedropped).
-  catalogRow(VIKINGS_CATALOG, 'purple-classic'),
+  // Throwbacks (Wave 2b): Packers 1923 throwback (eyedropped).
   // Packers 1923 throwback (navy body, old-gold/tan numbers, leather helmets; unveiled 2025). Colors EYEDROPPED from the reveal flat-lay: secondary/uiAccent #CC8835 sampled off the number (passes 6.55:1 on #0a0e1a); primary #1B2C4E is a brightened estimate of the underexposed navy. No published hex exists.
   catalogRow(PACKERS_CATALOG, '1923-throwback'),
   // 2025 Nike 'Rivalries' kits (AFC East + NFC West). Designs from the official Nike/NFL
