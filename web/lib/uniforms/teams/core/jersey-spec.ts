@@ -208,17 +208,16 @@ function sleeveNumber(side: Sleeve, glyph?: string) {
   );
 }
 
-// Lying along the shoulder line with the numeral's top toward the collar and its open side toward
-// the back. The right sleeve mirrors the left, so seen from above the two tops point at each other.
+// Lying along the shoulder line with the numeral's top toward the collar, so seen from above the two
+// tops point at each other. Each is the printed numeral rotated, never reflected: the open side of a
+// 3 faces the back on the left sleeve and the front on the right.
 function shoulderNumber(side: Sleeve, glyph?: string) {
   const [[xo, yo], [xi, yi]] = [SHOULDER_LINE_OUTER, SHOULDER_LINE_INNER];
   const angle = Math.atan2(xi - xo, -(yi - yo));
-  const left = numeralAt((xo + xi) / 2, (yo + yi) / 2, SHOULDER_NUMBER_HEIGHT, angle, glyph);
-  if (side === SLEEVE_LEFT) return left;
-  let i = 0;
-  return left.replace(/-?\d+(?:\.\d+)?/g, (n) =>
-    i++ % 2 === 0 ? String(Math.round((MIRROR_X - Number(n)) * 100) / 100) : n
-  );
+  const [cx, cy] = [(xo + xi) / 2, (yo + yi) / 2];
+  return side === SLEEVE_LEFT
+    ? numeralAt(cx, cy, SHOULDER_NUMBER_HEIGHT, angle, glyph)
+    : numeralAt(MIRROR_X - cx, cy, SHOULDER_NUMBER_HEIGHT, -angle, glyph);
 }
 
 function bothSleeves(id: string, color: string, shape: (side: Sleeve) => string): PartLayer[] {
