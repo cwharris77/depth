@@ -1,3 +1,4 @@
+import { LIONS_ONE_PRIDE } from '../marks/labels';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { LIONS_NUMBER_THREE } from '../marks/numbers';
 import { LIONS_BANDS_SILVER } from '../marks/construction';
@@ -29,5 +30,8 @@ export const LIONS_JERSEY_BLUE: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: LIONS_NUMBER_THREE,
   },
-  marks: [{ paint: 'over', mark: LIONS_BANDS_SILVER }],
+  marks: [
+    { paint: 'over', mark: LIONS_BANDS_SILVER },
+    { paint: 'over', mark: LIONS_ONE_PRIDE },
+  ],
 };

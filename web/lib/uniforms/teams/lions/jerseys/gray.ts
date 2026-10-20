@@ -1,15 +1,23 @@
+import { LIONS_GRAY_RIGHT, LIONS_GRAY_LEFT } from '../marks/labels';
 import { LIONS_2017_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
-import { LIONS_BANDS_BLUE_WHITE } from '../marks/construction';
+import { LIONS_GRAY_SLEEVE_BANDS } from '../marks/construction';
 
-// Silver body with a blue and white four-band set on each sleeve (drawn by the bands mark) and
-// white numerals outlined blue. No collar is drawn.
+// Dark steel body, blue and white sleeve bands, and white numerals outlined blue.
 export const LIONS_JERSEY_GRAY: CompleteJerseySpec = {
-  body: 'silver',
-  collar: { style: 'none' },
+  body: 'darkSteel',
+  collar: {
+    style: 'inset-v',
+    color: 'darkSteel',
+    trim: 'none',
+    inside: 'darkSteel',
+    lining: 'none',
+    backBar: 'darkSteel',
+    outline: true,
+  },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
-  shoulderNumber: 'none',
+  shoulderNumber: { fill: 'white', outline: 'blue' },
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
@@ -21,5 +29,9 @@ export const LIONS_JERSEY_GRAY: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: LIONS_2017_NUMBER_THREE,
   },
-  marks: [{ paint: 'over', mark: LIONS_BANDS_BLUE_WHITE }],
+  marks: [
+    { paint: 'over', mark: LIONS_GRAY_SLEEVE_BANDS },
+    { paint: 'over', mark: LIONS_GRAY_RIGHT },
+    { paint: 'over', mark: LIONS_GRAY_LEFT },
+  ],
 };
