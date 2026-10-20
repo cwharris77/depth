@@ -1,3 +1,4 @@
+import { BEARS_GSH_NAVY } from '../marks/labels';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { BEARS_NUMBER_THREE } from '../marks/numbers';
 
@@ -32,8 +33,8 @@ export const BEARS_JERSEY_WHITE: CompleteJerseySpec = {
     fill: 'navy',
     outline: 'orange',
     outlineWeight: 'thin',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: BEARS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: BEARS_GSH_NAVY }],
 };

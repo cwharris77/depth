@@ -16,6 +16,11 @@ const decal = (id: string, d: string, fill: string): PartLayer => ({
 
 // The wishbone C: the white keyline, then the orange letter over it; both need fill-rule evenodd
 // for their counters.
+export const BEARS_ORANGE_C_DECAL = placed([
+  decal('bears-orange-decal-keyline', BEARS_DECAL_KEYLINE_PATH, 'white'),
+  decal('bears-orange-decal-letter', BEARS_DECAL_LETTER_PATH, 'navy'),
+]);
+
 export const BEARS_C_DECAL = placed([
   decal('bears-decal-keyline', BEARS_DECAL_KEYLINE_PATH, 'white'),
   decal('bears-decal-letter', BEARS_DECAL_LETTER_PATH, 'orange'),
