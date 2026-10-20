@@ -19,7 +19,7 @@ struct UniformsTab: View {
     @State private var showFilterSheet = false
     @State private var showAbout = false
     @State private var selectedKit: UniformListing?
-    @State private var path: [String] = []
+    @State private var path = NavigationPath()
     /// A scroll is dragging or settling; a revalidated archive waits so it never moves under it.
     @State private var isScrolling = false
     @Namespace private var teamZoom
@@ -28,6 +28,12 @@ struct UniformsTab: View {
     /// action. Supplied by RootTabView, which owns both the tab selection and the route
     /// store the other tab reads.
     private let onOpenDepthChart: (String, String) -> Void
+
+    /// The redesigned team page and the pushed uniform page, in place of the kit list
+    /// and the kit sheet.
+    private var isRedesigned: Bool {
+        DepthEnvironment.featureFlags.isEnabled(.uniformArchiveRedesign)
+    }
 
     init(repository: DepthRepository, onOpenDepthChart: @escaping (String, String) -> Void) {
         _viewModel = State(initialValue: UniformArchiveViewModel(repository: repository))
@@ -56,8 +62,19 @@ struct UniformsTab: View {
                 // render so a filter changed from the drill-in is reflected there.
                 .navigationDestination(for: String.self) { teamId in
                     if let team = viewModel.team(id: teamId) {
-                        UniformTeamDetailView(team: team) { selectedKit = $0 }
-                            .zoomNavigationTransition(from: teamId, in: teamZoom)
+                        Group {
+                            if isRedesigned {
+                                UniformTeamPageView(
+                                    team: team,
+                                    combinationCount: {
+                                        viewModel.combinationOptions(for: $0).count
+                                    },
+                                    onSelectKit: select)
+                            } else {
+                                UniformTeamDetailView(team: team, onSelectKit: select)
+                            }
+                        }
+                        .zoomNavigationTransition(from: teamId, in: teamZoom)
                     } else {
                         // The team's last kit was filtered out from under the pushed
                         // screen — degrade to an explanation, never an empty screen.
@@ -66,6 +83,24 @@ struct UniformsTab: View {
                             systemImage: "tshirt",
                             description: Text(
                                 "This team has no kits left under the current filters.")
+                        )
+                        .background(DesignTokens.Colors.bg)
+                    }
+                }
+                .navigationDestination(for: UniformKitRoute.self) { route in
+                    if let kit = viewModel.kit(id: route.kitId) {
+                        UniformKitDetailView(
+                            kit: kit, options: viewModel.combinationOptions(for: kit)
+                        ) {
+                            onOpenDepthChart(kit.teamId, kit.id)
+                            // The sheet this replaces closed itself; leave the archive where
+                            // the page was opened from rather than on the page.
+                            path.removeLast()
+                        }
+                    } else {
+                        ContentUnavailableView(
+                            "Uniform unavailable", systemImage: "tshirt",
+                            description: Text("This uniform is no longer in the archive.")
                         )
                         .background(DesignTokens.Colors.bg)
                     }
@@ -81,7 +116,10 @@ struct UniformsTab: View {
                 }
         }
         .environment(\.uniformArtRefreshToken, viewModel.artRefreshToken)
-        .task { await viewModel.load() }
+        .task {
+            await viewModel.load()
+            if isRedesigned { await viewModel.loadCombinations() }
+        }
         .onScrollPhaseChange { _, phase in isScrolling = phase.isScrolling }
         .onChange(of: isInteracting, initial: true) { _, held in viewModel.holdRevalidation(held) }
         .onChange(of: DepthEnvironment.onboarding.activeTab) { _, tab in
@@ -109,6 +147,15 @@ struct UniformsTab: View {
                 // A `.sheet()` gets a fresh UITraitCollection rather than inheriting the
                 // presenter's Dynamic Type override — see UITestingDynamicTypeOverride.
                 .modifier(UITestingDynamicTypeOverride())
+        }
+    }
+
+    /// Opens a uniform: its pushed page in the redesign, otherwise the kit sheet.
+    private func select(_ kit: UniformListing) {
+        if isRedesigned {
+            path.append(UniformKitRoute(kitId: kit.id))
+        } else {
+            selectedKit = kit
         }
     }
 
@@ -420,7 +467,7 @@ struct UniformsTab: View {
 
     private func eraCell(_ kit: UniformListing) -> some View {
         Button {
-            selectedKit = kit
+            select(kit)
         } label: {
             VStack(spacing: DesignTokens.Spacing.xs + 1) {
                 UniformThumb(url: UniformArt.fullURL(for: kit.id), size: 56)
@@ -567,6 +614,12 @@ struct UniformArchiveAboutSheet: View {
 /// archive, rather than re-implementing jersey rendering there.
 private extension EnvironmentValues {
     @Entry var uniformArtRefreshToken = 0
+}
+
+/// A uniform page on the archive's navigation stack, pushed by id so the page reads the
+/// archive's current copy of the kit.
+struct UniformKitRoute: Hashable {
+    let kitId: String
 }
 
 enum UniformArtworkRetryPolicy {

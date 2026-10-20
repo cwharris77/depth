@@ -182,6 +182,18 @@
             bundle.uniforms
         }
 
+        /// One real published combination, so the detail page's swap is exercised.
+        func uniformCombinations() async throws -> [String: [UniformCombination]] {
+            [
+                "bills-home-2011": [
+                    UniformCombination(
+                        key: "white-pants", label: "White pants",
+                        fullURL: URL(
+                            string: "\(UniformArt.baseURL)/bills-home-2011--white-pants-full.webp"))
+                ]
+            ]
+        }
+
         /// Synthesized, not recorded: the prompt only shows an event from the last few
         /// days, which a checked-in timestamp could not stay.
         func latestBigMoment(teamId: String) async throws -> TeamEvent? {

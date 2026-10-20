@@ -309,6 +309,12 @@ actor CachingDepthRepository: DepthRepository {
 
     // MARK: - Uniform archive list
 
+    /// Not stored: the art it points at is only reachable online, and the shared
+    /// `URLCache` already revalidates the manifest.
+    func uniformCombinations() async throws -> [String: [UniformCombination]] {
+        try await underlying.uniformCombinations()
+    }
+
     /// Cache-first exactly like the team list — the all-32-kits read is stable and small.
     func listUniforms() async throws -> [UniformListing] {
         if let cached = try? await store.uniformList() {

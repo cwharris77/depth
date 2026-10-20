@@ -14,6 +14,9 @@ enum FeatureFlag: CaseIterable, Sendable {
     /// Roles a player holds on top of his position: the nickel back's on-field mark, and
     /// past-season kick and punt returners.
     case rosterRoles
+    /// The uniform archive's team page grouped into rotation and decades, and a pushed
+    /// uniform page whose verified combinations swap in place.
+    case uniformArchiveRedesign
 
     var definition: FeatureFlagDefinition {
         switch self {
@@ -30,6 +33,13 @@ enum FeatureFlag: CaseIterable, Sendable {
                 summary: "Nickel mark and past-season returners",
                 kind: .release,
                 added: "2026-10-10",
+                launched: false)
+        case .uniformArchiveRedesign:
+            FeatureFlagDefinition(
+                key: "uniformArchiveRedesign",
+                summary: "Uniform team page tiers and uniform page",
+                kind: .release,
+                added: "2026-10-20",
                 launched: false)
         }
     }

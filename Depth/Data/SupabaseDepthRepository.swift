@@ -138,6 +138,21 @@ actor SupabaseDepthRepository: DepthRepository {
         }
     }
 
+    /// The manifest is served with the uniform art, so the shared `URLCache` revalidates it
+    /// with the same headers.
+    func uniformCombinations() async throws -> [String: [UniformCombination]] {
+        guard let url = UniformArt.manifestURL else { return [:] }
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return [:] }
+            return try UniformManifestMapper.combinations(from: data)
+        } catch let error as DecodingError {
+            throw DepthError.decoding("\(error)")
+        } catch let error as URLError {
+            throw error.isNetworkUnavailable ? DepthError.offline : DepthError.server("\(error)")
+        }
+    }
+
     func listUniforms() async throws -> [UniformListing] {
         do {
             async let teamsResult: [TeamListRowDTO] =
