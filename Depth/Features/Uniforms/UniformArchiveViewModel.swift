@@ -35,6 +35,9 @@ final class UniformArchiveViewModel {
     /// Bumped each time a forced load lands, so art already on screen re-fetches after the
     /// image cache is evicted instead of keeping the old picture until its cell is rebuilt.
     private(set) var artRefreshToken = 0
+    /// Each design's extra verified combinations. Empty until the manifest loads, and left
+    /// empty if it can't: a uniform page then shows only the design's own figure.
+    private(set) var combinations: [String: [UniformCombination]] = [:]
 
     var query = ""
     var viewMode: ViewMode = .team
@@ -97,7 +100,23 @@ final class UniformArchiveViewModel {
         }
     }
 
+    /// Reads the combinations once per screen; a failure leaves them empty.
+    func loadCombinations() async {
+        guard combinations.isEmpty else { return }
+        combinations = (try? await repository.uniformCombinations()) ?? [:]
+    }
+
     // MARK: - Derived content
+
+    /// A kit by id from the whole archive, regardless of search or filters, so a pushed
+    /// uniform page outlives a filter change made behind it.
+    func kit(id: String) -> UniformListing? {
+        listings.first { $0.id == id }
+    }
+
+    func combinationOptions(for kit: UniformListing) -> [UniformCombination] {
+        UniformArchive.combinationOptions(for: kit, extra: combinations[kit.id] ?? [])
+    }
 
     /// Every kit surviving the filters *and* the query, with a team-level query match
     /// keeping all of that team's kits (searching "Seahawks" returns the team, not just

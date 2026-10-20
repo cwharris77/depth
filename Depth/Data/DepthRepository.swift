@@ -54,6 +54,9 @@ protocol DepthRepository: Sendable {
     /// code — kit metadata only, no player/depth-chart embeds, so the payload stays
     /// bounded. Cache-first like the team list (stable, ~105 rows).
     func listUniforms() async throws -> [UniformListing]
+    /// Each design's extra verified combinations, keyed by catalog id, read from the
+    /// published artifact manifest. Designs with none are absent.
+    func uniformCombinations() async throws -> [String: [UniformCombination]]
     /// The team's newest Big moment, or nil when it has none. A live read that is never
     /// cached: its only use is deciding whether there is something new to tell the user.
     /// A default nil keeps unrelated focused test doubles source-compatible.
@@ -118,6 +121,7 @@ extension DepthRepository {
     func searchPlayers(query: String) async throws -> [PlayerHit] { [] }
     func rosterLeaders(teamId: String, season: Int) async throws -> RosterLeaders? { nil }
     func listUniforms() async throws -> [UniformListing] { [] }
+    func uniformCombinations() async throws -> [String: [UniformCombination]] { [:] }
     func teamStatHistory(teamId: String) async throws -> TeamStatHistory? { nil }
     func playerHighlights(playerId: String, teamId: String?) async throws -> PlayerHighlights? {
         nil

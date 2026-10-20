@@ -8,7 +8,12 @@ import Foundation
 // the plain jersey crop (`<id>.webp`) — the same two kinds of artifact the web
 // generator emits.
 enum UniformArt {
-    static let baseURL = "https://sticks.cooper-harris.site/uniforms"
+    static let origin = "https://sticks.cooper-harris.site"
+    static let baseURL = "\(origin)/uniforms"
+
+    /// The published artifact manifest, which lists each design's extra verified
+    /// combinations (web/lib/uniforms/manifest.ts).
+    static let manifestURL = URL(string: "\(baseURL)/manifest.json")
 
     static func jerseyURL(for id: String) -> URL? {
         URL(string: "\(baseURL)/\(id).webp")
@@ -417,5 +422,59 @@ extension UniformListing {
         UniformPresentation(
             name: name, teamName: teamName, kind: kind,
             yearStart: yearStart, yearEnd: yearEnd, isCurrent: isCurrent)
+    }
+}
+
+/// One verified way a design was worn: the same jersey with a different helmet, pants or
+/// socks. The archive lists a design once; its combinations live only on its detail page.
+struct UniformCombination: Equatable, Identifiable, Sendable {
+    let key: String
+    let label: String
+    let fullURL: URL?
+
+    var id: String { key }
+}
+
+extension UniformListing {
+    /// A uniform in rotation shows only the year it started; its tier already says it is
+    /// still worn, so an open-ended range would repeat that.
+    var rotationDates: String {
+        yearStart.map(String.init) ?? presentation.dates
+    }
+}
+
+extension UniformArchive {
+    /// A team's page: every uniform in rotation, then the rest by the decade they were
+    /// first worn.
+    struct TeamSections: Equatable {
+        let inRotation: [UniformListing]
+        let past: [DecadeGroup]
+    }
+
+    /// Kits in rotation keep home → away → rest order. Retired kits are grouped by the
+    /// decade of their first wearing year, newest decade first, undated last.
+    static func teamSections(_ kits: [UniformListing]) -> TeamSections {
+        let inRotation = kits.filter(\.isCurrent).sorted(by: compareKits)
+        let byDecade = Dictionary(grouping: kits.filter { !$0.isCurrent }) { kit in
+            kit.yearStart.map { ($0 / 10) * 10 }
+        }
+        let past =
+            byDecade
+            .map { DecadeGroup(decade: $0.key, kits: $0.value.sorted(by: compareKits)) }
+            .sorted { ($0.decade ?? .min) > ($1.decade ?? .min) }
+        return TeamSections(inRotation: inRotation, past: past)
+    }
+
+    static let canonicalCombinationKey = "canonical"
+
+    /// The design's own figure first, then each extra verified combination.
+    static func combinationOptions(
+        for kit: UniformListing, extra: [UniformCombination]
+    ) -> [UniformCombination] {
+        [
+            UniformCombination(
+                key: canonicalCombinationKey, label: "Standard",
+                fullURL: UniformArt.fullURL(for: kit.id))
+        ] + extra
     }
 }

@@ -250,11 +250,12 @@ final class AccessibilityUITests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(kit.waitForExistence(timeout: 10))
         kit.tap()
-        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 10))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["uniform-kit-detail"].waitForExistence(timeout: 10))
         attachScreenshot(app, named: "system-kit")
         reveal(app.buttons["uniform-kit-open-depth-chart"], in: app)
         attachScreenshot(app, named: "system-kit-action")
-        app.buttons["Close"].tap()
+        app.navigationBars.buttons["BackButton"].tap()
         // By identifier, not index 0: index 0 resolves to the depth chart's
         // team-switcher-button whenever this screen isn't pushed (d9cd9453).
         app.navigationBars.buttons["BackButton"].tap()

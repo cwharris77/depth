@@ -345,10 +345,17 @@ struct ArchiveDecadeTests {
 private struct StubUniformRepository: DepthRepository {
     var listings: [UniformListing] = []
     var failure: DepthError?
+    var combinations: [String: [UniformCombination]] = [:]
+    var combinationsFailure: DepthError?
 
     func listUniforms() async throws -> [UniformListing] {
         if let failure { throw failure }
         return listings
+    }
+
+    func uniformCombinations() async throws -> [String: [UniformCombination]] {
+        if let combinationsFailure { throw combinationsFailure }
+        return combinations
     }
 
     func teams() async throws -> [Team] { throw DepthError.server("unused") }
@@ -379,6 +386,33 @@ struct UniformArchiveViewModelTests {
         let model = UniformArchiveViewModel(repository: StubUniformRepository(listings: listings))
         await model.load()
         return model
+    }
+
+    @Test func loadedCombinationsJoinTheKitsOwnFigure() async {
+        let extra = UniformCombination(key: "white-pants", label: "White pants", fullURL: nil)
+        let model = UniformArchiveViewModel(
+            repository: StubUniformRepository(
+                listings: allKits, combinations: [bills.id: [extra]]))
+        await model.load()
+        await model.loadCombinations()
+        #expect(model.combinationOptions(for: bills).map(\.key) == ["canonical", "white-pants"])
+        #expect(model.combinationOptions(for: jets).count == 1)
+    }
+
+    @Test func aCombinationsFailureLeavesOnlyTheKitsOwnFigure() async {
+        let model = UniformArchiveViewModel(
+            repository: StubUniformRepository(listings: allKits, combinationsFailure: .offline))
+        await model.load()
+        await model.loadCombinations()
+        #expect(model.loadState == .loaded)
+        #expect(model.combinationOptions(for: bills).count == 1)
+    }
+
+    @Test func aKitStaysReachableWhenFiltersHideIt() async {
+        let model = await loaded(allKits)
+        model.filters.kinds = [.away]
+        #expect(model.team(id: jets.teamId) == nil)
+        #expect(model.kit(id: jets.id) == jets)
     }
 
     @Test func loadFailureIsSurfacedNotSwallowed() async {
@@ -464,5 +498,101 @@ struct UniformArchiveViewModelTests {
         #expect(model.team(id: "jets") != nil)
         model.filters.kinds = [.away]
         #expect(model.team(id: "jets") == nil)
+    }
+}
+
+@Suite struct UniformTeamSectionsTests {
+    @Test func rotationHoldsOnlyCurrentKitsInHomeAwayOrder() {
+        let sections = UniformArchive.teamSections([
+            listing(id: "alt", kind: .alternate, name: "Rivalries"),
+            listing(id: "old-home", yearStart: 2020, yearEnd: 2025, isCurrent: false),
+            listing(id: "away", kind: .away, name: "Away"),
+            listing(id: "home"),
+        ])
+        #expect(sections.inRotation.map(\.id) == ["home", "away", "alt"])
+    }
+
+    @Test func pastKitsGroupByStartDecadeNewestFirstWithUndatedLast() {
+        let sections = UniformArchive.teamSections([
+            listing(id: "home"),
+            listing(id: "undated", yearStart: nil, yearEnd: nil, isCurrent: false),
+            listing(
+                id: "crush", kind: .throwback, name: "Orange Crush", yearStart: 1968,
+                yearEnd: 1996, isCurrent: false),
+            listing(
+                id: "away-2018", kind: .away, name: "Away", yearStart: 2018, yearEnd: 2025,
+                isCurrent: false),
+            listing(id: "home-2018", yearStart: 2018, yearEnd: 2025, isCurrent: false),
+            listing(
+                id: "blue", kind: .alternate, name: "Blue", yearStart: 2025, yearEnd: 2025,
+                isCurrent: false),
+        ])
+        #expect(sections.past.map(\.label) == ["2020s", "2010s", "1960s", "Undated"])
+        #expect(sections.past[1].kits.map(\.id) == ["home-2018", "away-2018"])
+    }
+
+    @Test func aTeamWithNoPastKitsHasNoDecades() {
+        #expect(UniformArchive.teamSections([listing(id: "home")]).past.isEmpty)
+    }
+
+    @Test func rotationDatesShowTheStartYearAlone() {
+        #expect(listing(id: "home", yearStart: 2026).rotationDates == "2026")
+        #expect(listing(id: "undated", yearStart: nil).rotationDates == "Dates unknown")
+    }
+
+    @Test func combinationOptionsPutTheCanonicalFigureFirst() {
+        let extra = UniformCombination(
+            key: "bone-pants", label: "Bone pants",
+            fullURL: URL(string: "https://example.com/rams-home-2020--bone-pants-full.webp"))
+        let options = UniformArchive.combinationOptions(
+            for: listing(id: "rams-home-2020"), extra: [extra])
+        #expect(options.map(\.label) == ["Standard", "Bone pants"])
+        #expect(options[0].fullURL == UniformArt.fullURL(for: "rams-home-2020"))
+    }
+
+    @Test func aKitWithNoExtrasHasOneOption() {
+        #expect(UniformArchive.combinationOptions(for: listing(id: "home"), extra: []).count == 1)
+    }
+}
+
+@Suite struct UniformManifestMapperTests {
+    @Test func mapsEachRowsCombinationsToAbsoluteArtURLs() throws {
+        let json = """
+            {"version":1,"revision":"x","rows":[
+              {"catalogId":"rams-home-2020","combinations":[
+                {"key":"bone-pants","label":"Bone pants",
+                 "full":{"path":"/uniforms/rams-home-2020--bone-pants-full.webp","sha256":"a"}}]},
+              {"catalogId":"rams-away-2026-2026"}
+            ]}
+            """
+        let map = try UniformManifestMapper.combinations(from: Data(json.utf8))
+        #expect(map.keys.sorted() == ["rams-home-2020"])
+        #expect(map["rams-home-2020"]?.first?.label == "Bone pants")
+        #expect(
+            map["rams-home-2020"]?.first?.fullURL?.absoluteString
+                == "https://sticks.cooper-harris.site/uniforms/rams-home-2020--bone-pants-full.webp"
+        )
+    }
+
+    @Test func skipsCombinationsWhosePathIsNotOriginRelative() throws {
+        let json = """
+            {"rows":[{"catalogId":"a","combinations":[
+              {"key":"x","label":"X","full":{"path":"https://evil.example/x.webp"}},
+              {"key":"y","label":"Y"}]}]}
+            """
+        #expect(try UniformManifestMapper.combinations(from: Data(json.utf8)).isEmpty)
+    }
+
+    @Test func aMistypedRowOrCombinationDoesNotDropTheRest() throws {
+        let json = """
+            {"rows":[
+              {"catalogId":7,"combinations":"nope"},
+              {"catalogId":"b","combinations":[
+                {"key":1,"label":"Bad"},
+                {"key":"ok","label":"OK","full":{"path":"/uniforms/b--ok-full.webp"}}]}]}
+            """
+        let map = try UniformManifestMapper.combinations(from: Data(json.utf8))
+        #expect(map.keys.sorted() == ["b"])
+        #expect(map["b"]?.map(\.key) == ["ok"])
     }
 }

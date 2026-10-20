@@ -113,6 +113,66 @@ final class DepthUITests: XCTestCase {
         saveUniformScreenshot(app, named: "uniform-era-historical-dates")
     }
 
+    func testUniformTeamPageTiersAndCombinationSwap() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        XCTAssertTrue(app.launch(intoTeam: "bills"))
+        app.tabBars.buttons["Uniforms"].tap()
+        XCTAssertTrue(app.buttons["uniforms-team-bills"].waitForExistence(timeout: 15))
+        let broncos = app.buttons["uniforms-team-broncos"]
+        for _ in 0..<6 where !broncos.isHittable { app.swipeUp() }
+        broncos.tap()
+        XCTAssertTrue(app.staticTexts["IN ROTATION"].waitForExistence(timeout: 10))
+        let crush = app.buttons["uniform-kit-row-broncos-orange-crush-1968"]
+        for _ in 0..<6 where !crush.isHittable { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["1960s"].exists)
+        XCTAssertEqual(crush.label, "Orange Crush, Throwback, 1968–1996, Retired")
+        saveUniformScreenshot(app, named: "uniform-team-page-decades")
+        app.navigationBars.buttons["BackButton"].tap()
+
+        let bills = app.buttons["uniforms-team-bills"]
+        for _ in 0..<6 where !bills.isHittable { app.swipeDown() }
+        bills.tap()
+        let home = app.buttons["uniform-kit-row-bills-home-2011"]
+        XCTAssertTrue(home.waitForExistence(timeout: 10))
+        saveUniformScreenshot(app, named: "uniform-team-page-rotation")
+        home.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["uniform-kit-detail"].waitForExistence(timeout: 10))
+        let standard = app.buttons["uniform-combination-canonical"]
+        let whitePants = app.buttons["uniform-combination-white-pants"]
+        XCTAssertTrue(whitePants.waitForExistence(timeout: 5))
+        XCTAssertTrue(standard.isSelected)
+        whitePants.tap()
+        XCTAssertTrue(whitePants.waitForSelected())
+        XCTAssertFalse(standard.isSelected)
+        saveUniformScreenshot(app, named: "uniform-page-combination")
+    }
+
+    /// Release builds keep the kit list and sheet until the redesign launches.
+    func testUniformKitSheetWithoutTheRedesign() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments =
+            XCUIApplication.hermeticLaunchArguments + [
+                "\(XCUIApplication.uiTestingStartTeamArgPrefix)bills",
+                "-featureFlag.uniformArchiveRedesign", "NO",
+            ]
+        app.launch()
+        XCTAssertTrue(app.waitForDepthChart())
+        app.tabBars.buttons["Uniforms"].tap()
+        let bills = app.buttons["uniforms-team-bills"]
+        XCTAssertTrue(bills.waitForExistence(timeout: 15))
+        bills.tap()
+        let home = app.buttons["uniform-kit-row-bills-home-2011"]
+        XCTAssertTrue(home.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["IN ROTATION"].exists)
+        home.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["uniform-kit-sheet"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Close"].exists)
+    }
+
     private func saveUniformScreenshot(_ app: XCUIApplication, named name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name
