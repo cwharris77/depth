@@ -40,7 +40,7 @@ enum FeatureFlag: CaseIterable, Sendable {
                 summary: "Uniform team page tiers and uniform page",
                 kind: .release,
                 added: "2026-10-20",
-                launched: false)
+                launched: true)
         }
     }
 
