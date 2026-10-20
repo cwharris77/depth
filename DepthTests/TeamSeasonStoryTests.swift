@@ -253,7 +253,7 @@ private func schedule(_ year: Int, _ results: [ScheduleResult?], byeWeek: Int? =
 }
 
 @Test func paceWordsLevelAndWorseRecords() throws {
-    let prior = schedule(2025, Array(repeating: .win, count: 4) + [.loss])
+    let prior = schedule(2025, Array(repeating: .win, count: 4) + [.loss, .win])
     let worse = try #require(
         TeamSeasonPace.compare(season(2026, wins: 2, losses: 3), priorSchedule: prior))
     #expect(worse.summary == "2 fewer wins than 2025 through 5 games (4-1)")
@@ -262,6 +262,30 @@ private func schedule(_ year: Int, _ results: [ScheduleResult?], byeWeek: Int? =
         TeamSeasonPace.compare(season(2026, wins: 4, losses: 1), priorSchedule: prior))
     #expect(level.lead == nil)
     #expect(level.summary == "Same record as 2025 through 5 games (4-1)")
+}
+
+@Test func paceDropsTheGameCountOnceItCoversAllOfLastSeason() throws {
+    let prior = schedule(2025, [.win, .loss, .win, .loss, .win], byeWeek: 3)
+    let level = try #require(
+        TeamSeasonPace.compare(season(2026, wins: 3, losses: 2), priorSchedule: prior))
+    #expect(level.summary == "Same record as 2025 (3-2)")
+
+    let better = try #require(
+        TeamSeasonPace.compare(season(2026, wins: 4, losses: 1), priorSchedule: prior))
+    #expect(better.summary == "+1 win on 2025 (3-2)")
+
+    let worse = try #require(
+        TeamSeasonPace.compare(season(2026, wins: 1, losses: 4), priorSchedule: prior))
+    #expect(worse.summary == "2 fewer wins than 2025 (3-2)")
+}
+
+@Test func paceKeepsTheGameCountWhenLastSeasonHadAnUndecidedGame() throws {
+    // A cancelled game leaves last season with more scheduled games than results, so a
+    // window of every result is still only part of that season.
+    let prior = schedule(2025, [.win, .loss, nil, .win])
+    let pace = try #require(
+        TeamSeasonPace.compare(season(2026, wins: 2, losses: 1), priorSchedule: prior))
+    #expect(pace.summary == "Same record as 2025 through 3 games (2-1)")
 }
 
 @Test func paceSaysGameInTheSingular() throws {

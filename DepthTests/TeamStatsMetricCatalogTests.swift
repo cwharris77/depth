@@ -151,10 +151,11 @@ private func metrics(
         let byLabel = Dictionary(
             uniqueKeysWithValues: groups.flatMap(\.metrics).map { ($0.label, $0.display) }
         )
-        // Signed to 2dp; rates as percentages even though they are stored 0-1.
+        // EPA is signed, per play to 2dp and totals to 1dp; rates as percentages even
+        // though they are stored 0-1.
         #expect(byLabel["EPA / PLAY"] == "+0.09")
         #expect(byLabel["SACK RATE"] == "5.1%")
-        #expect(byLabel["PASS EPA"] == "88.4")
+        #expect(byLabel["PASS EPA"] == "+88.4")
         #expect(byLabel["SACKS"] == "44.0")
         #expect(byLabel["FIELD GOAL %"] == "87.5%")
     }
