@@ -114,6 +114,21 @@ enum UniformArchive {
     /// Kind chips in display order (design's KIND_ORDER).
     static let kindOrder: [UniformKind] = [.home, .away, .throwback, .alternate, .colorRush]
 
+    /// The two team colors behind a uniform's full figure: `edge` frames the hero and
+    /// `center` sits directly behind the figure. The figure is mostly the jersey body
+    /// (`primary`), so the center takes the first of the kit's other colors that separates
+    /// from it, and stays `primary` only when neither does.
+    static func heroGround(_ colors: TeamColors) -> (edge: String, center: String) {
+        let center =
+            [colors.secondary, colors.accent]
+            .first { contrastRatio($0, colors.primary) >= heroSeparationMin } ?? colors.primary
+        return (colors.primary, center)
+    }
+
+    /// Graphical-object contrast (WCAG 1.4.11) between the figure's body and what sits
+    /// behind it.
+    private static let heroSeparationMin = 3.0
+
     static func eraBucket(yearStart: Int?) -> String {
         guard let yearStart else { return "Undated" }
         return "\((yearStart / 10) * 10)s"
@@ -262,8 +277,14 @@ enum UniformArchive {
         var kitCountLabel: String { "\(kits.count) \(kits.count == 1 ? "kit" : "kits")" }
 
         /// The kit whose colors and jersey art stand in for the team on its card: its
-        /// home kit, or the first kit surviving the filters if home was filtered out.
-        var representativeKit: UniformListing { kits.first(where: { $0.kind == .home }) ?? kits[0] }
+        /// newest home kit (current before retired, then latest first season), or the first
+        /// kit surviving the filters if every home was filtered out.
+        var representativeKit: UniformListing {
+            kits.filter { $0.kind == .home }.max {
+                ($0.isCurrent ? 1 : 0, $0.yearStart ?? Int.min)
+                    < ($1.isCurrent ? 1 : 0, $1.yearStart ?? Int.min)
+            } ?? kits[0]
+        }
     }
 
     struct DivisionGroup: Equatable, Identifiable {

@@ -12,9 +12,17 @@ struct UniformKitDetailView: View {
     let onOpenDepthChart: () -> Void
 
     @State private var selectedKey = UniformArchive.canonicalCombinationKey
+    /// The combination whose figure is on screen. It trails `selectedKey` until the new
+    /// figure has loaded, so a swap goes figure to figure instead of through a placeholder.
+    @State private var shownKey = UniformArchive.canonicalCombinationKey
+    @State private var figures: [String: UIImage] = [:]
 
     private var selected: UniformCombination? {
         options.first { $0.key == selectedKey } ?? options.first
+    }
+
+    private var shown: UniformCombination? {
+        options.first { $0.key == shownKey } ?? options.first
     }
 
     private var dates: String {
@@ -40,25 +48,50 @@ struct UniformKitDetailView: View {
         .navigationTitle(kit.teamAbbrev)
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("uniform-kit-detail")
+        .task(id: selectedKey) {
+            guard let option = selected else { return }
+            if figures[option.key] == nil, let image = await Self.loadFigure(option.fullURL) {
+                figures[option.key] = image
+            }
+            guard !Task.isCancelled else { return }
+            withAnimation(reduceMotion ? DesignTokens.Motion.feedback : DesignTokens.Motion.reveal)
+            {
+                shownKey = option.key
+            }
+        }
+        .task {
+            await UniformArt.prefetch(options.compactMap(\.fullURL))
+        }
+    }
+
+    /// Reads through `URLSession.shared`, so a figure already prefetched or shown on the
+    /// team page comes from the HTTP cache.
+    private static func loadFigure(_ url: URL?) async -> UIImage? {
+        guard let url,
+            let (data, _) = try? await URLSession.shared.data(for: URLRequest(url: url))
+        else { return nil }
+        return UIImage(data: data)
     }
 
     private var hero: some View {
         ZStack {
             // Keyed by combination so a swap crossfades the old figure out and the new
-            // one in rather than snapping.
-            UniformThumb(url: selected?.fullURL, size: 130)
-                .id(selected?.key)
-                .transition(.opacity)
+            // one in rather than snapping. A figure that failed to load falls back to the
+            // thumb, which retries and shows its placeholder.
+            Group {
+                if let image = shown.flatMap({ figures[$0.key] }) {
+                    Image(uiImage: image).resizable().scaledToFit()
+                        .frame(width: 130, height: 130 * 2.7)
+                } else {
+                    UniformThumb(url: shown?.fullURL, size: 130)
+                }
+            }
+            .id(shown?.key)
+            .transition(.opacity)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, DesignTokens.Spacing.md)
-        .background(
-            LinearGradient(
-                colors: [Color(hex: kit.colors.primary).opacity(0.4), DesignTokens.Colors.bg],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
+        .background { heroGround }
         .accessibilityElement()
         .accessibilityLabel(
             [
@@ -71,6 +104,21 @@ struct UniformKitDetailView: View {
             .compactMap { $0 }.joined(separator: ", ")
         )
         .accessibilityAddTraits(.isImage)
+    }
+
+    /// The kit's own colors, its contrast color behind the figure and its body color
+    /// at the edges, fading into the page below.
+    private var heroGround: some View {
+        let ground = UniformArchive.heroGround(kit.colors)
+        return RadialGradient(
+            colors: [Color(hex: ground.center), Color(hex: ground.edge)],
+            center: .center, startRadius: 0, endRadius: 260
+        )
+        .mask {
+            LinearGradient(
+                stops: [.init(color: .black, location: 0.6), .init(color: .clear, location: 1)],
+                startPoint: .top, endPoint: .bottom)
+        }
     }
 
     private var titleBlock: some View {

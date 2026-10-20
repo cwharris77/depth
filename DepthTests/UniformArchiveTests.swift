@@ -301,6 +301,45 @@ struct ArchiveGroupingTests {
         #expect(team.representativeKit.id == "bills-away")
     }
 
+    /// A team with a retired home design whose name sorts first still shows the newest one.
+    @Test func representativeKitIsTheNewestHome() {
+        let oldHome = listing(
+            id: "bills-home-1984", name: "A Classic", yearStart: 1984, yearEnd: 2001,
+            isCurrent: false)
+        let midHome = listing(
+            id: "bills-home-2002", name: "B Navy", yearStart: 2002, yearEnd: 2010,
+            isCurrent: false)
+        let team = UniformArchive.groupByDivision([oldHome, billsAway, bills, midHome])[0]
+            .teams[0]
+        #expect(team.representativeKit.id == "bills-home")
+    }
+
+    @Test func representativeKitPrefersADatedHomeOverAnUndatedOne() {
+        let undated = listing(id: "bills-home-undated", name: "A Undated", yearStart: nil)
+        let team = UniformArchive.groupByDivision([undated, bills])[0].teams[0]
+        #expect(team.representativeKit.id == "bills-home")
+    }
+
+    @Test func heroGroundCentersTheContrastColor() {
+        let ground = UniformArchive.heroGround(
+            TeamColors(primary: "#FFFFFF", secondary: "#00338D", accent: "#C60C30"))
+        #expect(ground.edge == "#FFFFFF")
+        #expect(ground.center == "#00338D")
+    }
+
+    /// Dolphins aqua on orange is too close to separate, so the accent takes the center.
+    @Test func heroGroundFallsBackToAccent() {
+        let ground = UniformArchive.heroGround(
+            TeamColors(primary: "#008E97", secondary: "#FC4C02", accent: "#FFFFFF"))
+        #expect(ground.center == "#FFFFFF")
+    }
+
+    @Test func heroGroundKeepsPrimaryWhenNothingSeparates() {
+        let ground = UniformArchive.heroGround(
+            TeamColors(primary: "#241773", secondary: "#000000", accent: "#1A1060"))
+        #expect(ground.center == "#241773")
+    }
+
     @Test func singleKitTeamIsNotPluralised() {
         let team = UniformArchive.groupByDivision([bills])[0].teams[0]
         #expect(team.kitCountLabel == "1 kit")
