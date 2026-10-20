@@ -51,7 +51,7 @@ export const PACKERS_CATALOG: TeamCatalog = {
           helmet: 'gold',
           pants: 'gold',
           pantsNike: 'green',
-          socks: 'white',
+          socks: 'green',
         },
       ],
     },
@@ -103,6 +103,58 @@ export const PACKERS_CATALOG: TeamCatalog = {
           pants: 'white',
           pantsNike: 'green',
           socks: 'white',
+        },
+      ],
+    },
+    {
+      id: 'packers-rivalries-2026',
+      referencePacket: {
+        classification: 'signature',
+        sources: [
+          {
+            url: 'https://www.packers.com/photos/rivalries-the-details',
+            role: 'construction and front details',
+            covers: ['collar', 'wordmark', 'numerals', 'sleeves'],
+          },
+          {
+            url: 'https://www.packers.com/news/packers-reveal-nfl-rivalries-uniforms-celebrating-team-s-unique-ownership',
+            role: 'equipment and design identity',
+            covers: ['helmet', 'paint', 'design identity'],
+          },
+        ],
+        observed: [
+          'Striped collar, inside-neck inscription, gold numeral edge and engraved numeral fill.',
+          'Authentic interlocking GB belongs on wearer left chest.',
+        ],
+        approximations: [
+          'Authentic interlocking chest mark and engraved numeral surface are not yet represented.',
+          'Fabric and helmet paints are existing digital approximations; exact material finish is unresolved.',
+          'Inside-collar label uses a substitute font; rear helmet text is outside front-view coverage.',
+        ],
+      },
+      slug: 'rivalries-2026',
+      sleeveNike: 'alabaster',
+      name: 'Rivalries',
+      kind: 'alternate',
+      jersey: 'rivalries',
+      colors: { primary: '#445251', secondary: '#EBDBB2', accent: '#DAAF33' },
+      legacyAccent: { uiAccent: '#FFB612', onAccent: '#0a0e1a' },
+      periods: [
+        {
+          from: 2026,
+          startSource:
+            'https://www.packers.com/news/packers-reveal-nfl-rivalries-uniforms-celebrating-team-s-unique-ownership',
+          verifiedOn: '2026-10-19',
+        },
+      ],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Alabaster pants',
+          helmet: 'rivalries',
+          pants: 'alabaster',
+          pantsNike: 'green',
+          socks: 'rivalries',
         },
       ],
     },

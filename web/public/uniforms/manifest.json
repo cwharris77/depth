@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "5e4b79ec5968962ccb770a6f25b24747ce10bf354c0a72702f444a453d5aef7d",
-  "revision": "3163f44512895e16",
+  "sourceDigest": "ef7dae56822f0786d18f417066a476d31c18532e482c59cc27fbeb8149232692",
+  "revision": "095913d63d312f18",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1616,7 +1616,7 @@
     {
       "catalogId": "packers-away-1959",
       "constructionKey": "away",
-      "revision": "06ad8243a0946284",
+      "revision": "22ce645a7389432d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-away-1959.webp",
@@ -1624,14 +1624,14 @@
         },
         "full": {
           "path": "/uniforms/packers-away-1959-full.webp",
-          "sha256": "2b8bbe196f1c4a8c4d718cb4846b465de31ac063605ff35de43c2056387780bb"
+          "sha256": "0176e8a855c6ebbb1a57c76f07c7ee6cb9ded4e69197f63b51349343c61a90ac"
         }
       }
     },
     {
       "catalogId": "packers-home-1959",
       "constructionKey": "home",
-      "revision": "05ec4fe161588c1a",
+      "revision": "81332e84fc5e31fb",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/packers-home-1959.webp",
@@ -1639,7 +1639,22 @@
         },
         "full": {
           "path": "/uniforms/packers-home-1959-full.webp",
-          "sha256": "3055e93cf92774b9e719c0addc207b0a2c8993c056db20c5c5913886553b8e4d"
+          "sha256": "e5c5f4903e6609454e7e0e884dd70efa0e99713f9da00a515c270afe7edb65eb"
+        }
+      }
+    },
+    {
+      "catalogId": "packers-rivalries-2026",
+      "constructionKey": "rivalries-2026",
+      "revision": "8a9236fb5faa3777",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/packers-rivalries-2026.webp",
+          "sha256": "b121c766bf1bed481459ded7567cc530b417d480b5f996abb7f6e6feb93f443a"
+        },
+        "full": {
+          "path": "/uniforms/packers-rivalries-2026-full.webp",
+          "sha256": "783d6e22dadbdf56e88f8372996698a22b3d19a5e954d1cd0a0b057c0513ef46"
         }
       }
     },
