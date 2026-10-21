@@ -291,18 +291,18 @@
   {
     "id": "lions-home-2024",
     "colors": {
-      "primary": "#0076B6",
-      "secondary": "#B0B7BC",
-      "accent": "#B0B7BC"
+      "primary": "#0264AE",
+      "secondary": "#A3A6AA",
+      "accent": "#A3A6AA"
     },
     "expected": {
-      "fill": "#0076B6",
-      "ring": "#B0B7BC",
-      "mark": "#B0B7BC",
-      "text": "#B0B7BC",
+      "fill": "#0264AE",
+      "ring": "#A3A6AA",
+      "mark": "#A3A6AA",
+      "text": "#A3A6AA",
       "textOnFill": "#ffffff",
-      "numeralFill": "#0076B6",
-      "numeralStroke": "#B0B7BC"
+      "numeralFill": "#0264AE",
+      "numeralStroke": "#A3A6AA"
     }
   },
   {
@@ -1057,17 +1057,17 @@
     "id": "lions-away-2024",
     "colors": {
       "primary": "#FFFFFF",
-      "secondary": "#0076B6",
-      "accent": "#B0B7BC"
+      "secondary": "#0264AE",
+      "accent": "#A3A6AA"
     },
     "expected": {
       "fill": "#FFFFFF",
-      "ring": "#0076B6",
-      "mark": "#0076B6",
-      "text": "#B0B7BC",
-      "textOnFill": "#0076B6",
-      "numeralFill": "#FFFFFF",
-      "numeralStroke": "#0076B6"
+      "ring": "#0264AE",
+      "mark": "#A3A6AA",
+      "text": "#A3A6AA",
+      "textOnFill": "#0264AE",
+      "numeralFill": "#0264AE",
+      "numeralStroke": "#FFFFFF"
     }
   },
   {
@@ -1787,18 +1787,18 @@
   {
     "id": "lions-gridiron-gray-2017",
     "colors": {
-      "primary": "#B0B7BC",
-      "secondary": "#0076B6",
+      "primary": "#545859",
+      "secondary": "#0264AE",
       "accent": "#000000"
     },
     "expected": {
-      "fill": "#B0B7BC",
-      "ring": "#0076B6",
-      "mark": "#0076B6",
-      "text": "#B0B7BC",
-      "textOnFill": "#15161a",
-      "numeralFill": "#B0B7BC",
-      "numeralStroke": "#0076B6"
+      "fill": "#545859",
+      "ring": "#0264AE",
+      "mark": "#0264AE",
+      "text": "#FFFFFF",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#545859",
+      "numeralStroke": "#FFFFFF"
     }
   },
   {
@@ -2156,6 +2156,40 @@
       "textOnFill": "#FFFFFF",
       "numeralFill": "#AA0000",
       "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "lions-black-alternate-2024",
+    "colors": {
+      "primary": "#000000",
+      "secondary": "#0264AE",
+      "accent": "#A3A6AA"
+    },
+    "expected": {
+      "fill": "#000000",
+      "ring": "#0264AE",
+      "mark": "#A3A6AA",
+      "text": "#A3A6AA",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#000000",
+      "numeralStroke": "#FFFFFF"
+    }
+  },
+  {
+    "id": "lions-honolulu-blue-classic-2024",
+    "colors": {
+      "primary": "#0264AE",
+      "secondary": "#A3A6AA",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#0264AE",
+      "ring": "#A3A6AA",
+      "mark": "#A3A6AA",
+      "text": "#A3A6AA",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#0264AE",
+      "numeralStroke": "#A3A6AA"
     }
   }
 ]
