@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "9682ad1a740889ca65c5002b989c576a0781ecfd208bf14d01c6098ac5ddbc4e",
-  "revision": "6cb6a6249f4d3ab5",
+  "sourceDigest": "b6f043f55b8e6e03f79db168d0bfc796595a49af7c3008a82afc5e340bfac3c9",
+  "revision": "6e6a877404063fca",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -91,7 +91,7 @@
     {
       "catalogId": "bears-away-2012",
       "constructionKey": "away",
-      "revision": "383ac1409c8543fe",
+      "revision": "0e1fa5f7bc339883",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-away-2012.webp",
@@ -99,14 +99,14 @@
         },
         "full": {
           "path": "/uniforms/bears-away-2012-full.webp",
-          "sha256": "ff5845db3ceb5ff8dae2145315146e3a3893a9e2ca9268cf6fd0e71dd3c69b2f"
+          "sha256": "e4bc13320d58b33ab702121e1435d4fbe3c073c8f0c844a3525f5796848002c7"
         }
       }
     },
     {
       "catalogId": "bears-home-2012",
       "constructionKey": "home",
-      "revision": "ffed47ae6ab89a79",
+      "revision": "c84661abfdccc69b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-home-2012.webp",
@@ -114,7 +114,7 @@
         },
         "full": {
           "path": "/uniforms/bears-home-2012-full.webp",
-          "sha256": "2cfb43c7a41a04079877378699540aa589d832b376735db62719cffb97cef4d1"
+          "sha256": "cafa9d05c1c9b55000503569dd95720a6e78116b4178147594c546ddb2257c81"
         }
       },
       "combinations": [
@@ -123,7 +123,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/bears-home-2012--white-pants-full.webp",
-            "sha256": "9c2fa44e634b26b1068158efd9b925b33586f495588156545e0a83daa1e62931"
+            "sha256": "b74100b628dbb305bf8b0b84d564f4a7ddc4559a0750d2c1fb1f10551794c5aa"
           }
         }
       ]
@@ -131,7 +131,7 @@
     {
       "catalogId": "bears-orange-alternate-2005",
       "constructionKey": "orange-alternate",
-      "revision": "81d4bf6c34b7a919",
+      "revision": "6aa0f77df9267124",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-orange-alternate-2005.webp",
@@ -139,7 +139,7 @@
         },
         "full": {
           "path": "/uniforms/bears-orange-alternate-2005-full.webp",
-          "sha256": "41c479167921c97aec39ad465f27fbd7b7463132e97ed7b9304fc071c3a6e50f"
+          "sha256": "a11b437aa09f8d352a56a8012c2f2a05831c4abbae62deaa4a7175f30d89011c"
         }
       },
       "combinations": [
@@ -148,7 +148,7 @@
           "label": "Navy helmet / white pants (2018+)",
           "full": {
             "path": "/uniforms/bears-orange-alternate-2005--navy-helmet-full.webp",
-            "sha256": "48d9255e440a54e03e15b46ced0387388c91cd3ed44f4ef81e090e519829489a"
+            "sha256": "c3c74f1df0c4e6a9f7eec090d091578a8838f818010da1f2d51da48db72e8b38"
           }
         }
       ]
