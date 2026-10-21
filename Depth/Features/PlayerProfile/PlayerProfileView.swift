@@ -366,7 +366,7 @@ private struct PlayerProfileScreen: View {
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(DesignTokens.Colors.textSecondary)
             .accessibilityIdentifier("player-profile-full-position")
-        let status = Text(player.status.rawValue.uppercased())
+        let status = Text(player.statusLabel.uppercased())
             .font(.caption2.weight(.bold))
             .tracking(1)
             .foregroundStyle(playerStatusColor(player.status, accent: accent))

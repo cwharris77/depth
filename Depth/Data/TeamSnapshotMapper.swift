@@ -216,7 +216,11 @@ enum TeamSnapshotMapper {
             id: dto.id, name: dto.name, position: position, depthRank: depthRank, number: number,
             status: status, age: dto.age ?? 0, college: dto.college ?? "",
             experience: dto.experience ?? 0, height: dto.height ?? "", weight: dto.weight ?? 0,
-            bio: dto.bio ?? "", photoUrl: dto.photoUrl
+            bio: dto.bio ?? "", photoUrl: dto.photoUrl,
+            injuryDesignation: dto.injuryDesignation.flatMap { designation in
+                let trimmed = designation.trimmingCharacters(in: .whitespaces)
+                return trimmed.isEmpty ? nil : trimmed
+            }
         )
     }
 

@@ -2118,6 +2118,7 @@ export type Database = {
           experience: number | null
           height: string | null
           id: string
+          injury_designation: string | null
           name: string
           number: number | null
           photo_url: string | null
@@ -2135,6 +2136,7 @@ export type Database = {
           experience?: number | null
           height?: string | null
           id: string
+          injury_designation?: string | null
           name: string
           number?: number | null
           photo_url?: string | null
@@ -2151,6 +2153,7 @@ export type Database = {
           experience?: number | null
           height?: string | null
           id?: string
+          injury_designation?: string | null
           name?: string
           number?: number | null
           photo_url?: string | null

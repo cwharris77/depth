@@ -1,19 +1,8 @@
+import { INJURIES } from './injuries';
 import { mapDepthchartPosition, mapSpecialPosition } from './positions';
 import { parseAthleteId } from './transform';
 import type { EspnRoster, EspnDepthcharts, EspnAthlete } from './types';
 import type { TeamObservation, ObservedDepthSlot } from '@/lib/events/types';
-
-const INJURIES = new Map(
-  [
-    'Questionable',
-    'Doubtful',
-    'Out',
-    'Injured Reserve',
-    'Physically Unable to Perform',
-    'Non-Football Injury',
-    'Probable',
-  ].map((label) => [label.toLowerCase(), label])
-);
 
 export function observeTeamEvents(args: {
   teamId: string;
