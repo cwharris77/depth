@@ -166,12 +166,12 @@ enum TeamStatsMetricCatalog {
                 ),
                 TeamStatsMetricSpec(
                     id: "pass-epa", label: "PASS EPA",
-                    value: { $0.passingEPA }, format: TeamStatsMetricFormat.decimal(1),
+                    value: { $0.passingEPA }, format: TeamStatsMetricFormat.signed(1),
                     rank: { $0.passingEPA }, tieKey: "passingEPA", qualifier: .most
                 ),
                 TeamStatsMetricSpec(
                     id: "rush-epa", label: "RUSH EPA",
-                    value: { $0.rushingEPA }, format: TeamStatsMetricFormat.decimal(1),
+                    value: { $0.rushingEPA }, format: TeamStatsMetricFormat.signed(1),
                     rank: { $0.rushingEPA }, tieKey: "rushingEPA", qualifier: .most
                 ),
                 // Labelled INTS THROWN, not INTERCEPTIONS: DEFENSE carries its own

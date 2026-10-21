@@ -277,10 +277,10 @@ enum CompareMetricCatalog {
                     metricValue($0.offensiveEPAPerPlay) { CompareValueFormat.signed($0, digits: 2) }
                 },
                 CompareMetricSpec(id: "pass-epa", label: "PASS EPA", direction: .higher) {
-                    metricValue($0.passingEPA) { CompareValueFormat.decimal($0, digits: 1) }
+                    metricValue($0.passingEPA) { CompareValueFormat.signed($0, digits: 1) }
                 },
                 CompareMetricSpec(id: "rush-epa", label: "RUSH EPA", direction: .higher) {
-                    metricValue($0.rushingEPA) { CompareValueFormat.decimal($0, digits: 1) }
+                    metricValue($0.rushingEPA) { CompareValueFormat.signed($0, digits: 1) }
                 },
                 CompareMetricSpec(
                     id: "offensive-plays", label: "OFFENSIVE PLAYS", direction: .neutral

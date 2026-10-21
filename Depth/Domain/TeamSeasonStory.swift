@@ -548,6 +548,9 @@ struct TeamSeasonPace: Equatable, Sendable {
     let priorWins: Int
     let priorLosses: Int
     let priorTies: Int
+    /// True when the window is all of last season's schedule, so "through N games" would
+    /// only restate the full season.
+    let coversPriorSeason: Bool
 
     var winDelta: Int { wins - priorWins }
 
@@ -567,8 +570,8 @@ struct TeamSeasonPace: Equatable, Sendable {
 
     /// The rest of the line after `lead`.
     var detail: String {
-        let span =
-            "\(priorSeason) through \(games) \(games == 1 ? "game" : "games") (\(priorRecord))"
+        let through = coversPriorSeason ? "" : " through \(games) \(games == 1 ? "game" : "games")"
+        let span = "\(priorSeason)\(through) (\(priorRecord))"
         switch winDelta {
         case 0: return "Same record as \(span)"
         case let delta where delta > 0: return "on \(span)"
@@ -576,7 +579,8 @@ struct TeamSeasonPace: Equatable, Sendable {
         }
     }
 
-    /// "+2 wins on 2025 through 11 games (6-5)".
+    /// "+2 wins on 2025 through 11 games (6-5)", or "+2 wins on 2025 (9-8)" once the window
+    /// is the whole of last season.
     var summary: String {
         [lead, detail].compactMap { $0 }.joined(separator: " ")
     }
@@ -588,10 +592,10 @@ struct TeamSeasonPace: Equatable, Sendable {
         guard games > 0, let priorSchedule, priorSchedule.season == stats.season - 1 else {
             return nil
         }
-        let results = priorSchedule.games
+        let priorGames = priorSchedule.games
             .filter { !$0.isBye }
             .sorted { $0.week < $1.week }
-            .compactMap(\.result)
+        let results = priorGames.compactMap(\.result)
         guard results.count >= games else { return nil }
         let window = results.prefix(games)
         return TeamSeasonPace(
@@ -600,7 +604,8 @@ struct TeamSeasonPace: Equatable, Sendable {
             wins: stats.overallWins,
             priorWins: window.filter { $0 == .win }.count,
             priorLosses: window.filter { $0 == .loss }.count,
-            priorTies: window.filter { $0 == .tie }.count
+            priorTies: window.filter { $0 == .tie }.count,
+            coversPriorSeason: priorGames.count == games
         )
     }
 }
