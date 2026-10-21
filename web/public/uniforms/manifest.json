@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "84cd534e2fb613df5304e35d504d4e8bc7d1b902ba3a5e8371d68b433deaea9d",
-  "revision": "f9ceb10ab6a2b680",
+  "sourceDigest": "b6f043f55b8e6e03f79db168d0bfc796595a49af7c3008a82afc5e340bfac3c9",
+  "revision": "6e6a877404063fca",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -91,30 +91,30 @@
     {
       "catalogId": "bears-away-2012",
       "constructionKey": "away",
-      "revision": "aa2b112fa97551ad",
+      "revision": "0e1fa5f7bc339883",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-away-2012.webp",
-          "sha256": "e0a9343972eb23ae33e88e973cfd41c00d2fb92d2d5a6fdfc3e4406ee27e0382"
+          "sha256": "6fb0299c5743a7cc14cea6649fa3a3b4e63d1caa1238e34720ffdd350d59213b"
         },
         "full": {
           "path": "/uniforms/bears-away-2012-full.webp",
-          "sha256": "570b0c1473ee8c9ab0716399c671839d15e3b5679f0e0c7c0bfce5e9ed1d7a5b"
+          "sha256": "e4bc13320d58b33ab702121e1435d4fbe3c073c8f0c844a3525f5796848002c7"
         }
       }
     },
     {
       "catalogId": "bears-home-2012",
       "constructionKey": "home",
-      "revision": "26adb555135715a1",
+      "revision": "c84661abfdccc69b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-home-2012.webp",
-          "sha256": "78efbedd93dc4fb7f6b63f299f8fb6c18dc317085157c4cc67ecd6aac4da9df4"
+          "sha256": "e23e8138ce084033de57a192f36f1706b02c7e2fdd034dd21befa1bd92297fee"
         },
         "full": {
           "path": "/uniforms/bears-home-2012-full.webp",
-          "sha256": "d2baae1bc8d1e6b2edb35fdda9149e1b54c76423cb15fe900bb2fb0d08981581"
+          "sha256": "cafa9d05c1c9b55000503569dd95720a6e78116b4178147594c546ddb2257c81"
         }
       },
       "combinations": [
@@ -123,7 +123,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/bears-home-2012--white-pants-full.webp",
-            "sha256": "3aaa764e722905453647439cececa21ddbb300811ca24c9e2e77199a9676dc86"
+            "sha256": "b74100b628dbb305bf8b0b84d564f4a7ddc4559a0750d2c1fb1f10551794c5aa"
           }
         }
       ]
@@ -131,17 +131,27 @@
     {
       "catalogId": "bears-orange-alternate-2005",
       "constructionKey": "orange-alternate",
-      "revision": "3f42c7f0d32e77b7",
+      "revision": "6aa0f77df9267124",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bears-orange-alternate-2005.webp",
-          "sha256": "b4d798a44fbcf17f0702de140340a225f005fa5f65c2b85eff3dfb3abdf79eb5"
+          "sha256": "acecfaae435ccb7ac6a80da3a8d2ccf7e56bccc5e31f65b7481f79bdb289456d"
         },
         "full": {
           "path": "/uniforms/bears-orange-alternate-2005-full.webp",
-          "sha256": "e4d50e0fc08521445ff26db4141ce9877b21a1c8396aafa25dbfbda7711cb784"
+          "sha256": "a11b437aa09f8d352a56a8012c2f2a05831c4abbae62deaa4a7175f30d89011c"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "navy-helmet",
+          "label": "Navy helmet / white pants (2018+)",
+          "full": {
+            "path": "/uniforms/bears-orange-alternate-2005--navy-helmet-full.webp",
+            "sha256": "c3c74f1df0c4e6a9f7eec090d091578a8838f818010da1f2d51da48db72e8b38"
+          }
+        }
+      ]
     },
     {
       "catalogId": "bengals-away-2021",

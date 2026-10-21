@@ -67,10 +67,33 @@ export const BEARS_CATALOG: TeamCatalog = {
         },
       ],
     },
-    // Bears orange alternate (modern alt, no throwback era). Hexes: orange #C83803, navy #0B162A.
+    // Modern Bears orange alternate (2018 construction); the 2004 uniform is a separate era.
     // uiAccent reuses the team's brightened orange.
     {
       id: 'bears-orange-alternate-2005',
+      referencePacket: {
+        classification: 'detail',
+        sources: [
+          {
+            url: 'https://www.chicagobears.com/photos/bears-debut-new-orange-nike-jerseys',
+            role: 'construction and front details',
+            covers: ['collar', 'wordmark', 'numerals', 'sleeves'],
+          },
+          {
+            url: 'https://www.chicagobears.com/photos/photos-bears-unveil-new-orange-helmets-alternate',
+            role: 'equipment and design identity',
+            covers: ['helmet', 'paint', 'design identity'],
+          },
+        ],
+        observed: [
+          'Orange exterior collar; white numerals with navy outline.',
+          'Orange helmet uses navy C with white keyline and navy cage.',
+        ],
+        approximations: [
+          'GSH font and shoulder-digit projection are approximate.',
+          'Navy-helmet sock pairing needs dated game-photo confirmation.',
+        ],
+      },
       slug: 'orange-alternate',
       sleeveNike: 'white',
       name: 'Orange Alternate',
@@ -80,22 +103,29 @@ export const BEARS_CATALOG: TeamCatalog = {
       legacyAccent: { uiAccent: '#FF6A33', onAccent: '#0a0e1a' },
       periods: [
         {
-          from: 2004,
-          to: 2011,
-          startSource:
-            'https://www.chicagobears.com/news/chalktalk/chalk-talk-when-was-last-time-bears-wore-orange',
-          source: 'https://www.chicagobears.com/news/bears-reveal-jersey-colors-for-all-2018-games',
-          verifiedOn: '2026-10-12',
-        },
-        {
           from: 2018,
           startSource:
             'https://www.chicagobears.com/news/bears-reveal-jersey-colors-for-all-2018-games',
-          verifiedOn: '2026-10-12',
+          verifiedOn: '2026-10-19',
         },
       ],
       combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'navy-c', pants: 'navy', pantsNike: 'white' },
+        {
+          key: 'standard',
+          label: 'Orange helmet / white pants (2022+)',
+          helmet: 'orange-c',
+          pants: 'white',
+          pantsNike: 'navy',
+          socks: 'orange',
+        },
+        {
+          key: 'navy-helmet',
+          label: 'Navy helmet / white pants (2018+)',
+          helmet: 'navy-c',
+          pants: 'white',
+          pantsNike: 'navy',
+          socks: 'navy',
+        },
       ],
     },
   ],

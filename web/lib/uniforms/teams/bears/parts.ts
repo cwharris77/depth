@@ -1,7 +1,7 @@
 // Chicago as a complete team spec: every helmet, jersey, pants and socks part, with its own art
 // drawn by the marks in ./marks.
 import type { TeamSpec } from '../core/team-spec';
-import { BEARS_C_DECAL } from './marks/construction';
+import { BEARS_C_DECAL, BEARS_ORANGE_C_DECAL } from './marks/construction';
 import { BEARS_JERSEY_NAVY } from './jerseys/navy';
 import { BEARS_JERSEY_ORANGE } from './jerseys/orange';
 import { BEARS_JERSEY_WHITE } from './jerseys/white';
@@ -23,7 +23,7 @@ const seamStripe = (outer: string, middle: string) => ({
 
 export const BEARS_SPEC: TeamSpec = {
   helmets: {
-    // The one shell, on every kit. The cage is painted the shell navy rather than a neutral.
+    'orange-c': { shell: 'orange', facemask: 'navy', decal: BEARS_ORANGE_C_DECAL, number: 'none' },
     'navy-c': { shell: 'navy', facemask: 'navy', decal: BEARS_C_DECAL, number: 'none' },
   },
   jerseys: {
@@ -36,6 +36,18 @@ export const BEARS_SPEC: TeamSpec = {
     white: { body: 'white', stripes: seamStripe('navy', 'orange'), marks: [] },
   },
   socks: {
+    orange: {
+      color: 'orange',
+      stripes: {
+        bands: [
+          { color: 'navy', size: 'm' },
+          { color: 'navy', size: 'm' },
+          { color: 'navy', size: 'm' },
+        ],
+        gap: 'wide',
+        edge: 'white',
+      },
+    },
     // Worn with the navy pants.
     white: {
       color: 'white',
