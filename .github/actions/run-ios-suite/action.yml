@@ -73,10 +73,16 @@ runs:
           exit 1
         fi
         # `$TESTS` expands to the whitespace-separated `-only-testing:` args; empty is fine.
+        # A failed test reruns once. Hosted macOS runners intermittently stall the
+        # simulator's accessibility and launch services (kAXErrorIPCTimeout, "Timed out
+        # while launching app", 15-30s element queries right after launch), failing a test
+        # that passes on the next attempt. A real regression fails both attempts.
         # shellcheck disable=SC2086
         xcodebuild \
           -xctestrun "$XCTESTRUN" \
           -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+          -retry-tests-on-failure \
+          -test-iterations 2 \
           -test-timeouts-enabled YES \
           -default-test-execution-time-allowance "$ALLOWANCE" \
           -maximum-test-execution-time-allowance "$ALLOWANCE" \

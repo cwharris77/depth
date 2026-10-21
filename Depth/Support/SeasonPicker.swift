@@ -140,8 +140,10 @@ struct SeasonPickerSheet: View {
                 }
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("\(identifierPrefix)-season-\(item.season)")
+                // A String, not a literal: a `LocalizedStringKey` would group the Int
+                // ("2,026"), the same trap as the trigger's `Text(verbatim:)` above.
                 .accessibilityLabel(
-                    "\(item.season)\(item.season == selectedSeason ? ", selected" : "")"
+                    String(item.season) + (item.season == selectedSeason ? ", selected" : "")
                 )
                 // Rounded top corners on the first row and bottom corners on the last —
                 // interior rows stay square so they read as one continuous card, not a
