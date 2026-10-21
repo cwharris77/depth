@@ -72,7 +72,9 @@ export function panthersShoulderNumbers(fill: string, outline: string): PlacedMa
     for (let i = 0; i < coordinates.length; i += 2) {
       const x = 157 - (coordinates[i + 1] - (box[1] + box[3]) / 2) * scale;
       const y = 419 + (coordinates[i] - (box[0] + box[2]) / 2) * scale;
-      rotated.push(side === 'left' ? x : 588 - x, y);
+      // The right numeral is the left one turned half a turn about its centre and carried across
+      // the centreline; a plain reflection would print the 3 backwards.
+      rotated.push(...(side === 'left' ? [x, y] : [588 - x, 838 - y]));
     }
     let i = 0;
     const d = PANTHERS_NUMBER_THREE.replace(/-?\d+(?:\.\d+)?/g, () =>

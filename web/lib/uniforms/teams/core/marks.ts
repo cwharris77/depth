@@ -11,6 +11,9 @@ import type { UniformSurface } from './types';
 export interface MarkPath<S extends string = string> {
   slot: S;
   d: string;
+  // A numeral or lettering drawn for the right sleeve. On the mirrored side it is turned half a
+  // turn about its own centre rather than reflected, so it never reads backwards.
+  handed?: boolean;
 }
 
 export interface Mark<S extends string = string> {
@@ -306,7 +309,7 @@ export function placeMark<S extends string>(
   const aspect = (bx1 - bx0) / (by1 - by0);
   const h = anchor.w / aspect;
   const y0 = anchor.cy - h / 2;
-  const at = ([x, y]: Point) => {
+  const fit = (x: number, y: number) => {
     const u0 = ((x - bx0) * 100) / (bx1 - bx0);
     const u = anchor.mirror ? 100 - u0 : u0;
     const v = ((y - by0) * 100) / (by1 - by0);
@@ -315,7 +318,12 @@ export function placeMark<S extends string>(
   // Art drawn in several runs of one colour repeats a slot; later runs take a numbered id so every
   // layer id in a part stays unique.
   const seen = new Map<string, number>();
-  return mark.paths.flatMap(({ slot, d }): PartLayer[] => {
+  return mark.paths.flatMap(({ slot, d, handed }): PartLayer[] => {
+    // Reflecting across the anchor's axis and then flipping about the path's own centre line is a
+    // half turn, so a handed path keeps its handedness on the mirrored side.
+    const turn = anchor.mirror && handed === true;
+    const [, ty0, , ty1] = turn ? boundsOf(d) : [0, 0, 0, 0];
+    const at = ([x, y]: Point) => fit(x, turn ? ty0 + ty1 - y : y);
     if (!(slot in slots)) throw new Error(`${idPrefix}: mark slot "${slot}" is not mapped`);
     const color = slots[slot];
     if (color === null) return [];
@@ -338,6 +346,17 @@ export function placeMark<S extends string>(
       },
     ];
   });
+}
+
+// The right-sleeve mate of a numeral drawn for the left sleeve: the same glyph turned half a turn
+// about its own centre and carried across the jersey's centreline. Reflecting it instead would
+// print the numeral backwards. Absolute M/L/Z paths only.
+export function numeralMate(d: string): string {
+  const [, y0, , y1] = boundsOf(d);
+  let i = 0;
+  return d.replace(/-?\d+(?:\.\d+)?/g, (n) =>
+    (i++ % 2 === 0 ? 588 - Number(n) : y0 + y1 - Number(n)).toFixed(2)
+  );
 }
 
 export type AnchorPair =
