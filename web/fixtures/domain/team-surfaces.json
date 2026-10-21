@@ -1309,23 +1309,6 @@
     }
   },
   {
-    "id": "vikings-purple-classic-1961",
-    "colors": {
-      "primary": "#4F2683",
-      "secondary": "#FFC62F",
-      "accent": "#FFFFFF"
-    },
-    "expected": {
-      "fill": "#4F2683",
-      "ring": "#FFC62F",
-      "mark": "#FFC62F",
-      "text": "#FFC62F",
-      "textOnFill": "#FFC62F",
-      "numeralFill": "#4F2683",
-      "numeralStroke": "#FFC62F"
-    }
-  },
-  {
     "id": "packers-1923-throwback-1923",
     "colors": {
       "primary": "#1B2C4E",

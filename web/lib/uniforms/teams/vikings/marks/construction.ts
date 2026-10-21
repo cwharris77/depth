@@ -6,9 +6,9 @@ import {
   VIKINGS_DECAL_HORN_PATH,
 } from './decal';
 
-export function vikingsHorn(horn: string, crescent: string) {
+export function vikingsHorn(horn: string, crescent: string, edge: string = horn) {
   const paths: ReadonlyArray<[string, string, string]> = [
-    ['horn', VIKINGS_DECAL_HORN_PATH, horn],
+    ['horn', VIKINGS_DECAL_HORN_PATH, edge],
     ['horn-fill', VIKINGS_DECAL_HORN_FILL_PATH, horn],
     ['crescent', VIKINGS_DECAL_CRESCENT_PATH, crescent],
   ];
