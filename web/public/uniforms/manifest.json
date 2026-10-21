@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "db3502e150062a1ddd3391dfd9f30a2adb39f39e3ccf22faa0f97f9db898ee15",
-  "revision": "3ea9aa63e7b1347d",
+  "sourceDigest": "5e4b79ec5968962ccb770a6f25b24747ce10bf354c0a72702f444a453d5aef7d",
+  "revision": "3163f44512895e16",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1480,7 +1480,7 @@
     {
       "catalogId": "lions-away-2024",
       "constructionKey": "away",
-      "revision": "f7b272e8cee859cc",
+      "revision": "732885ea72abf661",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/lions-away-2024.webp",
@@ -1488,7 +1488,7 @@
         },
         "full": {
           "path": "/uniforms/lions-away-2024-full.webp",
-          "sha256": "4d4bd2a0240cc7666f6bfaeddc01ce0f895be021691444c6171eed96501e7ccb"
+          "sha256": "e998d8cf052bae442cdc4d7acfedf3e5e3e93f1ed49d8f4ac2b957447513007b"
         }
       },
       "combinations": [
@@ -1497,7 +1497,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/lions-away-2024--white-pants-full.webp",
-            "sha256": "0a088a9b261727166e36f420406f4832cb4144de9b0d4a3cbd3dca12084330c1"
+            "sha256": "2953500ed7db9cf48957c04bb8bc0e0228b932704ae9b039ff55b46aeac31ccb"
           }
         },
         {
@@ -1505,7 +1505,7 @@
           "label": "Blue pants",
           "full": {
             "path": "/uniforms/lions-away-2024--blue-pants-full.webp",
-            "sha256": "0973a14f2b571b3cdcf135ec3f9331ef616a68dd37e944562c9b75a555d70ee0"
+            "sha256": "605bd143a6b2efa9a6b1fe359968b6426ce5c78c8a7671c8c6a4c1a04a6089db"
           }
         }
       ]
@@ -1513,7 +1513,7 @@
     {
       "catalogId": "lions-black-alternate-2024",
       "constructionKey": "black-alternate",
-      "revision": "707b51f4387f0dd0",
+      "revision": "d16d288ae3d4f25d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/lions-black-alternate-2024.webp",
@@ -1521,7 +1521,7 @@
         },
         "full": {
           "path": "/uniforms/lions-black-alternate-2024-full.webp",
-          "sha256": "f4fd5e764d4931539549e817c8b0a2a614f72c2a1ee44c78b1073b3521c66dd6"
+          "sha256": "c9d86744fa20ced0159b86366368183a06868d3130cc55e1588671f6c9976c72"
         }
       },
       "combinations": [
@@ -1530,7 +1530,7 @@
           "label": "Honolulu Blue pants",
           "full": {
             "path": "/uniforms/lions-black-alternate-2024--blue-pants-full.webp",
-            "sha256": "85e67c5a2b4150a2ffab72b052b4a5ff387f2e201f5f43905fa14b6d7d935605"
+            "sha256": "b32b87ea6d93c5ffff5df35b101aa4aebdebda2da9dfef00650bc71924a4614a"
           }
         }
       ]
@@ -1538,7 +1538,7 @@
     {
       "catalogId": "lions-gridiron-gray-2017",
       "constructionKey": "gridiron-gray",
-      "revision": "7f567738d453388f",
+      "revision": "c1428abc7f84a44e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/lions-gridiron-gray-2017.webp",
@@ -1546,14 +1546,14 @@
         },
         "full": {
           "path": "/uniforms/lions-gridiron-gray-2017-full.webp",
-          "sha256": "45092ac2a0b2485ff7fd8cd44ccb1ae4dfaedc6ed1666c04fbe8d76067461078"
+          "sha256": "daecbfbb68af679c4b1b40983f01780c58208dc2f5e589c4d0700dbd360f8ed8"
         }
       }
     },
     {
       "catalogId": "lions-home-2024",
       "constructionKey": "home",
-      "revision": "c4941c594a3bf1f8",
+      "revision": "e742a3f4bd1c30c6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/lions-home-2024.webp",
@@ -1561,7 +1561,7 @@
         },
         "full": {
           "path": "/uniforms/lions-home-2024-full.webp",
-          "sha256": "471f3f6e8ba3c7ec49ae76a948de4d2cc5d3fc256d274dffe866dc4de3ceb5ac"
+          "sha256": "9c44d9ed96e1f6304a49d41fe6c17506b733f2f384044fd3a45abfd38286715f"
         }
       },
       "combinations": [
@@ -1570,7 +1570,7 @@
           "label": "Silver pants",
           "full": {
             "path": "/uniforms/lions-home-2024--silver-pants-full.webp",
-            "sha256": "e9b58b91f0227eac797c38536880907da5bd96b246c8ae84c4da54de3a366aec"
+            "sha256": "b3f328f0a858493a156d338a7187fa5f61b60d25309f5641fa108750a4f51ad8"
           }
         },
         {
@@ -1578,7 +1578,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/lions-home-2024--white-pants-full.webp",
-            "sha256": "ecd059045a798b1caacfc7134d6e6760b1944d5a14059af1eba6dae889afb524"
+            "sha256": "c57b1b2a5adbe9d55df7b0f558f9a9d2b99b523e9b2bd3bc021a771f9b649a8f"
           }
         }
       ]

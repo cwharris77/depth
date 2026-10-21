@@ -8,7 +8,6 @@ import type { PartLayer } from '../../core/parts';
 
 // The leaping lion on the silver shell: a white keyline with the blue body over it.
 export const LIONS_HELMET_DECAL = placed([
-  ...lionsCrown('blue', 'white'),
   ...LIONS_DECAL_PATHS.map(({ d, fill }, index): PartLayer => ({
     id: `lions-decal-${index}`,
     surface: 'helmet',
@@ -32,7 +31,6 @@ export const LIONS_2017_HELMET_DECAL = placed([
 ]);
 
 export const LIONS_BLACK_HELMET_DECAL = placed([
-  ...lionsCrown('black', 'silver'),
   ...LIONS_DECAL_PATHS.map(({ d }, index): PartLayer => ({
     id: `lions-black-decal-${index}`,
     surface: 'helmet',
