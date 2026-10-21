@@ -133,7 +133,8 @@ struct TeamDetailView: View {
         self._requestedUniformId = requestedUniformId
         self._requestedEventRoute = requestedEventRoute
         _feedViewModel = State(
-            initialValue: TeamFeedViewModel(teamId: viewModel.teamId, repository: repository))
+            initialValue: TeamFeedViewModel(
+                teamId: viewModel.teamId, repository: repository, preferences: preferences))
         _feedSeenAt = State(initialValue: preferences.teamFeedSeenAt(for: viewModel.teamId))
         self.currentTeamStore = currentTeamStore
         self.onOpenTeamSwitcher = onOpenTeamSwitcher
@@ -1230,6 +1231,7 @@ struct TeamDetailView: View {
             return
         }
         markFeedSeen(through: event.occurredAt)
+        feedViewModel.markRead([event.id])
         editMode.exitForContextChange()
         switch TeamEventDestination.resolve(event, rosterPlayerIds: Set(snapshot.players.map(\.id)))
         {

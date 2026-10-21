@@ -41,6 +41,15 @@ private let october9 = Date(timeIntervalSince1970: 1_791_568_800)
     #expect(line == "Oct 9")
 }
 
+@Test func captionLineWithoutTheDateIsTheSourceAlone() {
+    let known = TeamEventCaption.line(
+        for: event(source: "espn_injuries", occurredAt: october9), includesDate: false)
+    #expect(known == "ESPN injury report")
+    let unknown = TeamEventCaption.line(
+        for: event(source: "a_new_source", occurredAt: october9), includesDate: false)
+    #expect(unknown.isEmpty)
+}
+
 @Test func progressIsTheShareOfTheRecordReached() {
     var payload = TeamEventPayload()
     payload.value = 4900

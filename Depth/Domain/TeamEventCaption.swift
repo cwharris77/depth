@@ -14,9 +14,13 @@ enum TeamEventCaption {
         }
     }
 
+    /// Source and date. A list that already heads each day passes `includesDate: false`,
+    /// which leaves the source alone, or an empty line for an unknown source.
     static func line(
-        for event: TeamEvent, calendar: Calendar = .current, locale: Locale = .current
+        for event: TeamEvent, includesDate: Bool = true, calendar: Calendar = .current,
+        locale: Locale = .current
     ) -> String {
+        guard includesDate else { return sourceLabel(event.source) ?? "" }
         var style = Date.FormatStyle(
             locale: locale, calendar: calendar, timeZone: calendar.timeZone)
         style = style.month(.abbreviated).day()
