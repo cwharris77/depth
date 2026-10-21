@@ -6,11 +6,23 @@ struct TeamEventCard: View {
     let event: TeamEvent
     /// Tints the progress bar; the team's accent where one is known.
     var accent: Color = DesignTokens.Colors.accent
+    /// Leaves the date out of the caption, for a list that heads each day.
+    var showsDate = true
+    /// Marks an event this device has not opened yet.
+    var isUnread = false
     /// Shows a close control when set. The feed's rows pass nil.
     var onDismiss: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .top, spacing: DesignTokens.Spacing.sm) {
+            if isUnread {
+                Circle()
+                    .fill(accent)
+                    .frame(width: 8, height: 8)
+                    // Centers the dot on the headline's first line.
+                    .padding(.top, 6)
+                    .accessibilityHidden(true)
+            }
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
                 Text(event.headline)
                     .font(.subheadline.weight(.semibold))
@@ -28,9 +40,12 @@ struct TeamEventCard: View {
                         .accessibilityLabel("Progress toward the record")
                         .accessibilityValue("\(Int((progress * 100).rounded())) percent")
                 }
-                Text(TeamEventCaption.line(for: event))
-                    .font(.caption)
-                    .foregroundStyle(DesignTokens.Colors.textSecondary)
+                let caption = TeamEventCaption.line(for: event, includesDate: showsDate)
+                if !caption.isEmpty {
+                    Text(caption)
+                        .font(.caption)
+                        .foregroundStyle(DesignTokens.Colors.textSecondary)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             if let onDismiss {

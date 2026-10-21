@@ -34,6 +34,7 @@ suites=(
     StartupTeamTests.swift
     TeamEventCaptionTests.swift
     TeamEventDestinationTests.swift
+    TeamFeedDaysTests.swift
     TeamSeasonStoryTests.swift
     TeamStatsMetricCatalogTests.swift
     TeamSurfacesTests.swift
