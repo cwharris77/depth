@@ -2191,5 +2191,22 @@
       "numeralFill": "#0264AE",
       "numeralStroke": "#A3A6AA"
     }
+  },
+  {
+    "id": "packers-rivalries-2026",
+    "colors": {
+      "primary": "#445251",
+      "secondary": "#EBDBB2",
+      "accent": "#DAAF33"
+    },
+    "expected": {
+      "fill": "#445251",
+      "ring": "#EBDBB2",
+      "mark": "#EBDBB2",
+      "text": "#EBDBB2",
+      "textOnFill": "#EBDBB2",
+      "numeralFill": "#445251",
+      "numeralStroke": "#EBDBB2"
+    }
   }
 ]
