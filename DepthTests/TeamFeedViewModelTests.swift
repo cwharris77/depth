@@ -24,6 +24,19 @@ private actor FeedFakeRepository: DepthRepository {
     func appConfig() async throws -> AppConfig { throw DepthError.notFound }
 }
 
+private func isolatedPreferences() -> UserPreferences {
+    let suite = "TeamFeedViewModelTests-\(UUID().uuidString)"
+    return UserPreferences(defaults: UserDefaults(suiteName: suite) ?? .standard)
+}
+
+@MainActor
+private func makeFeedModel(
+    teamId: String, repository: any DepthRepository,
+    preferences: UserPreferences = isolatedPreferences()
+) -> TeamFeedViewModel {
+    TeamFeedViewModel(teamId: teamId, repository: repository, preferences: preferences)
+}
+
 private func sampleEvent(_ id: String) -> TeamEvent {
     TeamEvent(
         id: id, type: "trade", tier: "big_moments", teamId: "bills", headline: "h \(id)",
@@ -33,7 +46,7 @@ private func sampleEvent(_ id: String) -> TeamEvent {
 @MainActor
 @Test func feedLoadsEventsInTheOrderGiven() async {
     let repository = FeedFakeRepository(result: .success([sampleEvent("a"), sampleEvent("b")]))
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     #expect(model.state == .idle)
     await model.load()
     #expect(model.state == .loaded([sampleEvent("a"), sampleEvent("b")]))
@@ -42,7 +55,7 @@ private func sampleEvent(_ id: String) -> TeamEvent {
 
 @MainActor
 @Test func feedReportsAFailure() async {
-    let model = TeamFeedViewModel(
+    let model = makeFeedModel(
         teamId: "bills", repository: FeedFakeRepository(result: .failure(DepthError.offline)))
     await model.load()
     #expect(model.state == .failed(.offline))
@@ -51,7 +64,7 @@ private func sampleEvent(_ id: String) -> TeamEvent {
 @MainActor
 @Test func feedRecoversOnALaterLoad() async {
     let repository = FeedFakeRepository(result: .failure(DepthError.offline))
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     await model.load()
     await repository.setResult(.success([sampleEvent("a")]))
     await model.load()
@@ -61,7 +74,7 @@ private func sampleEvent(_ id: String) -> TeamEvent {
 @MainActor
 @Test func findingAnEventLoadsTheFeedFirst() async {
     let repository = FeedFakeRepository(result: .success([sampleEvent("a"), sampleEvent("b")]))
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     #expect(await model.event(id: "b") == sampleEvent("b"))
     #expect(await repository.requestedTeamIds.count == 1)
     // Already loaded: found without a second read.
@@ -71,14 +84,14 @@ private func sampleEvent(_ id: String) -> TeamEvent {
 
 @MainActor
 @Test func anEventThatIsNotInTheFeedIsNotFound() async {
-    let model = TeamFeedViewModel(
+    let model = makeFeedModel(
         teamId: "bills", repository: FeedFakeRepository(result: .success([sampleEvent("a")])))
     #expect(await model.event(id: "gone") == nil)
 }
 
 @MainActor
 @Test func findingAnEventWhenTheReadFailsIsNotFound() async {
-    let model = TeamFeedViewModel(
+    let model = makeFeedModel(
         teamId: "bills", repository: FeedFakeRepository(result: .failure(DepthError.offline)))
     #expect(await model.event(id: "a") == nil)
     #expect(model.state == .failed(.offline))
@@ -87,7 +100,7 @@ private func sampleEvent(_ id: String) -> TeamEvent {
 @MainActor
 @Test func aNonDepthErrorIsReportedAsAServerFailure() async {
     struct Odd: Error {}
-    let model = TeamFeedViewModel(
+    let model = makeFeedModel(
         teamId: "bills", repository: FeedFakeRepository(result: .failure(Odd())))
     await model.load()
     guard case .failed(.server) = model.state else {
@@ -97,7 +110,7 @@ private func sampleEvent(_ id: String) -> TeamEvent {
 
 @MainActor @Test func aNewNotificationRefreshesAnAlreadyLoadedFeed() async {
     let repository = FeedFakeRepository(result: .success([sampleEvent("a")]))
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     await model.load()
     await repository.setResult(.success([sampleEvent("b"), sampleEvent("a")]))
     #expect(await model.event(id: "b") == sampleEvent("b"))
@@ -109,7 +122,7 @@ private func sampleEvent(_ id: String) -> TeamEvent {
     let newer = TeamEvent(
         id: "b", type: "trade", tier: "big_moments", teamId: "bills", headline: "h", detail: nil,
         source: "espn_transactions", occurredAt: Date(timeIntervalSince1970: 900))
-    let model = TeamFeedViewModel(
+    let model = makeFeedModel(
         teamId: "bills", repository: FeedFakeRepository(result: .success([old, newer])))
     #expect(model.newestEventDate == nil)
     await model.load()
@@ -147,7 +160,7 @@ private actor GatedFeedRepository: DepthRepository {
 @MainActor
 @Test func aLoadCancelledAfterAnOverlappingOneLandedKeepsItsList() async {
     let repository = GatedFeedRepository()
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     let first = Task { await model.load() }
     let second = Task { await model.load() }
     await repository.answerOldest(whenWaiting: 2, with: .success([sampleEvent("a")]))
@@ -161,7 +174,7 @@ private actor GatedFeedRepository: DepthRepository {
 @MainActor
 @Test func aLoadThatFailsAfterAnOverlappingOneLandedKeepsItsList() async {
     let repository = GatedFeedRepository()
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     let first = Task { await model.load() }
     let second = Task { await model.load() }
     await repository.answerOldest(whenWaiting: 2, with: .success([sampleEvent("a")]))
@@ -174,7 +187,7 @@ private actor GatedFeedRepository: DepthRepository {
 
 @MainActor
 @Test func aCancelledFirstLoadLeavesTheFeedIdle() async {
-    let model = TeamFeedViewModel(
+    let model = makeFeedModel(
         teamId: "bills", repository: FeedFakeRepository(result: .failure(CancellationError())))
     await model.load()
     #expect(model.state == .idle)
@@ -184,7 +197,7 @@ private actor GatedFeedRepository: DepthRepository {
 @MainActor
 @Test func aCancelledRefreshKeepsTheLoadedFeed() async {
     let repository = FeedFakeRepository(result: .success([sampleEvent("a")]))
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     await model.load()
     await repository.setResult(.failure(CancellationError()))
     await model.load()
@@ -195,7 +208,7 @@ private actor GatedFeedRepository: DepthRepository {
 @MainActor
 @Test func aCancelledRetryGoesBackToTheEarlierFailure() async {
     let repository = FeedFakeRepository(result: .failure(DepthError.offline))
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     await model.load()
     await repository.setResult(.failure(CancellationError()))
     await model.load()
@@ -204,7 +217,7 @@ private actor GatedFeedRepository: DepthRepository {
 
 @MainActor
 @Test func aReadThatFailsInACancelledTaskRestoresTheEarlierState() async {
-    let model = TeamFeedViewModel(
+    let model = makeFeedModel(
         teamId: "bills", repository: FeedFakeRepository(result: .failure(DepthError.offline)))
     let task = Task { @MainActor in
         withUnsafeCurrentTask { $0?.cancel() }
@@ -217,7 +230,7 @@ private actor GatedFeedRepository: DepthRepository {
 @MainActor
 @Test func aFailedRefreshKeepsTheLoadedFeedAndSaysSo() async {
     let repository = FeedFakeRepository(result: .success([sampleEvent("a")]))
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     await model.load()
     #expect(!model.refreshFailed)
     await repository.setResult(.failure(DepthError.offline))
@@ -233,7 +246,7 @@ private actor GatedFeedRepository: DepthRepository {
 @MainActor
 @Test func aLaterSuccessfulRefreshClearsTheRefreshFailure() async {
     let repository = FeedFakeRepository(result: .success([sampleEvent("a")]))
-    let model = TeamFeedViewModel(teamId: "bills", repository: repository)
+    let model = makeFeedModel(teamId: "bills", repository: repository)
     await model.load()
     await repository.setResult(.failure(DepthError.offline))
     await model.load()
@@ -245,9 +258,90 @@ private actor GatedFeedRepository: DepthRepository {
 
 @MainActor
 @Test func aFailureWithNothingLoadedIsNotARefreshFailure() async {
-    let model = TeamFeedViewModel(
+    let model = makeFeedModel(
         teamId: "bills", repository: FeedFakeRepository(result: .failure(DepthError.offline)))
     await model.load()
     #expect(model.state == .failed(.offline))
     #expect(!model.refreshFailed)
+}
+
+@MainActor @Test func openingAnEventMarksItReadAndKeepsItAfterARelaunch() async {
+    let preferences = isolatedPreferences()
+    let recent = TeamEvent(
+        id: "a", type: "trade", tier: "big_moments", teamId: "bills", headline: "h",
+        detail: nil, source: "espn_transactions", occurredAt: Date())
+    let repository = FeedFakeRepository(result: .success([recent]))
+    let model = makeFeedModel(teamId: "bills", repository: repository, preferences: preferences)
+    await model.load()
+    #expect(model.isUnread(recent, now: Date()))
+    model.markRead(["a"])
+    #expect(!model.isUnread(recent, now: Date()))
+    let relaunched = makeFeedModel(
+        teamId: "bills", repository: repository, preferences: preferences)
+    #expect(!relaunched.isUnread(recent, now: Date()))
+}
+
+@MainActor @Test func anEventPastTheUnreadWindowIsNeverUnread() {
+    let model = makeFeedModel(
+        teamId: "bills", repository: FeedFakeRepository(result: .success([])))
+    let now = Date(timeIntervalSince1970: TeamFeedUnread.window + 1)
+    #expect(!model.isUnread(sampleEvent("a"), now: now))
+}
+
+@MainActor @Test func dismissingHidesOneEventAndSurvivesARefresh() async {
+    let preferences = isolatedPreferences()
+    let repository = FeedFakeRepository(result: .success([sampleEvent("a"), sampleEvent("b")]))
+    let model = makeFeedModel(teamId: "bills", repository: repository, preferences: preferences)
+    await model.load()
+    model.dismiss("a")
+    #expect(model.visibleEvents == [sampleEvent("b")])
+    await model.load()
+    #expect(model.visibleEvents == [sampleEvent("b")])
+    let relaunched = makeFeedModel(
+        teamId: "bills", repository: repository, preferences: preferences)
+    await relaunched.load()
+    #expect(relaunched.visibleEvents == [sampleEvent("b")])
+}
+
+@MainActor @Test func clearingAllHidesWhatIsLoadedButNotWhatArrivesLater() async {
+    let repository = FeedFakeRepository(result: .success([sampleEvent("a"), sampleEvent("b")]))
+    let model = makeFeedModel(teamId: "bills", repository: repository)
+    await model.load()
+    model.clearAll()
+    #expect(model.visibleEvents.isEmpty)
+    await repository.setResult(.success([sampleEvent("c"), sampleEvent("a"), sampleEvent("b")]))
+    await model.load()
+    #expect(model.visibleEvents == [sampleEvent("c")])
+}
+
+@MainActor @Test func aDismissedEventCanStillBeFoundForItsNotification() async {
+    let model = makeFeedModel(
+        teamId: "bills", repository: FeedFakeRepository(result: .success([sampleEvent("a")])))
+    await model.load()
+    model.dismiss("a")
+    #expect(await model.event(id: "a") == sampleEvent("a"))
+}
+
+@MainActor @Test func idsThatLeaveTheFeedAreForgotten() async {
+    let preferences = isolatedPreferences()
+    let repository = FeedFakeRepository(result: .success([sampleEvent("a"), sampleEvent("b")]))
+    let model = makeFeedModel(teamId: "bills", repository: repository, preferences: preferences)
+    await model.load()
+    model.markRead(["a", "b"])
+    model.dismiss("a")
+    await repository.setResult(.success([sampleEvent("b")]))
+    await model.load()
+    #expect(preferences.teamFeedReadIds(for: "bills") == ["b"])
+    #expect(preferences.teamFeedDismissedIds(for: "bills").isEmpty)
+}
+
+@MainActor @Test func aFailedRefreshForgetsNothing() async {
+    let preferences = isolatedPreferences()
+    let repository = FeedFakeRepository(result: .success([sampleEvent("a")]))
+    let model = makeFeedModel(teamId: "bills", repository: repository, preferences: preferences)
+    await model.load()
+    model.dismiss("a")
+    await repository.setResult(.failure(DepthError.offline))
+    await model.load()
+    #expect(preferences.teamFeedDismissedIds(for: "bills") == ["a"])
 }

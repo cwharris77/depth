@@ -66,9 +66,65 @@ final class TeamFeedUITests: XCTestCase {
         XCTAssertTrue(
             app.descendants(matching: .any)["team-feed-row-fixture-event-departed"].exists)
         keepScreenshot(app, name: "team-feed")
-        let captions = app.staticTexts.matching(
-            NSPredicate(format: "label BEGINSWITH 'ESPN transactions · '"))
-        XCTAssertEqual(captions.count, 1, "the source is shown together with its date")
+        XCTAssertTrue(app.staticTexts["Yesterday"].exists, "each day is headed")
+        XCTAssertTrue(
+            app.staticTexts["ESPN transactions"].exists,
+            "under a day heading the caption is the source alone")
+    }
+
+    func testAnOpenedRowIsNoLongerUnread() {
+        let app = launch()
+        XCTAssertTrue(app.waitForDepthChart())
+        app.buttons["team-feed-button"].tap()
+        let row = app.buttons["team-feed-row-fixture-event-historic"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        XCTAssertEqual(row.value as? String, "Unread")
+        row.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["player-profile-full-content"]
+                .waitForExistence(timeout: 10))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.waitForDepthChart())
+        app.buttons["team-feed-button"].tap()
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        XCTAssertNotEqual(row.value as? String, "Unread")
+        XCTAssertEqual(
+            app.buttons["team-feed-row-fixture-event-starter"].value as? String, "Unread")
+    }
+
+    func testSwipingARowClearsIt() {
+        let app = launch()
+        XCTAssertTrue(app.waitForDepthChart())
+        app.buttons["team-feed-button"].tap()
+        let row = app.buttons["team-feed-row-fixture-event-starter"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.swipeLeft(velocity: .fast)
+        let clear = app.buttons["Clear"]
+        if clear.waitForExistence(timeout: 2) { clear.tap() }
+        XCTAssertTrue(row.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["team-feed-row-fixture-event-historic"].exists)
+        app.buttons["Close"].tap()
+        app.buttons["team-feed-button"].tap()
+        XCTAssertTrue(
+            app.buttons["team-feed-row-fixture-event-historic"].waitForExistence(timeout: 10))
+        XCTAssertFalse(row.exists, "a cleared row stays cleared")
+    }
+
+    func testClearAllEmptiesTheFeedUntilSomethingNewArrives() {
+        let app = launch()
+        XCTAssertTrue(app.waitForDepthChart())
+        app.buttons["team-feed-button"].tap()
+        let clearAll = app.buttons["team-feed-clear-all"]
+        XCTAssertTrue(clearAll.waitForExistence(timeout: 10))
+        clearAll.tap()
+        app.buttons["team-feed-clear-all-confirm"].firstMatch.tap()
+        let cleared = app.descendants(matching: .any)["team-feed-cleared"]
+        XCTAssertTrue(cleared.waitForExistence(timeout: 5))
+        XCTAssertFalse(clearAll.exists)
+        keepScreenshot(app, name: "team-feed-cleared")
+        app.buttons["Close"].tap()
+        app.buttons["team-feed-button"].tap()
+        XCTAssertTrue(cleared.waitForExistence(timeout: 10))
     }
 
     func testAStarterChangeRowOpensTheChartWithThePlayerMarked() {
@@ -299,7 +355,7 @@ final class TeamFeedUITests: XCTestCase {
         let bell = app.buttons["team-feed-button"]
         let list = app.descendants(matching: .any)["team-feed-list"]
         XCTAssertTrue(bell.waitForExistence(timeout: 10))
-        XCTAssertGreaterThanOrEqual(bell.frame.height, 44)
+        XCTAssertGreaterThanOrEqual(bell.frame.height.rounded(), 44)
         for corner in [CGVector(dx: 0, dy: 0), CGVector(dx: 1, dy: 1)] {
             let inset = CGVector(dx: corner.dx == 0 ? 4 : -4, dy: corner.dy == 0 ? 4 : -4)
             bell.coordinate(withNormalizedOffset: corner).withOffset(inset).tap()

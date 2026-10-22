@@ -1,4 +1,4 @@
-import { placeMark, placed } from '../../core/marks';
+import { numeralMate, placeMark, placed } from '../../core/marks';
 import { HELMET_CROWN_STRIPE_PATH } from '../../core/shared';
 import type { PartLayer } from '../../core/parts';
 import { TITANS_FLAMING_T_PATHS } from './flaming-t';
@@ -158,26 +158,24 @@ export const TITANS_2018_NECK_STARS = placed([
   ),
 ]);
 
+const TITANS_SHOULDER_NUMBER_LEFT =
+  'M157.20,411.00 L158.00,428.00 L126.00,426.26 L124.40,423.52 L120.80,426.26 L101.60,426.26 L96.00,424.33 L96.00,411.00 L111.60,411.00 L106.40,413.87 L106.40,421.75 L115.20,421.75 L125.60,413.06 L136.00,421.75 L146.00,421.75 L146.80,413.87 L141.60,411.00 Z';
+
 export const TITANS_2018_NAVY_NUMBERS = placed([
   {
     id: 'titans-navy-shoulder-number-outline-left',
     surface: 'sleeve-left',
-    d: 'M157.20,411.00 L158.00,428.00 L126.00,426.26 L124.40,423.52 L120.80,426.26 L101.60,426.26 L96.00,424.33 L96.00,411.00 L111.60,411.00 L106.40,413.87 L106.40,421.75 L115.20,421.75 L125.60,413.06 L136.00,421.75 L146.00,421.75 L146.80,413.87 L141.60,411.00 Z',
+    d: TITANS_SHOULDER_NUMBER_LEFT,
     clip: true,
     kind: 'stroke',
     stroke: 'lightBlue',
     strokeWidth: 2,
   },
-  fill(
-    'titans-navy-shoulder-number-left',
-    'sleeve-left',
-    'M157.20,411.00 L158.00,428.00 L126.00,426.26 L124.40,423.52 L120.80,426.26 L101.60,426.26 L96.00,424.33 L96.00,411.00 L111.60,411.00 L106.40,413.87 L106.40,421.75 L115.20,421.75 L125.60,413.06 L136.00,421.75 L146.00,421.75 L146.80,413.87 L141.60,411.00 Z',
-    'navy'
-  ),
+  fill('titans-navy-shoulder-number-left', 'sleeve-left', TITANS_SHOULDER_NUMBER_LEFT, 'navy'),
   {
     id: 'titans-navy-shoulder-number-outline-right',
     surface: 'sleeve-right',
-    d: 'M430.80,411.00 L430.00,428.00 L462.00,426.26 L463.60,423.52 L467.20,426.26 L486.40,426.26 L492.00,424.33 L492.00,411.00 L476.40,411.00 L481.60,413.87 L481.60,421.75 L472.80,421.75 L462.40,413.06 L452.00,421.75 L442.00,421.75 L441.20,413.87 L446.40,411.00 Z',
+    d: numeralMate(TITANS_SHOULDER_NUMBER_LEFT),
     clip: true,
     kind: 'stroke',
     stroke: 'lightBlue',
@@ -186,7 +184,7 @@ export const TITANS_2018_NAVY_NUMBERS = placed([
   fill(
     'titans-navy-shoulder-number-right',
     'sleeve-right',
-    'M430.80,411.00 L430.00,428.00 L462.00,426.26 L463.60,423.52 L467.20,426.26 L486.40,426.26 L492.00,424.33 L492.00,411.00 L476.40,411.00 L481.60,413.87 L481.60,421.75 L472.80,421.75 L462.40,413.06 L452.00,421.75 L442.00,421.75 L441.20,413.87 L446.40,411.00 Z',
+    numeralMate(TITANS_SHOULDER_NUMBER_LEFT),
     'navy'
   ),
 ]);

@@ -1,22 +1,22 @@
+import { BEARS_GSH_WHITE } from '../marks/labels';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { BEARS_NUMBER_THREE } from '../marks/numbers';
 
-// White-piped navy stripes, a white V collar with a navy inset, and white numerals with a heavy
-// navy outline.
+// Orange collar, white-piped navy sleeve stripes and white numerals edged in navy.
 export const BEARS_JERSEY_ORANGE: CompleteJerseySpec = {
   body: 'orange',
   collar: {
     style: 'inset-v',
-    color: 'white',
-    trim: 'navy',
+    color: 'orange',
+    trim: 'none',
     inside: 'body',
     lining: 'none',
     backBar: 'none',
-    outline: false,
+    outline: true,
   },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
-  shoulderNumber: 'none',
+  shoulderNumber: { fill: 'white', outline: 'navy' },
   sleeveStripes: {
     bands: [
       { color: 'navy', size: 's' },
@@ -33,8 +33,8 @@ export const BEARS_JERSEY_ORANGE: CompleteJerseySpec = {
     fill: 'white',
     outline: 'navy',
     outlineWeight: 'heavy',
-    texture: 'mesh',
+    texture: 'plain',
     glyphPath: BEARS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: BEARS_GSH_WHITE }],
 };

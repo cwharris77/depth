@@ -1,3 +1,4 @@
+import { VIKINGS_HOME_WORDMARK } from '../marks/labels';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { VIKINGS_NUMBER_THREE } from '../marks/numbers';
 
@@ -14,7 +15,7 @@ export const VIKINGS_JERSEY_PURPLE: CompleteJerseySpec = {
   },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
-  shoulderNumber: 'none',
+  shoulderNumber: { fill: 'white', outline: 'none' },
   sleeveStripes: {
     bands: [
       { color: 'white', size: 's' },
@@ -33,5 +34,5 @@ export const VIKINGS_JERSEY_PURPLE: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: VIKINGS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: VIKINGS_HOME_WORDMARK }],
 };

@@ -220,11 +220,22 @@ describe('expandJersey', () => {
     };
     const [lx, ly, lw] = centre(outlined[2].d);
     const [rx, ry, rw] = centre(outlined[3].d);
-    // Lying along the shoulder, and the right sleeve mirrors the left (open sides both to the back).
+    // Lying along the shoulder in mirrored positions, tops toward the collar.
     expect(lw).toBeGreaterThan(25);
     expect(lx + rx).toBeCloseTo(588, 0);
     expect(ly).toBeCloseTo(ry, 0);
     expect(lw).toBeCloseTo(rw, 0);
+    // Both are rotations of the printed numeral, never a reflection: a reflected 3 reads backwards.
+    const winding = (d: string) => {
+      const n = numbers(d);
+      let area = 0;
+      for (let i = 0; i < n.length; i += 2) {
+        const j = (i + 2) % n.length;
+        area += n[i] * n[j + 1] - n[j] * n[i + 1];
+      }
+      return Math.sign(area);
+    };
+    expect(winding(outlined[3].d)).toBe(winding(outlined[2].d));
   });
 
   it('pipes sleeve stripes with an edge colour only when asked', () => {
