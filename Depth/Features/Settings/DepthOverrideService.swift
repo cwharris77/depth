@@ -263,8 +263,7 @@ func rerankedPlayers(_ players: [Player]) -> [Player] {
             height: player.height,
             weight: player.weight,
             bio: player.bio,
-            photoUrl: player.photoUrl,
-            injuryDesignation: player.injuryDesignation
+            photoUrl: player.photoUrl
         )
     }
 }

@@ -23,15 +23,12 @@ struct Player: Codable, Hashable, Identifiable {
     let weight: Int
     let bio: String
     let photoUrl: String?
-    /// ESPN's injury designation (Questionable, Out, Injured Reserve, ...) while the
-    /// athlete is on its injury report. Nil for everyone else and for older rows.
-    let injuryDesignation: String?
 
     init(
         id: String, name: String = "", position: Position, depthRank: Int, number: Int,
         order: Int? = nil, status: PlayerStatus = .backup, age: Int = 0, college: String = "",
         experience: Int = 0, height: String = "", weight: Int = 0, bio: String = "",
-        photoUrl: String? = nil, injuryDesignation: String? = nil
+        photoUrl: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -47,13 +44,6 @@ struct Player: Codable, Hashable, Identifiable {
         self.weight = weight
         self.bio = bio
         self.photoUrl = photoUrl
-        self.injuryDesignation = injuryDesignation
-    }
-
-    /// The status as shown: an injured athlete's designation where ESPN gives one.
-    var statusLabel: String {
-        guard status == .injured, let injuryDesignation else { return status.rawValue }
-        return injuryDesignation
     }
 }
 
@@ -76,8 +66,7 @@ extension Player {
         Player(
             id: id, name: name, position: position, depthRank: depthRank, number: number,
             order: order, status: status, age: age, college: college, experience: experience,
-            height: height, weight: weight, bio: bio, photoUrl: photoUrl,
-            injuryDesignation: injuryDesignation
+            height: height, weight: weight, bio: bio, photoUrl: photoUrl
         )
     }
 }

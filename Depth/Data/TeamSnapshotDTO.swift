@@ -119,14 +119,11 @@ struct PlayerDTO: Decodable {
     let weight: Int?
     let bio: String?
     let photoUrl: String?
-    /// ESPN's injury designation. Absent from rows written before the column existed.
-    var injuryDesignation: String? = nil
 
     enum CodingKeys: String, CodingKey {
         case id, name, number, position, status, age, college, experience, height, weight, bio
         case teamId = "team_id"
         case photoUrl = "photo_url"
-        case injuryDesignation = "injury_designation"
     }
 }
 
