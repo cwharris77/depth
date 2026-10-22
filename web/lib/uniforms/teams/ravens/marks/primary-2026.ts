@@ -1,18 +1,11 @@
 import { placed, type PlacedMark } from '../../core/marks';
-import { HELMET_CROWN_STRIPE_PATH } from '../../core/shared';
+import { seatedCrownStripe } from '../../core/shared';
 import { RAVENS_HELMET_DECAL } from './construction';
 import { RAVENS_2026_WORDMARK, BALTIMORE_2026_WORDMARK } from './wordmarks-2026';
 
 export const RAVENS_2026_HELMET = placed([
   ...RAVENS_HELMET_DECAL.layers,
-  {
-    id: 'ravens-2026-crown',
-    surface: 'helmet',
-    kind: 'fill',
-    fill: 'purple',
-    d: HELMET_CROWN_STRIPE_PATH,
-    clip: true,
-  },
+  ...seatedCrownStripe([{ id: 'ravens-2026-crown', fill: 'purple', weight: 1 }]),
 ]);
 
 // Four feathers down each side of the collar band, each broad at the band's outer edge and

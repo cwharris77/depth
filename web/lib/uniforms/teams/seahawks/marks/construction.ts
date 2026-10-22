@@ -18,7 +18,7 @@ import {
   SEAHAWKS_HELMET_HAWK_PATH,
 } from './paths';
 import { SEAHAWKS_THROWBACK_HAWK } from './throwback-hawk';
-import { HELMET_CROWN_STRIPE_PATH, modernInsetVCollar } from '../../core/shared';
+import { modernInsetVCollar, seatedCrownStripe } from '../../core/shared';
 import type { PartLayer } from '../../core/parts';
 import type { UniformSurface } from '../../core/types';
 import { placeMark, placed, type PlacedMark } from '../../core/marks';
@@ -44,7 +44,7 @@ function hawk(eye: string): PartLayer[] {
 }
 
 export const SEAHAWKS_NAVY_HAWK_DECAL = placed([
-  fill('seahawks-helmet-center-stripe', 'helmet', HELMET_CROWN_STRIPE_PATH, 'crownWedge'),
+  ...seatedCrownStripe([{ id: 'seahawks-helmet-center-stripe', fill: 'crownWedge', weight: 1 }]),
   ...hawk('green'),
 ]);
 
