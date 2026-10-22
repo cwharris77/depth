@@ -62,6 +62,9 @@ export interface Player {
   position: Position;
   depthRank: 1 | 2 | 3;
   status: PlayerStatus;
+  // ESPN's injury designation (Questionable, Out, Injured Reserve, ...) when the athlete is
+  // on its injury report. Refines the injured status; undefined for everyone else.
+  injuryDesignation?: string;
   // Set only on players reordered by a user depth override (lib/utils/depth-chart/depth-overrides.ts):
   // a full-precision within-position rank that getPlayersByPosition prefers over the
   // jersey-number tiebreak, so a custom order is honored past the top 3. Undefined for
