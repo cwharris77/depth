@@ -1,8 +1,9 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { giantsChestMonogram } from '../marks/construction';
 import { GIANTS_NUMBER_THREE } from '../marks/numbers';
 
 // Royal body with a royal V collar keylined grey, white shoulder numerals, no sleeve stripes,
-// and plain white numerals.
+// plain white numerals, and the white monogram on the chest.
 export const GIANTS_JERSEY_ROYAL: CompleteJerseySpec = {
   body: 'royal',
   collar: {
@@ -28,5 +29,5 @@ export const GIANTS_JERSEY_ROYAL: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: GIANTS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: giantsChestMonogram('white') }],
 };
