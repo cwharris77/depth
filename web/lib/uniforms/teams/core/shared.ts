@@ -1,4 +1,4 @@
-import type { PartLayer } from './parts';
+import type { PaletteRef, PartLayer } from './parts';
 import { nflShield } from './nfl-shield';
 
 // Construction geometry that is genuinely shared between team modules — not a grab-bag. Anything
@@ -11,6 +11,78 @@ import { nflShield } from './nfl-shield';
 // identically for every team; each team supplies only its own color.
 export const HELMET_CROWN_STRIPE_PATH =
   'M236,127 L252,115 L302,91 L334,79 L374,69 L402,65 L455,65 L509,73 L547,85 L593,109 L631,137 L625,146 L589,119 L545,96 L508,85 L455,78 L402,79 L375,84 L336,95 L305,108 L257,133 L242,146 Z';
+
+// The seated crown stripe's two long edges, back quarter to front, in raw helmet coordinates. The
+// top edge sits about 10 units below the shell's top rim so the stripe lies on the crown curve
+// inside the silhouette; the bottom edge is about 22 units lower and stops short at the front.
+// Point i on one edge faces point i on the other.
+const CROWN_STRIPE_TOP: readonly (readonly [number, number])[] = [
+  [236, 137],
+  [252, 125],
+  [302, 101],
+  [334, 89],
+  [374, 79],
+  [402, 75],
+  [455, 75],
+  [509, 83],
+  [547, 95],
+  [593, 119],
+  [631, 147],
+];
+const CROWN_STRIPE_BOTTOM: readonly (readonly [number, number])[] = [
+  [244, 160],
+  [258, 147],
+  [306, 123],
+  [337, 111],
+  [376, 101],
+  [402, 97],
+  [455, 97],
+  [507, 105],
+  [544, 117],
+  [585, 139],
+  [619, 165],
+];
+
+// One band of a seated crown stripe, listed from the top of the shell down. `weight` is the band's
+// share of the stripe's thickness relative to the other bands.
+export interface CrownStripeBand {
+  id: string;
+  fill: PaletteRef;
+  weight: number;
+}
+
+// The helmet center stripe as a side view shows it, seated on the shell below its top rim. Each
+// band is painted from its own top edge to the bottom of the stripe, in order, so every band covers
+// the lower part of the one before it and adjacent bands share no anti-aliased seam.
+export function seatedCrownStripe(bands: readonly CrownStripeBand[]): PartLayer[] {
+  const total = bands.reduce((sum, band) => sum + band.weight, 0);
+  const at = (t: number, i: number): string => {
+    const [tx, ty] = CROWN_STRIPE_TOP[i];
+    const [bx, by] = CROWN_STRIPE_BOTTOM[i];
+    const round = (v: number) => Math.round(v * 10) / 10;
+    return `${round(tx + (bx - tx) * t)},${round(ty + (by - ty) * t)}`;
+  };
+  const indices = CROWN_STRIPE_TOP.map((_, i) => i);
+  const bottom = indices
+    .slice()
+    .reverse()
+    .map((i) => `L${at(1, i)}`)
+    .join(' ');
+  let offset = 0;
+  return bands.map((band) => {
+    const t = offset / total;
+    offset += band.weight;
+    const top = indices.map((i) => `${i === 0 ? 'M' : 'L'}${at(t, i)}`).join(' ');
+    return {
+      id: band.id,
+      surface: 'helmet',
+      kind: 'fill',
+      fill: band.fill,
+      clip: true,
+      d: `${top} ${bottom} Z`,
+    };
+  });
+}
 
 // The athletic 3 on the side panel of the shared helmet shell, in raw helmet coordinates. It fits
 // the one shell every team draws, so a team supplies only its colour.

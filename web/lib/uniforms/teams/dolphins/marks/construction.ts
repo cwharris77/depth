@@ -14,20 +14,14 @@ import {
   DOLPHINS_WEDGE_LEFT,
   DOLPHINS_WEDGE_RIGHT,
 } from './paths';
-import { HELMET_CROWN_STRIPE_PATH } from '../../core/shared';
+import { seatedCrownStripe } from '../../core/shared';
 import { placed } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
 import type { UniformSurface } from '../../core/types';
 
 // The crown-hugging helmet stripe all four kits wear (shared geometry).
-const crownStripe = (color: string): PartLayer => ({
-  id: 'dolphins-crown-stripe',
-  surface: 'helmet',
-  d: HELMET_CROWN_STRIPE_PATH,
-  clip: true,
-  kind: 'fill',
-  fill: color,
-});
+const crownStripe = (color: string): PartLayer[] =>
+  seatedCrownStripe([{ id: 'dolphins-crown-stripe', fill: color, weight: 1 }]);
 
 const decalLayer = (id: string, d: string, fill: string): PartLayer => ({
   id,
@@ -40,7 +34,7 @@ const decalLayer = (id: string, d: string, fill: string): PartLayer => ({
 
 // Orange crown stripe and sunburst, the teal dolphin over it, and the navy shading on the dolphin.
 export const DOLPHINS_SUNBURST_DECAL = placed([
-  crownStripe('orange'),
+  ...crownStripe('orange'),
   decalLayer('dolphins-decal-ring', DOLPHINS_DECAL_SUNBURST_PATH, 'orange'),
   decalLayer('dolphins-decal-dolphin', DOLPHINS_DECAL_DOLPHIN_PATH, 'teal'),
   decalLayer('dolphins-decal-navy', DOLPHINS_DECAL_NAVY_PATH, 'navy'),
@@ -48,7 +42,7 @@ export const DOLPHINS_SUNBURST_DECAL = placed([
 
 // Teal crown stripe and the teal dolphin breaking through a solid orange ring.
 export const DOLPHINS_THROWBACK_DECAL = placed([
-  crownStripe('teal'),
+  ...crownStripe('teal'),
   decalLayer('dolphins-decal-ring', DOLPHINS_TB_DECAL_RING_PATH, 'orange'),
   decalLayer('dolphins-decal-dolphin', DOLPHINS_TB_DECAL_DOLPHIN_PATH, 'teal'),
 ]);

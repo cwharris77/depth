@@ -1,5 +1,5 @@
 import { numeralMate, placeMark, placed } from '../../core/marks';
-import { HELMET_CROWN_STRIPE_PATH } from '../../core/shared';
+import { seatedCrownStripe } from '../../core/shared';
 import type { PartLayer } from '../../core/parts';
 import { TITANS_FLAMING_T_PATHS } from './flaming-t';
 import { TITANS_2026_SHIELD } from './shield';
@@ -19,7 +19,7 @@ const flamingT = TITANS_FLAMING_T_PATHS.map(({ d, fill: color }, index) =>
 );
 
 export const TITANS_2018_HELMET = placed([
-  fill('titans-2018-crown-silver', 'helmet', HELMET_CROWN_STRIPE_PATH, 'silver'),
+  ...seatedCrownStripe([{ id: 'titans-2018-crown-silver', fill: 'silver', weight: 1 }]),
   ...flamingT,
 ]);
 
@@ -37,7 +37,7 @@ const OILERS_DERRICK = {
 };
 
 export const OILERS_1960_HELMET = placed([
-  fill('oilers-1960-center-stripe', 'helmet', HELMET_CROWN_STRIPE_PATH, 'white'),
+  ...seatedCrownStripe([{ id: 'oilers-1960-center-stripe', fill: 'white', weight: 1 }]),
   ...OILERS_DERRICK.paths.flatMap((path, index) =>
     placeMark(
       `oilers-1960-derrick-${index}`,
@@ -49,13 +49,10 @@ export const OILERS_1960_HELMET = placed([
 ]);
 
 export const TITANS_2026_HELMET = placed([
-  fill('titans-2026-crown-navy', 'helmet', HELMET_CROWN_STRIPE_PATH, 'navy'),
-  fill(
-    'titans-2026-crown-red',
-    'helmet',
-    'M243,131 L257,121 L306,99 L337,88 L376,76 L403,73 L454,73 L507,81 L544,93 L588,116 L626,143 L625,146 L589,119 L545,96 L508,85 L455,78 L402,79 L375,84 L336,95 L305,108 L257,133 L242,146 Z',
-    'red2026'
-  ),
+  ...seatedCrownStripe([
+    { id: 'titans-2026-crown-navy', fill: 'navy', weight: 8 },
+    { id: 'titans-2026-crown-red', fill: 'red2026', weight: 5 },
+  ]),
   ...TITANS_2026_SHIELD.paths.flatMap((path, index) =>
     placeMark(
       `titans-2026-shield-${index}`,
