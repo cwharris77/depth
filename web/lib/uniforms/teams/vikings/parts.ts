@@ -1,7 +1,6 @@
 import type { TeamSpec } from '../core/team-spec';
 import { vikingsHorn } from './marks/construction';
 import { VIKINGS_JERSEY_PURPLE } from './jerseys/purple';
-import { VIKINGS_JERSEY_PURPLE_CLASSIC } from './jerseys/purple-classic';
 import { VIKINGS_JERSEY_WHITE } from './jerseys/white';
 import { VIKINGS_JERSEY_WINTER_WHITE } from './jerseys/winter-white';
 
@@ -21,23 +20,16 @@ export const VIKINGS_SPEC: TeamSpec = {
       decal: vikingsHorn('white', 'gold'),
       number: 'none',
     },
-    classic: {
-      shell: 'purple',
-      facemask: 'metallicGray',
-      decal: vikingsHorn('white', 'gold'),
-      number: 'none',
-    },
     white: {
       shell: 'white',
       facemask: 'metallicGray',
-      decal: vikingsHorn('purple', 'metallicGray'),
+      decal: vikingsHorn('white', 'metallicGray', 'purple'),
       number: 'none',
     },
   },
   jerseys: {
     purple: VIKINGS_JERSEY_PURPLE,
     white: VIKINGS_JERSEY_WHITE,
-    'purple-classic': VIKINGS_JERSEY_PURPLE_CLASSIC,
     'winter-white': VIKINGS_JERSEY_WINTER_WHITE,
   },
   pants: {

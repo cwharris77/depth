@@ -35,6 +35,8 @@ struct DepthApp: App {
             // notification control shows first.
             DepthEnvironment.preferences.resetNotificationState()
             UserDefaults.standard.removeObject(forKey: "preferences.teamFeedSeenAt")
+            UserDefaults.standard.removeObject(forKey: "preferences.teamFeedReadIds")
+            UserDefaults.standard.removeObject(forKey: "preferences.teamFeedDismissedIds")
             UserDefaults.standard.removeObject(forKey: "uiTesting.teamEventsTimestamp")
         }
 

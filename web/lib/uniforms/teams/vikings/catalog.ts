@@ -78,30 +78,30 @@ export const VIKINGS_CATALOG: TeamCatalog = {
       ],
     },
     {
-      id: 'vikings-purple-classic-1961',
-      slug: 'purple-classic',
-      name: 'Purple Classic',
-      kind: 'throwback',
-      jersey: 'purple-classic',
-      colors: { primary: '#4F2683', secondary: '#FFC62F', accent: '#FFFFFF' },
-      legacyAccent,
-      periods: [
-        {
-          from: 1961,
-          to: 1969,
-          startSource:
-            'https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=MIN&year=1961',
-          source:
-            'https://www.gridiron-uniforms.com/GUD/controller/controller.php?action=teams-season&team_id=MIN&year=1970',
-          verifiedOn: '2026-10-12',
-        },
-      ],
-      combinations: [
-        { key: 'standard', label: 'Standard', helmet: 'classic', pants: 'white', socks: 'purple' },
-      ],
-    },
-    {
       id: 'vikings-winter-warrior-2024',
+      referencePacket: {
+        classification: 'signature',
+        sources: [
+          {
+            url: 'https://www.vikings.com/winter-warrior',
+            role: 'construction and front details',
+            covers: ['collar', 'wordmark', 'numerals', 'sleeves'],
+          },
+          {
+            url: 'https://www.vikings.com/photos/winter-warrior-white-helmets-practice-2024',
+            role: 'equipment and design identity',
+            covers: ['helmet', 'paint', 'design identity'],
+          },
+        ],
+        observed: [
+          'White helmet with white horn outlined purple; metallic gray cage.',
+          'Metallic gray front wordmark; purple numerals with gray edge and SKOL icicle detail.',
+        ],
+        approximations: [
+          'Exact SKOL lettering and authentic icicle numeral geometry remain unrepresented.',
+          'Helmet crown stripe, rear Nordic knot and material finishes are unresolved.',
+        ],
+      },
       slug: 'winter-warrior',
       sleeveNike: 'purple',
       name: 'Winter Warrior',

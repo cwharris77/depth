@@ -420,7 +420,13 @@ describe('Bears catalog conversion', () => {
       home: { helmet: 'navy-c', jersey: 'navy', pants: 'navy', socks: 'white' },
       'home--white-pants': { helmet: 'navy-c', jersey: 'navy', pants: 'white', socks: 'navy' },
       away: { helmet: 'navy-c', jersey: 'white', pants: 'navy', socks: 'white' },
-      'orange-alternate': { helmet: 'navy-c', jersey: 'orange', pants: 'navy' },
+      'orange-alternate': { helmet: 'orange-c', jersey: 'orange', pants: 'white', socks: 'orange' },
+      'orange-alternate--navy-helmet': {
+        helmet: 'navy-c',
+        jersey: 'orange',
+        pants: 'white',
+        socks: 'navy',
+      },
     });
   });
 });

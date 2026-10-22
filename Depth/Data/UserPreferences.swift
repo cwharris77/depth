@@ -25,6 +25,8 @@ struct UserPreferences: Sendable {
         static let favoriteTeamId = "preferences.favoriteTeamId"
         static let startOnFavorite = "preferences.startOnFavorite"
         static let lastActiveNotificationTier = "preferences.lastActiveNotificationTier"
+        static let teamFeedReadIds = "preferences.teamFeedReadIds"
+        static let teamFeedDismissedIds = "preferences.teamFeedDismissedIds"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -146,6 +148,34 @@ struct UserPreferences: Sendable {
         guard seconds > (stored[teamId] ?? -.infinity) else { return }
         stored[teamId] = seconds
         defaults.set(stored, forKey: "preferences.teamFeedSeenAt")
+    }
+
+    /// Feed events this device has opened, per team.
+    func teamFeedReadIds(for teamId: String) -> Set<String> {
+        eventIds(forKey: Key.teamFeedReadIds, teamId: teamId)
+    }
+
+    func setTeamFeedReadIds(_ ids: Set<String>, for teamId: String) {
+        setEventIds(ids, forKey: Key.teamFeedReadIds, teamId: teamId)
+    }
+
+    /// Feed events this device has cleared, per team.
+    func teamFeedDismissedIds(for teamId: String) -> Set<String> {
+        eventIds(forKey: Key.teamFeedDismissedIds, teamId: teamId)
+    }
+
+    func setTeamFeedDismissedIds(_ ids: Set<String>, for teamId: String) {
+        setEventIds(ids, forKey: Key.teamFeedDismissedIds, teamId: teamId)
+    }
+
+    private func eventIds(forKey key: String, teamId: String) -> Set<String> {
+        Set((defaults.dictionary(forKey: key) as? [String: [String]])?[teamId] ?? [])
+    }
+
+    private func setEventIds(_ ids: Set<String>, forKey key: String, teamId: String) {
+        var stored = defaults.dictionary(forKey: key) as? [String: [String]] ?? [:]
+        stored[teamId] = ids.isEmpty ? nil : ids.sorted()
+        defaults.set(stored, forKey: key)
     }
 
     // Local-first custom depth-chart order, literal port of web's
