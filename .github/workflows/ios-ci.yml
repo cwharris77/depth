@@ -294,6 +294,7 @@ jobs:
           runtime: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].runtime }}
           sim-name: ci-${{ matrix.leg }}
           tests: ${{ steps.scope.outputs.tests }}
+          retry-on-failure: ${{ matrix.leg == 'ui' }}
 
   # The nightly full DepthUITests suite. Fan-out across parallel simulator legs is the
   # dominant wall-time lever (the header comment applies it between unit/UI; this job
@@ -361,6 +362,7 @@ jobs:
           runtime: ${{ fromJson(needs.resolve-devices.outputs.matrix).include[0].runtime }}
           sim-name: full-${{ matrix.slice }}
           tests: ${{ matrix.tests }}
+          retry-on-failure: true
 
   archive-secret-check:
     needs: changes

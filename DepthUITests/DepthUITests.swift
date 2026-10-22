@@ -519,7 +519,11 @@ final class DepthUITests: XCTestCase {
             NSPredicate(format: "identifier BEGINSWITH 'compare-player-cell-'")
         ).firstMatch
         XCTAssertTrue(cell.waitForExistence(timeout: 15))
-        XCTAssertTrue(cell.tapUntil { profile.exists })
+        // On iOS 26.5 XCUITest computes no hit point for a `matchedTransitionSource` cell
+        // that has not zoomed yet and refuses an element tap, while a real touch at the
+        // same spot pushes the profile. Tap its center coordinate instead.
+        cell.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(profile.waitForExistence(timeout: 10))
         edgeSwipeBack(app)
         XCTAssertTrue(profile.waitForAbsence(timeout: 5))
         XCTAssertTrue(cell.waitForHittable(timeout: 5))
@@ -765,12 +769,13 @@ final class DepthUITests: XCTestCase {
 
         let trigger = app.buttons["stats-season-trigger"]
         XCTAssertTrue(trigger.waitForExistence(timeout: 10))
-        let currentLabel = trigger.label
         trigger.tap()
 
         // Every team has at least current + prior seasons ingested; select the second
         // row (the year before the newest, top of the list) so a completed past season
-        // is active.
+        // is active. Before week 1 Stats opens on the newest season with games rather
+        // than the current one, so the season Back to current returns to is the top row,
+        // not the trigger's opening label.
         let rows = app.buttons.matching(
             NSPredicate(format: "identifier MATCHES 'stats-season-[0-9]+'"))
         // The sheet is still presenting (and its list still populating) right after
@@ -779,17 +784,21 @@ final class DepthUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(
             rows.waitForCount(atLeast: 2, timeout: 10), 2,
             "the stats picker should offer more than one season row")
-        let pastRow = rows.element(boundBy: 1)
         // Row label is "<year>" (or "<year>, selected") — strip the suffix so we can
         // check the trigger relabels to that same year below.
-        let pastYear = pastRow.label.components(separatedBy: ",").first ?? pastRow.label
+        func year(_ row: XCUIElement) -> String {
+            row.label.components(separatedBy: ",").first ?? row.label
+        }
+        let currentYear = year(rows.element(boundBy: 0))
+        let pastRow = rows.element(boundBy: 1)
+        let pastYear = year(pastRow)
         pastRow.tap()
 
         // The trigger itself is the only on-screen season indicator (removed the
         // redundant "<year> season" line that just repeated the trigger's own label) — a
         // past season relabels the trigger to the picked year.
         XCTAssertTrue(
-            trigger.waitForLabel(containing: pastYear, timeout: 20),
+            trigger.waitForLabel(containing: "\(pastYear) SEASON", timeout: 20),
             "selecting a past season should relabel the trigger to that season"
         )
 
@@ -803,8 +812,8 @@ final class DepthUITests: XCTestCase {
         backToCurrent.tap()
 
         XCTAssertTrue(
-            trigger.waitForLabel(containing: currentLabel),
-            "Back to current should relabel the trigger back to the current season"
+            trigger.waitForLabel(containing: "\(currentYear) SEASON"),
+            "Back to current should relabel the trigger to the current season"
         )
         XCTAssertFalse(
             app.buttons["stats-season-trigger-back-to-current"].waitForExistence(timeout: 2),
