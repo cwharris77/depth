@@ -345,58 +345,74 @@ final class AccessibilityUITests: XCTestCase {
 
     // retain screenshots at intermediate steps as well as AX5. Existence
     // alone cannot detect truncated labels; these captures accompany
-    // the control-reachability assertions, before and after layout changes.
-    func testDynamicTypeScreenInventory() throws {
+    // the control-reachability assertions, before and after layout changes. One test
+    // per size: each inventory takes about 90s on a CI runner, so all four in one test
+    // overran the per-test execution-time allowance.
+    func testDynamicTypeScreenInventoryLarge() {
+        dynamicTypeScreenInventory(size: "large")
+    }
+
+    func testDynamicTypeScreenInventoryAccessibility1() {
+        dynamicTypeScreenInventory(size: "accessibility1")
+    }
+
+    func testDynamicTypeScreenInventoryAccessibility3() {
+        dynamicTypeScreenInventory(size: "accessibility3")
+    }
+
+    func testDynamicTypeScreenInventoryAccessibility5() {
+        dynamicTypeScreenInventory(size: "accessibility5")
+    }
+
+    private func dynamicTypeScreenInventory(size: String) {
         continueAfterFailure = false
-        for size in ["large", "accessibility1", "accessibility3", "accessibility5"] {
-            let app = launchApp(dynamicTypeSize: size)
-            XCTAssertTrue(app.waitForDepthChart(timeout: 30))
-            attachScreenshot(app, named: "\(size)-field")
-            let profile = app.descendants(matching: .any)["player-profile-full-content"]
-            XCTAssertTrue(app.buttons["player-slot-off-qb-0"].tapUntil { profile.exists })
-            XCTAssertTrue(profile.waitForExistence(timeout: 10))
-            attachScreenshot(app, named: "\(size)-player-header")
-            for index in 1...3 {
-                profile.swipeUp()
-                attachScreenshot(app, named: "\(size)-player-scroll-\(index)")
-            }
-            let back = app.navigationBars.buttons["BackButton"]
-            XCTAssertTrue(back.isHittable)
-            back.tap()
-            for page in ["schedule", "stats"] {
-                app.buttons["page-switcher-\(page)"].tap()
-                XCTAssertTrue(
-                    app.descendants(matching: .any)["\(page)-content"].waitForExistence(timeout: 20)
-                )
-                attachScreenshot(app, named: "\(size)-\(page)")
-                app.swipeUp()
-                attachScreenshot(app, named: "\(size)-\(page)-scroll")
-            }
-            app.buttons["account-button"].tap()
-            XCTAssertTrue(app.buttons["account-close-button"].waitForExistence(timeout: 10))
-            attachScreenshot(app, named: "\(size)-settings")
-            app.swipeUp()
-            attachScreenshot(app, named: "\(size)-settings-scroll")
-            app.buttons["account-close-button"].tap()
-            app.tabBars.buttons["Compare"].tap()
-            XCTAssertTrue(app.buttons["compare-slot-a"].waitForExistence(timeout: 20))
-            attachScreenshot(app, named: "\(size)-compare")
-            app.buttons["compare-slot-a"].tap()
-            XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 10))
-            attachScreenshot(app, named: "\(size)-team-picker")
-            app.buttons["Close"].tap()
-            app.tabBars.buttons["Uniforms"].tap()
-            XCTAssertTrue(app.buttons["uniforms-filter-button"].waitForExistence(timeout: 20))
-            attachScreenshot(app, named: "\(size)-uniforms")
-            app.buttons["uniforms-view-era"].tap()
-            attachScreenshot(app, named: "\(size)-uniforms-era")
-            app.buttons["uniforms-filter-button"].tap()
-            XCTAssertTrue(app.buttons["filter-reset"].waitForExistence(timeout: 10))
-            attachScreenshot(app, named: "\(size)-filters")
-            app.swipeUp()
-            attachScreenshot(app, named: "\(size)-filters-scroll")
-            app.terminate()
+        let app = launchApp(dynamicTypeSize: size)
+        XCTAssertTrue(app.waitForDepthChart(timeout: 30))
+        attachScreenshot(app, named: "\(size)-field")
+        let profile = app.descendants(matching: .any)["player-profile-full-content"]
+        XCTAssertTrue(app.buttons["player-slot-off-qb-0"].tapUntil { profile.exists })
+        XCTAssertTrue(profile.waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "\(size)-player-header")
+        for index in 1...3 {
+            profile.swipeUp()
+            attachScreenshot(app, named: "\(size)-player-scroll-\(index)")
         }
+        let back = app.navigationBars.buttons["BackButton"]
+        XCTAssertTrue(back.isHittable)
+        back.tap()
+        for page in ["schedule", "stats"] {
+            app.buttons["page-switcher-\(page)"].tap()
+            XCTAssertTrue(
+                app.descendants(matching: .any)["\(page)-content"].waitForExistence(timeout: 20)
+            )
+            attachScreenshot(app, named: "\(size)-\(page)")
+            app.swipeUp()
+            attachScreenshot(app, named: "\(size)-\(page)-scroll")
+        }
+        app.buttons["account-button"].tap()
+        XCTAssertTrue(app.buttons["account-close-button"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "\(size)-settings")
+        app.swipeUp()
+        attachScreenshot(app, named: "\(size)-settings-scroll")
+        app.buttons["account-close-button"].tap()
+        app.tabBars.buttons["Compare"].tap()
+        XCTAssertTrue(app.buttons["compare-slot-a"].waitForExistence(timeout: 20))
+        attachScreenshot(app, named: "\(size)-compare")
+        app.buttons["compare-slot-a"].tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "\(size)-team-picker")
+        app.buttons["Close"].tap()
+        app.tabBars.buttons["Uniforms"].tap()
+        XCTAssertTrue(app.buttons["uniforms-filter-button"].waitForExistence(timeout: 20))
+        attachScreenshot(app, named: "\(size)-uniforms")
+        app.buttons["uniforms-view-era"].tap()
+        attachScreenshot(app, named: "\(size)-uniforms-era")
+        app.buttons["uniforms-filter-button"].tap()
+        XCTAssertTrue(app.buttons["filter-reset"].waitForExistence(timeout: 10))
+        attachScreenshot(app, named: "\(size)-filters")
+        app.swipeUp()
+        attachScreenshot(app, named: "\(size)-filters-scroll")
+        app.terminate()
     }
 
     // Drives ContentView's UI_TESTING_DYNAMIC_TYPE override rather than

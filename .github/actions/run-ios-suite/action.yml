@@ -32,6 +32,16 @@ inputs:
     description: Seconds each test may run before XCTest fails it.
     required: false
     default: '300'
+  # Reruns a failed test once. UI legs only: hosted macOS runners intermittently stall the
+  # simulator's accessibility and launch services (kAXErrorIPCTimeout, "Timed out while
+  # launching app", 15-30s element queries right after launch), failing a test that passes
+  # on the next attempt; a real regression fails both. Not for DepthTests: Swift Testing
+  # reruns the whole run in one process, and SnapshotTesting then names the second capture
+  # `<test>.2.png`, finds no reference and fails.
+  retry-on-failure:
+    description: Rerun a failed test once ('true' or 'false').
+    required: false
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -65,6 +75,7 @@ runs:
         DEVICE_ID: ${{ steps.sim.outputs.device_id }}
         TESTS: ${{ inputs.tests }}
         ALLOWANCE: ${{ inputs.test-time-allowance }}
+        RETRY: ${{ inputs.retry-on-failure }}
       run: |
         set -o pipefail
         XCTESTRUN=$(find DerivedData/Build/Products -maxdepth 1 -name '*.xctestrun' | head -n1)
@@ -72,11 +83,16 @@ runs:
           echo "::error::No .xctestrun file found in downloaded build products."
           exit 1
         fi
-        # `$TESTS` expands to the whitespace-separated `-only-testing:` args; empty is fine.
+        RETRY_ARGS=""
+        if [ "$RETRY" = "true" ]; then
+          RETRY_ARGS="-retry-tests-on-failure -test-iterations 2"
+        fi
+        # `$TESTS` and `$RETRY_ARGS` expand to whitespace-separated args; empty is fine.
         # shellcheck disable=SC2086
         xcodebuild \
           -xctestrun "$XCTESTRUN" \
           -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+          $RETRY_ARGS \
           -test-timeouts-enabled YES \
           -default-test-execution-time-allowance "$ALLOWANCE" \
           -maximum-test-execution-time-allowance "$ALLOWANCE" \
