@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "sourceDigest": "62d87635756ec77c98aa1448c85400fc3656d4245ca787417437ed490484d836",
-  "revision": "bf3d19cb57c610bc",
+  "sourceDigest": "351b4c7467fe369c08af87df17ac2bd7d6dd411ffb4481129bed586952e00cae",
+  "revision": "05c9473cce0258ae",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
       "constructionKey": "away",
-      "revision": "4ec02d5c343c3584",
+      "revision": "d41cd0bb2042d4c0",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-away-2022.webp",
@@ -14,7 +14,7 @@
         },
         "full": {
           "path": "/uniforms/49ers-away-2022-full.webp",
-          "sha256": "77f21b1c4bd15611117ac9a818910971b6f531cc40d4d231d106be33f41acad1"
+          "sha256": "01c993516aeb7250c32c847a4c72dd65dff85ecff88ef32747edc459dcd9c7f9"
         }
       },
       "combinations": [
@@ -23,7 +23,7 @@
           "label": "White socks",
           "full": {
             "path": "/uniforms/49ers-away-2022--white-socks-full.webp",
-            "sha256": "6a24cffc63fb170d0933d48dbe05e325614c47b2f2fe5f898c7704ff4a294753"
+            "sha256": "bcd5121400c689f3ffec28d16af2229e1711a3a603d324edd9474e76c0b1d7ce"
           }
         }
       ]
@@ -31,7 +31,7 @@
     {
       "catalogId": "49ers-home-2022",
       "constructionKey": "home",
-      "revision": "2e77997f306376eb",
+      "revision": "4114291af1e0af98",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-home-2022.webp",
@@ -39,14 +39,14 @@
         },
         "full": {
           "path": "/uniforms/49ers-home-2022-full.webp",
-          "sha256": "80288f4a3f595eb50163150bdc7f8aa11d6d2016cb71139db104b5783ce70f9d"
+          "sha256": "9771a5178d172d58d5d398f6f68e12900b89f75ae6c4e86ea6400a1c3cbe36f2"
         }
       }
     },
     {
       "catalogId": "49ers-red-throwback-2021",
       "constructionKey": "red-throwback",
-      "revision": "f0dbce7795beb479",
+      "revision": "2bb7666697472a1d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-red-throwback-2021.webp",
@@ -54,14 +54,14 @@
         },
         "full": {
           "path": "/uniforms/49ers-red-throwback-2021-full.webp",
-          "sha256": "ff6dc79474233e61558ba75d40bd42474e79572e25a9d8b393561f26bbdc786c"
+          "sha256": "825b008a2eb8503b273e6094e58e43ba2759d6161a2db32ae5b7cbc90731aaac"
         }
       }
     },
     {
       "catalogId": "49ers-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "c932e09b32cb6ce0",
+      "revision": "ffd47bae9c2e186e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-rivalries-2025-2025.webp",
@@ -69,14 +69,14 @@
         },
         "full": {
           "path": "/uniforms/49ers-rivalries-2025-2025-full.webp",
-          "sha256": "5f277d68aa288fedb29152188364647175b16a5aec2080cb30148806bdb1f631"
+          "sha256": "ceb59e0b1c0f7d12c2da60f2e4759402ced09d6d65353bcf690a7ff72ae9ead8"
         }
       }
     },
     {
       "catalogId": "49ers-white-throwback-2018",
       "constructionKey": "white-throwback",
-      "revision": "677910af29727e53",
+      "revision": "2d1002620780dc19",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-white-throwback-2018.webp",
@@ -84,7 +84,7 @@
         },
         "full": {
           "path": "/uniforms/49ers-white-throwback-2018-full.webp",
-          "sha256": "73f4d4391500a20efc711decec26dbbe996c652672fc4c4bf57c1fc38644768b"
+          "sha256": "2f501f4ee3e22b996133456ece72e24b40b8232108340a8efc4bc84e1ec8927c"
         }
       }
     },

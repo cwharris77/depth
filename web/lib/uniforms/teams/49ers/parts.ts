@@ -41,14 +41,15 @@ export const NINERS_SPEC: TeamSpec = {
     'throwback-white': NINERS_THROWBACK_WHITE,
   },
   pants: {
+    // A red, black, red stripe down the side seam.
     white: {
       body: 'white',
       stripes: {
         position: 'leg-edge',
         bands: [
+          { color: 'red', size: 's' },
           { color: 'black', size: 's' },
-          { color: 'red', size: 'm' },
-          { color: 'black', size: 's' },
+          { color: 'red', size: 's' },
         ],
         gap: 'none',
         edge: 'none',
