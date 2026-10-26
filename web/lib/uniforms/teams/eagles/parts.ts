@@ -1,7 +1,7 @@
 // Philadelphia as a complete team spec: every helmet, jersey, pants and socks part, with its own
 // art drawn by the marks in ./marks.
 import type { TeamSpec } from '../core/team-spec';
-import { EAGLES_WING_DECAL } from './marks/construction';
+import { EAGLES_HERITAGE_WING_DECAL, EAGLES_WING_DECAL } from './marks/construction';
 import { EAGLES_HEAD_PALETTE } from './marks/head';
 import { EAGLES_CLASSIC_PALETTE } from './marks/classic';
 import { EAGLES_JERSEY_BLACK } from './jerseys/black';
@@ -24,11 +24,16 @@ export const EAGLES_PALETTE = {
 
 export const EAGLES_SPEC: TeamSpec = {
   helmets: {
-    // All three shells wear the same wing, over a black cage.
+    // The green and black shells wear the same wing, over a black cage.
     green: { shell: 'green', facemask: 'black', decal: EAGLES_WING_DECAL, number: 'none' },
     black: { shell: 'black', facemask: 'black', decal: EAGLES_WING_DECAL, number: 'none' },
-    // The kelly shell wears a silver cage.
-    kelly: { shell: 'kelly', facemask: 'silver', decal: EAGLES_WING_DECAL, number: 'none' },
+    // The kelly shell wears the heritage wing over a silver cage.
+    kelly: {
+      shell: 'kelly',
+      facemask: 'silver',
+      decal: EAGLES_HERITAGE_WING_DECAL,
+      number: 'none',
+    },
   },
   jerseys: {
     green: EAGLES_JERSEY_GREEN,
