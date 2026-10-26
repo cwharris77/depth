@@ -529,6 +529,7 @@ async function writeTeam(
       number: p.number,
       position: p.position,
       status: p.status,
+      injury_designation: p.injuryDesignation ?? null,
       age: p.age,
       college: p.college,
       experience: p.experience,

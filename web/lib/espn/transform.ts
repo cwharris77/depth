@@ -7,6 +7,7 @@ import type {
   TeamColors,
   TeamRoster,
 } from '../types';
+import { injuryDesignation } from './injuries';
 import type { EspnAthlete, EspnDepthcharts, EspnRoster, EspnTeamInfo } from './types';
 import {
   classifyItem,
@@ -188,6 +189,7 @@ function toPlayer(a: EspnAthlete, position: Position, depthRank: 1 | 2 | 3): Pla
     position,
     depthRank,
     status: statusOf(a, depthRank),
+    injuryDesignation: injuryDesignation(a.injuries),
     age: a.age ?? 0,
     college: collegeName(a.college),
     experience: a.experience?.years ?? 0,

@@ -769,4 +769,12 @@ describe('statusOf: injury comes from injuries, not status.type (DEP-585)', () =
     const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
     expect(result.players.find((p) => p.id === HURT_STARTER)?.status).toBe('injured');
   });
+
+  it("carries ESPN's designation for an injured player and none for a healthy one", () => {
+    const result = toTeamRoster({ meta: META, roster, depthcharts, teamInfo: TEAM_INFO });
+    expect(result.players.find((p) => p.id === HURT_STARTER)?.injuryDesignation).toBe(
+      'Questionable'
+    );
+    expect(result.players.find((p) => p.id === PRACTICE_SQUAD)?.injuryDesignation).toBeUndefined();
+  });
 });
