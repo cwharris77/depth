@@ -10,6 +10,7 @@ import {
 } from './paths';
 import { BUCCANEERS_SHIP } from './ship';
 import { placed, type Mark, type PlacedMark } from '../../core/marks';
+import { seatedCrownStripe } from '../../core/shared';
 import type { PartLayer } from '../../core/parts';
 import type { UniformSurface } from '../../core/types';
 
@@ -38,17 +39,22 @@ export const BUCCANEERS_FLAG_DECAL: PlacedMark = placed(
   }))
 );
 
-// The creamsicle shell's decal, painted in source order.
-export const BUCCANEERS_CREAMSICLE_DECAL: PlacedMark = placed(
-  BUCCANEERS_CREAMSICLE_DECAL_PATHS.map(({ d, fill }, index) => ({
+// The creamsicle shell's crimson-orange-crimson crown stripe, then its decal in source order.
+export const BUCCANEERS_CREAMSICLE_DECAL: PlacedMark = placed([
+  ...seatedCrownStripe([
+    { id: 'buccaneers-creamsicle-crown-crimson-top', fill: 'crimson', weight: 1 },
+    { id: 'buccaneers-creamsicle-crown-orange', fill: 'creamOrange', weight: 2 },
+    { id: 'buccaneers-creamsicle-crown-crimson-bottom', fill: 'crimson', weight: 1 },
+  ]),
+  ...BUCCANEERS_CREAMSICLE_DECAL_PATHS.map(({ d, fill }, index) => ({
     id: `buccaneers-creamsicle-svg-${String(index + 1).padStart(2, '0')}`,
-    surface: 'helmet',
+    surface: 'helmet' as const,
     d,
     clip: true,
-    kind: 'fill',
+    kind: 'fill' as const,
     fill,
-  }))
-);
+  })),
+]);
 
 // A single solid band at the sleeve hem, left sleeve before right.
 export function buccaneersCuff(color: string): PlacedMark {

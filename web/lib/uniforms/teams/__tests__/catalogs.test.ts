@@ -949,11 +949,16 @@ describe('Buccaneers catalog conversion', () => {
   it('registers the worn pants pairings with their socks', () => {
     const flag = { helmet: 'pewter-flag' };
     expect(pairings(catalog)).toEqual({
-      home: { ...flag, jersey: 'red', pants: 'white', socks: 'pewter' },
-      'home--pewter-pants': { ...flag, jersey: 'red', pants: 'pewter', socks: 'pewter' },
-      away: { ...flag, jersey: 'white', pants: 'white', socks: 'pewter' },
-      'away--pewter-pants': { ...flag, jersey: 'white', pants: 'pewter', socks: 'pewter' },
-      creamsicle: { helmet: 'white', jersey: 'creamsicle', pants: 'white', socks: 'creamsicle' },
+      home: { ...flag, jersey: 'red', pants: 'white', socks: 'black' },
+      'home--pewter-pants': { ...flag, jersey: 'red', pants: 'pewter', socks: 'black' },
+      away: { ...flag, jersey: 'white', pants: 'white', socks: 'black' },
+      'away--pewter-pants': { ...flag, jersey: 'white', pants: 'pewter', socks: 'black' },
+      creamsicle: {
+        helmet: 'white',
+        jersey: 'creamsicle',
+        pants: 'creamsicle',
+        socks: 'creamsicle',
+      },
       pewter: { ...flag, jersey: 'pewter', pants: 'pewter', socks: 'pewter' },
     });
   });
