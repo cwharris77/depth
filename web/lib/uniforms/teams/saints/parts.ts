@@ -1,5 +1,5 @@
 // New Orleans as a complete team spec: the one gold fleur shell, the black and white jerseys and
-// the gold and black pants, with the fleur drawn by the mark in ./marks.
+// the gold and black pants, with the fleur and crown stripe drawn by the marks in ./marks.
 import type { TeamSpec } from '../core/team-spec';
 import { SAINTS_FLEUR_DECAL } from './marks/construction';
 import { SAINTS_JERSEY_BLACK } from './jerseys/black';
@@ -16,10 +16,10 @@ export const SAINTS_PALETTE = {
 
 export const SAINTS_SPEC: TeamSpec = {
   helmets: {
-    // A gold shell with a gold cage, carrying the fleur.
+    // A gold shell with a black cage, carrying the fleur and a black-white-black crown stripe.
     'gold-fleur': {
       shell: 'gold',
-      facemask: 'gold',
+      facemask: 'black',
       decal: SAINTS_FLEUR_DECAL,
       number: 'none',
     },
@@ -29,8 +29,18 @@ export const SAINTS_SPEC: TeamSpec = {
     white: SAINTS_JERSEY_WHITE,
   },
   pants: {
-    // Gold and black, both unbroken.
-    gold: { body: 'gold', stripes: 'none', marks: [] },
+    // Gold with one wide black stripe on the side seam, which reads as a sliver at the front edge;
+    // black unbroken.
+    gold: {
+      body: 'gold',
+      stripes: {
+        position: 'leg-edge',
+        bands: [{ color: 'black', size: 's' }],
+        gap: 'none',
+        edge: 'none',
+      },
+      marks: [],
+    },
     black: { body: 'black', stripes: 'none', marks: [] },
   },
   socks: {
