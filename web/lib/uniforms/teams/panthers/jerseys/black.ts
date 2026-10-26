@@ -4,6 +4,7 @@ import {
   panthersShoulderFan,
   panthersSleeveMarks,
   panthersShoulderNumbers,
+  panthersNeckLettering,
 } from '../marks/construction';
 
 // Black body, a silver-outside-blue shoulder fan and a blue inset collar, with white numerals outlined in blue.
@@ -36,5 +37,6 @@ export const PANTHERS_JERSEY_BLACK: CompleteJerseySpec = {
     { paint: 'over', mark: panthersShoulderFan('silver', 'blue') },
     { paint: 'over', mark: panthersSleeveMarks('white') },
     { paint: 'over', mark: panthersShoulderNumbers('white', 'blue') },
+    { paint: 'over', mark: panthersNeckLettering('black') },
   ],
 };
