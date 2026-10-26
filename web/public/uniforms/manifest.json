@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "34c54c5c0534f7e2daadf735fbd34c57114e5442ae4da8fe2e00a4e047dbae0f",
-  "revision": "57f3c70daa17613f",
+  "sourceDigest": "75d6720db44d65d5b00031c180b2a0c1bcdca6296a8c9671d2cbb077d6ee43b1",
+  "revision": "596213b2586480ad",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1181,17 +1181,27 @@
     {
       "catalogId": "falcons-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "b9160bbce8fe7362",
+      "revision": "a1f4216f4693b2a5",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/falcons-away-2026-2026.webp",
-          "sha256": "a9f4b909a2671b8ec4c5bcdae7a55fba38d46935fe9a86cb711f2894ae807205"
+          "sha256": "c414f71a63e0871ee4ecf077921b69b15a5fcf80cd0282a376d170f4f653a2ee"
         },
         "full": {
           "path": "/uniforms/falcons-away-2026-2026-full.webp",
-          "sha256": "d30067d5bf70e8301e285a2f8b3e0ec3e07fe78c2c6b76cd0ccb6af8527f9376"
+          "sha256": "4d5f55a0d42fcffef42cbe71486c9d7033b04d143f715736ad77ce62ac6b06b6"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "black-pants",
+          "label": "Black pants",
+          "full": {
+            "path": "/uniforms/falcons-away-2026-2026--black-pants-full.webp",
+            "sha256": "2028f386afc7df0b6326b4f7e3bacd6c0f2ff3456f2c59ddd040184fe4932572"
+          }
+        }
+      ]
     },
     {
       "catalogId": "falcons-home-2020",
@@ -1221,7 +1231,7 @@
     {
       "catalogId": "falcons-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "e3a2c945b6308d37",
+      "revision": "89f72c1df9289b89",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/falcons-home-2026-2026.webp",
@@ -1229,9 +1239,27 @@
         },
         "full": {
           "path": "/uniforms/falcons-home-2026-2026-full.webp",
-          "sha256": "b38440dd742f0ccf0e09d6aaf9eb832ee5db54b2cdd1a975de7776ec6a07dfc3"
+          "sha256": "b9e002fae25c04ac622b97dd3f1f14bf3b1970d7f416485caecc91ca36c08957"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "black-pants",
+          "label": "Black pants",
+          "full": {
+            "path": "/uniforms/falcons-home-2026-2026--black-pants-full.webp",
+            "sha256": "2f114bfa28732ddb33978631465cb3217238c0c0fc8205e79ccab07ef0a1d2aa"
+          }
+        },
+        {
+          "key": "white-socks",
+          "label": "White pants, white socks",
+          "full": {
+            "path": "/uniforms/falcons-home-2026-2026--white-socks-full.webp",
+            "sha256": "a8a2209a19e13065ed5dcd0cb6d4801a309a76d703908ed7ff01e1d93a8fe9f3"
+          }
+        }
+      ]
     },
     {
       "catalogId": "falcons-red-alt-2020",
