@@ -32,8 +32,8 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
         },
       ],
       combinations: [
-        flag('standard', 'White pants', 'white', 'pewter'),
-        flag('pewter-pants', 'Pewter pants', 'pewter', 'pewter'),
+        flag('standard', 'White pants', 'white', 'black'),
+        flag('pewter-pants', 'Pewter pants', 'pewter', 'black'),
       ],
     },
     {
@@ -54,8 +54,8 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
         },
       ],
       combinations: [
-        flag('standard', 'White pants', 'white', 'pewter'),
-        flag('pewter-pants', 'Pewter pants', 'pewter', 'pewter'),
+        flag('standard', 'White pants', 'white', 'black'),
+        flag('pewter-pants', 'Pewter pants', 'pewter', 'black'),
       ],
     },
     {
@@ -81,7 +81,7 @@ export const BUCCANEERS_CATALOG: TeamCatalog = {
           key: 'standard',
           label: 'White pants',
           helmet: 'white',
-          pants: 'white',
+          pants: 'creamsicle',
           pantsNike: 'crimson',
           socks: 'creamsicle',
         },

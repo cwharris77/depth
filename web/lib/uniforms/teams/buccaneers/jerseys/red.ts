@@ -1,5 +1,6 @@
 import { anchoredMark } from '../../core/jersey-spec';
 import { BUCCANEERS_NUMBER_THREE } from '../marks/numbers';
+import { buccaneersChestWordmark } from '../marks/wordmark';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { BUCCANEERS_SHIP_COLORS } from '../marks/ship';
 import { buccaneersCuff, BUCCANEERS_SLEEVE_SHIP } from '../marks/construction';
@@ -38,6 +39,7 @@ export const BUCCANEERS_JERSEY_RED: CompleteJerseySpec = {
       slots: Object.fromEntries(Object.keys(BUCCANEERS_SHIP_COLORS).map((slot) => [slot, slot])),
       id: 'ship',
     }),
+    { paint: 'over', mark: buccaneersChestWordmark('pewter') },
     { paint: 'over', mark: buccaneersCuff('pewter') },
   ],
 };

@@ -15,7 +15,7 @@ export const BUCCANEERS_JERSEY_CREAMSICLE: CompleteJerseySpec = {
   },
   shoulderPanel: 'none',
   shoulderStripes: 'none',
-  shoulderNumber: 'none',
+  shoulderNumber: { fill: 'white', outline: 'crimson' },
   sleeveStripes: 'none',
   cuff: 'none',
   sleeveNumber: 'none',
