@@ -1,8 +1,9 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { giantsChestMonogram } from '../marks/construction';
 import { GIANTS_NUMBER_THREE } from '../marks/numbers';
 
 // White body with a white V collar keylined grey, red shoulder numerals, a thin/thick/thin set of
-// red sleeve stripes, and plain red numerals.
+// red sleeve stripes, plain red numerals, and the red monogram on the chest.
 export const GIANTS_JERSEY_WHITE: CompleteJerseySpec = {
   body: 'white',
   collar: {
@@ -36,5 +37,5 @@ export const GIANTS_JERSEY_WHITE: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: GIANTS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: giantsChestMonogram('red') }],
 };
