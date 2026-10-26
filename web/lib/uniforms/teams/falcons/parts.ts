@@ -34,16 +34,18 @@ export const FALCONS_SPEC: TeamSpec = {
     white: FALCONS_JERSEY_WHITE,
     red: FALCONS_JERSEY_RED,
   },
-  // The same red leg stripe, framed in black, on both pants.
+  // Both 2026 pants carry one side-seam stripe, from the seam inward: red, black, white, silver.
+  // The 2020 pants use the drawn tapered stripe.
   pants: {
     'white-2026': {
       body: 'white',
       stripes: {
         position: 'leg-edge',
         bands: [
-          { color: 'black', size: 's' },
-          { color: 'silver', size: 's' },
           { color: 'red', size: 's' },
+          { color: 'black', size: 's' },
+          { color: 'white', size: 's' },
+          { color: 'silver', size: 's' },
         ],
         gap: 'none',
         edge: 'none',
@@ -55,9 +57,10 @@ export const FALCONS_SPEC: TeamSpec = {
       stripes: {
         position: 'leg-edge',
         bands: [
+          { color: 'red', size: 's' },
+          { color: 'black', size: 's' },
           { color: 'white', size: 's' },
           { color: 'silver', size: 's' },
-          { color: 'red', size: 's' },
         ],
         gap: 'none',
         edge: 'none',
@@ -78,5 +81,6 @@ export const FALCONS_SPEC: TeamSpec = {
   socks: {
     black: { color: 'black', stripes: 'none' },
     white: { color: 'white', stripes: 'none' },
+    red: { color: 'red', stripes: 'none' },
   },
 };
