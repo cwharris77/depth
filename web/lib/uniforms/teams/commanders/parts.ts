@@ -41,8 +41,8 @@ export const COMMANDERS_SPEC: TeamSpec = {
       stripes: {
         position: 'leg-edge',
         bands: [
-          { color: 'burgundy', size: 'm' },
           { color: 'gold', size: 'm' },
+          { color: 'burgundy', size: 'm' },
         ],
         gap: 'none',
         edge: 'none',
@@ -65,5 +65,18 @@ export const COMMANDERS_SPEC: TeamSpec = {
     burgundy: { body: 'burgundy', stripes: 'none', marks: [] },
     white: { body: 'white', stripes: 'none', marks: [] },
   },
-  socks: { white: { color: 'white', stripes: 'none' } },
+  socks: {
+    burgundy: { color: 'burgundy', stripes: 'none' },
+    'white-hooped': {
+      color: 'white',
+      stripes: {
+        bands: [
+          { color: 'burgundy', size: 'm' },
+          { color: 'gold', size: 'm' },
+        ],
+        gap: 'none',
+        edge: 'none',
+      },
+    },
+  },
 };

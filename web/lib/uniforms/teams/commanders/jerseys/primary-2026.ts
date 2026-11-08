@@ -1,10 +1,12 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { COMMANDERS_JERSEY_BURGUNDY } from './burgundy';
 
-// Block numerals keylined gold on the chest and each sleeve, above two stripes at the hem.
+// Block numerals keylined gold on the chest and along the top of each shoulder, with two stripes at
+// the sleeve hem.
 export const COMMANDERS_JERSEY_BURGUNDY_2026: CompleteJerseySpec = {
   ...COMMANDERS_JERSEY_BURGUNDY,
-  sleeveNumber: { fill: 'white', outline: 'gold' },
+  shoulderNumber: { fill: 'white', outline: 'gold' },
+  sleeveNumber: 'none',
   sleeveStripes: {
     bands: [
       { color: 'white', size: 's' },
@@ -20,7 +22,7 @@ export const COMMANDERS_JERSEY_BURGUNDY_2026: CompleteJerseySpec = {
 export const COMMANDERS_JERSEY_WHITE_2026: CompleteJerseySpec = {
   ...COMMANDERS_JERSEY_BURGUNDY_2026,
   body: 'white',
-  sleeveNumber: { fill: 'burgundy', outline: 'gold' },
+  shoulderNumber: { fill: 'burgundy', outline: 'gold' },
   sleeveStripes: {
     bands: [
       { color: 'burgundy', size: 's' },

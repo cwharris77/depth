@@ -6,9 +6,9 @@ export const referencePacket = {
       role: 'front-and-detail',
       covers: [
         'white home and burgundy away block numerals with gold keylines',
-        'sleeve numerals above two-tone hem stripes',
+        'shoulder numerals and two-tone sleeve hem stripes',
         'gold facemask and three-stripe crown',
-        'two-stripe pants',
+        'two-stripe pants and socks by combination',
       ],
     },
     {
@@ -16,17 +16,17 @@ export const referencePacket = {
       role: 'design-description',
       covers: [
         'white home and burgundy away block numerals with gold keylines',
-        'sleeve numerals above two-tone hem stripes',
+        'shoulder numerals and two-tone sleeve hem stripes',
         'gold facemask and three-stripe crown',
-        'two-stripe pants',
+        'two-stripe pants and socks by combination',
       ],
     },
   ],
   observed: [
     'white home and burgundy away block numerals with gold keylines',
-    'sleeve numerals above two-tone hem stripes',
+    'shoulder numerals and two-tone sleeve hem stripes',
     'gold facemask and three-stripe crown',
-    'two-stripe pants',
+    'two-stripe pants and socks by combination',
   ],
   approximations: ['The shared block numeral stands in for the club block font.'],
 } as const;

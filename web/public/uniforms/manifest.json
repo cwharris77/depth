@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "9a36d0b4a52828dae0e284e73bfb46a77358a56dbac2a02ca7a9d8b2ae096b88",
-  "revision": "a7f7e3310f6d6f82",
+  "sourceDigest": "e49d66921f1c02d5f3b2179a61bffe9cec8895168cccc590f982acf8f5802c73",
+  "revision": "820ff9214a314ac2",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -933,30 +933,30 @@
     {
       "catalogId": "commanders-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "a060787309628d97",
+      "revision": "5e36a47155d961f8",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/commanders-home-2026-2026.webp",
-          "sha256": "14b3317e2035ff629db43b15e58c7b4489f69ccdd366c5c1b7b911583f5db0e2"
+          "sha256": "988b494372e932d6f1269a3b1c023241ad80c1a0a463b04c57935f96e513356d"
         },
         "full": {
           "path": "/uniforms/commanders-home-2026-2026-full.webp",
-          "sha256": "f7f66098b4355aea5c208c0adb221547db8d16a76edd9d5e9879735f8b22caac"
+          "sha256": "058cdc0628d16cc4dcbb495fb88a4b3118827f337388f10493931ae5e150d241"
         }
       }
     },
     {
       "catalogId": "commanders-super-bowl-away-2025",
       "constructionKey": "super-bowl-away",
-      "revision": "7914523622c53ef3",
+      "revision": "1c9003b8b8a4f7e9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/commanders-super-bowl-away-2025.webp",
-          "sha256": "fa18e230a5f36258613d84b053c861ffe1a54770e44e3203431637c6fe3e9b77"
+          "sha256": "f708161aff7c54ef9c8c826d7edce9714cb60e97ec6acc7fd32386ed491912b8"
         },
         "full": {
           "path": "/uniforms/commanders-super-bowl-away-2025-full.webp",
-          "sha256": "a4b4b8b11ecdd52dc875aefaf87ed711df49545a00a55e1c9d6aff509f842991"
+          "sha256": "dd9e968203a8b7c5fb8af0b72e0596afdc85a28c29a964c7855688b2188bc9f6"
         }
       }
     },
