@@ -1,8 +1,8 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { ramsFullSleeveHorn } from '../marks/construction';
 
-// Sol body with a body-coloured collar, three royal stripes near each sleeve hem and flat royal
-// block numerals.
+// Sol body with a body-coloured collar, thin, broad and thin royal stripes near each sleeve hem
+// and flat royal block numerals.
 export const RAMS_JERSEY_CLASSIC_SOL: CompleteJerseySpec = {
   body: 'yellow',
   collar: {
@@ -20,7 +20,7 @@ export const RAMS_JERSEY_CLASSIC_SOL: CompleteJerseySpec = {
   sleeveStripes: {
     bands: [
       { color: 'royal', size: 's' },
-      { color: 'royal', size: 'm' },
+      { color: 'royal', size: 'l' },
       { color: 'royal', size: 's' },
     ],
     gap: 'narrow',
