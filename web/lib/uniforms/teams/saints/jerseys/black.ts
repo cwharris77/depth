@@ -1,14 +1,17 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { anchoredMark } from '../../core/jersey-spec';
+import { SAINTS_FLEUR } from '../marks/fleur';
 import { SAINTS_NUMBER_THREE } from '../marks/numbers';
 
-// Black body with a gold V collar filled gold inside, gold shoulder numerals, gold numerals keylined white.
+// Black body with a gold V collar band, gold shoulder numerals, gold numerals keylined white and
+// the fleur on each sleeve.
 export const SAINTS_JERSEY_BLACK: CompleteJerseySpec = {
   body: 'black',
   collar: {
     style: 'inset-v',
     color: 'gold',
     trim: 'none',
-    inside: 'gold',
+    inside: 'body',
     lining: 'none',
     backBar: 'none',
     outline: false,
@@ -23,9 +26,17 @@ export const SAINTS_JERSEY_BLACK: CompleteJerseySpec = {
     height: 185,
     fill: 'gold',
     outline: 'white',
-    outlineWeight: 'regular',
+    outlineWeight: 'thin',
     texture: 'mesh',
     glyphPath: SAINTS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [
+    anchoredMark({
+      paint: 'over',
+      mark: SAINTS_FLEUR,
+      anchor: 'sleeve-logos',
+      slots: { outer: 'black', keyline: 'white', inner: 'black', face: 'gold' },
+      id: 'black-sleeve-fleur',
+    }),
+  ],
 };
