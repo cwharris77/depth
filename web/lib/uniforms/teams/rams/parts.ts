@@ -75,14 +75,15 @@ export const RAMS_SPEC: TeamSpec = {
       stripes: 'none',
       marks: [{ paint: 'over', mark: ramsLegStripe('yellow', 'royal') }],
     },
-    // Classic Sol's royal, Sol and royal triple stripe down the side of the leg.
+    // Classic Sol's royal, Sol and royal triple stripe down the side of the leg, the Sol band twice
+    // the width of each royal band.
     'classic-sol': {
       body: 'white',
       stripes: {
         position: 'leg-edge',
         bands: [
           { color: 'royal', size: 's' },
-          { color: 'yellow', size: 's' },
+          { color: 'yellow', size: 'm' },
           { color: 'royal', size: 's' },
         ],
         gap: 'none',

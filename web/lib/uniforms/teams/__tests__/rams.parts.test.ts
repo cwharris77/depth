@@ -87,9 +87,9 @@ describe('Rams pants parts', () => {
 });
 
 describe('Rams jerseys', () => {
-  it('gives Classic Sol a wider middle sleeve stripe', () => {
+  it('gives Classic Sol a broad middle sleeve stripe', () => {
     expect(RAMS_JERSEY_CLASSIC_SOL.sleeveStripes).toMatchObject({
-      bands: [{ size: 's' }, { size: 'm' }, { size: 's' }],
+      bands: [{ size: 's' }, { size: 'l' }, { size: 's' }],
     });
   });
   it('uses the same Sol paint for the 2020 helmet, pants and white jersey sleeves', () => {

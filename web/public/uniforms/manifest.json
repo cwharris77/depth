@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "f7813a8e05722b52cafdf7902a876ec78cf2bda4020b536c3763680f8eced2c9",
-  "revision": "8ff419e7f872a2d1",
+  "sourceDigest": "590bc96b375356771f527538253d0ef7a7a3ba9da22a203ebd705b9824281c77",
+  "revision": "195a6f9f276b3e40",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1999,15 +1999,15 @@
     {
       "catalogId": "rams-classic-sol-2026",
       "constructionKey": "classic-sol",
-      "revision": "9643d3b575669e6d",
+      "revision": "9195eb931c73de6a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-classic-sol-2026.webp",
-          "sha256": "3121cf69a59f44e203d3578e94af231aa569a7100896700effae686723bd9878"
+          "sha256": "dcebab96a9a3ef6806ecdd18c69143141267fbfa03aa63ab9651aafc7c22d5d1"
         },
         "full": {
           "path": "/uniforms/rams-classic-sol-2026-full.webp",
-          "sha256": "10117a695bb4da0c71254ce8eab5f30a5c87b74991913890f2c39d88ed665401"
+          "sha256": "119ef56715f39038098db199a56d1b8ff9b9e2d2ec27583c2e62bc10b61a6acd"
         }
       }
     },
