@@ -1,8 +1,9 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { BILLS_CHEST_LOGO } from '../marks/jersey-art';
 import { BILLS_NUMBER_THREE } from '../marks/numbers';
 
 // Gray body with a royal collar band and four dark-gray stripes on each sleeve; royal numerals
-// outlined in white, then red.
+// outlined in white, then red, and the team logo over the heart.
 export const BILLS_JERSEY_NICKEL_CITY: CompleteJerseySpec = {
   body: 'nickel',
   collar: {
@@ -38,5 +39,5 @@ export const BILLS_JERSEY_NICKEL_CITY: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: BILLS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: BILLS_CHEST_LOGO }],
 };

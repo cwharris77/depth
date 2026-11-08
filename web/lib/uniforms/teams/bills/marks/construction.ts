@@ -8,6 +8,7 @@ import {
 } from './decal';
 import { placed } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
+import { seatedCrownStripe } from '../../core/shared';
 
 const fill = (id: string, d: string, color: string): PartLayer => ({
   id,
@@ -29,14 +30,22 @@ const outline = (id: string, d: string): PartLayer => ({
   lineCap: 'round',
 });
 
-// The navy buffalo with the red diagonal stripe, shared by home and away.
+// The navy buffalo with the red diagonal stripe over a royal-red-royal centre stripe, shared by
+// home and away.
 export const BILLS_BUFFALO_DECAL = placed([
+  ...seatedCrownStripe([
+    { id: 'bills-helmet-crown-royal-top', fill: 'navy', weight: 1 },
+    { id: 'bills-helmet-crown-red', fill: 'red', weight: 2 },
+    { id: 'bills-helmet-crown-royal-bottom', fill: 'navy', weight: 1 },
+  ]),
   fill('bills-helmet-buffalo', BILLS_HELMET_DECAL_BUFFALO_PATH, 'navy'),
   fill('bills-helmet-stripe', BILLS_HELMET_DECAL_STRIPE_PATH, 'red'),
 ]);
 
-// Rivalries' tone-on-tone treatment: silver buffalo and light-silver stripe, each outlined in navy.
+// Rivalries' tone-on-tone treatment: a silver centre stripe, and a silver buffalo and light-silver
+// stripe, each outlined in navy.
 export const BILLS_ICE_DECAL = placed([
+  ...seatedCrownStripe([{ id: 'bills-helmet-crown-ice', fill: 'iceSilver', weight: 1 }]),
   fill('bills-helmet-buffalo', BILLS_HELMET_DECAL_BUFFALO_PATH, 'iceSilver'),
   outline('bills-helmet-buffalo-outline', BILLS_HELMET_DECAL_BUFFALO_PATH),
   fill('bills-helmet-stripe', BILLS_HELMET_DECAL_STRIPE_PATH, 'iceSilverLight'),
