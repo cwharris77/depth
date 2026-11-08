@@ -32,8 +32,8 @@ describe('Patriots catalog', () => {
     expect(pairs).toEqual({
       home: ['navy', 'silver'],
       away: ['white', 'navy'],
-      'rivalries-2025': ['white'],
-      'pat-patriot': ['white'],
+      'rivalries-2025': ['plainWhite'],
+      'pat-patriot': ['throwback'],
     });
   });
 });

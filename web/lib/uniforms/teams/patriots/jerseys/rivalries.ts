@@ -2,12 +2,13 @@ import { PATRIOTS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { patriotsShoulderBands } from '../marks/construction';
 
-// Royal body with a same-colour keylined V collar, white-navy-white shoulder bands and white numerals outlined in navy.
+// Storm blue body with a same-colour keylined V collar, white-navy-white shoulder bands and white
+// numerals outlined in navy.
 export const PATRIOTS_JERSEY_RIVALRIES: CompleteJerseySpec = {
-  body: 'rivalNavy',
+  body: 'stormBlue',
   collar: {
     style: 'inset-v',
-    color: 'rivalNavy',
+    color: 'stormBlue',
     trim: 'none',
     inside: 'body',
     lining: 'none',
