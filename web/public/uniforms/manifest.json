@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "351b4c7467fe369c08af87df17ac2bd7d6dd411ffb4481129bed586952e00cae",
-  "revision": "05c9473cce0258ae",
+  "sourceDigest": "f7813a8e05722b52cafdf7902a876ec78cf2bda4020b536c3763680f8eced2c9",
+  "revision": "8ff419e7f872a2d1",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2204,30 +2204,30 @@
     {
       "catalogId": "seahawks-1976-throwback-1976",
       "constructionKey": "1976-throwback",
-      "revision": "744b67889ab86f22",
+      "revision": "e28ac4ea5188fbb6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-1976-throwback-1976.webp",
-          "sha256": "b5e0ab7e82805eea95b6c229a549b4d8b3c1fbb8263e4726ae705606477dae30"
+          "sha256": "100ebe1777d28f0811debf3fa6cffb24c852e687ac729cb1ff0cbf76defee800"
         },
         "full": {
           "path": "/uniforms/seahawks-1976-throwback-1976-full.webp",
-          "sha256": "1acf1423581a4dfc0ec22f5e4114a7efa3393433a85ae7c751f8bbf56b65b0a8"
+          "sha256": "6192947fbfcd7e3fc939c6125a2f5b3d46274225e127bbd236dc0a75b6993727"
         }
       }
     },
     {
       "catalogId": "seahawks-away-2012",
       "constructionKey": "away",
-      "revision": "9d827740b57249bf",
+      "revision": "323cbe81bfbafda7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-away-2012.webp",
-          "sha256": "f5e6b42a3e1c58ef6c4b9c09839f6cb14a751ee2d21c0d7cce0ee9a5e58352bf"
+          "sha256": "49954e2d615a0c731a171bb222496cb448e8288f175868fe29191b72f5448f90"
         },
         "full": {
           "path": "/uniforms/seahawks-away-2012-full.webp",
-          "sha256": "10724f9cf8e379107e5c1ea9625d8fe6949ec2c50c5b3ff9bbed6a5d63898a46"
+          "sha256": "d49a506965cdc9b712e87f38366c20818ca9381256b881c662945e137a2df920"
         }
       },
       "combinations": [
@@ -2236,7 +2236,7 @@
           "label": "Grey pants",
           "full": {
             "path": "/uniforms/seahawks-away-2012--grey-pants-full.webp",
-            "sha256": "ebc27d781ed075e4ec3cddba52ba9d805f66a1877c6971a9e62fa5c93c6b8da8"
+            "sha256": "c231c400d48d90e70d4e8150a00f93dab2a9e8d19897022d351e740125ada3db"
           }
         },
         {
@@ -2244,7 +2244,7 @@
           "label": "Grey pants, white socks",
           "full": {
             "path": "/uniforms/seahawks-away-2012--grey-pants-white-socks-full.webp",
-            "sha256": "e619eee16d5f9d56fc2557a1c81c4c8a4a4b4ff8bc2ab1ce64de0333e1c2c512"
+            "sha256": "d196c2cb111895657d3f7deaec27872b0de65df667025ebb42630bea3501ad7b"
           }
         },
         {
@@ -2252,7 +2252,7 @@
           "label": "Navy pants",
           "full": {
             "path": "/uniforms/seahawks-away-2012--navy-pants-full.webp",
-            "sha256": "497a09d6c49fa4cdf1c40bae600b5dba2c8eedbf67ab9619c0e9916356397f5d"
+            "sha256": "c515a7e386ef6f11cf2c42f08b3587fb2ccb497d2af441a052e692eec7be585e"
           }
         },
         {
@@ -2260,7 +2260,7 @@
           "label": "Navy pants, white socks",
           "full": {
             "path": "/uniforms/seahawks-away-2012--navy-pants-white-socks-full.webp",
-            "sha256": "95038dadfb5333e2e14c7e99218be42dbe1d5ed3554ce19d911bc026dbea6c07"
+            "sha256": "ecd557d13418ec0a3de4464bd8d750105c7ed166ee47df217efa00a3a74f170b"
           }
         },
         {
@@ -2268,7 +2268,7 @@
           "label": "White socks",
           "full": {
             "path": "/uniforms/seahawks-away-2012--white-socks-full.webp",
-            "sha256": "a26352cb6497d1378e7add55f95f15b9b134ff4b674aa09bcaadf0bd436cc2b0"
+            "sha256": "bd5af23465254555efe318fe46f7f4799dc24ac12e784b4e238196601ff4aab9"
           }
         }
       ]
