@@ -8,8 +8,8 @@ import { boundsOf } from '../core/marks';
 
 describe('Ravens jersey parts', () => {
   // One `it` per jersey so a failure names the offending kit.
-  for (const [name, part] of Object.entries(RAVENS_PARTS.jerseys).filter(
-    ([name]) => !name.endsWith('-2026')
+  for (const [name, part] of Object.entries(RAVENS_PARTS.jerseys).filter(([name]) =>
+    ['purple', 'white', 'black'].includes(name)
   )) {
     it(`draws the ${name} collar, shoulder numerals, sleeve bands and shields`, () => {
       const ids = part.layers.map((layer) => layer.id);
@@ -42,20 +42,35 @@ describe('Ravens numerals', () => {
 
 describe('Ravens catalog', () => {
   it('wears the one black shell and purple pants on every design', () => {
-    for (const design of RAVENS_CATALOG.designs.filter(
-      (design) => !design.slug.endsWith('-2026')
-    )) {
+    for (const design of RAVENS_CATALOG.designs.filter((design) => design.periods[0].from < 2026)) {
       expect(design.combinations.map((c) => [c.helmet, c.pants])).toEqual([['black', 'purple']]);
     }
   });
 });
 
 describe('Ravens replacement combinations', () => {
-  it('pairs the new home with white pants and the new away with purple pants', () => {
+  it('pairs the new home and away with each of the three 2026 pants', () => {
     const current = RAVENS_CATALOG.designs.filter((design) => design.slug.endsWith('-2026'));
-    expect(current.map((design) => design.combinations.map((c) => [c.helmet, c.pants]))).toEqual([
-      [['black-2026', 'white-2026']],
-      [['black-2026', 'purple-2026']],
+    expect(
+      current.map((design) => design.combinations.map((c) => [c.helmet, c.pants, c.socks]))
+    ).toEqual([
+      [
+        ['black-2026', 'white-2026', 'white'],
+        ['black-2026', 'purple-2026', 'purple'],
+        ['black-2026', 'black-2026', 'black'],
+      ],
+      [
+        ['black-2026', 'purple-2026', 'white'],
+        ['black-2026', 'white-2026', 'white'],
+        ['black-2026', 'black-2026', 'black'],
+      ],
+    ]);
+  });
+
+  it('wears Purple Rising with its own helmet and pants and purple socks', () => {
+    const design = RAVENS_CATALOG.designs.find((entry) => entry.slug === 'purple-rising');
+    expect(design?.combinations.map((c) => [c.helmet, c.pants, c.socks])).toEqual([
+      ['purple-rising', 'purple-rising', 'purple'],
     ]);
   });
 });
