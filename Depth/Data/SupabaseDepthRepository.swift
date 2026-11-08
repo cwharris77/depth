@@ -29,9 +29,9 @@ actor SupabaseDepthRepository: DepthRepository {
         id, abbrev, city, name, conference, division, \
         logo_url, logo_dark_url, \
         depth_chart_entries(team_id, position, depth_rank, player_id, \
-        player:players(id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url)), \
+        player:players(id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url, injury_designation)), \
         special_teams_slots(id, team_id, label, player_id, x, y, \
-        player:players(id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url)), \
+        player:players(id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url, injury_designation)), \
         uniforms(id, team_id, kind, name, year_start, year_end, is_current, \
         color_primary, color_secondary, color_accent, image_path), \
         team_formations(season, rank, unit, alignment, personnel, pct)
@@ -103,7 +103,7 @@ actor SupabaseDepthRepository: DepthRepository {
     // The full player row, not just the name: a leader can be off the depth chart (injured,
     // inactive) and so absent from the team snapshot, yet still opens the player profile.
     private static let rosterLeaderPlayersSelect =
-        "id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url"
+        "id, team_id, name, number, position, status, age, college, experience, height, weight, bio, photo_url, injury_designation"
     private static let rosterLeaderStatsSelect =
         "player_id, season, completions, attempts, passing_yards, passing_tds, carries, rushing_yards, rushing_tds, receptions, receiving_yards, receiving_tds"
     private static let historicalRosterSelect =

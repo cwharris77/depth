@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import Depth
 
@@ -56,6 +57,47 @@ import Testing
     #expect(mapped.weight == 220)
     #expect(mapped.bio == "Accurate passer.")
     #expect(mapped.photoUrl == "https://example.com/player.png")
+}
+
+@Test func playerMapperCarriesATrimmedInjuryDesignation() throws {
+    var dto = PlayerDTO(
+        id: "p17", teamId: "bills", name: "Jordan Example", number: 17, position: "QB",
+        status: "injured", age: nil, college: nil, experience: nil, height: nil, weight: nil,
+        bio: nil, photoUrl: nil)
+    var dropped: [TeamSnapshotMapper.DroppedRow] = []
+    #expect(
+        TeamSnapshotMapper.mapPlayer(dto, depthRank: 1, dropped: &dropped)?.injuryDesignation == nil
+    )
+    dto.injuryDesignation = "  "
+    #expect(
+        TeamSnapshotMapper.mapPlayer(dto, depthRank: 1, dropped: &dropped)?.injuryDesignation == nil
+    )
+    dto.injuryDesignation = " Questionable "
+    let mapped = try #require(TeamSnapshotMapper.mapPlayer(dto, depthRank: 1, dropped: &dropped))
+    #expect(mapped.injuryDesignation == "Questionable")
+    #expect(mapped.seated(at: .qb, depthRank: 2).injuryDesignation == "Questionable")
+}
+
+@Test func statusLabelShowsTheInjuryDesignationOnlyForAnInjuredPlayer() {
+    let questionable = Player(
+        id: "a", position: .qb, depthRank: 1, number: 1, status: .injured,
+        injuryDesignation: "Questionable")
+    #expect(questionable.statusLabel == "Questionable")
+    let injured = Player(id: "b", position: .qb, depthRank: 1, number: 1, status: .injured)
+    #expect(injured.statusLabel == "injured")
+    let starter = Player(
+        id: "c", position: .qb, depthRank: 1, number: 1, status: .starter,
+        injuryDesignation: "Probable")
+    #expect(starter.statusLabel == "starter")
+}
+
+@Test func aCachedPlayerFromBeforeTheDesignationStillDecodes() throws {
+    let stored = Player(id: "a", position: .qb, depthRank: 1, number: 1, status: .injured)
+    var json = try #require(
+        try JSONSerialization.jsonObject(with: JSONEncoder().encode(stored)) as? [String: Any])
+    json["injuryDesignation"] = nil
+    let data = try JSONSerialization.data(withJSONObject: json)
+    #expect(try JSONDecoder().decode(Player.self, from: data).injuryDesignation == nil)
 }
 
 @Test func profileDisplayUsesHumanLabelsAndMissingValueFallbacks() {

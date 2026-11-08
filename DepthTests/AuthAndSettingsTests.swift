@@ -409,12 +409,15 @@ private final class TestClock: Sendable {
 @Test func rerankedPlayersPreservesRookieAndInjuredStatus() {
     // Web's statusForRank keeps rookie/injured regardless of the new rank.
     let rookie = Player(id: "r", position: .qb, depthRank: 3, number: 15, status: .rookie)
-    let injured = Player(id: "i", position: .qb, depthRank: 2, number: 9, status: .injured)
+    let injured = Player(
+        id: "i", position: .qb, depthRank: 2, number: 9, status: .injured,
+        injuryDesignation: "Doubtful")
 
     let reranked = rerankedPlayers([rookie, injured])
 
     #expect(reranked[0].status == .rookie)
     #expect(reranked[1].status == .injured)
+    #expect(reranked[1].injuryDesignation == "Doubtful")
 }
 
 @Test func rerankedPlayersCapsRankAtThree() {
