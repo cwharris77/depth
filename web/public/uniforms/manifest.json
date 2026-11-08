@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "1199ae450a17f8a8410aa4ca9ff9fe570f84e62f9dbed2930dd22a2b8f43e789",
-  "revision": "a400ccf092aa8ae2",
+  "sourceDigest": "62d87635756ec77c98aa1448c85400fc3656d4245ca787417437ed490484d836",
+  "revision": "bf3d19cb57c610bc",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -543,15 +543,15 @@
     {
       "catalogId": "buccaneers-away-2020",
       "constructionKey": "away",
-      "revision": "0ef127c73045b1c8",
+      "revision": "7d9508f99a14ba6d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/buccaneers-away-2020.webp",
-          "sha256": "c60655310b14625d740f598f4324b46768180bab51bbd6ce9831ff768f35b2a8"
+          "sha256": "15c7831e47a978354ba476c83fad6921ba0aa545cc5c83995eb990924a23fed6"
         },
         "full": {
           "path": "/uniforms/buccaneers-away-2020-full.webp",
-          "sha256": "20fb5a80587de059d2c17a5f51bf70655e6d977eaecf6f4b5070e782a813d148"
+          "sha256": "7dbc8a3a73f532b86135be09bcfedaf74a41847b8308d90d906226c036d6d222"
         }
       },
       "combinations": [
@@ -560,7 +560,7 @@
           "label": "Pewter pants",
           "full": {
             "path": "/uniforms/buccaneers-away-2020--pewter-pants-full.webp",
-            "sha256": "ac8bd02c581053dae2121388b6a77ad5e3c2d868083f3bb3614bb8622ad96822"
+            "sha256": "a805f284e7aafa9a4837445926646391229b7f4152500f3f26b1ce85a507655a"
           }
         }
       ]
@@ -568,30 +568,30 @@
     {
       "catalogId": "buccaneers-creamsicle-1976",
       "constructionKey": "creamsicle",
-      "revision": "34cff6e54bc52d83",
+      "revision": "93902a8c563bcd8e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/buccaneers-creamsicle-1976.webp",
-          "sha256": "b4444939fbfb52f051d3fb55ef0713ca1e95c21eaa8d5d59e03cb08e250a6d65"
+          "sha256": "40631322384e6974f7765d4540f7c1ca1e9ca3e3feb854fb279b82b2777359c2"
         },
         "full": {
           "path": "/uniforms/buccaneers-creamsicle-1976-full.webp",
-          "sha256": "966013cfe10eb99bf0f88fd09e46173c69f7d69018be1d4d6e9b7eb1fb5a69f8"
+          "sha256": "4f9c8a5ddb1f20dc2be16b55edfd7a0ffff10d4c4a0cfead3aa9fcb45e2c4058"
         }
       }
     },
     {
       "catalogId": "buccaneers-home-2020",
       "constructionKey": "home",
-      "revision": "94c44a11fc229af0",
+      "revision": "455c64f52e4392a4",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/buccaneers-home-2020.webp",
-          "sha256": "7a31561340b50623ffa7b977a06ebef7671bd184f1b3cafef6beb74049d29583"
+          "sha256": "a935a1d8a467dc7cf513948ebafc17ff2147e6710e96efcc9ffa39a88e69d4af"
         },
         "full": {
           "path": "/uniforms/buccaneers-home-2020-full.webp",
-          "sha256": "bed72b7e847d06de6d677e36139683918c36d44bd929763e4f29a868ff199d14"
+          "sha256": "561b9d754a3c5e4d670cff05f72aecbe532e1230b83baa1e54ba7b4d0707dec4"
         }
       },
       "combinations": [
@@ -600,7 +600,7 @@
           "label": "Pewter pants",
           "full": {
             "path": "/uniforms/buccaneers-home-2020--pewter-pants-full.webp",
-            "sha256": "23ee3ea6ca13b52546d8821df007bba3f2c9809a293ec20f4bb142ad87cf6e01"
+            "sha256": "c1f48336917f104b28667898b1a90d80a4898c81d06c1f3c0f927afc71ee9c0f"
           }
         }
       ]
@@ -608,15 +608,15 @@
     {
       "catalogId": "buccaneers-pewter-2020",
       "constructionKey": "pewter",
-      "revision": "0b77bcda25f40d58",
+      "revision": "c6affb0b4d98aedb",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/buccaneers-pewter-2020.webp",
-          "sha256": "6b666db1818113e9e9ff2a11e874596ee068932d932889aaf73c683b362d909b"
+          "sha256": "52905393792fe669fe2c87db1f517c53c1321f2843355e26792c79eb6bef474e"
         },
         "full": {
           "path": "/uniforms/buccaneers-pewter-2020-full.webp",
-          "sha256": "e45187faa71eb374fc14ed367a2be192b4fe9ba3983134cfc7bce1265cb3d394"
+          "sha256": "5ea4b06855fb9450734654994fd5fe5fa6c3cd85de7e6e6b29ea7d6943f6899a"
         }
       }
     },
