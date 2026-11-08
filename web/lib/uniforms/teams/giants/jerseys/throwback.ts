@@ -2,7 +2,8 @@ import { GIANTS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
 import { GIANTS_THROWBACK_CUFF_STRIPES } from '../marks/construction';
 
-// Royal body with a red V collar around a white inset, white sleeve numerals over red/white/red
+// Royal body with a red V collar around a white inset, white sleeve numerals edged red over
+// red/white/red
 // cuff stripes, and white numerals edged red.
 export const GIANTS_JERSEY_THROWBACK: CompleteJerseySpec = {
   body: 'royal',
@@ -20,7 +21,7 @@ export const GIANTS_JERSEY_THROWBACK: CompleteJerseySpec = {
   shoulderNumber: 'none',
   sleeveStripes: 'none',
   cuff: 'none',
-  sleeveNumber: { fill: 'white' },
+  sleeveNumber: { fill: 'white', outline: 'red' },
   number: {
     height: 185,
     fill: 'white',

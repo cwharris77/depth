@@ -37,6 +37,7 @@ export function placed(layers: readonly PartLayer[]): PlacedMark {
 
 export type AnchorName =
   | 'chest-left'
+  | 'chest-center'
   | 'helmet-side'
   | 'sleeve-left'
   | 'sleeve-right'
@@ -73,6 +74,8 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
   'collar-narrow-v': { surface: 'collar', x0: 284.5, w: 19, cy: 490, mirror: false, idSuffix: '' },
   // The small team badge over the wearer's heart.
   'chest-left': { surface: 'jersey', x0: 388, w: 54, cy: 484, mirror: false, idSuffix: '' },
+  // A small team logo on the centreline, between the collar point and the chest numeral.
+  'chest-center': { surface: 'jersey', x0: 281, w: 26, cy: 514, mirror: false, idSuffix: '' },
   'helmet-side': { surface: 'helmet', x0: 154, w: 310, cy: 293, mirror: false, idSuffix: '' },
   'sleeve-left': {
     surface: 'sleeve-left',

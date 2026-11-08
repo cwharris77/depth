@@ -2191,5 +2191,22 @@
       "numeralFill": "#445251",
       "numeralStroke": "#EBDBB2"
     }
+  },
+  {
+    "id": "giants-vintage-white-2016",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#0B2265",
+      "accent": "#A71930"
+    },
+    "expected": {
+      "fill": "#FFFFFF",
+      "ring": "#0B2265",
+      "mark": "#FFFFFF",
+      "text": "#FFFFFF",
+      "textOnFill": "#0B2265",
+      "numeralFill": "#0B2265",
+      "numeralStroke": "#FFFFFF"
+    }
   }
 ]

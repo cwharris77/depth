@@ -79,10 +79,45 @@ export const GIANTS_CATALOG: TeamCatalog = {
         {
           key: 'standard',
           label: 'Standard',
-          helmet: 'blue-bare',
+          helmet: 'navy-wordmark',
           pants: 'throwback',
           pantsNike: 'royal',
           socks: 'royal',
+        },
+      ],
+    },
+    {
+      id: 'giants-vintage-white-2016',
+      slug: 'vintage-white',
+      sleeveNike: 'royal',
+      name: 'Vintage White',
+      kind: 'color-rush',
+      jersey: 'vintage-white',
+      colors: { primary: '#FFFFFF', secondary: '#0B2265', accent: '#A71930' },
+      legacyAccent: { uiAccent: '#5B9BFF', onAccent: '#0a0e1a' },
+      periods: [
+        {
+          from: 2016,
+          to: 2023,
+          startSource:
+            'https://www.giants.com/news/giants-announce-2026-uniform-schedule-legacy-games-vintage-white',
+          source: 'https://giants.com/news/giants-announce-2025-uniform-schedule-legacy-games',
+          verifiedOn: '2026-10-22',
+        },
+        {
+          from: 2025,
+          startSource: 'https://giants.com/news/giants-announce-2025-uniform-schedule-legacy-games',
+          verifiedOn: '2026-10-22',
+        },
+      ],
+      combinations: [
+        {
+          key: 'standard',
+          label: 'Standard',
+          helmet: 'navy-wordmark',
+          pants: 'throwback',
+          pantsNike: 'royal',
+          socks: 'white',
         },
       ],
     },
