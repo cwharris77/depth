@@ -1123,10 +1123,10 @@ describe('Cowboys catalog conversion', () => {
     });
   });
 
-  it('pairs each jersey with the shared helmet and pants and leaves the socks in the pants colour', () => {
+  it('pairs the navy jersey with white pants and the white jersey with silver-blue pants and royal socks', () => {
     expect(pairings(catalog)).toEqual({
       home: { helmet: 'silver-star', jersey: 'navy', pants: 'white' },
-      away: { helmet: 'silver-star', jersey: 'white', pants: 'white' },
+      away: { helmet: 'silver-star', jersey: 'white', pants: 'silverBlue', socks: 'royal' },
     });
   });
 });
