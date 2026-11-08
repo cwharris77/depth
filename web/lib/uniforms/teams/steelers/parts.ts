@@ -1,6 +1,6 @@
 // Pittsburgh as a complete team spec: the black and gold shells, the three jerseys, the gold and
-// khaki pants and the black and gold socks, with the hypocycloid decal, the sleeve stripe set and
-// the 1934 panel drawn by the marks in ./marks.
+// khaki pants and the black and gold socks, with the crown stripe and hypocycloid decal, the chest
+// logo, the sleeve stripe set and the 1934 panel drawn by the marks in ./marks.
 import type { TeamSpec } from '../core/team-spec';
 import { STEELERS_DECAL } from './marks/construction';
 import { STEELERS_JERSEY_BLACK } from './jerseys/black';
@@ -25,7 +25,8 @@ export const STEELERS_PALETTE = {
 
 export const STEELERS_SPEC: TeamSpec = {
   helmets: {
-    // The glossy black shell with a black cage, carrying the hypocycloid mark.
+    // The glossy black shell with a black cage, a gold crown stripe and the hypocycloid mark on the
+    // right side.
     black: { shell: 'black', facemask: 'black', decal: STEELERS_DECAL, number: 'none' },
     // The 1934 throwback's bare gold shell on the shared grey cage.
     gold: { shell: 'gold', facemask: 'neutral', decal: 'none', number: 'none' },

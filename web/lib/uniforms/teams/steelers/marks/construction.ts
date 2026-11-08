@@ -9,8 +9,9 @@ import {
   STEELERS_DECAL_SEPARATOR_PATH,
   STEELERS_DECAL_WORDMARK_PATH,
 } from './decal';
-import { placed } from '../../core/marks';
+import { boundsOf, placeMark, placed, type Mark } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
+import { seatedCrownStripe } from '../../core/shared';
 
 type Surface = PartLayer['surface'];
 
@@ -23,9 +24,10 @@ const fill = (id: string, surface: Surface, d: string, color: string): PartLayer
   fill: color,
 });
 
-// The mark paints its white disc, grey ring, the gold, red and blue hypocycloids, the white
-// separator, then the wordmark.
+// The gold crown stripe seated on the shell, then the mark: its white disc, grey ring, the gold,
+// red and blue hypocycloids, the white separator and the wordmark.
 export const STEELERS_DECAL = placed([
+  ...seatedCrownStripe([{ id: 'steelers-helmet-crown', fill: 'gold', weight: 1 }]),
   fill('steelers-decal-disc', 'helmet', STEELERS_DECAL_DISC_PATH, 'decalDisc'),
   fill('steelers-decal-ring', 'helmet', STEELERS_DECAL_RING_PATH, 'decalRing'),
   fill('steelers-decal-gold', 'helmet', STEELERS_DECAL_GOLD_PATH, 'decalGold'),
@@ -34,6 +36,36 @@ export const STEELERS_DECAL = placed([
   fill('steelers-decal-separator', 'helmet', STEELERS_DECAL_SEPARATOR_PATH, 'decalSeparator'),
   fill('steelers-decal-wordmark', 'helmet', STEELERS_DECAL_WORDMARK_PATH, 'decalWordmark'),
 ]);
+
+// The traced disc carries bare move-tos that draw nothing; dropping them leaves only closed
+// subpaths, which a placed mark requires.
+const closedSubpaths = (d: string) => d.replace(/M-?[\d.]+,-?[\d.]+\s*(?=M|$)/g, '').trim();
+
+// The same mark as an embroidered patch over the wearer's heart, painted in the decal's order.
+const STEELERS_LOGO_DISC = closedSubpaths(STEELERS_DECAL_DISC_PATH);
+const STEELERS_LOGO: Mark<'disc' | 'ring' | 'gold' | 'red' | 'blue' | 'separator' | 'wordmark'> = {
+  box: boundsOf(STEELERS_LOGO_DISC),
+  paths: [
+    { slot: 'disc', d: STEELERS_LOGO_DISC },
+    { slot: 'ring', d: STEELERS_DECAL_RING_PATH },
+    { slot: 'gold', d: STEELERS_DECAL_GOLD_PATH },
+    { slot: 'red', d: STEELERS_DECAL_RED_PATH },
+    { slot: 'blue', d: STEELERS_DECAL_BLUE_PATH },
+    { slot: 'separator', d: STEELERS_DECAL_SEPARATOR_PATH },
+    { slot: 'wordmark', d: STEELERS_DECAL_WORDMARK_PATH },
+  ],
+};
+export const STEELERS_CHEST_LOGO = placed(
+  placeMark('steelers-chest-logo', STEELERS_LOGO, 'chest-left', {
+    disc: 'decalDisc',
+    ring: 'decalRing',
+    gold: 'decalGold',
+    red: 'decalRed',
+    blue: 'decalBlue',
+    separator: 'decalSeparator',
+    wordmark: 'decalWordmark',
+  })
+);
 
 // One sleeve, outer edge at `x0` and inner edge at `x1`: a black backing whose separators show
 // between the bands, then a gold band, a white band and a broad gold band. Identical on both

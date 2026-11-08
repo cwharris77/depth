@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "4cdaadb92d6df499cf772b49251a07601b2c905b7ea4d2381a6266af777aa8c3",
-  "revision": "3847a66f38dd1fb8",
+  "sourceDigest": "75e6c712169d3fec31dc00f86c515adbe5fb0be3c965628f55fe9a0a4ce2c3c2",
+  "revision": "6104c275c7b0b09b",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2375,15 +2375,15 @@
     {
       "catalogId": "steelers-away-1997",
       "constructionKey": "away",
-      "revision": "d840fc6380618fcc",
+      "revision": "05db0f9c19fa24bb",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/steelers-away-1997.webp",
-          "sha256": "8aab0d4b5948a0c02e25c4b4346c9ea6facf00e7f362cdb2ed49ab408bbfa92a"
+          "sha256": "5d347a52cf59407abfa32d5b1e8a4f4a5cc5599239bc132a2968ceb94226684d"
         },
         "full": {
           "path": "/uniforms/steelers-away-1997-full.webp",
-          "sha256": "12f5648531608cd214e0f94828fc1e1b1952b99ab59c0618b178cf8b276e2c13"
+          "sha256": "c0fa013ef3d356c93531182842939c35a2c2303ef7adf6f0fafa85c2dff7b5eb"
         }
       }
     },
@@ -2405,15 +2405,15 @@
     {
       "catalogId": "steelers-home-1997",
       "constructionKey": "home",
-      "revision": "c91bfe403c2abb20",
+      "revision": "f8cdebc8533e6e14",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/steelers-home-1997.webp",
-          "sha256": "4c5a4d0cc6cbbab5bdaee952daf9ca29a8fc2809b60cf03f0f86c74ea6c3b0db"
+          "sha256": "cbb4b5bd79cd6bee5603ae181bcb5c650c16f767b7e00c894fb015253ab403eb"
         },
         "full": {
           "path": "/uniforms/steelers-home-1997-full.webp",
-          "sha256": "2e0ad4392890c873947fd346da9d0fa7ec9fd8e44aff1dfc7dcd2ee1f9f34c30"
+          "sha256": "01c5ad16c06d27e47d4093a1f04efdfc9b0b3f0f286fd32398454d67625ce7b6"
         }
       }
     },
