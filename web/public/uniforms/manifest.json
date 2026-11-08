@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "sourceDigest": "62d87635756ec77c98aa1448c85400fc3656d4245ca787417437ed490484d836",
-  "revision": "bf3d19cb57c610bc",
+  "sourceDigest": "fe346fbe1f9b388333a47ee7f95b6eb2832a75cc1fa9303a31c6f21b86518232",
+  "revision": "7e667d0a8e1ac9f6",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
       "constructionKey": "away",
-      "revision": "4ec02d5c343c3584",
+      "revision": "d41cd0bb2042d4c0",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-away-2022.webp",
@@ -14,7 +14,7 @@
         },
         "full": {
           "path": "/uniforms/49ers-away-2022-full.webp",
-          "sha256": "77f21b1c4bd15611117ac9a818910971b6f531cc40d4d231d106be33f41acad1"
+          "sha256": "01c993516aeb7250c32c847a4c72dd65dff85ecff88ef32747edc459dcd9c7f9"
         }
       },
       "combinations": [
@@ -23,7 +23,7 @@
           "label": "White socks",
           "full": {
             "path": "/uniforms/49ers-away-2022--white-socks-full.webp",
-            "sha256": "6a24cffc63fb170d0933d48dbe05e325614c47b2f2fe5f898c7704ff4a294753"
+            "sha256": "bcd5121400c689f3ffec28d16af2229e1711a3a603d324edd9474e76c0b1d7ce"
           }
         }
       ]
@@ -31,7 +31,7 @@
     {
       "catalogId": "49ers-home-2022",
       "constructionKey": "home",
-      "revision": "2e77997f306376eb",
+      "revision": "4114291af1e0af98",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-home-2022.webp",
@@ -39,14 +39,14 @@
         },
         "full": {
           "path": "/uniforms/49ers-home-2022-full.webp",
-          "sha256": "80288f4a3f595eb50163150bdc7f8aa11d6d2016cb71139db104b5783ce70f9d"
+          "sha256": "9771a5178d172d58d5d398f6f68e12900b89f75ae6c4e86ea6400a1c3cbe36f2"
         }
       }
     },
     {
       "catalogId": "49ers-red-throwback-2021",
       "constructionKey": "red-throwback",
-      "revision": "f0dbce7795beb479",
+      "revision": "2bb7666697472a1d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-red-throwback-2021.webp",
@@ -54,14 +54,14 @@
         },
         "full": {
           "path": "/uniforms/49ers-red-throwback-2021-full.webp",
-          "sha256": "ff6dc79474233e61558ba75d40bd42474e79572e25a9d8b393561f26bbdc786c"
+          "sha256": "825b008a2eb8503b273e6094e58e43ba2759d6161a2db32ae5b7cbc90731aaac"
         }
       }
     },
     {
       "catalogId": "49ers-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "c932e09b32cb6ce0",
+      "revision": "ffd47bae9c2e186e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-rivalries-2025-2025.webp",
@@ -69,14 +69,14 @@
         },
         "full": {
           "path": "/uniforms/49ers-rivalries-2025-2025-full.webp",
-          "sha256": "5f277d68aa288fedb29152188364647175b16a5aec2080cb30148806bdb1f631"
+          "sha256": "ceb59e0b1c0f7d12c2da60f2e4759402ced09d6d65353bcf690a7ff72ae9ead8"
         }
       }
     },
     {
       "catalogId": "49ers-white-throwback-2018",
       "constructionKey": "white-throwback",
-      "revision": "677910af29727e53",
+      "revision": "2d1002620780dc19",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/49ers-white-throwback-2018.webp",
@@ -84,7 +84,7 @@
         },
         "full": {
           "path": "/uniforms/49ers-white-throwback-2018-full.webp",
-          "sha256": "73f4d4391500a20efc711decec26dbbe996c652672fc4c4bf57c1fc38644768b"
+          "sha256": "2f501f4ee3e22b996133456ece72e24b40b8232108340a8efc4bc84e1ec8927c"
         }
       }
     },
@@ -623,45 +623,45 @@
     {
       "catalogId": "cardinals-away-2023",
       "constructionKey": "away",
-      "revision": "ea5a96157278b7cb",
+      "revision": "19130613f383caad",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cardinals-away-2023.webp",
-          "sha256": "4a9a4f55cd91a14027f8c3328690d0fe0779821dfb08a71b1449469e2953f5fc"
+          "sha256": "603995d15fb0af69ec249e29181134f934f1220df79cf86cc7a55ecf273959be"
         },
         "full": {
           "path": "/uniforms/cardinals-away-2023-full.webp",
-          "sha256": "8d0c382a1d6986c57bbad53f4163d42cac996b13da8fcb64400b35a277b5bcbf"
+          "sha256": "c9c1d8295393f18faab27e9c7b6b13e0f5d40f3fb86952716ce093c1eff778b0"
         }
       }
     },
     {
       "catalogId": "cardinals-black-alt-2023",
       "constructionKey": "black-alt",
-      "revision": "67cd320b68f13aca",
+      "revision": "cfb3022edf8d8357",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cardinals-black-alt-2023.webp",
-          "sha256": "f0df47d7f798df9213e78c5f277705d3ffc86c004123f6287bca3e9420f5f29f"
+          "sha256": "f209aec54e91acaf48988de89a9d0736c34be7cf748a2ec8187d4a607ff7005d"
         },
         "full": {
           "path": "/uniforms/cardinals-black-alt-2023-full.webp",
-          "sha256": "e2ab5e998d528040583e5bf44f808992dc755af7397a08ced7a2febb102b98da"
+          "sha256": "e67a6b7f977721abb3266aadace2e29b8489257ff451edbe7d9a878fb8e115de"
         }
       }
     },
     {
       "catalogId": "cardinals-home-2023",
       "constructionKey": "home",
-      "revision": "1df68cfd6353df42",
+      "revision": "e02c5cbfe412988f",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/cardinals-home-2023.webp",
-          "sha256": "20996a1fd1bd3fa1253ad470b49adee402afe0723eb58577ae708bac7f277dce"
+          "sha256": "f2f3ec1306997e15e4a227aaa585d64a53e2e08fe9049a97f0fbbe4ecb22c095"
         },
         "full": {
           "path": "/uniforms/cardinals-home-2023-full.webp",
-          "sha256": "675f7ce2e5d36e8fd3d197e16b19020935c1a074dc487891b620e8a5777ee173"
+          "sha256": "8d3471395a87f4ca9ba3279c06cd8936f25073d82c0040eee542120c0a9ac974"
         }
       }
     },
@@ -1999,15 +1999,15 @@
     {
       "catalogId": "rams-classic-sol-2026",
       "constructionKey": "classic-sol",
-      "revision": "9643d3b575669e6d",
+      "revision": "9195eb931c73de6a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/rams-classic-sol-2026.webp",
-          "sha256": "3121cf69a59f44e203d3578e94af231aa569a7100896700effae686723bd9878"
+          "sha256": "dcebab96a9a3ef6806ecdd18c69143141267fbfa03aa63ab9651aafc7c22d5d1"
         },
         "full": {
           "path": "/uniforms/rams-classic-sol-2026-full.webp",
-          "sha256": "10117a695bb4da0c71254ce8eab5f30a5c87b74991913890f2c39d88ed665401"
+          "sha256": "119ef56715f39038098db199a56d1b8ff9b9e2d2ec27583c2e62bc10b61a6acd"
         }
       }
     },
@@ -2204,30 +2204,30 @@
     {
       "catalogId": "seahawks-1976-throwback-1976",
       "constructionKey": "1976-throwback",
-      "revision": "744b67889ab86f22",
+      "revision": "e28ac4ea5188fbb6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-1976-throwback-1976.webp",
-          "sha256": "b5e0ab7e82805eea95b6c229a549b4d8b3c1fbb8263e4726ae705606477dae30"
+          "sha256": "100ebe1777d28f0811debf3fa6cffb24c852e687ac729cb1ff0cbf76defee800"
         },
         "full": {
           "path": "/uniforms/seahawks-1976-throwback-1976-full.webp",
-          "sha256": "1acf1423581a4dfc0ec22f5e4114a7efa3393433a85ae7c751f8bbf56b65b0a8"
+          "sha256": "6192947fbfcd7e3fc939c6125a2f5b3d46274225e127bbd236dc0a75b6993727"
         }
       }
     },
     {
       "catalogId": "seahawks-away-2012",
       "constructionKey": "away",
-      "revision": "9d827740b57249bf",
+      "revision": "323cbe81bfbafda7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/seahawks-away-2012.webp",
-          "sha256": "f5e6b42a3e1c58ef6c4b9c09839f6cb14a751ee2d21c0d7cce0ee9a5e58352bf"
+          "sha256": "49954e2d615a0c731a171bb222496cb448e8288f175868fe29191b72f5448f90"
         },
         "full": {
           "path": "/uniforms/seahawks-away-2012-full.webp",
-          "sha256": "10724f9cf8e379107e5c1ea9625d8fe6949ec2c50c5b3ff9bbed6a5d63898a46"
+          "sha256": "d49a506965cdc9b712e87f38366c20818ca9381256b881c662945e137a2df920"
         }
       },
       "combinations": [
@@ -2236,7 +2236,7 @@
           "label": "Grey pants",
           "full": {
             "path": "/uniforms/seahawks-away-2012--grey-pants-full.webp",
-            "sha256": "ebc27d781ed075e4ec3cddba52ba9d805f66a1877c6971a9e62fa5c93c6b8da8"
+            "sha256": "c231c400d48d90e70d4e8150a00f93dab2a9e8d19897022d351e740125ada3db"
           }
         },
         {
@@ -2244,7 +2244,7 @@
           "label": "Grey pants, white socks",
           "full": {
             "path": "/uniforms/seahawks-away-2012--grey-pants-white-socks-full.webp",
-            "sha256": "e619eee16d5f9d56fc2557a1c81c4c8a4a4b4ff8bc2ab1ce64de0333e1c2c512"
+            "sha256": "d196c2cb111895657d3f7deaec27872b0de65df667025ebb42630bea3501ad7b"
           }
         },
         {
@@ -2252,7 +2252,7 @@
           "label": "Navy pants",
           "full": {
             "path": "/uniforms/seahawks-away-2012--navy-pants-full.webp",
-            "sha256": "497a09d6c49fa4cdf1c40bae600b5dba2c8eedbf67ab9619c0e9916356397f5d"
+            "sha256": "c515a7e386ef6f11cf2c42f08b3587fb2ccb497d2af441a052e692eec7be585e"
           }
         },
         {
@@ -2260,7 +2260,7 @@
           "label": "Navy pants, white socks",
           "full": {
             "path": "/uniforms/seahawks-away-2012--navy-pants-white-socks-full.webp",
-            "sha256": "95038dadfb5333e2e14c7e99218be42dbe1d5ed3554ce19d911bc026dbea6c07"
+            "sha256": "ecd557d13418ec0a3de4464bd8d750105c7ed166ee47df217efa00a3a74f170b"
           }
         },
         {
@@ -2268,7 +2268,7 @@
           "label": "White socks",
           "full": {
             "path": "/uniforms/seahawks-away-2012--white-socks-full.webp",
-            "sha256": "a26352cb6497d1378e7add55f95f15b9b134ff4b674aa09bcaadf0bd436cc2b0"
+            "sha256": "bd5af23465254555efe318fe46f7f4799dc24ac12e784b4e238196601ff4aab9"
           }
         }
       ]

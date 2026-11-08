@@ -5,6 +5,7 @@ import {
   NINERS_DECAL_GOLD_RING_PATH,
   NINERS_DECAL_LETTERS_PATH,
   NINERS_DECAL_OUTER_RING_PATH,
+  NINERS_DECAL_WHITE_EDGE_PATH,
 } from './paths';
 import { seatedCrownStripe } from '../../core/shared';
 import { placed } from '../../core/marks';
@@ -33,14 +34,19 @@ const oval = [
 // edges on the black helmet.
 const crown = (prefix: string, center: string): PartLayer[] =>
   seatedCrownStripe([
-    { id: `${prefix}-crown-red-top`, fill: 'red', weight: 4 },
-    { id: `${prefix}-crown-center`, fill: center, weight: 9 },
-    { id: `${prefix}-crown-red-bottom`, fill: 'red', weight: 4 },
+    { id: `${prefix}-crown-red-top`, fill: 'red', weight: 6 },
+    { id: `${prefix}-crown-center`, fill: center, weight: 8 },
+    { id: `${prefix}-crown-red-bottom`, fill: 'red', weight: 6 },
   ]);
 
 export const NINERS_GOLD_DECAL = placed([...crown('niners-helmet', 'white'), ...oval]);
 
-export const NINERS_BLACK_DECAL = placed([...crown('niners-helmet', 'black'), ...oval]);
+// On the black shell the oval carries a thin white edge outside the black keyline.
+export const NINERS_BLACK_DECAL = placed([
+  ...crown('niners-helmet', 'black'),
+  fill('niners-decal-white-edge', NINERS_DECAL_WHITE_EDGE_PATH, 'white'),
+  ...oval,
+]);
 
 export const NINERS_THROWBACK_DECAL = placed([
   ...crown('niners-throwback', 'white'),

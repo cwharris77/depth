@@ -27,7 +27,7 @@ export const SEAHAWKS_JERSEY_WHITE: CompleteJerseySpec = {
       paint: 'over',
       mark: SEAHAWKS_SHOULDER,
       anchor: 'shoulders',
-      slots: { number: 'navy', band: 'navy', cap: 'green' },
+      slots: { number: 'navy', band: 'navy', cap: 'navy' },
       id: 'shoulder',
     }),
     { paint: 'over', mark: seahawksModernCollar('white', 'whiteNeck', 'navy') },
@@ -38,6 +38,6 @@ export const SEAHAWKS_JERSEY_WHITE: CompleteJerseySpec = {
       slots: { wordmark: 'white' },
       id: 'shoulder',
     }),
-    { paint: 'over', mark: seahawksSleeveNike('navy') },
+    { paint: 'over', mark: seahawksSleeveNike('green') },
   ],
 };

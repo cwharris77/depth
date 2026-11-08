@@ -196,9 +196,8 @@ describe('team uniform definitions', () => {
       accent: '#69BE28',
     });
 
-    // Away wears the same shoulder construction as home with navy in wolf grey's place, so its
-    // band resolves from secondary while the sleeve cap takes accent — the inverse of home's
-    // token usage for the same painted result.
+    // Away wears the same shoulder construction as home with navy in wolf grey's place: band and
+    // sleeve cap are both navy, separated by a strip of the white body.
     expect(model.helmetColor).toBe('#002244');
     expect(model.number).toMatchObject({
       fill: 'pattern:seahawks-feathers-navy',
@@ -213,7 +212,7 @@ describe('team uniform definitions', () => {
     expect(
       model.layers.find((layer) => layer.id === 'seahawks-jersey-white-shoulder-cap-left')
     ).toMatchObject({
-      fill: '#69BE28',
+      fill: '#002244',
     });
     expect(model.layers.find((layer) => layer.id === 'seahawks-collar-band')).toMatchObject({
       fill: '#FFFFFF',

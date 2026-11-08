@@ -2,7 +2,7 @@ import type { CompleteJerseySpec } from '../../core/complete';
 import { CARDINALS_NUMBER_THREE } from '../marks/numbers';
 import { CARDINALS_AWAY_JERSEY_ART } from '../marks/jersey-art';
 
-// White body with two cardinal sleeve bands around a white label block and cardinal numerals
+// White body with two cardinal sleeve bands around a silver label block and cardinal numerals
 // keylined in black.
 export const CARDINALS_JERSEY_WHITE: CompleteJerseySpec = {
   body: 'white',
