@@ -1379,17 +1379,17 @@
   {
     "id": "jets-rivalries-2025-2025",
     "colors": {
-      "primary": "#115740",
+      "primary": "#454A3E",
       "secondary": "#000000",
-      "accent": "#FFFFFF"
+      "accent": "#B4B8B0"
     },
     "expected": {
-      "fill": "#115740",
+      "fill": "#454A3E",
       "ring": "#000000",
-      "mark": "#FFFFFF",
-      "text": "#FFFFFF",
+      "mark": "#B4B8B0",
+      "text": "#B4B8B0",
       "textOnFill": "#ffffff",
-      "numeralFill": "#115740",
+      "numeralFill": "#454A3E",
       "numeralStroke": "#FFFFFF"
     }
   },

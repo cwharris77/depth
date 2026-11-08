@@ -89,6 +89,14 @@ export const JETS_CATALOG: TeamCatalog = {
           pantsNike: 'white',
           socks: 'green',
         },
+        {
+          key: 'white-helmet',
+          label: 'White helmet',
+          helmet: 'white',
+          pants: 'white',
+          pantsNike: 'green',
+          socks: 'white',
+        },
       ],
     },
     {
@@ -98,7 +106,7 @@ export const JETS_CATALOG: TeamCatalog = {
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'riv',
-      colors: { primary: '#115740', secondary: '#000000', accent: '#FFFFFF' },
+      colors: { primary: '#454A3E', secondary: '#000000', accent: '#B4B8B0' },
       legacyAccent: { uiAccent: '#4CC38A', onAccent: '#0a0e1a' },
       periods: [
         {
@@ -112,10 +120,10 @@ export const JETS_CATALOG: TeamCatalog = {
         {
           key: 'standard',
           label: 'Standard',
-          helmet: 'riv-green',
+          helmet: 'riv-black',
           pants: 'riv',
           pantsNike: 'white',
-          socks: 'riv',
+          socks: 'black',
         },
       ],
     },

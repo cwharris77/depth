@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "0d1e3e60606290f9e125f4f6bac43b68fa7129d80b2cde1378d8ee2a54da79ec",
-  "revision": "c6a1749d14d2607a",
+  "sourceDigest": "1a8c68d89ed582afa380db4d341a2f1f25761ddd329b3437a6117fff4df255fb",
+  "revision": "90587c679dd25615",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1427,7 +1427,7 @@
     {
       "catalogId": "jets-away-2024",
       "constructionKey": "away",
-      "revision": "37cc246065b78194",
+      "revision": "a4ae8bb1c22f78a6",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jets-away-2024.webp",
@@ -1435,7 +1435,7 @@
         },
         "full": {
           "path": "/uniforms/jets-away-2024-full.webp",
-          "sha256": "167cb72e3bc6783e287c3f4f7a1c696eff57ef49e010aadfc56484bce0104e69"
+          "sha256": "f4f290ec7bae129c03fc1f3b9df37214b866bc91bb1c7d2ee92c3523241cec0e"
         }
       },
       "combinations": [
@@ -1444,7 +1444,7 @@
           "label": "Green socks",
           "full": {
             "path": "/uniforms/jets-away-2024--green-socks-full.webp",
-            "sha256": "4062082106f15adc3c7ca76a190f09f19dd6a5fc58866096b2a87761c193ba11"
+            "sha256": "a108e2a662574a39c4210fe94b658c55b82a514b5966d27b844de1460a8a617a"
           }
         },
         {
@@ -1452,7 +1452,7 @@
           "label": "Green pants",
           "full": {
             "path": "/uniforms/jets-away-2024--green-pants-full.webp",
-            "sha256": "41177c62ce2095e40478e8774b6feb9823b99556ff65fcec0150b8d126292d31"
+            "sha256": "1ba5042171a392a6ea3b785b76e67f695c18efc73a92287cc2e81b42881a5abd"
           }
         },
         {
@@ -1460,7 +1460,15 @@
           "label": "Green pants, green socks",
           "full": {
             "path": "/uniforms/jets-away-2024--green-pants-green-socks-full.webp",
-            "sha256": "60c9e7a5c571dba33e03c752ddd660e5a6221306f4408e2f545fa28952d3db79"
+            "sha256": "cc909344614b381db775b547edcc16a782c193a31a884a74750376e3f1f332e9"
+          }
+        },
+        {
+          "key": "white-helmet",
+          "label": "White helmet",
+          "full": {
+            "path": "/uniforms/jets-away-2024--white-helmet-full.webp",
+            "sha256": "32476c230fa1a33306851cf4e3f2a5c34b12112fcd2630d5c7fb81d64a88b275"
           }
         }
       ]
@@ -1468,7 +1476,7 @@
     {
       "catalogId": "jets-black-alt-2024",
       "constructionKey": "black-alt",
-      "revision": "bd3d1ecdd962837b",
+      "revision": "898524db78fe8021",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jets-black-alt-2024.webp",
@@ -1476,14 +1484,14 @@
         },
         "full": {
           "path": "/uniforms/jets-black-alt-2024-full.webp",
-          "sha256": "d83f134ea6ce67557443169e88b644f6f2a52fec625c6d27a231636ad638c6e4"
+          "sha256": "902f0ad1d12f71c73b5bf2bea6d0710904f02720ebcc0cbe027ac8e3983e2748"
         }
       }
     },
     {
       "catalogId": "jets-home-2024",
       "constructionKey": "home",
-      "revision": "71c09ff314e2e956",
+      "revision": "c8736c9e4990dd0b",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jets-home-2024.webp",
@@ -1491,7 +1499,7 @@
         },
         "full": {
           "path": "/uniforms/jets-home-2024-full.webp",
-          "sha256": "954ecf07614bfee77d349e7090fbcb22a206b4b8c7dfbf17cb599c25a29d8bac"
+          "sha256": "883d6dc5631af3db0b137f5a8f9148b666c22a4c31fcd33bd272040a56eb92e3"
         }
       },
       "combinations": [
@@ -1500,7 +1508,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/jets-home-2024--white-pants-full.webp",
-            "sha256": "18c0b428809b8b619e4851d5d269776c2f648ce7a22bd8102850aa148ffcbcf7"
+            "sha256": "87ed6df4c6af544c10c47a4b10f3dfabed76a8ad75ef28fe53368253d3a6439a"
           }
         }
       ]
@@ -1508,15 +1516,15 @@
     {
       "catalogId": "jets-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "b5087995497a0e97",
+      "revision": "57efb40730cae8e9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jets-rivalries-2025-2025.webp",
-          "sha256": "c62952d4e2c167a8794c4ffc9c9fa8d39137e42ec6f75f3974a8948c6ca5de8f"
+          "sha256": "ff098cbbaeeae1852a0f8e38f746558c438e43e516fcb92530ef8035ed9756f7"
         },
         "full": {
           "path": "/uniforms/jets-rivalries-2025-2025-full.webp",
-          "sha256": "81d1c5230691a16220153851128e2f5a250f7dce1764f715be16c888fae82b49"
+          "sha256": "e3371feb8ee61fc620353bb199844bda32bb15e55e8cb7cf41fc4d902d26df6c"
         }
       }
     },

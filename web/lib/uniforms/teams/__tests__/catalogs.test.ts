@@ -683,9 +683,9 @@ describe('Jets catalog conversion', () => {
           accent: '#125740',
         }),
         row('rivalries-2025', 'alternate', 'Rivalries', 2025, {
-          primary: '#115740',
+          primary: '#454A3E',
           secondary: '#000000',
-          accent: '#FFFFFF',
+          accent: '#B4B8B0',
         }),
         row('black-alt', 'alternate', 'Black Alternate', 2024, {
           primary: '#000000',
@@ -711,10 +711,10 @@ describe('Jets catalog conversion', () => {
     expect(kits.home).toEqual({ helmet: 'green', jersey: 'green', pants: 'green', socks: 'green' });
     expect(kits.away).toEqual({ helmet: 'green', jersey: 'white', pants: 'white', socks: 'white' });
     expect(kits['rivalries-2025']).toEqual({
-      helmet: 'riv-green',
+      helmet: 'riv-black',
       jersey: 'riv',
       pants: 'riv',
-      socks: 'riv',
+      socks: 'black',
     });
     expect(kits['black-alt']).toEqual({
       helmet: 'black',
