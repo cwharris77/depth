@@ -130,21 +130,23 @@ export const SEAHAWKS_THROWBACK_SLEEVE_HAWKS = placed(
   })
 );
 
-// The rear sleeve stripe continues behind the head as a short white-green-white tail.
+// The sleeve stripes run forward from the head to the sleeve's inner edge: a white-green-white band
+// level with the rear block and, above it, a thin white line meeting the crown of the head.
 export const SEAHAWKS_THROWBACK_SLEEVE_TAILS = placed(
   ['left', 'right'].flatMap((side) =>
     [
-      { y0: 501, y1: 529, color: 'white' },
-      { y0: 506, y1: 524, color: 'throwbackGreen' },
-    ].map(({ y0, y1, color }): PartLayer => {
-      const x0 = side === 'left' ? 78 : 492;
+      { name: 'line', y0: 486, y1: 488.5, w: 29, color: 'white' },
+      { name: 'edge', y0: 501, y1: 529, w: 18, color: 'white' },
+      { name: 'band', y0: 506, y1: 524, w: 18, color: 'throwbackGreen' },
+    ].map(({ name, y0, y1, w, color }): PartLayer => {
+      const x0 = side === 'left' ? 96 - w : 492;
       return {
-        id: `seahawks-throwback-sleeve-tail-${color}-${side}`,
+        id: `seahawks-throwback-sleeve-tail-${name}-${side}`,
         surface: side === 'left' ? 'sleeve-left' : 'sleeve-right',
         clip: true,
         kind: 'fill',
         fill: color,
-        d: `M${x0},${y0} H${x0 + 18} V${y1} H${x0} Z`,
+        d: `M${x0},${y0} H${x0 + w} V${y1} H${x0} Z`,
       };
     })
   )
