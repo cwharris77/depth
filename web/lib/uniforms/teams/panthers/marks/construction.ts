@@ -1,23 +1,21 @@
-// Carolina's own art, bound to palette keys and emitted exactly as written: the helmet mark, the
-// shoulder fan, the keylined leg stripe.
+// Carolina's own art, bound to palette keys and emitted exactly as written: the helmet mark and
+// crown stripe, the shoulder fan and numerals, the sleeve marks and the back-of-neck lettering.
 import {
-  PANTHERS_CROWN_BLUE,
-  PANTHERS_CROWN_BLACK,
   PANTHERS_DECAL_BODY_PATH,
   PANTHERS_DECAL_DETAIL_PATH,
   PANTHERS_DECAL_HIGHLIGHT_PATH,
   PANTHERS_DECAL_KEYLINE_PATH,
   PANTHERS_FAN_LEFT,
   PANTHERS_FAN_RIGHT,
-  PANTHERS_STRIPE_CENTER_LEFT,
-  PANTHERS_STRIPE_CENTER_RIGHT,
+  PANTHERS_NECK_LETTERING,
   PANTHERS_WEDGE_LEFT,
   PANTHERS_WEDGE_RIGHT,
 } from './paths';
 import { boundsOf, placed, type PlacedMark } from '../../core/marks';
 import { NIKE_MARK } from '../../core/pants-logos';
 import { PANTHERS_NUMBER_THREE } from './numbers';
-import { fromGeneric, type PartLayer } from '../../core/parts';
+import type { PartLayer } from '../../core/parts';
+import { seatedCrownStripe } from '../../core/shared';
 
 // Paint order is the whole trick: silhouette, body, the body's interior gaps back in blue, fangs.
 // Reversing any pair loses the linework. The fang highlight is the mark's own grey, not the kit's.
@@ -28,7 +26,7 @@ const DECAL_SHAPES: readonly (readonly [string, string, string])[] = [
   ['panthers-decal-highlight', PANTHERS_DECAL_HIGHLIGHT_PATH, 'markSilver'],
 ];
 
-export const PANTHERS_HELMET_DECAL = placed(
+const PANTHERS_HELMET_DECAL = placed(
   DECAL_SHAPES.map(([id, d, fill]): PartLayer => ({
     id,
     surface: 'helmet',
@@ -39,28 +37,16 @@ export const PANTHERS_HELMET_DECAL = placed(
   }))
 );
 
-export const PANTHERS_SILVER_HELMET = placed([
-  ...[
-    ['panthers-crown-blue', PANTHERS_CROWN_BLUE, 'blue'],
-    ['panthers-crown-black', PANTHERS_CROWN_BLACK, 'black'],
-  ].map(([id, d, fill]): PartLayer => ({
-    id,
-    surface: 'helmet',
-    d,
-    clip: true,
-    kind: 'fill',
-    fill,
-  })),
-  ...PANTHERS_HELMET_DECAL.layers,
+// The crown stripe, seated on the shell: three equal bands, blue, black, blue. On the black shell
+// the centre merges with the shell and the two blue bands read on their own.
+const CROWN_STRIPE = seatedCrownStripe([
+  { id: 'panthers-crown-blue-upper', fill: 'blue', weight: 1 },
+  { id: 'panthers-crown-black', fill: 'black', weight: 1 },
+  { id: 'panthers-crown-blue-lower', fill: 'blue', weight: 1 },
 ]);
 
-export const PANTHERS_BLACK_HELMET = placed([
-  ...PANTHERS_SILVER_HELMET.layers.slice(0, 2).map((layer) => ({
-    ...layer,
-    ...(layer.kind === 'fill' ? { fill: layer.fill === 'blue' ? 'silver' : 'blue' } : {}),
-  })),
-  ...PANTHERS_HELMET_DECAL.layers,
-]);
+// The same stripe and mark on both shells.
+export const PANTHERS_HELMET_ART = placed([...CROWN_STRIPE, ...PANTHERS_HELMET_DECAL.layers]);
 
 export function panthersShoulderNumbers(fill: string, outline: string): PlacedMark {
   const box = boundsOf(PANTHERS_NUMBER_THREE);
@@ -179,26 +165,16 @@ export function panthersShoulderFan(outer: string, middle: string): PlacedMark {
   );
 }
 
-// The mannequin's own stripe band as the keyline, the measured centre over it.
-export function panthersLegStripe(keyline: string, center: string): PlacedMark {
+// The motto inside the back of the collar, over the collar's back bar.
+export function panthersNeckLettering(fill: string): PlacedMark {
   return placed([
-    fromGeneric('generic-pants-stripe-left', keyline),
-    fromGeneric('generic-pants-stripe-right', keyline),
     {
-      id: 'panthers-stripe-center-left',
-      surface: 'leg-left',
-      d: PANTHERS_STRIPE_CENTER_LEFT,
+      id: 'panthers-neck-lettering',
+      surface: 'collar',
+      d: PANTHERS_NECK_LETTERING,
       clip: true,
       kind: 'fill',
-      fill: center,
-    },
-    {
-      id: 'panthers-stripe-center-right',
-      surface: 'leg-right',
-      d: PANTHERS_STRIPE_CENTER_RIGHT,
-      clip: true,
-      kind: 'fill',
-      fill: center,
+      fill,
     },
   ]);
 }

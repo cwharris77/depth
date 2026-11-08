@@ -5,30 +5,31 @@ import { describe, expect, it } from 'vitest';
 import { PANTHERS_PARTS } from '../panthers';
 import { PANTHERS_CATALOG } from '../panthers/catalog';
 import { boundsOf } from '../core/marks';
+import { seatedCrownStripe } from '../core/shared';
 
 describe('Panthers helmet parts', () => {
   const layerIds = (helmet: keyof typeof PANTHERS_PARTS.helmets) =>
     PANTHERS_PARTS.helmets[helmet].layers.map((layer) => layer.id);
 
   it('paints the mark silhouette, body, interior gaps, then fangs on both shells', () => {
-    expect(layerIds('black').slice(2)).toEqual([
+    expect(layerIds('black').slice(3)).toEqual([
       'panthers-decal-keyline',
       'panthers-decal-body',
       'panthers-decal-detail',
       'panthers-decal-highlight',
     ]);
-    expect(layerIds('silver').slice(2)).toEqual(layerIds('black').slice(2));
-    expect(PANTHERS_PARTS.helmets.black.layers.slice(0, 2)).toMatchObject([
-      { fill: 'silver', surface: 'helmet', clip: true },
-      { fill: 'blue', surface: 'helmet', clip: true },
+    expect(layerIds('silver').slice(3)).toEqual(layerIds('black').slice(3));
+  });
+
+  it('seats the same blue, black, blue crown stripe on both shells', () => {
+    const crown = seatedCrownStripe([
+      { id: 'panthers-crown-blue-upper', fill: 'blue', weight: 1 },
+      { id: 'panthers-crown-black', fill: 'black', weight: 1 },
+      { id: 'panthers-crown-blue-lower', fill: 'blue', weight: 1 },
     ]);
-    expect(PANTHERS_PARTS.helmets.black.layers.slice(0, 2).map((l) => l.d)).toEqual(
-      PANTHERS_PARTS.helmets.silver.layers.slice(0, 2).map((l) => l.d)
-    );
-    expect(PANTHERS_PARTS.helmets.silver.layers.slice(0, 2)).toMatchObject([
-      { id: 'panthers-crown-blue', fill: 'blue', surface: 'helmet', clip: true },
-      { id: 'panthers-crown-black', fill: 'black', surface: 'helmet', clip: true },
-    ]);
+    for (const helmet of ['black', 'silver'] as const) {
+      expect(PANTHERS_PARTS.helmets[helmet].layers.slice(0, 3)).toMatchObject(crown);
+    }
   });
 
   it('takes the fang highlight from the mark, not from the kit silver', () => {
@@ -97,6 +98,12 @@ describe('Panthers shared collars', () => {
         surface: 'collar',
         kind: 'fill',
         fill: color,
+      });
+      // The back-of-neck lettering contrasts with the collar band it sits on.
+      expect(layers.find((layer) => layer.id === 'panthers-neck-lettering')).toMatchObject({
+        surface: 'collar',
+        kind: 'fill',
+        fill: color === 'black' ? 'blue' : 'black',
       });
     });
   }
