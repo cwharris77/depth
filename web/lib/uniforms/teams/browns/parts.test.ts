@@ -9,6 +9,6 @@ describe('Browns pants and socks', () => {
     expect(home.layers?.filter((layer) => layer.surface.startsWith('leg-'))).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ d: expect.stringContaining('V1462') })])
     );
-    expect(home.layers?.filter((layer) => layer.surface.startsWith('sock-'))).toHaveLength(6);
+    expect(home.layers?.filter((layer) => layer.surface.startsWith('sock-'))).toHaveLength(10);
   });
 });

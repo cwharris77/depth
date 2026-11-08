@@ -91,7 +91,7 @@ export const BROWNS_CATALOG: TeamCatalog = {
       sleeveNike: 'brown',
       name: '1946 Throwback',
       kind: 'throwback',
-      jersey: 'white',
+      jersey: 'throwback',
       colors: { primary: '#FFFFFF', secondary: '#FF3C00', accent: '#311D00' },
       legacyAccent,
       periods: [
@@ -105,10 +105,10 @@ export const BROWNS_CATALOG: TeamCatalog = {
         {
           key: 'standard',
           label: 'Standard',
-          helmet: 'brown',
-          pants: '1946-white',
+          helmet: 'white',
+          pants: 'white',
           pantsNike: 'brown',
-          socks: '1946-white',
+          socks: 'white',
         },
       ],
     },
