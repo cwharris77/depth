@@ -33,6 +33,8 @@ export const CARDINALS_PALETTE = {
   cream: '#FBF1DD',
   rivalRed: '#B31529',
   rivalOrange: '#EE6B3D',
+  // Metallic silver numeral trim and sleeve label, as a flat approximation.
+  silver: '#A5ACAF',
   decalRed: CARDINALS_DECAL_RED,
   decalGold: CARDINALS_DECAL_GOLD,
   eggshellDecalRed: CARDINALS_EGGSHELL_DECAL_RED,
@@ -45,17 +47,18 @@ export const CARDINALS_PALETTE = {
   stitch: '#99958D',
 };
 
-// Two thin cardinal lines around a white centre line, worn on the white and black pants.
+// Two thin cardinal lines either side of a wider white centre line, each set apart by the pants
+// colour, worn on the white and black pants.
 const linedPants = (body: string) => ({
   body,
   stripes: {
     position: 'leg-edge' as const,
     bands: [
       { color: 'cardinal', size: 's' as const },
-      { color: 'white', size: 's' as const },
+      { color: 'white', size: 'm' as const },
       { color: 'cardinal', size: 's' as const },
     ],
-    gap: 'none' as const,
+    gap: 'narrow' as const,
     edge: 'none' as const,
   },
   marks: [],

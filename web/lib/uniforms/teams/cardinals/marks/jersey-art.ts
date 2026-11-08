@@ -113,8 +113,8 @@ function cardinalsJerseyDetails(kind: 'home' | 'away' | 'black' | 'rivalries'): 
     layers.push(fill('chest-arizona', home ? CHEST : RIVALCHEST, home ? 'white' : 'rivalRed'));
   if (!home && !rival) {
     layers.push(
-      fill('sleeve-label-band-left', 'M30,511 H105 V535 H30Z', 'white'),
-      fill('sleeve-label-band-right', 'M483,511 H558 V535 H483Z', 'white'),
+      fill('sleeve-label-band-left', 'M30,511 H105 V535 H30Z', 'silver'),
+      fill('sleeve-label-band-right', 'M483,511 H558 V535 H483Z', 'silver'),
       fill('sleeve-wordmark-left', SLEEVELEFT, 'numberKeyline'),
       fill('sleeve-wordmark-right', SLEEVE_RIGHT, 'numberKeyline')
     );
