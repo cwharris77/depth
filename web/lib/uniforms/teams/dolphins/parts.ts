@@ -3,7 +3,12 @@
 // trim, the throwback carries a five-band sleeve set and a teal crown stripe, and Rivalries
 // carries a teal wedge with an orange slash plus an orange collar V.
 import type { TeamSpec } from '../core/team-spec';
-import { DOLPHINS_SUNBURST_DECAL, DOLPHINS_THROWBACK_DECAL } from './marks/construction';
+import {
+  DOLPHINS_NAVY_SUNBURST_DECAL,
+  DOLPHINS_RIVALRIES_PANTS_FIN,
+  DOLPHINS_SUNBURST_DECAL,
+  DOLPHINS_THROWBACK_DECAL,
+} from './marks/construction';
 import { DOLPHINS_JERSEY_1972 } from './jerseys/1972';
 import { DOLPHINS_JERSEY_NAVY } from './jerseys/navy';
 import { DOLPHINS_JERSEY_TEAL } from './jerseys/teal';
@@ -19,21 +24,21 @@ export const DOLPHINS_PALETTE = {
 
 export const DOLPHINS_SPEC: TeamSpec = {
   helmets: {
-    // White shell and cage, orange crown stripe and sunburst.
+    // White shell and cage, orange-teal-orange crown stripe and sunburst.
     white: {
       shell: 'white',
       facemask: 'white',
       decal: DOLPHINS_SUNBURST_DECAL,
       number: 'none',
     },
-    // Navy shell and cage under the same orange stripe and sunburst.
+    // Navy shell and cage under the same stripe and sunburst.
     navy: {
       shell: 'navy',
       facemask: 'navy',
-      decal: DOLPHINS_SUNBURST_DECAL,
+      decal: DOLPHINS_NAVY_SUNBURST_DECAL,
       number: 'none',
     },
-    // White shell and cage, teal crown stripe and the broken-ring dolphin.
+    // White shell and light cage, teal-orange-teal crown stripe and the broken-ring dolphin.
     white1972: {
       shell: 'white',
       facemask: 'white',
@@ -70,7 +75,12 @@ export const DOLPHINS_SPEC: TeamSpec = {
       },
       marks: [],
     },
-    navy: { body: 'navy', stripes: 'none', marks: [] },
+    // A tapered teal fin with an orange line down the side seam.
+    navy: {
+      body: 'navy',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: DOLPHINS_RIVALRIES_PANTS_FIN }],
+    },
     // Teal, orange, teal side-seam stripe of the throwback.
     white1972: {
       body: 'white',
@@ -89,5 +99,17 @@ export const DOLPHINS_SPEC: TeamSpec = {
   },
   socks: {
     teal: { color: 'teal', stripes: 'none' },
+    // Two orange hoops, each piped in white, with teal between them.
+    teal1972: {
+      color: 'teal',
+      stripes: {
+        bands: [
+          { color: 'orange', size: 'm' },
+          { color: 'orange', size: 'm' },
+        ],
+        gap: 'broad',
+        edge: 'white',
+      },
+    },
   },
 };
