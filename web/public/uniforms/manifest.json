@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "a9fbf952de9179e8e2a380577a80ee68be9dc63600012c24cd91c41d131c28ba",
-  "revision": "466f90d035d2790c",
+  "sourceDigest": "ec56144606f605f907877ffdf711b6646b8ea75d29931a5c4f43b5b034c6eb59",
+  "revision": "d9569f387ffeb0e8",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -463,15 +463,15 @@
     {
       "catalogId": "broncos-orange-crush-1968",
       "constructionKey": "orange-crush",
-      "revision": "7b2e1ce136ec0ed2",
+      "revision": "12205c4fc50ddd5c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/broncos-orange-crush-1968.webp",
-          "sha256": "dbaead6a59c58837f3a5d8ff562439b0da326a145a49ec7573c00d945ae201fd"
+          "sha256": "fb9d278656ac5dbf564dc04840176ff74aa574c226b308b2186afbfd409374e6"
         },
         "full": {
           "path": "/uniforms/broncos-orange-crush-1968-full.webp",
-          "sha256": "e7f2bb5b73a45a8243f4972a8643bbc6fd2d4916dc0ddaa8b2a57034c50a11b0"
+          "sha256": "d4875089e21f1a6c3ca6055198dde04136c79b3871bb04cc1a58971d926dc587"
         }
       }
     },

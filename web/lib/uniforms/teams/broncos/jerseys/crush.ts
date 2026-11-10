@@ -11,7 +11,7 @@ export const BRONCOS_JERSEY_CRUSH: CompleteJerseySpec = {
   sleeveStripes: {
     bands: [
       { color: 'royal', size: 'm' },
-      { color: 'white', size: 's' },
+      { color: 'white', size: 'm' },
       { color: 'royal', size: 'm' },
     ],
     gap: 'narrow',

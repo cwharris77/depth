@@ -9,6 +9,7 @@ import {
   BRONCOS_DECAL_MANE_PATH,
 } from './paths';
 import { placed, type PlacedMark } from '../../core/marks';
+import { seatedCrownStripe } from '../../core/shared';
 import type { PartLayer } from '../../core/parts';
 import type { UniformSurface } from '../../core/types';
 
@@ -29,8 +30,14 @@ export const BRONCOS_HORSE_DECAL = placed([
   fill('broncos-decal-eye', 'helmet', BRONCOS_DECAL_EYE_PATH, 'orange'),
 ]);
 
-// Orange Crush's "D": white keyline under the orange letter and charging horse.
+// Orange Crush's white-orange-white crown stripe seated on the shell, then the "D": white keyline
+// under the orange letter and charging horse.
 export const BRONCOS_CRUSH_DECAL = placed([
+  ...seatedCrownStripe([
+    { id: 'broncos-crush-crown-white-top', fill: 'white', weight: 1 },
+    { id: 'broncos-crush-crown-orange', fill: 'crushOrange', weight: 2 },
+    { id: 'broncos-crush-crown-white-bottom', fill: 'white', weight: 1 },
+  ]),
   fill('broncos-decal-under', 'helmet', BRONCOS_CRUSH_DECAL_KEYLINE_PATH, 'white'),
   fill('broncos-decal-over', 'helmet', BRONCOS_CRUSH_DECAL_D_PATH, 'crushOrange'),
 ]);
