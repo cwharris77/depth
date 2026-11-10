@@ -627,6 +627,17 @@ describe('Colts catalog conversion', () => {
           isCurrent: true,
           colors: { primary: '#FFFFFF', secondary: '#002C5F', accent: '#A2AAAD' },
         },
+        {
+          teamId: 'colts',
+          slug: 'indiana-nights',
+          constructionKey: 'indiana-nights',
+          kind: 'alternate',
+          name: 'Indiana Nights',
+          yearStart: 2023,
+          yearEnd: null,
+          isCurrent: true,
+          colors: { primary: '#002C5F', secondary: '#000000', accent: '#FFFFFF' },
+        },
       ])
     );
   });
@@ -635,13 +646,20 @@ describe('Colts catalog conversion', () => {
     expect(catalogAccents(catalog)).toEqual({
       'colts-home-2004': { uiAccent: '#A2AAAD', onAccent: '#0a0e1a' },
       'colts-away-2004': { uiAccent: '#A2AAAD', onAccent: '#0a0e1a' },
+      'colts-indiana-nights-2023': { uiAccent: '#A2AAAD', onAccent: '#0a0e1a' },
     });
   });
 
-  it('pairs both jerseys with the white pants and navy socks', () => {
+  it('pairs each jersey with its worn helmet, pants and socks', () => {
     expect(pairings(catalog)).toEqual({
       home: { helmet: 'white-horseshoe', jersey: 'navy', pants: 'white', socks: 'navy' },
-      away: { helmet: 'white-horseshoe', jersey: 'white', pants: 'white', socks: 'navy' },
+      away: { helmet: 'white-horseshoe', jersey: 'white', pants: 'white', socks: 'white' },
+      'indiana-nights': {
+        helmet: 'indiana-nights',
+        jersey: 'indiana-nights',
+        pants: 'navy',
+        socks: 'navy',
+      },
     });
   });
 });

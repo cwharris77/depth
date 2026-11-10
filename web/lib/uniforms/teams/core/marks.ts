@@ -53,7 +53,8 @@ export type AnchorName =
   | 'sleeve-logo-right'
   | 'sleeve-front-logo-left'
   | 'sleeve-front-logo-right'
-  | 'collar-narrow-v';
+  | 'collar-narrow-v'
+  | 'collar-back';
 
 interface Anchor {
   surface: UniformSurface;
@@ -72,6 +73,8 @@ export const ANCHORS: Record<AnchorName, Anchor> = {
   'pants-nike': { surface: 'pants', x0: 360, w: 40, cy: 865, mirror: false, idSuffix: '' },
   // The shield over the narrow V's point, at the shared collar shield's size.
   'collar-narrow-v': { surface: 'collar', x0: 284.5, w: 19, cy: 490, mirror: false, idSuffix: '' },
+  // A small logo on the inside back of the neck, centred on the inset V collar's back bar.
+  'collar-back': { surface: 'collar', x0: 287.5, w: 13, cy: 394, mirror: false, idSuffix: '' },
   // The small team badge over the wearer's heart.
   'chest-left': { surface: 'jersey', x0: 388, w: 54, cy: 484, mirror: false, idSuffix: '' },
   // A small team logo on the centreline, between the collar point and the chest numeral.

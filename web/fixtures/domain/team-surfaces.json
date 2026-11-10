@@ -2225,5 +2225,22 @@
       "numeralFill": "#241773",
       "numeralStroke": "#9E7C0C"
     }
+  },
+  {
+    "id": "colts-indiana-nights-2023",
+    "colors": {
+      "primary": "#002C5F",
+      "secondary": "#000000",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#002C5F",
+      "ring": "#FFFFFF",
+      "mark": "#FFFFFF",
+      "text": "#FFFFFF",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#002C5F",
+      "numeralStroke": "#FFFFFF"
+    }
   }
 ]
