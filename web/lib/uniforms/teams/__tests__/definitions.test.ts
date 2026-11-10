@@ -170,13 +170,14 @@ describe('team uniform definitions', () => {
     }
   });
 
-  it('keeps the Steelers helmet mark in source paint order', () => {
+  it('keeps the Steelers crown stripe and helmet mark in source paint order', () => {
     const definition = getTeamUniformDefinition('steelers');
     const layerIds = definition?.kits.home.layers
       ?.filter((layer) => layer.surface === 'helmet')
       .map((layer) => layer.id);
 
     expect(layerIds).toEqual([
+      'steelers-helmet-crown',
       'steelers-decal-disc',
       'steelers-decal-ring',
       'steelers-decal-gold',
