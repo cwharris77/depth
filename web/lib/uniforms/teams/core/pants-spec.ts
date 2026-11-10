@@ -42,7 +42,7 @@ const MIRROR_X = 588;
 const WAIST = 807;
 const HEM = 1196;
 // The left leg's outer silhouette edge, waist to hem, as drawn by the shared pants path.
-const LEFT_LEG_EDGE: ReadonlyArray<readonly [number, number]> = [
+export const LEFT_LEG_EDGE: ReadonlyArray<readonly [number, number]> = [
   [176, 807],
   [170, 812],
   [155, 839],
@@ -56,7 +56,7 @@ const LEFT_LEG_EDGE: ReadonlyArray<readonly [number, number]> = [
   [118, 1196],
 ];
 // A leg-edge stack starts this far inside the silhouette so the figure outline stays visible.
-const LEG_EDGE_INSET = 1;
+export const LEG_EDGE_INSET = 1;
 // The straight seam line a centred stack sits on, on the left leg.
 const SEAM_X = 126;
 // Sock hoops start on the upper calf and span each shin; the sock clip trims them to the shin.

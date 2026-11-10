@@ -15,12 +15,28 @@ describe('Dolphins sleeve constructions', () => {
       expect(boundsOf(layers[0].d)[3]).toBeLessThan(560);
     }
   });
-  it('ends the throwback sleeve bars at the hem', () => {
+  it('ends the throwback sleeve bars above a teal band at the hem', () => {
     const bars = DOLPHINS_PARTS.jerseys['1972'].layers.filter((l) =>
       l.id.startsWith('dolphins-sleeve-band-')
     );
     expect(bars).toHaveLength(10);
-    expect(Math.max(...bars.map((l) => boundsOf(l.d)[3]))).toBe(591);
+    expect(Math.max(...bars.map((l) => boundsOf(l.d)[3]))).toBe(566);
+  });
+  it('tapers the Rivalries pants fin to a point above the thigh pads', () => {
+    const fin = DOLPHINS_PARTS.pants.navy.layers.filter((l) =>
+      l.id.startsWith('dolphins-rivalries-fin-')
+    );
+    expect(fin.map((l) => [l.surface, l.kind === 'fill' ? l.fill : l.stroke])).toEqual([
+      ['leg-left', 'teal'],
+      ['leg-left', 'orange'],
+      ['leg-right', 'teal'],
+      ['leg-right', 'orange'],
+    ]);
+    for (const layer of fin) {
+      const [, top, , bottom] = boundsOf(layer.d);
+      expect(top).toBeGreaterThanOrEqual(860);
+      expect(bottom).toBe(1196);
+    }
   });
   it('places the Rivalries aqua and orange band at the lower outer sleeve', () => {
     const trim = DOLPHINS_PARTS.jerseys.navy.layers.filter(

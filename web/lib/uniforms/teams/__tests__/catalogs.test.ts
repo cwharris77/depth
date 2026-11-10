@@ -1202,7 +1202,12 @@ describe('Dolphins catalog conversion', () => {
       away: { helmet: 'white', jersey: 'white', pants: 'teal', socks: 'teal' },
       'away--white-pants': { helmet: 'white', jersey: 'white', pants: 'white' },
       'rivalries-2025': { helmet: 'navy', jersey: 'navy', pants: 'navy' },
-      '1972-throwback': { helmet: 'white1972', jersey: '1972', pants: 'white1972' },
+      '1972-throwback': {
+        helmet: 'white1972',
+        jersey: '1972',
+        pants: 'white1972',
+        socks: 'teal1972',
+      },
     });
   });
 });

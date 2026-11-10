@@ -1,5 +1,5 @@
 // Miami's construction geometry in mannequin space: the two helmet decals, the 1972 sleeve band
-// bounds and the Rivalries sleeve wedge and slash paths.
+// bounds, the Rivalries sleeve wedge and slash paths and the Rivalries pants fin.
 
 // Two decals: the current kits wear a teal dolphin inside an orange sunburst; the throwback wears a
 // teal dolphin breaking through a solid orange ring. The "M" on the throwback dolphin's helmet is
@@ -15,8 +15,8 @@ export const DOLPHINS_TB_DECAL_RING_PATH =
 export const DOLPHINS_TB_DECAL_DOLPHIN_PATH =
   'M448.0,189.9 L472.4,210.0 L470.5,220.1 L474.9,228.2 L435.5,238.3 L429.2,243.9 L425.5,274.7 L418.6,281.6 L404.2,260.9 L399.8,275.9 L384.2,294.8 L377.3,292.3 L377.9,285.4 L384.2,281.6 L382.3,276.6 L368.6,286.0 L344.8,315.5 L337.3,343.1 L341.7,354.4 L366.1,360.7 L368.6,367.0 L336.0,371.4 L323.5,390.2 L317.3,390.8 L315.4,377.6 L331.0,353.2 L326.6,289.8 L341.0,243.3 L339.8,235.1 L329.2,232.6 L326.6,224.5 L339.8,216.3 L366.1,215.0 L396.7,195.6 L407.3,213.2 L421.7,218.2 L404.8,221.3 L384.8,233.9 L355.4,262.8 L345.4,288.5 L347.9,297.9 L363.6,282.2 L361.7,274.1 L366.7,267.2 L393.6,243.9 L396.7,235.8 L402.3,237.0 L400.5,245.2 L404.8,246.4 L418.0,229.5 L436.7,228.2 L441.1,223.2 L454.9,230.1 L464.9,225.7 L452.4,218.8 L458.6,212.5 L456.1,208.8 L434.2,218.2 L447.4,199.3 L447.4,190.6 Z';
 
-// The 1972 five-band sleeve set, ending at the sleeve hem.
-export const DOLPHINS_TB_STRIPE_BOUNDS = [507, 520, 535, 558, 575, 591];
+// The 1972 five-band sleeve set, ending above a teal band at the sleeve hem.
+export const DOLPHINS_TB_STRIPE_BOUNDS = [507, 517, 527, 545, 555, 566];
 export const DOLPHINS_SLEEVE_X_LEFT = [30, 140];
 export const DOLPHINS_SLEEVE_X_RIGHT = [448, 558];
 
