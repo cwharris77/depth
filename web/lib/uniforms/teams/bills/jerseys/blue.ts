@@ -1,8 +1,9 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { billsChestWordmark } from '../marks/jersey-art';
 import { BILLS_NUMBER_THREE } from '../marks/numbers';
 
 // Royal body. The collar band is white with a red lining on its inner half and a red bar across
-// the back of the neck; the sleeves carry two red-piped white stripes and a white shoulder numeral.
+// the back of the neck; the sleeves carry two red-piped white stripes and a white shoulder numeral, with a white chest wordmark.
 export const BILLS_JERSEY_BLUE: CompleteJerseySpec = {
   body: 'navy',
   collar: {
@@ -35,5 +36,5 @@ export const BILLS_JERSEY_BLUE: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: BILLS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: billsChestWordmark('white') }],
 };

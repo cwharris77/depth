@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "fe346fbe1f9b388333a47ee7f95b6eb2832a75cc1fa9303a31c6f21b86518232",
-  "revision": "7e667d0a8e1ac9f6",
+  "sourceDigest": "99cc1d0f8d4a60295c7718a6cef1167abe671b2773550e15144c6d178f040e9b",
+  "revision": "050c9cfa034d0f99",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -268,15 +268,15 @@
     {
       "catalogId": "bills-away-2011",
       "constructionKey": "away",
-      "revision": "c055ade1d4413b7a",
+      "revision": "9c130753c9cc3055",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-away-2011.webp",
-          "sha256": "a91571d07fab014a90fb8827e94a2a452aaf9d51256f6648737ff24df6a11985"
+          "sha256": "66b24a1136be4bf27e88c8bb0ebcccbfb207443137b434a375574f73ba6d61c8"
         },
         "full": {
           "path": "/uniforms/bills-away-2011-full.webp",
-          "sha256": "4c1994b85f56181283778a50a5940094209e9b023846a389cdea3f2c95eabb5d"
+          "sha256": "519af9fc964add10402af8a0612f8271418ea2ef8114ecdb52b5fd7c3f289f58"
         }
       },
       "combinations": [
@@ -285,7 +285,7 @@
           "label": "Royal pants",
           "full": {
             "path": "/uniforms/bills-away-2011--royal-pants-full.webp",
-            "sha256": "7fe6d74619539da20ccd97663b8c46e32b4c6fc096ce17bf16f80d92989f0f82"
+            "sha256": "8aa8c5fc62468a8df7f3f85943f787033f0263f60d10704257b1481f2a27b0a9"
           }
         }
       ]
@@ -293,15 +293,15 @@
     {
       "catalogId": "bills-home-2011",
       "constructionKey": "home",
-      "revision": "b317a0613782fd17",
+      "revision": "642a90576ff08232",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-home-2011.webp",
-          "sha256": "7de55a3113b228f68e81eb78f0b17a5b06773da9e367380eb43f956df3417335"
+          "sha256": "6fa97dec7296893184ffe0a9fffdc3b02105a78e34ec9bf18528134c258fe938"
         },
         "full": {
           "path": "/uniforms/bills-home-2011-full.webp",
-          "sha256": "b7045c10a8539a17a89fc29d973466689816ec7f5baa61bc3e2e15380bc6f31e"
+          "sha256": "160c0847281d8f212f2d2eaba319b2303f599215089cec51b2c2f452e1126de3"
         }
       },
       "combinations": [
@@ -310,7 +310,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/bills-home-2011--white-pants-full.webp",
-            "sha256": "1abb027102eebe97777b93513f8ec2752715f59ca3471e02b2a4610f403d5de4"
+            "sha256": "7e5eef020425b476accc7a5dfcbc5bff63257aced34ac8f5e6550142834ea56c"
           }
         }
       ]
@@ -318,30 +318,30 @@
     {
       "catalogId": "bills-nickel-city-2026",
       "constructionKey": "nickel-city",
-      "revision": "69bbcab601ff1ee9",
+      "revision": "474e4f6f2433dc99",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-nickel-city-2026.webp",
-          "sha256": "0dd715d39b3595038c66c9cc6f2edefdd01b571e7df29b6cb81ba7df400e99fc"
+          "sha256": "fbff52c3e7541b864ceaca27ed65ab631c064a49e05522fe72e8110901808212"
         },
         "full": {
           "path": "/uniforms/bills-nickel-city-2026-full.webp",
-          "sha256": "ac8a32c0f4c1e212e6a24a4088dac0d4d74809e1b38a3c1db8c2749679c90562"
+          "sha256": "59345a81a266e84375d884fc3a5da5e503b24a8bd99a0cb1afc6ec3ab78f1718"
         }
       }
     },
     {
       "catalogId": "bills-rivalries-2025-2025",
       "constructionKey": "rivalries-2025",
-      "revision": "560ab337bc1adb21",
+      "revision": "d219f2d760a48e58",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/bills-rivalries-2025-2025.webp",
-          "sha256": "59a086038d076fc39c62ac1857e65087a512e07e0d58b368d7860a55209e5fc4"
+          "sha256": "b95c9fe76b5470b1dc5cd851fb0c95822cafa8e302e931d082eded2b80eb15ed"
         },
         "full": {
           "path": "/uniforms/bills-rivalries-2025-2025-full.webp",
-          "sha256": "86d74f57d4f57005cc721cf1367d202001994d5a1bab9ff98486a0a92c3cdae7"
+          "sha256": "79cf5fdf85a44d3acb1915ff00e9417b4a8643e02ba9ebee745a4352e4c87edd"
         }
       }
     },

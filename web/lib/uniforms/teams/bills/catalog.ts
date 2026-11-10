@@ -80,7 +80,7 @@ export const BILLS_CATALOG: TeamCatalog = {
     {
       id: 'bills-rivalries-2025-2025',
       slug: 'rivalries-2025',
-      sleeveNike: 'rivalriesNumber',
+      sleeveNike: 'navy',
       name: 'Rivalries',
       kind: 'alternate',
       jersey: 'rivalries',
