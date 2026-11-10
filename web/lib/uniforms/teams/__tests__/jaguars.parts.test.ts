@@ -60,20 +60,21 @@ describe('Jaguars jersey construction', () => {
       )
     ).toBe(true);
   });
-  it('lets each Prowler black hem extend farther inward than its light block', () => {
+  it('wraps a Prowler gold band around the sleeve directly above the black hem', () => {
     const layers = JAGUARS_PARTS.jerseys.throwback.layers;
     for (const side of ['left', 'right']) {
       const block = layers.find((l) => l.id === `jaguars-block-${side}`);
       const hem = layers.find((l) => l.id === `jaguars-throwback-cuff-${side}`);
       if (!block || !hem) throw new Error('Both cuff layers are required');
-      const [bx0, , bx1] = boundsOf(block.d);
-      const [hx0, , hx1] = boundsOf(hem.d);
-      expect(hx1 - hx0).toBeGreaterThan(bx1 - bx0);
+      const [bx0, , bx1, by1] = boundsOf(block.d);
+      const [hx0, hy0, hx1] = boundsOf(hem.d);
+      expect([bx0, bx1]).toEqual([hx0, hx1]);
+      expect(by1).toBe(hy0);
     }
     expect(
       layers.some(
         (l) =>
-          l.id === 'jaguars-throwback-number-outer-outline' &&
+          l.id === 'jaguars-jersey-throwback-number-outer-outline' &&
           l.kind === 'stroke' &&
           l.stroke === 'black'
       )

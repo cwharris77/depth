@@ -4,7 +4,6 @@ import {
   JAGUARS_THROWBACK_BLOCKS,
   JAGUARS_PROWLER_SLEEVES,
   JAGUARS_THROWBACK_CUFF,
-  JAGUARS_THROWBACK_NUMBER_OUTLINE,
 } from '../marks/construction';
 
 export const JAGUARS_JERSEY_THROWBACK: CompleteJerseySpec = {
@@ -30,10 +29,11 @@ export const JAGUARS_JERSEY_THROWBACK: CompleteJerseySpec = {
     outline: 'throwbackGold',
     outlineWeight: 'regular',
     texture: 'mesh',
+    outerOutline: 'black',
+    outerOutlineWeight: 'heavy',
     glyphPath: JAGUARS_THROWBACK_NUMBER_THREE,
   },
   marks: [
-    { paint: 'over', mark: JAGUARS_THROWBACK_NUMBER_OUTLINE },
     { paint: 'over', mark: JAGUARS_PROWLER_SLEEVES },
     { paint: 'over', mark: JAGUARS_THROWBACK_CUFF },
     { paint: 'over', mark: JAGUARS_THROWBACK_BLOCKS },

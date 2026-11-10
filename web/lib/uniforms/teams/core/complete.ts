@@ -11,7 +11,7 @@ import type {
   JerseySize,
   JerseySpec,
 } from './jersey-spec';
-import type { PantsMarkUse, PantsSpec, SocksSpec, StripeStack } from './pants-spec';
+import type { PantsMarkUse, PantsSpec, PipedBand, SocksSpec, StripeStack } from './pants-spec';
 
 type None = 'none';
 
@@ -42,8 +42,8 @@ export type CompleteCollar =
       outline: boolean;
     };
 
-export interface CompleteStripeStack {
-  bands: JerseyBand[];
+export interface CompleteStripeStack<Band = JerseyBand> {
+  bands: Band[];
   gap: JerseyGap;
   edge: string | None;
 }
@@ -73,7 +73,7 @@ export interface CompleteJerseySpec {
 
 export interface CompletePantsSpec {
   body: string;
-  stripes: (CompleteStripeStack & { position: 'center' | 'leg-edge' }) | None;
+  stripes: (CompleteStripeStack<PipedBand> & { position: 'center' | 'leg-edge' }) | None;
   // Empty when the pants carry no mark.
   marks: readonly PantsMarkUse[];
 }
@@ -88,7 +88,7 @@ export type CompleteHelmetSpec = HelmetSpec;
 
 const given = <T>(value: T | None): T | undefined => (value === 'none' ? undefined : value);
 
-function stack(c: CompleteStripeStack): StripeStack {
+function stack(c: CompleteStripeStack<PipedBand>): StripeStack {
   return { bands: c.bands, gap: c.gap, ...(c.edge !== 'none' && { edge: c.edge }) };
 }
 

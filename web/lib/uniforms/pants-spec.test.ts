@@ -108,6 +108,32 @@ describe('expandPants', () => {
     ]);
   });
 
+  it('pipes only the band that names its own edge', () => {
+    const part = expandPants('t', {
+      body: 'white',
+      stripes: {
+        position: 'center',
+        bands: [
+          { color: 'black', size: 's' },
+          { color: 'teal', size: 'm', edge: 'gold' },
+          { color: 'black', size: 's' },
+        ],
+        gap: 'none',
+      },
+    });
+    // widths: 8 + (2 + 16 + 2) + 8 = 36 total, starting at 126 - 18 = 108.
+    expect(
+      part.layers
+        .filter((l) => l.surface === 'leg-left')
+        .map((l) => [l.id, l.kind === 'fill' ? l.fill : l.stroke, l.d])
+    ).toEqual([
+      ['t-stripe-0-left', 'black', 'M108,807 H116 V1196 H108 Z'],
+      ['t-stripe-1-edge-left', 'gold', 'M116,807 H136 V1196 H116 Z'],
+      ['t-stripe-1-left', 'teal', 'M118,807 H134 V1196 H118 Z'],
+      ['t-stripe-2-left', 'black', 'M136,807 H144 V1196 H136 Z'],
+    ]);
+  });
+
   it('never draws a leg-edge stripe below the hem', () => {
     const part = expandPants('t', {
       body: 'navy',

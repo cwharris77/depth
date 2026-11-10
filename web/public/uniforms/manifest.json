@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "234a9b0f60f02997c4973fea2bc4fdf366c7b3599a0a3def424a610ac1f8d94b",
-  "revision": "a047820969267894",
+  "sourceDigest": "ee6474a7a14216287c9652e50da5ebade45fd4392f95962098ece15a302eae7b",
+  "revision": "f9e2620590df90c4",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -1380,15 +1380,15 @@
     {
       "catalogId": "jaguars-away-2018",
       "constructionKey": "away",
-      "revision": "5508bcc024899ad4",
+      "revision": "86d28c7c619377c7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-away-2018.webp",
-          "sha256": "ac534f2783e63f6e378dadb7c57f6791e1c6c2155e455537682aeca53a1e422f"
+          "sha256": "3332e9abba01cd6a3f986974f190755ebcd8326ae44ee0990ae904cd9517b96d"
         },
         "full": {
           "path": "/uniforms/jaguars-away-2018-full.webp",
-          "sha256": "271d8138e6e8f0e990ad58f53b7500a93184a766c5e837fd2bb79acbc47e7ed7"
+          "sha256": "86cf89cecd79afdc6a622cc29bde8d86f9385bbfd60f2ae1dde0e50e87e2f81b"
         }
       },
       "combinations": [
@@ -1397,7 +1397,7 @@
           "label": "Teal pants",
           "full": {
             "path": "/uniforms/jaguars-away-2018--teal-pants-full.webp",
-            "sha256": "b9c4475e9dffc39cba0eedce1a248ee1579a648d48b6f79c19d1b5b173d9c284"
+            "sha256": "2373806f55edfd53d64a4149bbb1955363ebf5085f15fc1237a50554820e92e5"
           }
         },
         {
@@ -1405,7 +1405,7 @@
           "label": "Black pants",
           "full": {
             "path": "/uniforms/jaguars-away-2018--black-pants-full.webp",
-            "sha256": "fa170ab17afae57f77e93da4afe9e53c8aa0703a2ab9de9fc8ffb5110cd2bad1"
+            "sha256": "46421361f9c72d5e9cdb987fc89b2aad10f446843b16267151bf65ddd59188f6"
           }
         }
       ]
@@ -1413,22 +1413,22 @@
     {
       "catalogId": "jaguars-black-alt-2018",
       "constructionKey": "black-alt",
-      "revision": "c40a38879fdfa30e",
+      "revision": "00a605f219cdf44d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-black-alt-2018.webp",
-          "sha256": "8a41e24d704587cc0a71a834c4b87ddeb72092a497401f1b979af20651a3749f"
+          "sha256": "cf3c94b33f0f882135852de4661f2b0fff9f43c7d64785c954d49abca8f52216"
         },
         "full": {
           "path": "/uniforms/jaguars-black-alt-2018-full.webp",
-          "sha256": "72bfbe240244fa7aa5f625ca9032e080dd7c5198ad377d5e883be83fb7d296bf"
+          "sha256": "8fac68c6af786bb9ee0c2c3c637223549e19b91b2eb80835cbd40fd2f22b0908"
         }
       }
     },
     {
       "catalogId": "jaguars-home-2018",
       "constructionKey": "home",
-      "revision": "e1a5febac9e24194",
+      "revision": "947cff40c5e71140",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-home-2018.webp",
@@ -1436,7 +1436,7 @@
         },
         "full": {
           "path": "/uniforms/jaguars-home-2018-full.webp",
-          "sha256": "b4bca626a0440b8dab6ae2896c56fd45f169f0fb6ff69a8c7916d44fa12bee2e"
+          "sha256": "7f4e0635f4d33e915d119fe5ccdf60fb9774491712b1a447902e1c35d2243d25"
         }
       },
       "combinations": [
@@ -1453,15 +1453,15 @@
     {
       "catalogId": "jaguars-teal-throwback-1998",
       "constructionKey": "teal-throwback",
-      "revision": "6f138713202b88d2",
+      "revision": "5024a3d4ea87168d",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/jaguars-teal-throwback-1998.webp",
-          "sha256": "f3b6c26417e8684be200939531dc11464ddc750ad4b23d7600423fb3d1009895"
+          "sha256": "1934996b72f2d02e2b4892cb555215c50c6343ed383a86ae459eb40e943fc709"
         },
         "full": {
           "path": "/uniforms/jaguars-teal-throwback-1998-full.webp",
-          "sha256": "95d55d8e83e425e98beeb903244430d0885bad8ff4db33509d801b471ca485b3"
+          "sha256": "a4152a0a71e83d177343da4a7bd915bd419b4f4c0943c6fd79895d8f0f175c00"
         }
       }
     },

@@ -28,18 +28,18 @@ export const JAGUARS_SPEC: TeamSpec = {
     white: { body: 'white', stripes: none, marks: [] },
     teal: { body: 'teal', stripes: none, marks: [] },
     black: { body: 'black', stripes: none, marks: [] },
-    // A wide black stripe either side of a teal one, gold-piped, down the outer seam.
+    // A teal stripe piped in gold between two black stripes, down the outer seam.
     throwback: {
       body: 'white',
       stripes: {
         position: 'leg-edge',
         bands: [
           { color: 'black', size: 's' },
-          { color: 'teal', size: 'm' },
+          { color: 'teal', size: 'm', edge: 'gold' },
           { color: 'black', size: 's' },
         ],
         gap: 'none',
-        edge: 'gold',
+        edge: 'none',
       },
       marks: [],
     },
