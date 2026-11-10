@@ -1362,17 +1362,17 @@
   {
     "id": "patriots-rivalries-2025-2025",
     "colors": {
-      "primary": "#002F6C",
+      "primary": "#455D8C",
       "secondary": "#C60C30",
       "accent": "#FFFFFF"
     },
     "expected": {
-      "fill": "#002F6C",
+      "fill": "#455D8C",
       "ring": "#C60C30",
       "mark": "#C60C30",
       "text": "#FFFFFF",
       "textOnFill": "#ffffff",
-      "numeralFill": "#002F6C",
+      "numeralFill": "#455D8C",
       "numeralStroke": "#C60C30"
     }
   },
