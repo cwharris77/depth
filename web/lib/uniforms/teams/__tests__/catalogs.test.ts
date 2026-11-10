@@ -872,9 +872,16 @@ describe('Bengals catalog conversion', () => {
     });
   });
 
-  it('registers every kit on the orange helmet', () => {
+  it('registers every kit on the orange helmet except the white-helmet away combination', () => {
     const kits = pairings(catalog);
-    expect(Object.values(kits).every((kit) => kit.helmet === 'orange')).toBe(true);
+    const white = Object.keys(kits).filter((key) => kits[key].helmet !== 'orange');
+    expect(white).toEqual(['away--white-bengal']);
+    expect(kits['away--white-bengal']).toEqual({
+      helmet: 'white',
+      jersey: 'white',
+      pants: 'white',
+      socks: 'white',
+    });
     expect(kits['color-rush']).toEqual({
       helmet: 'orange',
       jersey: 'color-rush',

@@ -4,6 +4,8 @@ import {
   BENGALS_HELMET_STRIPE_PATH,
   BENGALS_PANTS_KNEE_ACCENT_LEFT,
   BENGALS_PANTS_KNEE_ACCENT_RIGHT,
+  BENGALS_PANTS_SIDE_STRIPE_PATH_LEFT,
+  BENGALS_PANTS_SIDE_STRIPE_PATH_RIGHT,
   BENGALS_SLEEVE_STRIPE_PATH_LEFT,
   BENGALS_SLEEVE_STRIPE_PATH_RIGHT,
 } from './paths';
@@ -20,7 +22,7 @@ const fill = (id: string, surface: UniformSurface, d: string, color: string): Pa
   fill: color,
 });
 
-// The black tiger stripes across the orange shell.
+// The black tiger stripes across the shell.
 export const BENGALS_HELMET_DECAL = placed([
   fill('bengals-helmet-stripes', 'helmet', BENGALS_HELMET_STRIPE_PATH, 'black'),
 ]);
@@ -30,6 +32,14 @@ export function bengalsSleeveTigers(color: string): PlacedMark {
   return placed([
     fill('bengals-sleeve-tiger-left', 'sleeve-left', BENGALS_SLEEVE_STRIPE_PATH_LEFT, color),
     fill('bengals-sleeve-tiger-right', 'sleeve-right', BENGALS_SLEEVE_STRIPE_PATH_RIGHT, color),
+  ]);
+}
+
+// The tiger stripes on the side panel of each leg.
+export function bengalsPantsTigers(color: string): PlacedMark {
+  return placed([
+    fill('bengals-pants-tiger-left', 'leg-left', BENGALS_PANTS_SIDE_STRIPE_PATH_LEFT, color),
+    fill('bengals-pants-tiger-right', 'leg-right', BENGALS_PANTS_SIDE_STRIPE_PATH_RIGHT, color),
   ]);
 }
 

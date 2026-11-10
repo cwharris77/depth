@@ -2,14 +2,27 @@ import { type Combination, type TeamCatalog } from '../core/catalog';
 
 const ACCENT = { uiAccent: '#FF6A33', onAccent: '#0a0e1a' };
 
-const orangeHelmet = (key: string, label: string, pants: string, socks: string): Combination => ({
-  key,
-  label,
-  helmet: 'orange',
-  pants,
-  pantsNike: pants === 'black' ? 'white' : 'black',
-  socks,
-});
+// The hip swoosh contrasts with each pair's body and stripes: orange on the black-striped white
+// pants, black on the orange-striped white pants, white on the black and orange pants.
+const PANTS_NIKE: Record<string, string> = {
+  white: 'orange',
+  'white-orange': 'black',
+  black: 'white',
+  orange: 'white',
+};
+
+const withHelmet =
+  (helmet: string) =>
+  (key: string, label: string, pants: string, socks: string): Combination => ({
+    key,
+    label,
+    helmet,
+    pants,
+    pantsNike: PANTS_NIKE[pants],
+    socks,
+  });
+const orangeHelmet = withHelmet('orange');
+const whiteHelmet = withHelmet('white');
 
 export const BENGALS_CATALOG: TeamCatalog = {
   teamId: 'bengals',
@@ -34,7 +47,7 @@ export const BENGALS_CATALOG: TeamCatalog = {
       combinations: [
         orangeHelmet('standard', 'Black pants, black socks', 'black', 'black'),
         orangeHelmet('black-orange-socks', 'Black pants, orange socks', 'black', 'orange'),
-        orangeHelmet('white-pants', 'White pants, orange socks', 'white', 'orange'),
+        orangeHelmet('white-pants', 'White pants, orange socks', 'white-orange', 'orange'),
         orangeHelmet('orange-pants', 'Orange pants, black socks', 'orange', 'black'),
       ],
     },
@@ -60,6 +73,7 @@ export const BENGALS_CATALOG: TeamCatalog = {
         orangeHelmet('white-out', 'White pants, white socks', 'white', 'white'),
         orangeHelmet('black-pants', 'Black pants, white socks', 'black', 'white'),
         orangeHelmet('orange-pants', 'Orange pants, white socks', 'orange', 'white'),
+        whiteHelmet('white-bengal', 'White helmet, white pants, white socks', 'white', 'white'),
       ],
     },
     {
@@ -79,7 +93,9 @@ export const BENGALS_CATALOG: TeamCatalog = {
           verifiedOn: '2026-10-12',
         },
       ],
-      combinations: [orangeHelmet('standard', 'White pants, orange socks', 'white', 'orange')],
+      combinations: [
+        orangeHelmet('standard', 'White pants, orange socks', 'white-orange', 'orange'),
+      ],
     },
     {
       id: 'bengals-color-rush-2016',
