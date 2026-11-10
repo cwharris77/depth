@@ -2208,5 +2208,22 @@
       "numeralFill": "#0B2265",
       "numeralStroke": "#FFFFFF"
     }
+  },
+  {
+    "id": "ravens-purple-rising-2026",
+    "colors": {
+      "primary": "#241773",
+      "secondary": "#9E7C0C",
+      "accent": "#FFFFFF"
+    },
+    "expected": {
+      "fill": "#241773",
+      "ring": "#9E7C0C",
+      "mark": "#9E7C0C",
+      "text": "#9E7C0C",
+      "textOnFill": "#ffffff",
+      "numeralFill": "#241773",
+      "numeralStroke": "#9E7C0C"
+    }
   }
 ]

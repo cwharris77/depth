@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "75e6c712169d3fec31dc00f86c515adbe5fb0be3c965628f55fe9a0a4ce2c3c2",
-  "revision": "6104c275c7b0b09b",
+  "sourceDigest": "ee1f60ff315a7a52e9337b7085a5726b701301254939fc507f06629dc7fcd14f",
+  "revision": "e7f77b003dea17d7",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2133,7 +2133,7 @@
     {
       "catalogId": "ravens-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "1bcd75ed59efd367",
+      "revision": "c9e4a2b394b2123e",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-away-2026-2026.webp",
@@ -2141,9 +2141,27 @@
         },
         "full": {
           "path": "/uniforms/ravens-away-2026-2026-full.webp",
-          "sha256": "046e7ee887aaaa91157db5d571a3f3cd1765046f88fcc06ed109ac7f6f8faea2"
+          "sha256": "472341b34f8df065365b927dbf262581f254446e9e16f30712e5583a6a220d03"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "white-pants",
+          "label": "White pants",
+          "full": {
+            "path": "/uniforms/ravens-away-2026-2026--white-pants-full.webp",
+            "sha256": "de7e87e762aec52e2311d1c0c5948210dc1ed9cbd608df0bc4ac02fdf06fa54d"
+          }
+        },
+        {
+          "key": "black-pants",
+          "label": "Black pants",
+          "full": {
+            "path": "/uniforms/ravens-away-2026-2026--black-pants-full.webp",
+            "sha256": "ebb4a98e6909d2894ebc1e80a026a2cd1d386174b2da67168eb48f2541a605cd"
+          }
+        }
+      ]
     },
     {
       "catalogId": "ravens-black-alt-2004",
@@ -2178,7 +2196,7 @@
     {
       "catalogId": "ravens-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "97a3a4cfe54837e8",
+      "revision": "95584b9a7a566839",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/ravens-home-2026-2026.webp",
@@ -2186,7 +2204,40 @@
         },
         "full": {
           "path": "/uniforms/ravens-home-2026-2026-full.webp",
-          "sha256": "53a28b5f737a066faa5f0837ce43b07120256490ea70b1a49458d506e70e1c87"
+          "sha256": "79bcaf7478088b02f18780aaccbee0723f4689eb7a3e3822227524601b50c339"
+        }
+      },
+      "combinations": [
+        {
+          "key": "purple-pants",
+          "label": "Purple pants",
+          "full": {
+            "path": "/uniforms/ravens-home-2026-2026--purple-pants-full.webp",
+            "sha256": "c42cbb0f8e848f06764b1e6e1f764133d4f733ccecd97c4a8c9484bcbc26c481"
+          }
+        },
+        {
+          "key": "black-pants",
+          "label": "Black pants",
+          "full": {
+            "path": "/uniforms/ravens-home-2026-2026--black-pants-full.webp",
+            "sha256": "41003ddb7c5d619326451dfe99f4bde16eea9c21a0f4f22dafebf5750fd5906d"
+          }
+        }
+      ]
+    },
+    {
+      "catalogId": "ravens-purple-rising-2026",
+      "constructionKey": "purple-rising",
+      "revision": "f4f2abd490369fae",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/ravens-purple-rising-2026.webp",
+          "sha256": "4ae1891662b837cad10a10553f7a70e7889f392fd5e6d90fe858e28a7e6905f2"
+        },
+        "full": {
+          "path": "/uniforms/ravens-purple-rising-2026-full.webp",
+          "sha256": "93db8b016ccd8a098383771514d1dc538bd17ce8b9367faaa2e946901aaa6607"
         }
       }
     },

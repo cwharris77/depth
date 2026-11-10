@@ -40,15 +40,18 @@ export const SHIELD_SHIFT =
 
 // The shield on both sleeves. The left one is the right one shifted across, not mirrored, so
 // its lettering and quarters keep their reading direction. `border` is null where the border
-// matches the body.
-export function ravensSleeveShields(idPrefix: string, border: string | null): PlacedMark {
-  const right = placeMark(idPrefix, SHIELD, 'sleeve-right', {
-    border,
+// matches the body; `field` recolours the shield's slots for a tonal version.
+export function ravensSleeveShields(
+  idPrefix: string,
+  border: string | null,
+  field: { black: string; gold: string; white: string; red: string } = {
     black: 'black',
     gold: 'gold',
     white: 'white',
     red: 'red',
-  });
+  }
+): PlacedMark {
+  const right = placeMark(idPrefix, SHIELD, 'sleeve-right', { border, ...field });
   return placed(
     right.flatMap((layer) => [
       {

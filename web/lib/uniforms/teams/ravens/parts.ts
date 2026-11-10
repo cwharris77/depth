@@ -1,4 +1,8 @@
-import { RAVENS_2026_HELMET, RAVENS_2026_TALONS } from './marks/primary-2026';
+import {
+  RAVENS_2026_HELMET,
+  RAVENS_PURPLE_RISING_HELMET,
+  ravens2026Talons,
+} from './marks/primary-2026';
 import { RAVENS_JERSEY_PURPLE_2026, RAVENS_JERSEY_WHITE_2026 } from './jerseys/primary-2026';
 // Baltimore as a complete team spec: every helmet, jersey and pants part, with its own art drawn
 // by the marks in ./marks.
@@ -6,6 +10,7 @@ import type { TeamSpec } from '../core/team-spec';
 import { RAVENS_HELMET_DECAL } from './marks/construction';
 import { RAVENS_JERSEY_BLACK } from './jerseys/black';
 import { RAVENS_JERSEY_PURPLE } from './jerseys/purple';
+import { RAVENS_JERSEY_PURPLE_RISING } from './jerseys/purple-rising';
 import { RAVENS_JERSEY_WHITE } from './jerseys/white';
 
 // Two golds: the shoulder keyline and numeral outline use `gold`, while the helmet mark's own
@@ -23,29 +28,51 @@ export const RAVENS_PALETTE = {
 export const RAVENS_SPEC: TeamSpec = {
   helmets: {
     'black-2026': { shell: 'black', facemask: 'black', decal: RAVENS_2026_HELMET, number: 'none' },
+    'purple-rising': {
+      shell: 'purple',
+      facemask: 'gold',
+      decal: RAVENS_PURPLE_RISING_HELMET,
+      number: 'none',
+    },
     // One black shell with a black cage and the raven head, worn on every kit.
     black: { shell: 'black', facemask: 'black', decal: RAVENS_HELMET_DECAL, number: 'none' },
   },
   jerseys: {
     'purple-2026': RAVENS_JERSEY_PURPLE_2026,
     'white-2026': RAVENS_JERSEY_WHITE_2026,
+    'purple-rising': RAVENS_JERSEY_PURPLE_RISING,
     purple: RAVENS_JERSEY_PURPLE,
     white: RAVENS_JERSEY_WHITE,
     black: RAVENS_JERSEY_BLACK,
   },
   pants: {
+    // Each pair of 2026 pants carries the talon down the outer leg, piped in midnight.
     'white-2026': {
       body: 'white',
       stripes: 'none',
-      marks: [{ paint: 'over', mark: RAVENS_2026_TALONS }],
+      marks: [{ paint: 'over', mark: ravens2026Talons('purple', 'midnight') }],
     },
     'purple-2026': {
       body: 'purple',
       stripes: 'none',
-      marks: [{ paint: 'over', mark: RAVENS_2026_TALONS }],
+      marks: [{ paint: 'over', mark: ravens2026Talons('black', 'midnight') }],
+    },
+    'black-2026': {
+      body: 'black',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ravens2026Talons('purple', 'midnight') }],
+    },
+    'purple-rising': {
+      body: 'purple',
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: ravens2026Talons('gold', 'midnight') }],
     },
     // Purple and unbroken.
     purple: { body: 'purple', stripes: 'none', marks: [] },
   },
-  socks: { white: { color: 'white', stripes: 'none' } },
+  socks: {
+    white: { color: 'white', stripes: 'none' },
+    purple: { color: 'purple', stripes: 'none' },
+    black: { color: 'black', stripes: 'none' },
+  },
 };
