@@ -1,39 +1,42 @@
-import { JETS_NUMBER_THREE } from '../marks/numbers';
 import type { CompleteJerseySpec } from '../../core/complete';
+import { jetsChestPatch, jetsSleevePanels } from '../marks/construction';
+import { JETS_NUMBER_THREE } from '../marks/numbers';
 
-// Rivalries: the heritage green body with black collar and sleeve stripes and white numerals
-// carrying a thin white offset; no shoulder numeral.
+// Rivalries: the filtered-green body with black sleeves, black and iron-ore stripes over each
+// shoulder, an oval chest patch, and iron-ore numerals keylined in dark stucco.
 export const JETS_JERSEY_RIV: CompleteJerseySpec = {
-  body: 'rivalGreen',
+  body: 'gothamGreen',
   collar: {
     style: 'inset-v',
-    color: 'black',
+    color: 'gothamGreen',
     trim: 'none',
     inside: 'body',
     lining: 'none',
     backBar: 'none',
-    outline: false,
+    outline: true,
   },
   shoulderPanel: 'none',
-  shoulderStripes: 'none',
-  shoulderNumber: 'none',
-  sleeveStripes: {
+  shoulderStripes: {
     bands: [
-      { color: 'black', size: 'l' },
-      { color: 'black', size: 'l' },
+      { color: 'black', size: 'm' },
+      { color: 'ironOre', size: 'm' },
     ],
-    gap: 'broad',
-    edge: 'none',
+    gap: 'none',
   },
+  shoulderNumber: 'none',
+  sleeveStripes: 'none',
   cuff: 'none',
-  sleeveNumber: 'none',
+  sleeveNumber: { fill: 'ironOre' },
   number: {
     height: 190,
-    fill: 'white',
-    outline: 'white',
+    fill: 'ironOre',
+    outline: 'darkStucco',
     outlineWeight: 'thin',
     texture: 'mesh',
     glyphPath: JETS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [
+    { paint: 'under', mark: jetsSleevePanels('black') },
+    { paint: 'over', mark: jetsChestPatch('ironOre', 'black') },
+  ],
 };
