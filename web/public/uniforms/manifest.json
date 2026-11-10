@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "febfc4538a195b8bd8abb2eaf7705e314eb5785eebad560f1f71b15847074025",
-  "revision": "b0cc41dd16249f4b",
+  "sourceDigest": "4cdaadb92d6df499cf772b49251a07601b2c905b7ea4d2381a6266af777aa8c3",
+  "revision": "3847a66f38dd1fb8",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -478,22 +478,32 @@
     {
       "catalogId": "browns-1946-throwback-1946",
       "constructionKey": "1946-throwback",
-      "revision": "bf1256e5c55580e2",
+      "revision": "59e579d30c3c4035",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-1946-throwback-1946.webp",
-          "sha256": "72546aadfdb6f61727753ce2cde8db99766e244c8aa3d81fc94eec8987a2eb89"
+          "sha256": "67bb21f7016d46684d6349465cf7c21d93d6176486f79801fbbed50da3cfe6a8"
         },
         "full": {
           "path": "/uniforms/browns-1946-throwback-1946-full.webp",
-          "sha256": "6744a5174807d38765e5308321efa908709535d5db002aa26d8fcd59907c2638"
+          "sha256": "a2ad40370914bea76231edfd50f2fe1b6fb6d4adbe265ac7ad2753456a213fde"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "orange-helmet",
+          "label": "Orange helmet (2021)",
+          "full": {
+            "path": "/uniforms/browns-1946-throwback-1946--orange-helmet-full.webp",
+            "sha256": "16187f341f61066f2f5be761909c4acfd70abd5c8475b901ecf6b8802d709a5a"
+          }
+        }
+      ]
     },
     {
       "catalogId": "browns-away-2020",
       "constructionKey": "away",
-      "revision": "d39d4839df733700",
+      "revision": "3f0a2c704453e9d9",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-away-2020.webp",
@@ -501,7 +511,7 @@
         },
         "full": {
           "path": "/uniforms/browns-away-2020-full.webp",
-          "sha256": "8a78206edf88fc023c171e84d906d7d3018eedf7bf6d032eb46c8be0d5818448"
+          "sha256": "a8b7918f58e45da17f76b51e5ffdf101d5f37f08ec0c519e657ac9624a6277c2"
         }
       },
       "combinations": [
@@ -510,7 +520,15 @@
           "label": "Orange pants",
           "full": {
             "path": "/uniforms/browns-away-2020--orange-pants-full.webp",
-            "sha256": "b83a9237d3055f7642ed5e69e125a66d8616bcba5f0563c289029442d4c13e7d"
+            "sha256": "fb30fd37383307fc34a3eb7d1b087d263b645a96c64b1fb5874a8668dac222cf"
+          }
+        },
+        {
+          "key": "white-helmet",
+          "label": "White helmet",
+          "full": {
+            "path": "/uniforms/browns-away-2020--white-helmet-full.webp",
+            "sha256": "7a8b94fa84a4a317a84a2f0cdaba2c62d87b6a2064998a25fbb4dbdcbb916d3c"
           }
         }
       ]
@@ -518,7 +536,7 @@
     {
       "catalogId": "browns-home-2020",
       "constructionKey": "home",
-      "revision": "902c6f9be0b7f0ae",
+      "revision": "2e51564c7c96a62c",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-home-2020.webp",
@@ -526,7 +544,7 @@
         },
         "full": {
           "path": "/uniforms/browns-home-2020-full.webp",
-          "sha256": "1d567376fb88b48d7d700f6e33b29bf98e74b730f479094fc51a94520756cb0f"
+          "sha256": "d398c38a32f9f2561650cdde6ef55d8072a1cc594c8b839c229f2e204a480727"
         }
       },
       "combinations": [
@@ -535,7 +553,7 @@
           "label": "Orange pants",
           "full": {
             "path": "/uniforms/browns-home-2020--orange-pants-full.webp",
-            "sha256": "fccc4551d05f32d2f41417c371ae6091a0b15e2a6f4cce2dc84d44029adf9fd4"
+            "sha256": "ea17b785ffa58907d888bb38ec828965976765591359791babd84d1a2081168e"
           }
         },
         {
@@ -543,7 +561,7 @@
           "label": "Brown pants",
           "full": {
             "path": "/uniforms/browns-home-2020--brown-pants-full.webp",
-            "sha256": "d2baab123e47f069930fe46b611e2bbb089dc9ce0e20acc2830943ad19d58d85"
+            "sha256": "a4730a9a2425fa955467ea6232f2bb88a5a4bdfa30a4d561d0dad2c111aee965"
           }
         }
       ]
