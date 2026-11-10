@@ -3,6 +3,7 @@ import {
   TITANS_2018_HELMET,
   TITANS_2018_PANTS_SWORD,
   TITANS_2026_HELMET,
+  TITANS_2026_PANTS_STRIPE,
   OILERS_1960_HELMET,
 } from './marks/construction';
 import { TITANS_FLAMING_T_PATHS } from './marks/flaming-t';
@@ -69,31 +70,13 @@ export const TITANS_SPEC: TeamSpec = {
     },
     'white-2026': {
       body: 'white',
-      stripes: {
-        position: 'leg-edge',
-        bands: [
-          { color: 'red2026', size: 's' },
-          { color: 'lightBlue2026', size: 's' },
-          { color: 'navy', size: 's' },
-        ],
-        gap: 'none',
-        edge: 'none',
-      },
-      marks: [],
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: TITANS_2026_PANTS_STRIPE }],
     },
     'blue-2026': {
       body: 'lightBlue2026',
-      stripes: {
-        position: 'leg-edge',
-        bands: [
-          { color: 'red2026', size: 's' },
-          { color: 'white', size: 's' },
-          { color: 'navy', size: 's' },
-        ],
-        gap: 'none',
-        edge: 'none',
-      },
-      marks: [],
+      stripes: 'none',
+      marks: [{ paint: 'over', mark: TITANS_2026_PANTS_STRIPE }],
     },
   },
   socks: {

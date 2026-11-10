@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "ee6474a7a14216287c9652e50da5ebade45fd4392f95962098ece15a302eae7b",
-  "revision": "f9e2620590df90c4",
+  "sourceDigest": "a9fbf952de9179e8e2a380577a80ee68be9dc63600012c24cd91c41d131c28ba",
+  "revision": "466f90d035d2790c",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -2591,7 +2591,7 @@
     {
       "catalogId": "titans-away-2026-2026",
       "constructionKey": "away-2026",
-      "revision": "259c0f9ef56f6baf",
+      "revision": "e3493e986e4c63d3",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-away-2026-2026.webp",
@@ -2599,7 +2599,7 @@
         },
         "full": {
           "path": "/uniforms/titans-away-2026-2026-full.webp",
-          "sha256": "541ad3fd92f7913478a0878f0b8e3d554f7c999279ffbf9f7f496b298fd9f3db"
+          "sha256": "c8e508a3bf2718ad78370b95418231a289d9adcf7e32902c11b8dc1d67d0fcf0"
         }
       },
       "combinations": [
@@ -2608,7 +2608,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/titans-away-2026-2026--white-pants-full.webp",
-            "sha256": "115118a9b42e82a1738c2df6f57767c648a49f32632e5e47c9e0c47b94d88fc8"
+            "sha256": "c81308607ff9d188e2dd8ac80a9917746e78c80a4748bdd7ae4d9d2c7858f4d8"
           }
         }
       ]
@@ -2641,7 +2641,7 @@
     {
       "catalogId": "titans-home-2026-2026",
       "constructionKey": "home-2026",
-      "revision": "e721eeb2024df05b",
+      "revision": "871ca00303d9ca6f",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/titans-home-2026-2026.webp",
@@ -2649,7 +2649,7 @@
         },
         "full": {
           "path": "/uniforms/titans-home-2026-2026-full.webp",
-          "sha256": "3774ef02c31d2e99521c5953203ce4275d87f1958f4d63441a78f12764973a43"
+          "sha256": "7ae087f2dae8a1234a231df7b6959fcd752a723cb3c3a22fec1452345dd2531b"
         }
       }
     },
