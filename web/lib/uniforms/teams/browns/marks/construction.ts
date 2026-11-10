@@ -13,6 +13,16 @@ export const BROWNS_ORANGE_HELMET_STRIPE = placed(
   ])
 );
 
+// The 2021 throwback orange shell's single white centre stripe, a third of the three-band width:
+// the outer bands are shell-coloured.
+export const BROWNS_THROWBACK_HELMET_STRIPE = placed(
+  seatedCrownStripe([
+    { id: 'browns-helmet-crown-orange-top', fill: 'orange', weight: 1 },
+    { id: 'browns-helmet-crown-white', fill: 'white', weight: 1 },
+    { id: 'browns-helmet-crown-orange-bottom', fill: 'orange', weight: 1 },
+  ])
+);
+
 // The white shell's brown-orange-brown centre stripe.
 export const BROWNS_WHITE_HELMET_STRIPE = placed(
   seatedCrownStripe([

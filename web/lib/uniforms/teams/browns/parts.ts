@@ -10,6 +10,7 @@ import {
   BROWNS_ORANGE_HELMET_STRIPE,
   BROWNS_ORANGE_PANTS_CENTRE_LINE,
   BROWNS_PANTS_CENTRE_LINE,
+  BROWNS_THROWBACK_HELMET_STRIPE,
   BROWNS_WHITE_HELMET_STRIPE,
 } from './marks/construction';
 import { BROWNS_JERSEY_BROWN } from './jerseys/brown';
@@ -59,7 +60,16 @@ export const BROWNS_SPEC: TeamSpec = {
       decal: BROWNS_ORANGE_HELMET_STRIPE,
       number: 'none',
     },
-    // The 1946 throwback's white shell with a brown-orange-brown stripe and a brown cage.
+    // The throwback's 2021 orange shell: a single white centre stripe, brown side numerals and the
+    // grey cage.
+    'orange-1946': {
+      shell: 'orange',
+      facemask: 'neutral',
+      decal: BROWNS_THROWBACK_HELMET_STRIPE,
+      number: { fill: 'brown' },
+    },
+    // The white shell, worn with the 1946 throwback from 2023 and with the away jersey,
+    // with a brown-orange-brown stripe and a brown cage.
     white: { shell: 'white', facemask: 'brown', decal: BROWNS_WHITE_HELMET_STRIPE, number: 'none' },
   },
   jerseys: {

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "59b24ffd4d171707ec32f05eab0d362c8611bce3beb6cbd3b89892d65348ec9c",
-  "revision": "191fc7f8381cb0da",
+  "sourceDigest": "4cdaadb92d6df499cf772b49251a07601b2c905b7ea4d2381a6266af777aa8c3",
+  "revision": "3847a66f38dd1fb8",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -478,17 +478,27 @@
     {
       "catalogId": "browns-1946-throwback-1946",
       "constructionKey": "1946-throwback",
-      "revision": "7f91ecded6f561db",
+      "revision": "59e579d30c3c4035",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/browns-1946-throwback-1946.webp",
-          "sha256": "a84c8134c296b738568ed3668e008118ed93c0532362cde07629d837aa3fcc67"
+          "sha256": "67bb21f7016d46684d6349465cf7c21d93d6176486f79801fbbed50da3cfe6a8"
         },
         "full": {
           "path": "/uniforms/browns-1946-throwback-1946-full.webp",
-          "sha256": "e58d932e3e68bffd9863353f15cfcb645e02f64a5d07cb2a93726a10094495ab"
+          "sha256": "a2ad40370914bea76231edfd50f2fe1b6fb6d4adbe265ac7ad2753456a213fde"
         }
-      }
+      },
+      "combinations": [
+        {
+          "key": "orange-helmet",
+          "label": "Orange helmet (2021)",
+          "full": {
+            "path": "/uniforms/browns-1946-throwback-1946--orange-helmet-full.webp",
+            "sha256": "16187f341f61066f2f5be761909c4acfd70abd5c8475b901ecf6b8802d709a5a"
+          }
+        }
+      ]
     },
     {
       "catalogId": "browns-away-2020",
@@ -511,6 +521,14 @@
           "full": {
             "path": "/uniforms/browns-away-2020--orange-pants-full.webp",
             "sha256": "fb30fd37383307fc34a3eb7d1b087d263b645a96c64b1fb5874a8668dac222cf"
+          }
+        },
+        {
+          "key": "white-helmet",
+          "label": "White helmet",
+          "full": {
+            "path": "/uniforms/browns-away-2020--white-helmet-full.webp",
+            "sha256": "7a8b94fa84a4a317a84a2f0cdaba2c62d87b6a2064998a25fbb4dbdcbb916d3c"
           }
         }
       ]
