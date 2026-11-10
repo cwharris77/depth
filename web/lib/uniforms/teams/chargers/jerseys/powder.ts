@@ -1,6 +1,7 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { chargersSleeveBolts } from '../marks/construction';
 import { CHARGERS_NUMBER_THREE } from '../marks/numbers';
+import { boltUpNeckInscription } from '../marks/neck-inscriptions';
 
 // White-keylined gold sleeve bolts, and white numerals keylined gold.
 export const CHARGERS_JERSEY_POWDER: CompleteJerseySpec = {
@@ -28,5 +29,8 @@ export const CHARGERS_JERSEY_POWDER: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: CHARGERS_NUMBER_THREE,
   },
-  marks: [{ paint: 'under', mark: chargersSleeveBolts('white', 'gold') }],
+  marks: [
+    { paint: 'under', mark: chargersSleeveBolts('white', 'gold') },
+    { paint: 'over', mark: boltUpNeckInscription('white') },
+  ],
 };

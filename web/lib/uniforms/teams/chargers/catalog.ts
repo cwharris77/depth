@@ -128,7 +128,7 @@ export const CHARGERS_CATALOG: TeamCatalog = {
           label: 'Navy pants',
           helmet: 'navy',
           pants: 'navy',
-          pantsNike: 'gold',
+          pantsNike: 'white',
           socks: 'navy',
         },
       ],

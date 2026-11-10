@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "5e5ce6c7e74287664060d8b083834c8e2202805ee7471cccdf2b6a62775a6fa5",
-  "revision": "66afd4fe7391b2b5",
+  "sourceDigest": "13730f0c7d79c7b7b33d22c0225d8943024eb6a87003d0be99a66bf0b315bbd0",
+  "revision": "1431a6feba2ce0c5",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -709,15 +709,15 @@
     {
       "catalogId": "chargers-away-2020",
       "constructionKey": "away",
-      "revision": "f0480778ec1aab79",
+      "revision": "5fee0361c267d47a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-away-2020.webp",
-          "sha256": "4b608d889312763a645032924e49979791c7234e30a98c17df1f47998bc69aaf"
+          "sha256": "891f22a4945149dba408c0c55c03fa7425200fa3b57f319b108d7e17f0fa3991"
         },
         "full": {
           "path": "/uniforms/chargers-away-2020-full.webp",
-          "sha256": "18ea75f80e182bd276cf275676a4f2d437f19e81919b21694d0d7e94e5f928bc"
+          "sha256": "5b0b3f5785c8de8a53e8b4942afdaa65ea06410f06bb1d82b805b81694e7b7fe"
         }
       },
       "combinations": [
@@ -726,7 +726,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/chargers-away-2020--white-pants-full.webp",
-            "sha256": "b588c8546d18e1c6899729417e7b3e940e71573d04ddbb6c74036819bfe11b63"
+            "sha256": "226acd33b43aade9094a83de775a0ca00b50e44333b54502ba89c28ee66361ff"
           }
         },
         {
@@ -734,7 +734,7 @@
           "label": "Powder pants, white socks",
           "full": {
             "path": "/uniforms/chargers-away-2020--powder-pants-full.webp",
-            "sha256": "941650eb58563707dec78af9fc663a53270a860e9fdf8f223399f1db701d82d4"
+            "sha256": "7acf2da1439cd9fbe94da79974be7109320ce3d8ca0df278e3ead29ceffd7ef3"
           }
         },
         {
@@ -742,7 +742,7 @@
           "label": "Powder pants, powder socks",
           "full": {
             "path": "/uniforms/chargers-away-2020--powder-out-full.webp",
-            "sha256": "924b10a0c9d72dc9566e17fe48588d7e45f04c8c0a379bceda2e26f2621403f2"
+            "sha256": "3e9faa923fea1f9ba242bf22aa0a5d4470532d841478c30ef6a52ce6c069a779"
           }
         },
         {
@@ -750,7 +750,7 @@
           "label": "White pants, white socks",
           "full": {
             "path": "/uniforms/chargers-away-2020--white-out-full.webp",
-            "sha256": "834e1304288e31027f2b708183c14cb3340bcbc5ff3b158516dff95488f297ef"
+            "sha256": "2306e5ed4380e11445802d6fb42463bd258bc698855044c2816600929f8f175c"
           }
         }
       ]
@@ -773,15 +773,15 @@
     {
       "catalogId": "chargers-home-2020",
       "constructionKey": "home",
-      "revision": "173616461562a58c",
+      "revision": "3ca2a7dbef814af5",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-home-2020.webp",
-          "sha256": "232b47e9d8bb831c109e6407eff5c2c6fc4848ad15937e8a9eea4ae83bc915c9"
+          "sha256": "541b4c86c5e0358c1433f5244307a67789f60e57bd3b60a3ad0c241de0fcafe5"
         },
         "full": {
           "path": "/uniforms/chargers-home-2020-full.webp",
-          "sha256": "f9952ac4b64dc42a0795523df3ecb77414f61ecd613e36cc99d490e9fd52b566"
+          "sha256": "3225d5a54de325aa660d47a3269de57eb5309f5fab1b407c966926dc448c229d"
         }
       },
       "combinations": [
@@ -790,7 +790,7 @@
           "label": "White pants",
           "full": {
             "path": "/uniforms/chargers-home-2020--white-pants-full.webp",
-            "sha256": "a1db0a92e1fb4d4e840963abd60e4b45d45118d879d8ac55d9fef7a8b9a90ed7"
+            "sha256": "d63b2f6cadfc9bf3b7c25470445be6f6a9f6742a96e82f7cc69768df99ef378b"
           }
         },
         {
@@ -798,7 +798,7 @@
           "label": "Powder pants, white socks",
           "full": {
             "path": "/uniforms/chargers-home-2020--powder-pants-full.webp",
-            "sha256": "0bc056dd3e338a0d07a3bce98c9a1950205be51cf4c97cbd8e2fa855c76d4f8b"
+            "sha256": "0b804f5299e5bc4817f79614fb8d1dec3a289148d6d50f0ad7f92f5f5c796a77"
           }
         },
         {
@@ -806,7 +806,7 @@
           "label": "Powder pants, powder socks",
           "full": {
             "path": "/uniforms/chargers-home-2020--powder-out-full.webp",
-            "sha256": "5ca1e7e86d734642df6f7a50ce21aa25f3d1fbdc8f42bfca36a6a4e3293b3838"
+            "sha256": "8b16f49f8d7e70d5787deb0dc106b6b2073804ee6c5519e4e71290ac7a028480"
           }
         }
       ]
@@ -814,22 +814,22 @@
     {
       "catalogId": "chargers-powder-blue-1960",
       "constructionKey": "powder-blue",
-      "revision": "315e828325beb72f",
+      "revision": "af467f18a2f67b1a",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-powder-blue-1960.webp",
-          "sha256": "232b47e9d8bb831c109e6407eff5c2c6fc4848ad15937e8a9eea4ae83bc915c9"
+          "sha256": "541b4c86c5e0358c1433f5244307a67789f60e57bd3b60a3ad0c241de0fcafe5"
         },
         "full": {
           "path": "/uniforms/chargers-powder-blue-1960-full.webp",
-          "sha256": "f9952ac4b64dc42a0795523df3ecb77414f61ecd613e36cc99d490e9fd52b566"
+          "sha256": "3225d5a54de325aa660d47a3269de57eb5309f5fab1b407c966926dc448c229d"
         }
       }
     },
     {
       "catalogId": "chargers-super-chargers-2025",
       "constructionKey": "super-chargers",
-      "revision": "eea7bb223dbb5650",
+      "revision": "8cdb734dc2efd0c7",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chargers-super-chargers-2025.webp",
@@ -837,7 +837,7 @@
         },
         "full": {
           "path": "/uniforms/chargers-super-chargers-2025-full.webp",
-          "sha256": "1ed42ff0943056863822229bf691ac5345258b42528268c1b9266747bba183f2"
+          "sha256": "e96d80fe9a0eee25fe538b1a0b37d34d6ad4b9e564c59aa0f6300a26294876ab"
         }
       }
     },
