@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "ec56144606f605f907877ffdf711b6646b8ea75d29931a5c4f43b5b034c6eb59",
-  "revision": "d9569f387ffeb0e8",
+  "sourceDigest": "1e4440a111b3f6306e604fa75dbf5347f5f0aa75b10be9c5fd71ef798815e842",
+  "revision": "8d86ac0134664963",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -844,7 +844,7 @@
     {
       "catalogId": "chiefs-away-1963",
       "constructionKey": "away",
-      "revision": "aea46adc9dec088e",
+      "revision": "e5195898abd17eca",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chiefs-away-1963.webp",
@@ -852,7 +852,7 @@
         },
         "full": {
           "path": "/uniforms/chiefs-away-1963-full.webp",
-          "sha256": "b6b55b10c5e2b77240d42e50d7838286edebdc4b738daa00db8d915c088fb5b0"
+          "sha256": "3a2dc12e79543a5192dbd82f75b51b48c4e91c6e2b93724e63c1bf78e505fe8c"
         }
       },
       "combinations": [
@@ -861,7 +861,7 @@
           "label": "Red pants",
           "full": {
             "path": "/uniforms/chiefs-away-1963--red-pants-full.webp",
-            "sha256": "0030d49651f3d0881dcfa55a4a4f64f6f7451ab811fe567931f889ef3928b91b"
+            "sha256": "d7d54aa2dd712e1beedff1d18a5ed5649823db764850150fe1185df11a4e7633"
           }
         }
       ]
@@ -869,7 +869,7 @@
     {
       "catalogId": "chiefs-home-1963",
       "constructionKey": "home",
-      "revision": "c8ceef3b77e6f119",
+      "revision": "08be92c2a8f39b65",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/chiefs-home-1963.webp",
@@ -877,7 +877,7 @@
         },
         "full": {
           "path": "/uniforms/chiefs-home-1963-full.webp",
-          "sha256": "9f8704cdf5a37b293c739b3b2b54a8706bdf3a3dde214978c7b3eec439343ab3"
+          "sha256": "94e9fb6a93ec7ed74cb8372c4c64a95de771cb02160f6f2f15a518330aa7f7c8"
         }
       }
     },

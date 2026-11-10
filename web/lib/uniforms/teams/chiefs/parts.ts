@@ -10,16 +10,14 @@ export const CHIEFS_PALETTE = {
   gold: '#FFB81C',
   white: '#FFFFFF',
   black: '#010101',
-  // The light-grey facemask cage.
-  grey: '#868686',
 };
 
 export const CHIEFS_SPEC: TeamSpec = {
   helmets: {
-    // The red arrowhead shell on both kits, with a light-grey cage.
+    // The red arrowhead shell on both kits, with a white cage.
     'red-arrowhead': {
       shell: 'red',
-      facemask: 'grey',
+      facemask: 'white',
       decal: CHIEFS_ARROWHEAD_DECAL,
       number: 'none',
     },
