@@ -92,14 +92,18 @@ describe('team surfaces — fill and ring', () => {
     });
   }
 
-  // The accent fallback exists for exactly two kits. Asserting them by id means a future
+  // The accent fallback exists for exactly three kits. Asserting them by id means a future
   // data change that silently removes the only cases this branch covers is visible, rather
   // than leaving a branch nothing exercises.
-  it('only the two Ravens kits fall back to accent for their ring', () => {
+  it('only the two Ravens kits and Indiana Nights fall back to accent for their ring', () => {
     const fellBack = UNIFORMS.filter((u) => teamRing(kitColors(u)) !== u.colors.secondary).map(
       (u) => u.id
     );
-    expect(fellBack).toEqual(['ravens-home-1996', 'ravens-black-alt-2004']);
+    expect(fellBack).toEqual([
+      'ravens-home-1996',
+      'ravens-black-alt-2004',
+      'colts-indiana-nights-2023',
+    ]);
   });
 
   it('the Ravens fallback is their real gold', () => {
@@ -166,7 +170,7 @@ describe('team surfaces — player-card numeral', () => {
     expect({ strokeSecondary, swapped, whiteFallback }).toEqual({
       strokeSecondary: 66,
       swapped: 50,
-      whiteFallback: 15,
+      whiteFallback: 16,
     });
   });
 

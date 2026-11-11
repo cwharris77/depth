@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "sourceDigest": "81d7b36897f3b304341cc34c4a2912c342adcca2abf5912d6f33d8752f7421fe",
-  "revision": "1af45840830a9fa6",
+  "sourceDigest": "234a9b0f60f02997c4973fea2bc4fdf366c7b3599a0a3def424a610ac1f8d94b",
+  "revision": "a047820969267894",
   "rows": [
     {
       "catalogId": "49ers-away-2022",
@@ -884,30 +884,45 @@
     {
       "catalogId": "colts-away-2004",
       "constructionKey": "away",
-      "revision": "b9226dd674b37b17",
+      "revision": "2630bd5d0e089a27",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/colts-away-2004.webp",
-          "sha256": "4292b2f233968380b915d2479717c1b827c9c89900c3a136d50e90f68c8d655d"
+          "sha256": "3916464575c4d808627ab2aae1b5e148c85abe9e16418d9a33547a250d7d04b2"
         },
         "full": {
           "path": "/uniforms/colts-away-2004-full.webp",
-          "sha256": "b8409ab12c2a715fbc0f64aa9a5d24693af51a9206e750724640cae42eed1b36"
+          "sha256": "f06a598cea5082b78066bb89c9248aeee3e6c7ce335504ca261ae6381e1a2d15"
         }
       }
     },
     {
       "catalogId": "colts-home-2004",
       "constructionKey": "home",
-      "revision": "038909e42f1b1435",
+      "revision": "be295cc93ee134ae",
       "artifacts": {
         "jersey": {
           "path": "/uniforms/colts-home-2004.webp",
-          "sha256": "2d18e2e6972bd6c050ed73f773e3beb0ef77dd71c9544675618701295d8a3cb8"
+          "sha256": "f95fa71c2cb0129e031e2a0b3a2739f6bd2e1f2b104663d992e7773e879aa08f"
         },
         "full": {
           "path": "/uniforms/colts-home-2004-full.webp",
-          "sha256": "75bbf362fb4d70c0bcd68385a573a920da5d057c7f627c20e09e2d48bffae72a"
+          "sha256": "72e0e28c8374fee62ef39a9fe3b04e80898ff1f213db7896ea9e66d3f0aa4333"
+        }
+      }
+    },
+    {
+      "catalogId": "colts-indiana-nights-2023",
+      "constructionKey": "indiana-nights",
+      "revision": "f40b4fad3bfe1d3b",
+      "artifacts": {
+        "jersey": {
+          "path": "/uniforms/colts-indiana-nights-2023.webp",
+          "sha256": "a8e08e2b2ac9dea33aed7f1d9b2b7a92e3ec2c9b55e986bc3b53754eb855c0c6"
+        },
+        "full": {
+          "path": "/uniforms/colts-indiana-nights-2023-full.webp",
+          "sha256": "fc0869750360d627449a6979a47dc832009f8abbb5b2e164826a8c7bad3ff33e"
         }
       }
     },

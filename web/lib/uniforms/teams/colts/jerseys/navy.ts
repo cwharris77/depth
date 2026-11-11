@@ -1,7 +1,8 @@
 import type { CompleteJerseySpec } from '../../core/complete';
+import { coltsCollarLogo } from '../marks/construction';
 import { COLTS_NUMBER_THREE } from '../marks/numbers';
 
-// White shoulder stripes and white numerals with no outline.
+// White shoulder stripes, white numerals with no outline and the white C inside the neck.
 export const COLTS_JERSEY_NAVY: CompleteJerseySpec = {
   body: 'navy',
   collar: {
@@ -33,5 +34,5 @@ export const COLTS_JERSEY_NAVY: CompleteJerseySpec = {
     texture: 'mesh',
     glyphPath: COLTS_NUMBER_THREE,
   },
-  marks: [],
+  marks: [{ paint: 'over', mark: coltsCollarLogo('white') }],
 };
