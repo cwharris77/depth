@@ -5,8 +5,11 @@ import type { PlacedMark } from './marks';
 import type { PartLayer, UniformPart } from './parts';
 import type { JerseyBand, JerseyGap, JerseySize } from './jersey-spec';
 
+// A band's own `edge` pipes that band alone, overriding the stack's `edge`.
+export type PipedBand = JerseyBand & { edge?: string };
+
 export interface StripeStack {
-  bands: JerseyBand[];
+  bands: PipedBand[];
   gap: JerseyGap;
   // Pipes every band with a thin band of this colour on both sides; the gap is measured between
   // pipings.
@@ -96,13 +99,15 @@ function hoop(side: Side, y0: number, y1: number) {
 
 // Offsets of every piping and band in a stack, measured from its start.
 function layout(stack: StripeStack) {
-  const e = stack.edge ? EDGE_PX : 0;
   const gap = GAP_PX[stack.gap];
   let cursor = 0;
   const bands = stack.bands.map((band) => {
     const h = SIZE_PX[band.size];
+    const edge = band.edge ?? stack.edge;
+    const e = edge ? EDGE_PX : 0;
     const slot = {
       color: band.color,
+      edge,
       outer: [cursor, cursor + h + 2 * e],
       inner: [cursor + e, cursor + e + h],
     };
@@ -133,7 +138,7 @@ function stackLayers(
     }
   };
   layout(stack).bands.forEach((band, i) => {
-    if (stack.edge) both(`${name}-${i}-edge`, stack.edge, band.outer[0], band.outer[1]);
+    if (band.edge) both(`${name}-${i}-edge`, band.edge, band.outer[0], band.outer[1]);
     both(`${name}-${i}`, band.color, band.inner[0], band.inner[1]);
   });
   return layers;

@@ -3,7 +3,6 @@
 import { JAGUARS_DECAL_PATHS } from './decal';
 import { modernInsetVCollar } from '../../core/shared';
 import { JAGUARS_PROWLER } from './prowler';
-import { JAGUARS_THROWBACK_NUMBER_THREE } from './numbers';
 import { boundsOf, placeMark, placeMarkOnPair, placed } from '../../core/marks';
 import type { PartLayer } from '../../core/parts';
 
@@ -94,7 +93,7 @@ export const JAGUARS_MODERN_COLLAR = (body: string, edge: string) => {
   return placed(layers);
 };
 
-// The short gold block ends before the black hem reaches the torso.
+// A gold band runs around the sleeve above the black hem.
 export const JAGUARS_THROWBACK_BLOCKS = placed([
   {
     id: 'jaguars-block-left',
@@ -102,7 +101,7 @@ export const JAGUARS_THROWBACK_BLOCKS = placed([
     clip: true,
     kind: 'fill',
     fill: 'throwbackGold',
-    d: 'M30,541 H96 V569 H30 Z',
+    d: 'M30,555 H140 V569 H30 Z',
   },
   {
     id: 'jaguars-block-right',
@@ -110,7 +109,7 @@ export const JAGUARS_THROWBACK_BLOCKS = placed([
     clip: true,
     kind: 'fill',
     fill: 'throwbackGold',
-    d: 'M558,541 H492 V569 H558 Z',
+    d: 'M558,555 H448 V569 H558 Z',
   },
 ]);
 
@@ -130,19 +129,6 @@ export const JAGUARS_THROWBACK_CUFF = placed([
     kind: 'fill',
     fill: 'black',
     d: 'M558,569 H448 V591 H558 Z',
-  },
-]);
-
-// A narrow black keyline surrounds the inner gold numeral outline.
-export const JAGUARS_THROWBACK_NUMBER_OUTLINE = placed([
-  {
-    id: 'jaguars-throwback-number-outer-outline',
-    surface: 'jersey',
-    clip: true,
-    kind: 'stroke',
-    stroke: 'black',
-    strokeWidth: 22,
-    d: JAGUARS_THROWBACK_NUMBER_THREE,
   },
 ]);
 
