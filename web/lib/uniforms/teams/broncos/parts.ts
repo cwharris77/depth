@@ -48,20 +48,27 @@ export const BRONCOS_SPEC: TeamSpec = {
     white: plainSocks('white'),
     navy: plainSocks('navy'),
     orange: plainSocks('orange'),
-    // Royal above alternating orange and royal hoops, split by white.
+    // Royal from the hem down the calf, three orange hoops outlined in white with royal between
+    // them, then white to the shoe.
     crush: {
-      color: 'white',
+      color: 'royal',
       stripes: {
         bands: [
-          { color: 'royal', size: 'l' },
-          { color: 'crushOrange', size: 's' },
-          { color: 'royal', size: 's' },
-          { color: 'crushOrange', size: 's' },
-          { color: 'royal', size: 's' },
-          { color: 'crushOrange', size: 's' },
-          { color: 'royal', size: 's' },
+          { color: 'white', size: 's' },
+          { color: 'crushOrange', size: 'm' },
+          { color: 'white', size: 's' },
+          { color: 'royal', size: 'm' },
+          { color: 'white', size: 's' },
+          { color: 'crushOrange', size: 'm' },
+          { color: 'white', size: 's' },
+          { color: 'royal', size: 'm' },
+          { color: 'white', size: 's' },
+          { color: 'crushOrange', size: 'm' },
+          { color: 'white', size: 's' },
+          { color: 'royal', size: 'm' },
+          { color: 'white', size: 'l' },
         ],
-        gap: 'narrow',
+        gap: 'none',
         edge: 'none',
       },
     },
