@@ -4,6 +4,7 @@ import type { PartLayer } from '../../core/parts';
 import { TITANS_FLAMING_T_PATHS } from './flaming-t';
 import { TITANS_2026_SHIELD } from './shield';
 import { NIKE_MARK } from '../../core/pants-logos';
+import { LEFT_LEG_EDGE, LEG_EDGE_INSET } from '../../core/pants-spec';
 
 const fill = (id: string, surface: PartLayer['surface'], d: string, color: string): PartLayer => ({
   id,
@@ -48,11 +49,22 @@ export const OILERS_1960_HELMET = placed([
   ),
 ]);
 
-export const TITANS_2026_HELMET = placed([
-  ...seatedCrownStripe([
-    { id: 'titans-2026-crown-navy', fill: 'navy', weight: 8 },
-    { id: 'titans-2026-crown-red', fill: 'red2026', weight: 5 },
+// The six-string stripe as the side view shows it, top of the shell down: red and white edges
+// around a Titans blue band carrying six navy strings, two of them on its edges.
+const SIX_STRING_CROWN = [
+  { id: 'titans-2026-crown-red-top', fill: 'red2026', weight: 3 },
+  { id: 'titans-2026-crown-white-top', fill: 'white', weight: 2 },
+  ...[0, 1, 2, 3, 4].flatMap((i) => [
+    { id: `titans-2026-crown-string-${i}`, fill: 'navy', weight: 1.5 },
+    { id: `titans-2026-crown-blue-${i}`, fill: 'lightBlue2026', weight: 2 },
   ]),
+  { id: 'titans-2026-crown-string-5', fill: 'navy', weight: 1.5 },
+  { id: 'titans-2026-crown-white-bottom', fill: 'white', weight: 2 },
+  { id: 'titans-2026-crown-red-bottom', fill: 'red2026', weight: 3 },
+];
+
+export const TITANS_2026_HELMET = placed([
+  ...seatedCrownStripe(SIX_STRING_CROWN),
   ...TITANS_2026_SHIELD.paths.flatMap((path, index) =>
     placeMark(
       `titans-2026-shield-${index}`,
@@ -221,3 +233,32 @@ export const TITANS_2018_BLUE_NUMBERS = placed(
     layer.kind === 'stroke' ? { ...layer, stroke: 'white' } : layer
   )
 );
+
+// The legs mirror about x = 294.
+const LEG_MIRROR_X = 588;
+
+// The band between offsets `from` and `to` inside the leg's outer silhouette, waist to hem.
+const legEdgeBand = (id: string, from: number, to: number, color: string): PartLayer[] =>
+  (['left', 'right'] as const).map((side) => {
+    const at =
+      (offset: number) =>
+      ([x, y]: readonly [number, number]) => {
+        const lx = x + LEG_EDGE_INSET + offset;
+        return `${Math.round((side === 'left' ? lx : LEG_MIRROR_X - lx) * 100) / 100},${y}`;
+      };
+    const points = [...LEFT_LEG_EDGE.map(at(from)), ...[...LEFT_LEG_EDGE].reverse().map(at(to))];
+    return fill(`${id}-${side}`, `leg-${side}`, `M${points.join(' L')} Z`, color);
+  });
+
+// The six-string side stripe on the 2026 pants, outer edge inward: red, white, a Titans blue band
+// with six navy strings at the sleeve stripe's spacing, white, red.
+export const TITANS_2026_PANTS_STRIPE = placed([
+  ...legEdgeBand('titans-2026-pants-red-outer', 0, 3, 'red2026'),
+  ...legEdgeBand('titans-2026-pants-white-outer', 3, 6, 'white'),
+  ...legEdgeBand('titans-2026-pants-blue', 6, 29, 'lightBlue2026'),
+  ...[0, 1, 2, 3, 4, 5].flatMap((i) =>
+    legEdgeBand(`titans-2026-pants-string-${i}`, 8.5 + 3.4 * i, 9.5 + 3.4 * i, 'navy')
+  ),
+  ...legEdgeBand('titans-2026-pants-white-inner', 29, 32, 'white'),
+  ...legEdgeBand('titans-2026-pants-red-inner', 32, 35, 'red2026'),
+]);
