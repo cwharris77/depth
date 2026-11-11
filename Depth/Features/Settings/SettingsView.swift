@@ -62,6 +62,14 @@ struct SettingsView: View {
         self.settingsStore = settingsStore
     }
 
+    @State private var feedbackEntry: FeedbackEntry?
+
+    private enum FeedbackEntry: String, Identifiable {
+        case feedback = "Send Feedback"
+        case report = "Report a Data Issue"
+        var id: Self { self }
+    }
+
     var body: some View {
         DepthSheet(
             title: "Settings",
@@ -69,6 +77,21 @@ struct SettingsView: View {
         ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.xl) {
+                    if DepthEnvironment.featureFlags.isEnabled(.feedbackReports) {
+                        SettingsSection("Contact") {
+                            Button {
+                                feedbackEntry = .feedback
+                            } label: {
+                                SettingsValueRow(title: "Send Feedback", symbol: "chevron.right")
+                            }
+                            Button {
+                                feedbackEntry = .report
+                            } label: {
+                                SettingsValueRow(
+                                    title: "Report a Data Issue", symbol: "chevron.right")
+                            }
+                        }
+                    }
                     if settingsStore.canHoldFavorite { teamSection }
                     if DepthEnvironment.featureFlags.isEnabled(.proactiveNotifications) {
                         SettingsSection("Notifications") {
@@ -90,6 +113,9 @@ struct SettingsView: View {
                 .padding(.vertical, DesignTokens.Spacing.md)
             }
             .scrollIndicators(.hidden)
+        }
+        .sheet(item: $feedbackEntry) { entry in
+            FeedbackForm(title: entry.rawValue, isReport: entry == .report)
         }
         .tint(DesignTokens.Colors.accent)
         .task {
@@ -214,7 +240,9 @@ struct SettingsView: View {
                 }
                 .accessibilityIdentifier("settings-about-terms")
             }
-            if let url = AppBuildInfo.feedbackMailtoURL {
+            if !DepthEnvironment.featureFlags.isEnabled(.feedbackReports),
+                let url = AppBuildInfo.feedbackMailtoURL
+            {
                 Link(destination: url) {
                     SettingsValueRow(title: "Send Feedback", symbol: "arrow.up.right")
                 }

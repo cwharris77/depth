@@ -14,6 +14,8 @@ export const metadata: Metadata = {
 // primitives and the single SUPPORT_EMAIL constant, so the address published here can't
 // drift from the one in the legal pages or the iOS Settings → About feedback row.
 export default function SupportPage() {
+  const feedbackSubject = encodeURIComponent('Depth feedback');
+
   return (
     <main className="flex-1 flex flex-col">
       <div className="mx-auto w-full max-w-md px-5 py-12">
@@ -32,8 +34,17 @@ export default function SupportPage() {
         <div className="mt-6">
           <ProseBody>
             <ProseSection title="Contact us">
-              <p className="m-0">
-                Questions, bug reports, or feedback — reach us at{' '}
+              <p className="m-0">Have a suggestion or spotted something wrong in Depth?</p>
+              <p className="m-0 mt-3">
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}?subject=${feedbackSubject}`}
+                  className="font-semibold underline"
+                  style={{ color: uiTokens.accent }}>
+                  Send feedback
+                </a>
+              </p>
+              <p className="m-0 mt-3">
+                For general support, email{' '}
                 <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: uiTokens.accent }}>
                   {SUPPORT_EMAIL}
                 </a>

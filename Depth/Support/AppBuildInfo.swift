@@ -47,12 +47,21 @@ enum AppBuildInfo {
     /// — most people just start typing over an empty body but tend to leave scaffolding
     /// untouched, which produces useless reports.
     static var feedbackMailtoURL: URL? {
+        feedbackMailtoURL(topic: "feedback")
+    }
+
+    static func feedbackMailtoURL(topic: String, body: String? = nil) -> URL? {
         var components = URLComponents()
         components.scheme = "mailto"
         components.path = supportEmail
         components.queryItems = [
-            URLQueryItem(name: "subject", value: "\(displayName) feedback (\(versionAndBuild))")
+            URLQueryItem(name: "subject", value: "\(displayName) \(topic) (\(versionAndBuild))")
         ]
+        if let body {
+            components.queryItems?.append(URLQueryItem(name: "body", value: body))
+        }
+        components.percentEncodedQuery = components.percentEncodedQuery?
+            .replacingOccurrences(of: "+", with: "%2B")
         return components.url
     }
 

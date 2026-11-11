@@ -185,6 +185,7 @@
 		A4DDF9C0704B94A741895C74 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9CFF06C6B4EFEF89CC1B12 /* NetworkMonitor.swift */; };
 		A5496CFB188C0EC7DE985548 /* Formations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12541806712112F37DAC99FC /* Formations.swift */; };
 		A5E4FDB41ED837E6099D86CE /* PushSubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38C85028F669D171AC9F4772 /* PushSubscriptionService.swift */; };
+		A65A7CEA34EEA283E9B124D5 /* FeedbackForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D7F84EC37C3C0681FB9BE04 /* FeedbackForm.swift */; };
 		A679EA8A657241CB1099B1C3 /* DepthAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC0940A31B48E54176D95E /* DepthAppDelegate.swift */; };
 		A6914D1957C0BFDA4012096F /* playerProfileWithDepth.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 137895A43E1668FB447C784F /* playerProfileWithDepth.1.png */; };
 		A70241656B3DC65FC9885462 /* BigMomentPromptModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3543B2A9F280CE48AEB1266 /* BigMomentPromptModel.swift */; };
@@ -241,6 +242,7 @@
 		D57CAE4A2030848BD5C934CA /* depthChartFieldSpecialTeams.1.png in Resources */ = {isa = PBXBuildFile; fileRef = ADC7C6160D2AAD621CC59403 /* depthChartFieldSpecialTeams.1.png */; };
 		D617A22E3E843C88D72C2573 /* FeatureFlagsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75158CA443A4BBF7EC124096 /* FeatureFlagsSheet.swift */; };
 		D693C9DD2EB4D028D38891D4 /* ShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E147E349DAED0C3DFF5A965C /* ShareUITests.swift */; };
+		D6B2C575B898859B5FB8B49D /* FeedbackUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9560779449B54DCA5024C5 /* FeedbackUITests.swift */; };
 		D715DDA6C716D15C75F2622F /* UniformKitSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 816264632C865BB71721C27F /* UniformKitSheet.swift */; };
 		D9183133755E8C0F9EE05612 /* AppBuildInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50938E38F00E79484F436B49 /* AppBuildInfo.swift */; };
 		D92620A6F76FD1F67C0291EE /* SeasonPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514627092C503F450158CF24 /* SeasonPicker.swift */; };
@@ -391,6 +393,7 @@
 		4B3868E1849A327296933C4C /* NotificationSettingsRows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsRows.swift; sourceTree = "<group>"; };
 		4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceUITests.swift; sourceTree = "<group>"; };
 		4D5052C464D98848939A7409 /* playerProfileAccessibilitySize.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playerProfileAccessibilitySize.1.png; sourceTree = "<group>"; };
+		4D7F84EC37C3C0681FB9BE04 /* FeedbackForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackForm.swift; sourceTree = "<group>"; };
 		4E08CA3C995029A6BAC0AB0E /* DepthUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DepthUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F264CCAAD3DD2BD01CFF1D9 /* CachingDepthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingDepthRepository.swift; sourceTree = "<group>"; };
 		4F69CC1F77FFA155D3D26F4E /* TeamFeedUnread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamFeedUnread.swift; sourceTree = "<group>"; };
@@ -567,6 +570,7 @@
 		E7F7DAE880E2A1C8391F040A /* TeamStatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsViewModel.swift; sourceTree = "<group>"; };
 		EB2BA0E00C87CC3721249032 /* RosterLeadersDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterLeadersDTO.swift; sourceTree = "<group>"; };
 		EB3B7888940F04D7CAA0623B /* TeamSeasonStoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSeasonStoryTests.swift; sourceTree = "<group>"; };
+		EB9560779449B54DCA5024C5 /* FeedbackUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackUITests.swift; sourceTree = "<group>"; };
 		EC63E43016FBCC97287ED6A5 /* positionReorderSheetCustom.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = positionReorderSheetCustom.1.png; sourceTree = "<group>"; };
 		ED8C07254AA1A7D5B8F4DB53 /* TeamDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailViewModel.swift; sourceTree = "<group>"; };
 		F250C793481162ED79D64BB6 /* TeamIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamIconView.swift; sourceTree = "<group>"; };
@@ -627,6 +631,7 @@
 			children = (
 				3FC1C621C3B3BC1D3F14BEF1 /* Auth */,
 				46AE5985DFDCD6A2592B00FF /* Compare */,
+				9548DD182E028CAE517DD522 /* Feedback */,
 				D822EBFE1A2A936B633F257B /* History */,
 				8EEFEFD5CE8909C23699F7AC /* Notifications */,
 				BD06EE9D00F493C2821BF577 /* Onboarding */,
@@ -793,6 +798,7 @@
 				69C97D21FFB3852484D4E4F2 /* AppStoreScreenshotsUITests.swift */,
 				AFE9E3629D2A8EF20465A2F7 /* AuthUITests.swift */,
 				1134BC81FF92C3AF1A114845 /* DepthUITests.swift */,
+				EB9560779449B54DCA5024C5 /* FeedbackUITests.swift */,
 				7D5CEA9E4551B2004154E97F /* FormationAttributionUITests.swift */,
 				1A6D903493360EC96813D51C /* NotificationSettingsUITests.swift */,
 				4C20C08065BC045F4A9C3C2D /* PerformanceUITests.swift */,
@@ -922,6 +928,14 @@
 				31275AB13E3F18B6A57675A3 /* __Snapshots__ */,
 			);
 			path = DepthTests;
+			sourceTree = "<group>";
+		};
+		9548DD182E028CAE517DD522 /* Feedback */ = {
+			isa = PBXGroup;
+			children = (
+				4D7F84EC37C3C0681FB9BE04 /* FeedbackForm.swift */,
+			);
+			path = Feedback;
 			sourceTree = "<group>";
 		};
 		B632835A3A1AFD1727C369B7 /* Depth */ = {
@@ -1403,6 +1417,7 @@
 				A10C183E6CE2B474648390F8 /* FeatureFlags.swift in Sources */,
 				D617A22E3E843C88D72C2573 /* FeatureFlagsSheet.swift in Sources */,
 				3DF5F85D81A69F60999825AB /* FeaturedStarters.swift in Sources */,
+				A65A7CEA34EEA283E9B124D5 /* FeedbackForm.swift in Sources */,
 				7DA6D56AE84232942CE0AED1 /* FieldMarkings.swift in Sources */,
 				3081DE74CE40903918543333 /* FixtureDepthRepository.swift in Sources */,
 				8EEDDBFFF4D3D9EE186A3638 /* FormationSlot.swift in Sources */,
@@ -1536,6 +1551,7 @@
 				C34BDFEA64ECB80BA1EE640C /* AppStoreScreenshotsUITests.swift in Sources */,
 				A1E1EFE3A8781B7BA2758DB4 /* AuthUITests.swift in Sources */,
 				5B9538595A885E3D730A7A12 /* DepthUITests.swift in Sources */,
+				D6B2C575B898859B5FB8B49D /* FeedbackUITests.swift in Sources */,
 				1E8765E566DE5866EF53BB33 /* FormationAttributionUITests.swift in Sources */,
 				7A5237635F610BDA618480B5 /* NotificationSettingsUITests.swift in Sources */,
 				CB4FD1096A9B377BFD07C517 /* PerformanceUITests.swift in Sources */,
