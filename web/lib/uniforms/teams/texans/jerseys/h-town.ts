@@ -1,6 +1,7 @@
 import type { CompleteJerseySpec } from '../../core/complete';
 import { TEXANS_NUMBER_THREE } from '../marks/numbers';
 import { anchoredMark } from '../../core/jersey-spec';
+import { texansChestWordmark, texansCollarLettering } from '../marks/wordmark';
 import { TEXANS_LOGO } from '../marks/logo';
 
 export const TEXANS_JERSEY_H_TOWN: CompleteJerseySpec = {
@@ -35,5 +36,7 @@ export const TEXANS_JERSEY_H_TOWN: CompleteJerseySpec = {
       slots: { keyline: 'hTownBlue', head: 'navy', horn: 'navy' },
       id: 'h-town-sleeve-logo',
     }),
+    { paint: 'over', mark: texansChestWordmark('hTown', 'hTownBlue') },
+    { paint: 'over', mark: texansCollarLettering('houston', 'hTownBlue') },
   ],
 };
