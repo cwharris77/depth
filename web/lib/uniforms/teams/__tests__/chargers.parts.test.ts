@@ -82,6 +82,23 @@ describe('Super Chargers jersey', () => {
       CHARGERS_PARTS.jerseys.navy.layers.find((layer) => layer.id.includes('neck-inscription'))
     ).toMatchObject({ surface: 'collar', kind: 'fill', fill: 'white' });
   });
+
+  it('wears a white manufacturer mark on the navy pants', () => {
+    expect(CHARGERS_PARTS.kits['super-chargers'].pantsNike).toBe('white');
+  });
+});
+
+describe('Primary jerseys', () => {
+  it('letter BOLT UP inside the neck in the colour that reads against each body', () => {
+    for (const [name, fill] of [
+      ['powder', 'white'],
+      ['white', 'powderBlue'],
+    ] as const) {
+      expect(
+        CHARGERS_PARTS.jerseys[name].layers.find((layer) => layer.id.includes('neck-inscription'))
+      ).toMatchObject({ id: 'bolt-up-neck-inscription', surface: 'collar', kind: 'fill', fill });
+    }
+  });
 });
 
 describe('Chargers pants parts', () => {
