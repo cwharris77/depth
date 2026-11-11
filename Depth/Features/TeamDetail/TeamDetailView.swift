@@ -680,8 +680,13 @@ struct TeamDetailView: View {
     /// live in the nav-bar toolbar, a different row than the unit tabs it belongs
     /// beside — web puts both in the same `justify-between` row directly above the
     /// field. Schedule is not a menu item because it is a page-switcher tab.
+    @State private var showingLineupReport = false
+
     private var overflowMenu: some View {
         Menu {
+            if DepthEnvironment.featureFlags.isEnabled(.feedbackReports), displayedSnapshot != nil {
+                Button("Report a Lineup Issue") { showingLineupReport = true }
+            }
             // The app-level edit-mode toggle is folded into the overflow menu instead of
             // its own row (web's FieldHeaderMenu.tsx single checked "Edit depth chart"
             // item). While on, a field tap opens that position's PositionReorderSheet instead
@@ -807,6 +812,17 @@ struct TeamDetailView: View {
         .accessibilityIdentifier("depth-chart-overflow")
         // First-run tutorial's overflow-menu coachmark target.
         .coachmarkAnchor(.overflowMenu)
+        .sheet(isPresented: $showingLineupReport) {
+            if let team = displayedSnapshot?.team {
+                FeedbackForm(
+                    title: "Report a Lineup Issue",
+                    context: [
+                        "category": "Lineup",
+                        "team": "\(team.city) \(team.name)",
+                        "season": String(historyViewModel.selectedSeason.year),
+                    ])
+            }
+        }
     }
 
     @ViewBuilder

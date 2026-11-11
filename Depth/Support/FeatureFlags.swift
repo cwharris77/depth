@@ -18,6 +18,8 @@ enum FeatureFlag: CaseIterable, Sendable {
     /// uniform page whose verified combinations swap in place.
     case uniformArchiveRedesign
 
+    case feedbackReports
+
     var definition: FeatureFlagDefinition {
         switch self {
         case .proactiveNotifications:
@@ -33,6 +35,13 @@ enum FeatureFlag: CaseIterable, Sendable {
                 summary: "Nickel mark and past-season returners",
                 kind: .release,
                 added: "2026-10-10",
+                launched: false)
+        case .feedbackReports:
+            FeatureFlagDefinition(
+                key: "feedbackReports",
+                summary: "Feedback and data reports",
+                kind: .release,
+                added: "2026-11-10",
                 launched: false)
         case .uniformArchiveRedesign:
             FeatureFlagDefinition(
