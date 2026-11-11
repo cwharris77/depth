@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { dbRosterSource } from '@/lib/roster-source.db';
 import UniformArchive from '@/components/UniformArchive';
-import { getAllTeamUniformDefinitions } from '@/lib/uniforms/teams';
+import { getFallbackUniformDefinitions } from '@/lib/uniforms/fallback-definitions';
 
 export const metadata: Metadata = {
   title: 'Uniform Archive · The Sticks',
@@ -18,5 +18,7 @@ export default async function UniformsPage() {
     dbRosterSource.listUniforms(),
     dbRosterSource.listTeams(),
   ]);
-  return <UniformArchive kits={kits} teams={teams} definitions={getAllTeamUniformDefinitions()} />;
+  return (
+    <UniformArchive kits={kits} teams={teams} definitions={getFallbackUniformDefinitions(kits)} />
+  );
 }
