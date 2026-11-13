@@ -29,6 +29,8 @@ struct UniformKitDetailView: View {
         kit.isCurrent ? kit.rotationDates : kit.presentation.dates
     }
 
+    @State private var showingReport = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -39,6 +41,10 @@ struct UniformKitDetailView: View {
                         combinationPicker
                     }
                     openDepthChartButton
+                    if DepthEnvironment.featureFlags.isEnabled(.feedbackReports) {
+                        Button("Report a Uniform Issue") { showingReport = true }
+                            .padding(.vertical, DesignTokens.Spacing.sm)
+                    }
                 }
                 .padding(.horizontal, DesignTokens.Spacing.screenMargin)
                 .padding(.bottom, DesignTokens.Spacing.xl)
@@ -47,6 +53,14 @@ struct UniformKitDetailView: View {
         .background(DesignTokens.Colors.bg)
         .navigationTitle(kit.teamAbbrev)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingReport) {
+            FeedbackForm(
+                title: "Report a Uniform Issue",
+                context: [
+                    "category": "Uniform", "team": kit.teamName, "uniform": kit.name,
+                    "season": dates,
+                ])
+        }
         .accessibilityIdentifier("uniform-kit-detail")
         .task(id: selectedKey) {
             guard let option = selected else { return }

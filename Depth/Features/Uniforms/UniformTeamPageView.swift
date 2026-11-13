@@ -25,6 +25,8 @@ struct UniformTeamPageView: View {
             count: count)
     }
 
+    @State private var showingReport = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -34,12 +36,22 @@ struct UniformTeamPageView: View {
                 ForEach(sections.past) { decade in
                     pastDecade(decade)
                 }
+                if DepthEnvironment.featureFlags.isEnabled(.feedbackReports) {
+                    Button("Report a Uniform Issue") { showingReport = true }
+                        .padding(.horizontal, DesignTokens.Spacing.screenMargin)
+                        .padding(.vertical, DesignTokens.Spacing.sm)
+                }
             }
             .padding(.bottom, DesignTokens.Spacing.xl)
         }
         .background(DesignTokens.Colors.bg)
         .navigationTitle(team.teamName)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingReport) {
+            FeedbackForm(
+                title: "Report a Uniform Issue",
+                context: ["category": "Uniform", "team": team.teamName])
+        }
         .accessibilityIdentifier("uniform-team-detail")
     }
 
