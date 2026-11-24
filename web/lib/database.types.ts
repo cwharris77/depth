@@ -196,6 +196,42 @@ export type Database = {
           },
         ]
       }
+      draft_picks: {
+        Row: {
+          college: string | null
+          pick: number | null
+          player_id: string
+          round: number | null
+          season: number
+          team_abbrev: string | null
+        }
+        ComputedFields: never
+        Insert: {
+          college?: string | null
+          pick?: number | null
+          player_id: string
+          round?: number | null
+          season: number
+          team_abbrev?: string | null
+        }
+        Update: {
+          college?: string | null
+          pick?: number | null
+          player_id?: string
+          round?: number | null
+          season?: number
+          team_abbrev?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "draft_picks_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: true
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       espn_qbr_season: {
         Row: {
           epa_total: number | null

@@ -175,6 +175,10 @@ function playRawContract(id: string, table: string): SourceContract {
  * family-specific column is still caught.
  */
 export const SOURCE_CONTRACTS = {
+  draft_picks: {
+    id: 'draft_picks',
+    columns: ['gsis_id', 'season', 'round', 'pick', 'team', 'college'],
+  } satisfies SourceContract,
   players: {
     id: 'players',
     // players.csv — the GSIS/PFR -> ESPN identity crosswalk.

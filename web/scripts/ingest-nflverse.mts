@@ -1,5 +1,5 @@
-// Fetches nflverse's player id crosswalk + the latest two seasons of player season
-// stats, transforms them through the pure lib/nflverse pipeline, and upserts into
+// Fetches nflverse's player id crosswalk, all-history draft picks, and the latest
+// two seasons of player season stats, transforms them through the pure lib/nflverse pipeline, and upserts into
 // Postgres (Supabase). Run by hand or on a schedule. Never
 // part of `next build`.
 //
@@ -39,7 +39,12 @@ import { assertHeader, sourceContract, type SourceId } from '@/lib/nflverse/sour
 import { classifyMissingAsset } from '@/lib/nflverse/source-coverage';
 import { fetchRawGroup } from '@/lib/nflverse/raw-group-guard';
 import { buildCrosswalk, buildPfrCrosswalk } from '@/lib/nflverse/crosswalk';
-import { toPlayerStatsRows, type PlayerStatsInsert } from '@/lib/nflverse/transform';
+import {
+  toDraftPickRows,
+  toPlayerStatsRows,
+  type DraftPickInsert,
+  type PlayerStatsInsert,
+} from '@/lib/nflverse/transform';
 import {
   addCounts,
   assertConserved,
@@ -86,6 +91,7 @@ import {
   buildRecentSnapSummariesSeedSql,
   type UnitFormationTally,
 } from '@/lib/nflverse/seed-sql';
+import { insertStatement } from '@/lib/utils/seed-sql';
 import type { Database } from '@/lib/database.types';
 
 const PLAYERS_TAG = 'players';
@@ -820,6 +826,31 @@ async function main() {
     }
   }
 
+  let draftRows: DraftPickInsert[] = [];
+  let draftDropped: Drop[] = [];
+  try {
+    const csv = await getText(assetUrl('draft_picks', 'draft_picks.csv'));
+    assertHeader(sourceContract('draft_picks'), parseCsvHeader(csv), loggedNewColumnSources);
+    const csvRows = parseCsv(csv);
+    const result = toDraftPickRows(csvRows, crosswalk, knownPlayerIds);
+    assertConserved('draft_picks', csvRows.length, result.rows.length, result.dropped);
+    draftDropped = result.dropped;
+    if (supabase) {
+      const db = supabase;
+      await upsertChunked('draft_picks', result.rows, async (chunk) => {
+        const { error } = await db.from('draft_picks').upsert(chunk, { onConflict: 'player_id' });
+        return { error };
+      });
+    }
+    draftRows = result.rows;
+    console.log(
+      `draft_picks: ${supabase ? 'wrote' : 'computed'} ${draftRows.length} rows, ` +
+        `dropped ${JSON.stringify(countByReason(draftDropped))}`
+    );
+  } catch (e) {
+    failures.push({ season: 'draft_picks', message: (e as Error).message });
+  }
+
   // Season selection: try current calendar year, walk back until an asset exists
   // (2025 wasn't published at spec-verification time -- never hard-code a year), then
   // also pull the season before that: current + previous season,
@@ -1189,6 +1220,12 @@ async function main() {
       '-- reset`. Requires supabase/seed.sql to already be loaded (players FK). Do not',
       '-- hand-edit; regenerate.',
       '',
+      insertStatement(
+        'draft_picks',
+        ['player_id', 'season', 'round', 'pick', 'team_abbrev', 'college'],
+        draftRows,
+        'player_id'
+      ),
       buildPlayerStatsSeedSql(allStatsRows),
       buildPlayerSeasonSnapsSeedSql(seasonSnapTotals),
       buildSchedulesAndGamesSeedSql(gamesResult.schedules, gamesResult.games),
@@ -1220,6 +1257,7 @@ async function main() {
   const finishedAt = new Date().toISOString();
   const totalWritten =
     rowsWritten +
+    draftRows.length +
     gamesResult.games.length +
     gamesResult.schedules.length +
     formationsResult.tallies.length +
@@ -1238,6 +1276,7 @@ async function main() {
     teams_written: totalWritten,
     errors: {
       seasons,
+      draft_picks_rows: draftRows.length,
       player_stats_rows: rowsWritten,
       player_season_snaps_rows: seasonSnapTotals.length,
       raw_source_rows: Object.fromEntries([...rawSourceStats].map(([t, s]) => [t, s.count])),
@@ -1272,6 +1311,7 @@ async function main() {
     },
     // Diagnostics never decide status: a run can succeed while reporting drops.
     diagnostics: {
+      draft_picks_dropped_by_reason: countByReason(draftDropped),
       player_stats_dropped_by_reason: countByReason(playerStatsDropped),
       raw_source_dropped_by_reason: rawSourceDropped,
       games_dropped_by_reason: countByReason(gamesResult.dropped),
@@ -1289,7 +1329,7 @@ async function main() {
   }
 
   console.log(
-    `\nWrote ${rowsWritten} player-stat rows across ${seasons.length} season(s), ` +
+    `\nWrote ${draftRows.length} draft-pick rows, ${rowsWritten} player-stat rows across ${seasons.length} season(s), ` +
       `${gamesResult.games.length} games, ${gamesResult.schedules.length} schedules, ` +
       `${formationsResult.tallies.length} formation rows, ` +
       `${lineMetricsResult.rows.length} line-metric rows, ` +
