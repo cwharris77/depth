@@ -166,3 +166,66 @@ export function toPlayerStatsRows(
 
   return { rows, dropped };
 }
+
+export interface DraftPickInsert {
+  player_id: string;
+  season: number;
+  round: number | null;
+  pick: number | null;
+  team_abbrev: string | null;
+  college: string | null;
+}
+
+function draftSmallInt(value: string | undefined): number | null {
+  const number = Number(value);
+  return Number.isInteger(number) && number > 0 && number <= 32767 ? number : null;
+}
+
+function draftText(value: string | undefined): string | null {
+  const text = value?.trim();
+  return !text || text === 'NA' ? null : text;
+}
+
+export function toDraftPickRows(
+  csvRows: Record<string, string>[],
+  gsisToEspn: Map<string, string>,
+  knownPlayerIds: Set<string>
+): { rows: DraftPickInsert[]; dropped: Drop[] } {
+  const byPlayer = new Map<string, DraftPickInsert>();
+  const dropped: Drop[] = [];
+  for (const [index, row] of csvRows.entries()) {
+    const gsisId = draftText(row.gsis_id);
+    if (!gsisId) {
+      dropped.push({ reason: 'missing_player_id', key: `row:${index}` });
+      continue;
+    }
+    const playerId = gsisToEspn.get(gsisId);
+    if (!playerId) {
+      dropped.push({ reason: 'no_crosswalk_match', key: gsisId });
+      continue;
+    }
+    if (!knownPlayerIds.has(playerId)) {
+      dropped.push({ reason: 'unknown_player', key: gsisId });
+      continue;
+    }
+    const season = draftSmallInt(row.season);
+    if (season === null) {
+      dropped.push({ reason: 'invalid_season', key: gsisId, value: row.season });
+      continue;
+    }
+    const previous = byPlayer.get(playerId);
+    if (previous) {
+      dropped.push({ reason: 'duplicate_player', key: gsisId });
+      if (previous.season >= season) continue;
+    }
+    byPlayer.set(playerId, {
+      player_id: playerId,
+      season,
+      round: draftSmallInt(row.round),
+      pick: draftSmallInt(row.pick),
+      team_abbrev: draftText(row.team),
+      college: draftText(row.college),
+    });
+  }
+  return { rows: [...byPlayer.values()], dropped };
+}

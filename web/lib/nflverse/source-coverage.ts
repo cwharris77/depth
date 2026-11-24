@@ -22,6 +22,7 @@ export interface SourceCoverage {
 // id (source-contract.ts) so a 404 decision can name the source directly.
 export const SOURCE_COVERAGE: Record<SourceId, SourceCoverage> = {
   players: { minSeason: 1999 },
+  draft_picks: { minSeason: 1980, wholeHistory: true },
   games: { minSeason: 1999 },
   stats_player_reg: { minSeason: 1999 },
   stats_team: { minSeason: 1999 },
