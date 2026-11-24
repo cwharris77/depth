@@ -170,3 +170,18 @@ private func teamClient(
     }
     #expect(seen.current.isEmpty)
 }
+
+@Test func preseasonTeamGameDoesNotBecomeARegularSeasonLine() throws {
+    let json = """
+        { "seasons": [{ "season": 2025, "games": [
+          { "week": 1, "season_type": "REG", "game_id": "regular", "opponent": "jets",
+            "offense": { "passing_yards": 200 } },
+          { "week": 1, "season_type": "PRE", "game_id": "preseason", "opponent": "jets",
+            "offense": { "passing_yards": 900 } },
+          { "week": 19, "season_type": "POST", "game_id": "postseason", "opponent": "jets" }
+        ] }] }
+        """
+    let season = try #require(TeamStatFilesMapper.map(try decodeTeamFile(json)).season(2025))
+    #expect(season.games.filter { !$0.isPostseason }.map(\.id) == ["regular"])
+    #expect(season.games.filter(\.isPostseason).map(\.id) == ["postseason"])
+}
